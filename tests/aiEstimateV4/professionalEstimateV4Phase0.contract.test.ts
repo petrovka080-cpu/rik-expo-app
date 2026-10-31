@@ -17,7 +17,7 @@ import {
 describe("AI Estimate V4 Phase 0 contracts", () => {
   test("the engineering unit registry owns every required dimension and canonical conversion", () => {
     const requiredDimensions = [
-      "dimensionless", "count", "length", "area", "volume", "mass", "time", "labor_time", "machine_time",
+      "dimensionless", "count", "headcount", "length", "area", "volume", "mass", "time", "labor_time", "machine_time",
       "power", "energy", "pressure", "temperature", "flow", "density", "application_rate", "transport_distance",
       "transport_work", "package", "service", "test", "document", "currency", "currency_per_unit",
     ];
@@ -146,7 +146,11 @@ describe("AI Estimate V4 Phase 0 contracts", () => {
   });
 
   test("the catalog and blocker vocabulary are frozen for the five Phase 0 truth ledgers", () => {
-    expect(listProfessionalWorkPassportTemplateIds()).toHaveLength(11610);
+    // Retired area presets are absent: 5992 measured base identities + 1610 expanded templates.
+    const templateIds = listProfessionalWorkPassportTemplateIds();
+    expect(templateIds).toHaveLength(7602);
+    expect(new Set(templateIds).size).toBe(7602);
+    expect(templateIds.filter((id) => /_(?:small|medium|large)_area_professional_expanded_v1$/u.test(id))).toEqual([]);
     expect(V4_TRUTH_BLOCKER_KEYS).toEqual(expect.arrayContaining([
       "missing_work_specific_overlay",
       "formula_dimension_mismatch",

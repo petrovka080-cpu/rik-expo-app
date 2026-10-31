@@ -19,8 +19,7 @@ import {
 import { compileCanonicalEstimateCore } from
   "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
-import { buildCanonicalBaselinePlan } from
-  "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from
   "../../src/lib/estimate/backendPlatform/contracts";
 

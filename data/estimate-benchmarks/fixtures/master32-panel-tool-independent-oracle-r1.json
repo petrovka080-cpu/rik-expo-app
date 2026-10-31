@@ -1,0 +1,121 @@
+{
+  "contract": "master32-panel-independent-workflow-oracle/r1",
+  "generatedFromRuntimeRows": false,
+  "basis": "Independently enumerated workflow and single sequential post organization; manufacturer initial installed battery counts; not tool consumption/labor/rental norm",
+  "assets": {
+    "stripper-cutter": 1,
+    "measuring-rule": 1,
+    "slotted-screwdriver": 1,
+    "voltage-indicator": 1,
+    "proving-unit": 1,
+    "proving-batteries": 6,
+    "proving-magnetic-hanger": 1,
+    "voltage-kit-case": 1,
+    "installation-tester": 1,
+    "continuity-red-lead": 1,
+    "continuity-green-lead": 1,
+    "continuity-red-probe": 1,
+    "continuity-green-probe": 1,
+    "continuity-red-gs38-cap": 1,
+    "continuity-green-gs38-cap": 1,
+    "continuity-red-clip": 1,
+    "continuity-green-clip": 1,
+    "continuity-zero-adapter": 1,
+    "continuity-batteries": 6,
+    "continuity-padded-strap": 1,
+    "continuity-hard-case": 1
+  },
+  "assetRoles": 21,
+  "physicalPiecesPositiveN": 31,
+  "provisionOwnerCount": 1,
+  "provisionOwnerUnit": "set",
+  "profiles": 2,
+  "parentShape": [
+    28,
+    90,
+    90
+  ],
+  "successorShape": [
+    30,
+    112,
+    112
+  ],
+  "conditionalClosures": [
+    "master30:electrical:open:tool-27",
+    "master30:electrical:open:tool-55"
+  ],
+  "closedTypes": 2,
+  "closedInstances": 4,
+  "allPotentialNeeds": 24,
+  "selectedRemainingNeeds": 22,
+  "newPublicCards": 0,
+  "newFULL": 0,
+  "newPurchaseOwners": 0,
+  "expectedCases": [
+    {
+      "N": 0,
+      "knownRows": 0,
+      "nullNeeds": 0,
+      "postCount": 0,
+      "toolPhysicalPieces": 0
+    },
+    {
+      "N": 1,
+      "knownRows": 25,
+      "nullNeeds": 22,
+      "postCount": 1,
+      "toolPhysicalPieces": 31
+    },
+    {
+      "N": 3,
+      "knownRows": 25,
+      "nullNeeds": 22,
+      "postCount": 1,
+      "toolPhysicalPieces": 31
+    },
+    {
+      "N": 1000000,
+      "knownRows": 25,
+      "nullNeeds": 22,
+      "postCount": 1,
+      "toolPhysicalPieces": 31
+    }
+  ],
+  "omissionCases": {
+    "methodMissing": "3oldfactoryRows/24nullneeds/0toolrows",
+    "fitMissing": "3oldfactoryRows/24nullneeds/0toolrows",
+    "methodUnresolved": "3oldfactoryRows/24nullneeds/0toolrows",
+    "fitOnly": "3oldfactoryRows/24nullneeds/0toolrows"
+  },
+  "numericPriceOracle": {
+    "demoWholePostPriceKGS": "500",
+    "N": 10,
+    "wholePostQuantity": "1",
+    "wholePostAmount": "500",
+    "includedAssetAmount": null,
+    "includedAssetProcurement": false,
+    "factoryQuantity": "10",
+    "onlyPurchaseOwner": "led-grid:dvo6560-6562:opal-4000"
+  },
+  "negativeCases": [
+    "missingeitherselector",
+    "arbitraryfit",
+    "legacybranchmisuse",
+    "negativefractionaloverflowN",
+    "onepoleindicator",
+    "mixedprover",
+    "proverpoweromitted",
+    "PEpoweromitted",
+    "zeroadapteromitted",
+    "wrong11mmsetting",
+    "barestripper",
+    "ignoredinstrumentduty",
+    "hourUOM",
+    "multiplytoolsbyN",
+    "unreviewedfanClassII",
+    "changedparentarithmetic",
+    "duplicateusingoperation",
+    "legacypriceinheritance"
+  ],
+  "execution": "NOT_RUN_ROOT_ONLY"
+}

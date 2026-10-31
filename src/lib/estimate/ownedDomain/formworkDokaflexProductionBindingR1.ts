@@ -7,7 +7,7 @@ import {
 import {
   RICS_NRM2_FORMWORK_REQUIRED_EXPLICIT_PARAMETER_IDS,
 } from "../v4/domainFactory/formworkRicsNrm2PhysicalNormV1";
-import { extractRicsNrm2FormworkCanonicalParametersV1 } from "./formworkRicsNrm2ProductionBindingV1";
+import { extractRicsNrm2FormworkCanonicalParametersV1 } from "./formworkRicsNrm2PromptParametersV1";
 
 type Primitive = string | number | boolean;
 

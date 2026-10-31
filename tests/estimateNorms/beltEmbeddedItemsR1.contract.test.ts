@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   beltEmbeddedItemsPromptDetailsR1,
@@ -102,8 +102,7 @@ describe("belt embedded-items canonical family", () => {
     )).toBe(false);
   });
 
-  it("round-trips through the ordinary shared parameter screen", () => {
-    const target = BELT_EMBEDDED_ITEMS_TARGETS[4];
+  it.each(BELT_EMBEDDED_ITEMS_TARGETS)("round-trips through the ordinary shared parameter screen: $contextKey", (target) => {
     const input = beltEmbeddedItemsAcceptanceInputR1(target.contextKey);
     const prompt = [target.titleRu, ...beltEmbeddedItemsPromptDetailsR1(input)].join("\n");
     expect(extractConcretePlacementCanonicalParametersR1({

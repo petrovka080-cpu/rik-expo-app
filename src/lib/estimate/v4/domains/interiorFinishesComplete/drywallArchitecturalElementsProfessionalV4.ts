@@ -52,8 +52,7 @@ export type {
   DrywallArchitecturalElementWorkContractV4,
 } from "./drywallArchitecturalElementsContractV4";
 
-const VARIANTS: readonly DrywallArchitecturalElementVariantV4[] = Object.freeze([
-  "large_area", "small_area", "standard", "technical_room", "wet_zone",
+const VARIANTS: readonly DrywallArchitecturalElementVariantV4[] = Object.freeze([ "standard", "technical_room", "wet_zone",
 ]);
 
 const SELECTED_GROUP_ROOTS = Object.freeze([
@@ -170,7 +169,7 @@ function operationOf(catalogId: string): DrywallArchitecturalElementOperationV4 
 }
 
 function variantOf(catalogId: string): DrywallArchitecturalElementVariantV4 {
-  for (const variant of ["technical_room", "large_area", "small_area", "wet_zone", "high_load", "standard"] as const) {
+  for (const variant of ["technical_room", "wet_zone", "high_load", "standard"] as const) {
     if (catalogId.endsWith(`_${variant}`)) return variant;
   }
   throw new Error(`DRYWALL_ARCHITECTURAL_ELEMENT_VARIANT_NOT_FOUND:${catalogId}`);
@@ -648,8 +647,8 @@ function operationParameters(operation: DrywallArchitecturalElementOperationV4):
 
 function variantParameters(variant: DrywallArchitecturalElementVariantV4): ParameterSpec[] {
   switch (variant) {
-    case "large_area": return [numberParameter("control_zone_count", "Количество технологических захваток большой площади", "service", "CONTROL_PLAN_VALUE", BOTH_SCOPES, 1)];
-    case "small_area": return [numberParameter("small_area_setup_service_count", "Количество отдельных мобилизаций на малой площади", "service", "PROJECT_QUANTITY", BOTH_SCOPES, 1)];
+
+
     case "technical_room": return [numberParameter("technical_interface_service_count", "Количество согласований проходок и инженерных интерфейсов", "service", "CONTROL_PLAN_VALUE", BOTH_SCOPES, 1)];
     case "wet_zone": return [
       numberParameter("moisture_interface_length_m", "Длина влагозащищаемых примыканий", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0),

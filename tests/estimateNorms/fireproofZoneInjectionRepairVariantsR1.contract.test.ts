@@ -12,10 +12,12 @@ import {
   FIREPROOF_ZONE_INJECTION_REPAIR_PARAMETERS,
   FIREPROOF_ZONE_INJECTION_REPAIR_PRELIMINARY_PROFILE,
   FIREPROOF_ZONE_INJECTION_REPAIR_RESOURCES,
+  FIREPROOF_ZONE_INJECTION_REPAIR_RUNTIME_CLASSIFICATION,
   FIREPROOF_ZONE_INJECTION_REPAIR_SHORT_INPUT,
   FIREPROOF_ZONE_INJECTION_REPAIR_SIKA_ARTIFACT_SHA256,
   FIREPROOF_ZONE_INJECTION_REPAIR_SOURCE_BUNDLE_SHA256,
   FIREPROOF_ZONE_INJECTION_REPAIR_SOURCE_METADATA,
+  FIREPROOF_ZONE_INJECTION_REPAIR_SOURCE_ID,
   FIREPROOF_ZONE_INJECTION_REPAIR_VARIANTS,
   compileFireproofZoneInjectionRepairVariantR1,
   fireproofZoneInjectionRepairCompletenessMap,
@@ -38,10 +40,10 @@ function quantity(compiled: Awaited<ReturnType<
 }
 
 describe("S27.8 F09 fireproof-zone injection repair variants", () => {
-  test("uses two exact identities and byte-verified Sika PDS/method sources", () => {
-    expect(VARIANT_KEYS).toEqual(["small_area", "standard"]);
+  test("preserves the surviving exact identities and source boundary", () => {
+    expect(VARIANT_KEYS).toEqual([ "standard"]);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      FIREPROOF_ZONE_INJECTION_REPAIR_VARIANTS[key].catalogId)).size).toBe(2);
+      FIREPROOF_ZONE_INJECTION_REPAIR_VARIANTS[key].catalogId)).size).toBe(1);
     const sourceDir =
       ".release-runtime/r568/s27-9/p6/f09-engineering-completion-v1/official-snapshots/";
     expect(sha256(`${sourceDir}sika_injection_201_ce_pds_2023_02_01.pdf`))
@@ -111,10 +113,36 @@ describe("S27.8 F09 fireproof-zone injection repair variants", () => {
           "ambient_air_temperature_c",
           "substrate_temperature_c",
           "injection_material_temperature_c",
-          "injection_reaction_time_min",
           "concrete_compressive_strength_n_mm2",
           "planned_injection_pressure_bar",
         ]));
+      // A missing temperature does not create a fixed reaction time or a customer norm question.
+      expect(compiled.parameters.injection_reaction_time_min).toBeUndefined();
+      expect(FIREPROOF_ZONE_INJECTION_REPAIR_PARAMETERS.find(parameter =>
+        parameter.parameter_id === "injection_reaction_time_min")).toMatchObject({
+        required: false,
+        truth_metadata: {
+          value_source_role: "SOURCE_TABLE_DERIVED_OR_SPECIALIST_CONFIRMED",
+          derived_exact_lookup_v1: {
+            inputParameterIds: ["injection_material_temperature_c", "injection_ac20_dosage_percent"],
+            interpolation: "FORBIDDEN",
+            rows: expect.arrayContaining([{inputValues: [20, 0], outputValue: 135}]),
+          },
+          guide: {source_document: FIREPROOF_ZONE_INJECTION_REPAIR_SOURCE_ID,
+            source_snapshot_hash: FIREPROOF_ZONE_INJECTION_REPAIR_SOURCE_BUNDLE_SHA256},
+        },
+      });
+      // The actual manufacturer norm remains in the immutable calculation snapshot.
+      expect(Number(compiled.parameters.packer_spacing_thickness_ratio)).toBe(0.5);
+      expect(compiled.revisionProjection.parameters.packer_spacing_thickness_ratio)
+        .toBe(compiled.parameters.packer_spacing_thickness_ratio);
+      expect(FIREPROOF_ZONE_INJECTION_REPAIR_RUNTIME_CLASSIFICATION.packer_spacing_thickness_ratio).toBe("NORMATIVE");
+      expect(FIREPROOF_ZONE_INJECTION_REPAIR_PARAMETERS.find(parameter =>
+        parameter.parameter_id === "packer_spacing_thickness_ratio")).toMatchObject({
+        truth_metadata: {value_source_role: "SOURCE_BACKED_PRELIMINARY_PROFILE",
+          guide: {source_document: FIREPROOF_ZONE_INJECTION_REPAIR_SOURCE_ID,
+            source_snapshot_hash: FIREPROOF_ZONE_INJECTION_REPAIR_SOURCE_BUNDLE_SHA256}},
+      });
       expect(compiled.rows).toHaveLength(35);
       expect(quantity(compiled, "f09:fireproof_zone_injection_repair_area")).toBe("12");
       expect(quantity(compiled, "f09:fireproof_zone_injection_packer_spacing")).toBe("0.09");
@@ -265,9 +293,9 @@ describe("S27.8 F09 fireproof-zone injection repair variants", () => {
     expect(() => resolveFireproofZoneInjectionRepairVariant("large_area"))
       .toThrow("FIREPROOF_ZONE_INJECTION_REPAIR_VARIANT_UNSUPPORTED");
     await expect(compileFireproofZoneInjectionRepairVariantR1(
-      "small_area",
+      "standard",
       { ...FIREPROOF_ZONE_INJECTION_REPAIR_SHORT_INPUT },
-      { catalogId: FIREPROOF_ZONE_INJECTION_REPAIR_VARIANTS.standard.catalogId },
+      { catalogId: "canonical-work:base:unrelated_work_standard" },
     )).rejects.toThrow("FIREPROOF_ZONE_INJECTION_REPAIR_CATALOG_UNSUPPORTED");
     await expect(compileFireproofZoneInjectionRepairVariantR1("standard", {
       ...FIREPROOF_ZONE_INJECTION_REPAIR_SHORT_INPUT,

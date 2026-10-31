@@ -1,3 +1,8 @@
+import {consumerRepairRowPublicResourcePresentation} from './consumerRepairRowMetadata';
+import {buildSkirtingDefinitionS2735} from '../../lib/estimate/v4/skirtingConstructorS2735';
+import scsScopePack from '../../../data/estimate-benchmarks/source-packs/low-current-nk688m-jackrapid-method-post-r24.json';
+import acsScopePack from '../../../data/estimate-benchmarks/source-packs/access-control-six-whole-operation-references-r1.json';
+import {canonicalPublicResourcePresentationV1 as sourceBoundPresentation} from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import {
   buildRequestEstimateViewModel,
   buildRequestEstimateProfessionalRowEvidence,
@@ -50,7 +55,7 @@ function canonicalItem(rowId: string, titleRu: string, rowSha256: string, index:
   } as ConsumerRepairRequestItem;
 }
 
-function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDraftBundle {
+function serverBoundBundle(items: ConsumerRepairRequestItem[],parameters:Record<string,unknown>={}): ConsumerRepairDraftBundle {
   const base = {
     draft: { id: "request-draft-r53-title" },
     items,
@@ -70,13 +75,66 @@ function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDr
         catalogId: CATALOG_ID,
         createdAt: "2026-08-25T00:00:00.000Z",
         checksumSha256: "a".repeat(64),
-        parameters: {},
+        parameters,
       },
     } as never,
   });
 }
 
 describe("R4 canonical estimate title parity", () => {
+  it('verifies the complete saved revision before filtering scope controls from public resource sections',()=>{
+    const spec='LIFT-CS-EMBED-STANDARD-REV-A',resource={...canonicalItem('lift','Подъёмное оборудование — '+spec,'b'.repeat(64),0),
+      calculationTrace:JSON.stringify({resourceGraph:{titleSpecificationMode:'APPEND',titleSpecificationSeparator:' — ',titleSpecificationParameterIds:['lift_spec']}})};
+    const scope=canonicalItem('object-check','Проверка условий объекта','c'.repeat(64),1);
+    scope.sourceParameters={...scope.sourceParameters,canonicalScopeRequirementDecisionV1:{
+      contractVersion:'canonical-scope-requirement-decision/v1',rowId:'object-check',groupId:'whole-work',groupTitleRu:'Работа',
+      titleRu:'Условия объекта',reasonRu:'Требуется подтверждение условий объекта',kind:'OBJECT_SCOPE',status:'OBJECT_FACT_REQUIRED',
+      coveringRowIds:[],originalRowIds:[],missingObjectFactParameterIds:['object_fact'],numericNormAccepted:false,separatePaymentAccepted:false}};
+    const bundle=serverBoundBundle([resource,scope],{lift_spec:spec}),before=JSON.stringify(bundle),vm=buildRequestEstimateViewModel(bundle)!;
+    expect(vm.sections.flatMap(s=>s.items).map(i=>i.titleRu)).toEqual(['Подъёмное оборудование']);
+    expect(vm.scopeRequirementGroups).toHaveLength(1);expect(vm.preliminaryNeedCount).toBe(0);
+    expect(vm.sections.flatMap(s=>s.items)[0]).toMatchObject({id:resource.id,quantity:1,unit:'service',unitPrice:null});
+    expect(requestEstimatePublicItemTitle(resource,bundle)).toBe('Подъёмное оборудование');expect(JSON.stringify(bundle)).toBe(before);
+    const stale={...bundle,items:bundle.items.map(i=>i.id===resource.id?{...i,titleRu:'Собственное изменённое название'}:i)};
+    expect(buildRequestEstimateViewModel(stale)!.sections.flatMap(s=>s.items)[0]!.titleRu).toBe('Собственное изменённое название');
+  });
+  it.each([Number.NaN,Number.POSITIVE_INFINITY])('never prints a non-finite cached price or amount in the summary: %s',invalid=>{
+    const item={...canonicalItem('material:invalid','Материал','c'.repeat(64),3),quantity:2,unit:'piece',unitLabel:'шт.',unitPrice:invalid,totalPrice:invalid};
+    const bundle=serverBoundBundle([item]),before=JSON.stringify(bundle);
+    expect(buildRequestEstimateViewModel(bundle)!.visibleLines.map(line=>line.text)).toEqual(['Материал · 2 шт.']);
+    expect(JSON.stringify(bundle)).toBe(before);
+  });
+  it('keeps summary lines named and quantified without per-resource missing-price captions',()=>{
+    const unpriced={...canonicalItem('material:unpriced','Материал без цены','d'.repeat(64),0),
+      itemType:'material' as const,category:'material',quantity:2,unit:'piece',unitLabel:'шт.'};
+    const priced={...unpriced,...canonicalItem('material:priced','Материал с ценой','e'.repeat(64),1),
+      itemType:'material' as const,category:'material',quantity:3,unit:'piece',unitLabel:'шт.',unitPrice:5,totalPrice:15};
+    const unknown={...unpriced,...canonicalItem('material:unknown','Незакрытый материал','f'.repeat(64),2),
+      itemType:'material' as const,category:'material',quantity:null,unit:'piece',unitLabel:'шт.'};
+    const bundle=serverBoundBundle([unpriced,priced,unknown]),before=JSON.stringify(bundle),vm=buildRequestEstimateViewModel(bundle)!;
+    const lines=new Map(vm.visibleLines.map(line=>[line.id,line.text]));
+    expect(lines.get(unpriced.id)).toBe('Материал без цены · 2 шт.');
+    expect(lines.get(unknown.id)).toBe('Незакрытый материал · Не рассчитано шт.');
+    expect(lines.get(priced.id)).toContain('Материал с ценой · 3 шт.');
+    expect(lines.get(priced.id)).toMatch(/5.*\/ шт\./u);expect(lines.get(priced.id)).toMatch(/15/u);
+    expect([...lines.values()].join('\n')).not.toMatch(/цена нужна|итог уточнить|Без доплаты|Включено в №/u);
+    expect(JSON.stringify(bundle)).toBe(before);
+  });
+  it('shows the same saved tool quantity at every using operation without copying the resource or its cost', () => {
+    const item = {...canonicalItem('tool:shared-spatula', 'Шпатель', 'c'.repeat(64), 0),
+      quantity: 2, unit: 'piece', unitLabel: 'шт.'};
+    item.sourceParameters = {...item.sourceParameters, smartEstimateProjectionV2: {}, canonicalOperationComposition: {
+      contractVersion: 'canonical-operation-resource/v1', groupId: 'finish', groupTitleRu: 'Отделка стен',
+      operationId: 'putty', operationTitleRu: 'Шпаклевание', completionCriterionRu: 'Выполнено',
+      additionalOperations: [{operationId: 'clean', operationTitleRu: 'Очистка инструмента', completionCriterionRu: 'Очищен'}],
+    }};
+    const bundle = serverBoundBundle([item]), saved = JSON.stringify(bundle);
+    const vm = buildRequestEstimateViewModel(bundle)!;
+    const related = vm.sections.find(s => s.operation?.operationId === 'clean')!;
+    expect(related.sharedResources).toEqual([expect.objectContaining({titleRu: 'Шпатель', quantityLabel: '2 шт.'})]);
+    expect(vm.sections.flatMap(s => s.items).filter(i => i.id === item.id)).toHaveLength(1);
+    expect(JSON.stringify(bundle)).toBe(saved);
+  });
   it('cleans whitespace after an actual public wording replacement, including request and choice wrappers', () => {
     expect(canonicalPublicEstimateTextRu('  Сварка  для LOGICROOF  ; контроль')).toBe('Сварка для выбранной кровельной мембраны; контроль');
     expect(canonicalPublicEstimateRequestTextRu('  Кровельные световые фонари VELUX CFP 100100 — предварительный состав  ;  2 шт.')).toBe('Окна в крыше; 2 шт.');
@@ -316,4 +374,112 @@ describe("R4 canonical estimate title parity", () => {
     expect(requestEstimatePublicItemTitle(item, { draft: { id: "fake" }, items: [item] } as ConsumerRepairDraftBundle))
       .toBe("Ручная строка версия");
   });
+});
+
+describe('retained SCS and ACS cold projection resource kind and operation boundary', () => {
+  const scs = scsScopePack.wholeOperationObjectScopeR5;
+  const acs = acsScopePack.wholeOperationObjectScopeR5;
+  const cases = [
+    { family: 'SCS', rowId: 'rc09:lvs_copper_cable', title: 'Кабель СКС', unit: 'm', kind: 'MATERIAL',
+      groupId: scs.groupId, groupTitleRu: scs.groupTitleRu,
+      operations: scs.operations.filter(op => ['route', 'copper-profile'].includes(op.key)).sort((a, b) => Number(b.key === 'route') - Number(a.key === 'route')),
+      missing: [scs.decisionId, ...scs.facts.map(fact => fact.id)], expectedMissing: 7 },
+    { family: 'ACS', rowId: 'rc09:acs_reader', title: 'Считыватель доступа', unit: 'pcs', kind: 'EQUIPMENT',
+      groupId: acsScopePack.groupId, groupTitleRu: acsScopePack.groupTitleRu,
+      operations: acsScopePack.operations.filter(op => ['reader', 'commissioning'].includes(op.key)).map(op => ({ ...op, operationTitleRu: op.titleRu })),
+      missing: [acs.decisionId, ...acs.facts.map(fact => fact.id)], expectedMissing: 8 },
+  ];
+  it.each(cases)('keeps $family legacy and typed descriptors cold without inventing quantities or resolving project facts', spec => {
+    expect(spec.missing).toHaveLength(spec.expectedMissing);
+    const [primary, ...related] = spec.operations;
+    if (!primary) throw new Error('retained source operation missing');
+    for (const typed of [false, true]) {
+      const descriptor = { contractVersion: 'canonical-public-resource-presentation/v1', sourceTitleRu: spec.title,
+        nameRu: spec.title, brandAndModelRu: null, specificationRu: null, detailsRu: [],
+        ...(typed ? { resourceKind: spec.kind } : {}) };
+      const resource = { ...canonicalItem(spec.rowId, spec.title, 'c'.repeat(64), 0),
+        itemType: 'material' as const, category: 'material', quantity: null, unit: spec.unit, unitPrice: null, totalPrice: null };
+      resource.sourceParameters = { ...resource.sourceParameters, canonicalPublicResourcePresentationV1: descriptor,
+        canonicalOperationComposition: { contractVersion: 'canonical-operation-resource/v1', groupId: spec.groupId,
+          groupTitleRu: spec.groupTitleRu, ...primary, additionalOperations: related } };
+      const scope = canonicalItem(spec.family + ':object-scope', 'Проверка методов и обеспечения', 'd'.repeat(64), 1);
+      scope.sourceParameters = { ...scope.sourceParameters, canonicalScopeRequirementDecisionV1: {
+        contractVersion: 'canonical-scope-requirement-decision/v1', rowId: spec.family + ':object-scope', groupId: spec.groupId,
+        groupTitleRu: spec.groupTitleRu, titleRu: 'Методы и обеспечение', reasonRu: 'Факты проекта не подтверждены',
+        kind: 'OBJECT_SCOPE', status: 'OBJECT_FACT_REQUIRED', coveringRowIds: [], originalRowIds: [spec.rowId],
+        missingObjectFactParameterIds: spec.missing, numericNormAccepted: false, separatePaymentAccepted: false } };
+      const stored = serverBoundBundle([resource, scope]), saved = JSON.stringify(stored);
+      const cold = JSON.parse(saved) as ConsumerRepairDraftBundle;
+      const vm = buildRequestEstimateViewModel(cold)!;
+      expect(vm.sections.flatMap(section => section.items)).toEqual([expect.objectContaining({ id: resource.id, quantity: null, unitPrice: null, totalPrice: null })]);
+      expect(vm.sections.find(section => section.items.some(item => item.id === resource.id))?.operation?.operationId).toBe(primary.operationId);
+      for (const operation of related) {
+        const shared = vm.sections.find(section => section.operation?.operationId === operation.operationId)?.sharedResources;
+        if ('whenResourcePresent' in operation && Array.isArray(operation.whenResourcePresent) && operation.whenResourcePresent.length) expect(shared).toBeUndefined();
+        else expect(shared).toEqual([expect.objectContaining({ titleRu: spec.title })]);
+      }
+      expect(vm.scopeRequirementGroups?.flatMap(group => group.statuses)).toContain('OBJECT_FACT_REQUIRED');
+      expect(cold.items.find(item => item.id === scope.id)?.sourceParameters?.canonicalScopeRequirementDecisionV1)
+        .toEqual(scope.sourceParameters.canonicalScopeRequirementDecisionV1);
+      const parsed = sourceBoundPresentation({ titleRu: spec.title, descriptor });
+      expect(parsed).not.toBeNull();
+      if (typed) expect(parsed?.resourceKind).toBe(spec.kind);
+      else expect(parsed).not.toHaveProperty('resourceKind');
+      expect(sourceBoundPresentation({ titleRu: spec.title + ' изменён', descriptor })).toBeNull();
+      expect(JSON.stringify(stored)).toBe(saved);
+      expect(JSON.stringify(cold)).toBe(saved);
+    }
+  });
+});
+
+// Canonical operation metadata and smart-stage projection are independent.
+// Both ordering paths must retain the declared row and its unassigned neighbour.
+it.each([false,true])('retains declared and unassigned UNKNOWN rows after cold read with smart marker=%s', smart => {
+  const stage={...canonicalItem('retained:declared','Кабель для подключения','7'.repeat(64),0),
+    itemType:'material' as const,category:'material',quantity:null,unit:'m',unitPrice:null,totalPrice:null};
+  stage.sourceParameters={...stage.sourceParameters,...(smart?{smartEstimateProjectionV2:{}}:{}),
+    canonicalOperationComposition:{contractVersion:'canonical-operation-resource/v1',groupId:'retained-work',groupTitleRu:'Монтаж',
+      operationId:'route',operationTitleRu:'Прокладка кабеля',completionCriterionRu:'Кабель проложен'}};
+  const general={...canonicalItem('retained:unassigned','Крепёж для кабеля','8'.repeat(64),1),
+    itemType:'material' as const,category:'material',quantity:null,unit:'piece',unitPrice:null,totalPrice:null};
+  const stored=serverBoundBundle([stage,general]),saved=JSON.stringify(stored);
+  const cold=JSON.parse(saved) as ConsumerRepairDraftBundle;
+  const vm=buildRequestEstimateViewModel(cold)!;
+  const rows=vm.sections.flatMap(section=>section.items);
+  expect(rows.map(row=>row.id).sort()).toEqual([stage.id,general.id].sort());
+  expect(new Set(rows.map(row=>row.id)).size).toBe(2);
+  for(const row of rows)expect(row).toMatchObject({quantity:null,unitPrice:null,totalPrice:null});
+  expect(vm.sections.find(section=>section.items.some(row=>row.id===stage.id))?.operation?.operationId).toBe('route');
+  expect(vm.sections.find(section=>section.items.some(row=>row.id===general.id))?.operation??null).toBeNull();
+  expect(vm.workProcessGroups?.flatMap(group=>group.operations).map(operation=>operation.operationId)).toEqual(['route']);
+  expect(JSON.stringify(stored)).toBe(saved);expect(JSON.stringify(cold)).toBe(saved);
+});
+it.each([
+ ['material:skirting:board','Плинтус ПВХ, 60×10 мм, длина 2 м — TEST_ONLY_COLOUR_BATCH'],
+ ['material:skirting:adhesive','Монтажный клей, картридж 310 мл'],
+ ['material:skirting:end-cap','Торцевая вставка для плинтуса'],
+])('shares source-bound generated resource %s across editor, summary and cold saved replay while retaining an explicit rename',(rowId,name)=>{
+ const resource=buildSkirtingDefinitionS2735('install').resources.find(value=>value.row_id===rowId);
+ if(!resource)throw Error('TEST_ONLY_EXISTING_SHARED_RESOURCE_REQUIRED');
+ const parameters:Record<string,unknown>={skirting_colour_batch:'TEST_ONLY_COLOUR_BATCH',board_order_pieces:2,adhesive_product:'FORBO_232',adhesive_rate_ml_m:40};
+ const rawIds=resource.resource_graph.titleSpecificationParameterIds,ids=Array.isArray(rawIds)?rawIds.filter((id):id is string=>typeof id==='string'):[];
+ const suffix=ids.map(id=>String(parameters[id])).join(', '),title=resource.title_ru+(suffix?' — '+suffix:'');
+ const item:ConsumerRepairRequestItem={...canonicalItem(rowId,title,'d'.repeat(64),0),itemType:'material',category:'MATERIAL',unit:resource.unit_id,
+  calculationTrace:JSON.stringify({resourceGraph:resource.resource_graph})};
+ const bundle=serverBoundBundle([item],parameters),before=JSON.stringify(bundle),reopened:ConsumerRepairDraftBundle=JSON.parse(before);
+ for(const saved of [bundle,reopened]){
+  const currentItem=saved.items[0],vm=buildRequestEstimateViewModel(saved);
+  if(!currentItem||!vm)throw Error('TEST_ONLY_VERIFIED_DISPLAY_REQUIRED');
+  expect(requestEstimatePublicItemTitle(currentItem,saved)).toBe(name);
+  expect(vm.sections.flatMap(section=>section.items)).toMatchObject([{id:item.id,titleRu:name,quantity:1,unit:resource.unit_id,unitPrice:null}]);
+  expect(vm.visibleLines.map(line=>line.text).join(' ')).toContain(name);
+  if(rowId==='material:skirting:board')expect(consumerRepairRowPublicResourcePresentation(vm.sections.flatMap(section=>section.items)[0]))
+   .toMatchObject({specificationRu:'TEST_ONLY_COLOUR_BATCH',detailsRu:['TEST_ONLY_COLOUR_BATCH']});
+  expect(vm.visibleLines.map(line=>line.text).join(' ')).not.toMatch(/Gerflor|Forbo|FORBO_232/u);
+ }
+ expect(JSON.stringify(bundle)).toBe(before);expect(reopened.items[0].titleRu).toBe(title);
+ const manual={...item,sourceParameters:{...item.sourceParameters,canonicalManualTitleOverride:true}};
+ const manualBundle=serverBoundBundle([manual],parameters),manualReopened:ConsumerRepairDraftBundle=JSON.parse(JSON.stringify(manualBundle));
+ expect(requestEstimatePublicItemTitle(manualReopened.items[0],manualReopened)).toBe(title);
+ expect(buildRequestEstimateViewModel(manualReopened)?.visibleLines.map(line=>line.text).join(' ')).toContain(title);
 });

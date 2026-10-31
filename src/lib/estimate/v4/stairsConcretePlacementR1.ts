@@ -1,5 +1,5 @@
 import type { CanonicalEstimateCompileCoreResult } from "../backendPlatform/canonicalEstimateCompileCore";
-import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "./domainFactory";
+import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "./domainFactory/clientRuntimeV1";
 import {
   CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS_R1,
   CONCRETE_PLACEMENT_SOURCE_METADATA_R1,
@@ -14,9 +14,7 @@ import {
 export const STAIRS_CONCRETE_PLACEMENT_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard", titleRu: "Бетонирование бетонной лестницы в стандартной зоне", contextRu: "стандартная зона" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_high_load", titleRu: "Бетонирование бетонной лестницы для высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_large_area", titleRu: "Бетонирование бетонной лестницы на большой площади", contextRu: "большая площадь" },
   { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_repair", titleRu: "Бетонирование бетонной лестницы с локальным ремонтом основания", contextRu: "локальный ремонт основания" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_small_area", titleRu: "Бетонирование бетонной лестницы на малой площади", contextRu: "малая площадь" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_technical_room", titleRu: "Бетонирование бетонной лестницы в техническом помещении", contextRu: "техническое помещение" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_wet_zone", titleRu: "Бетонирование бетонной лестницы во влажной зоне", contextRu: "влажная зона" },
 ] as const);
@@ -71,9 +69,7 @@ Readonly<Record<string, ConcretePlacementInputValueR1>>
 >> = Object.freeze({
   standard: { plan_dimension_concrete_volume_m3: 10, curing_membrane_area_m2: 48, placement_worker_h: 42, finishing_worker_h: 24, curing_worker_h: 12, pump_machine_h: 3, deep_vibrator_machine_h: 6, concrete_delivery_distance_km: 23 },
   high_load: { plan_dimension_concrete_volume_m3: 25, curing_membrane_area_m2: 0, placement_worker_h: 96, finishing_worker_h: 50, curing_worker_h: 26, pump_machine_h: 6, deep_vibrator_machine_h: 12, concrete_delivery_distance_km: 35, selected_contingency_percent: 10, curing_method: "water", winter_mode: true, winter_heating_cable_m: 230, winter_heating_worker_h: 29, heating_transformer_machine_h: 24 },
-  large_area: { plan_dimension_concrete_volume_m3: 50, curing_membrane_area_m2: 230, placement_worker_h: 184, finishing_worker_h: 96, curing_worker_h: 50, pump_machine_h: 11, deep_vibrator_machine_h: 22, concrete_delivery_distance_km: 42, selected_contingency_percent: 8, quality_control_document_count: 2 },
   repair: { plan_dimension_concrete_volume_m3: 4, curing_membrane_area_m2: 0, placement_worker_h: 20, finishing_worker_h: 12, curing_worker_h: 7, placement_method: "direct_chute", pump_machine_h: 0, deep_vibrator_machine_h: 3, concrete_delivery_distance_km: 13, curing_method: "water", selected_contingency_percent: 4 },
-  small_area: { plan_dimension_concrete_volume_m3: 3, curing_membrane_area_m2: 16, placement_worker_h: 15, finishing_worker_h: 9, curing_worker_h: 5, placement_method: "direct_chute", pump_machine_h: 0, deep_vibrator_machine_h: 2, concrete_delivery_distance_km: 10, selected_contingency_percent: 4 },
   technical_room: { plan_dimension_concrete_volume_m3: 8, curing_membrane_area_m2: 0, placement_worker_h: 36, finishing_worker_h: 20, curing_worker_h: 11, placement_method: "crane_bucket", pump_machine_h: 0, crane_bucket_machine_h: 5, deep_vibrator_machine_h: 5, concrete_delivery_distance_km: 19, curing_method: "water", selected_contingency_percent: 5 },
   wet_zone: { plan_dimension_concrete_volume_m3: 16, curing_membrane_area_m2: 76, placement_worker_h: 66, finishing_worker_h: 36, curing_worker_h: 19, pump_machine_h: 4, deep_vibrator_machine_h: 9, concrete_delivery_distance_km: 28, selected_contingency_percent: 7, watertightness: "W8", quality_control_document_count: 2 },
 });

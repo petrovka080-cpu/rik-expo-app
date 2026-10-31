@@ -7,6 +7,7 @@ export type DimensionAxisV4 =
   | "time"
   | "temperature"
   | "count"
+  | "headcount"
   | "labor_time"
   | "machine_time"
   | "package"
@@ -35,7 +36,7 @@ const ALL_MEASURED_CATEGORIES: BoqCategoryV4[] = [
 ];
 
 function sharedUnitDefinition(
-  code: "pack" | "circuit" | "zone",
+  code: "pack" | "circuit" | "zone" | "person",
   allowedBoqCategories: BoqCategoryV4[],
 ): EngineeringUnitDefinitionV4 {
   const definition = getProfessionalUnitDefinition(code);
@@ -45,7 +46,8 @@ function sharedUnitDefinition(
     symbol: definition.displayRu,
     localized_name_ru: definition.displayNameRu,
     dimension: definition.dimension as EngineeringDimensionV4,
-    vector: definition.dimension === "count" ? { count: 1 } : { package: 1 },
+    vector: definition.dimension === "headcount" ? { headcount: 1 }
+      : definition.dimension === "count" ? { count: 1 } : { package: 1 },
     conversion_factor_to_si: definition.conversionFactorToSi,
     conversion_offset_to_si: 0,
     precision: definition.precision,
@@ -58,6 +60,7 @@ const UNITS: EngineeringUnitDefinitionV4[] = [
   sharedUnitDefinition("pack", ["material", "equipment", "temporary_work"]),
   sharedUnitDefinition("circuit", ALL_MEASURED_CATEGORIES),
   sharedUnitDefinition("zone", ALL_MEASURED_CATEGORIES),
+  sharedUnitDefinition("person", ["labor", "subcontract_service"]),
   { unit_id: "one", symbol: "—", localized_name_ru: "безразмерная величина", dimension: "dimensionless", vector: {}, conversion_factor_to_si: 1, conversion_offset_to_si: 0, precision: 4, allowed_boq_categories: ["commercial_adjustment"], aliases: ["1", "dimensionless"] },
   { unit_id: "percent", symbol: "%", localized_name_ru: "процент", dimension: "dimensionless", vector: {}, conversion_factor_to_si: 0.01, conversion_offset_to_si: 0, precision: 2, allowed_boq_categories: ["commercial_adjustment"], aliases: ["pct", "процент", "%"] },
   { unit_id: "pcs", symbol: "шт.", localized_name_ru: "штука", dimension: "count", vector: { count: 1 }, conversion_factor_to_si: 1, conversion_offset_to_si: 0, precision: 0, allowed_boq_categories: ALL_MEASURED_CATEGORIES, aliases: ["pc", "piece", "pieces", "шт", "point"] },

@@ -44,6 +44,8 @@ const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
 const APPLY = process.argv.includes("--apply");
 const SOURCE_PATHS = [
   "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+  "src/lib/estimate/contracts/formworkFramiXlifeIdentityR1.ts",
+  "src/lib/estimate/ownedDomain/formworkFramiXlifePromptParametersR1.ts",
   "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
   "scripts/estimate/r4a13/prepareFormworkFramiXlifePileCapFamilySuccessor.ts",
 ] as const;

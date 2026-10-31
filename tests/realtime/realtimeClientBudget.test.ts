@@ -54,7 +54,7 @@ const binding: RealtimeChannelBinding = {
 };
 
 const flushRealtimeSetup = async () => {
-  for (let index = 0; index < 6; index += 1) {
+  for (let index = 0; index < 20; index += 1) {
     await Promise.resolve();
   }
 };
@@ -335,5 +335,180 @@ describe("realtime client budget observability", () => {
     expect(logged).not.toContain("listing-secret-123");
     expect(logged).not.toContain("payload");
     expect(logged).not.toContain("access_token");
+  });
+
+  it("does not deliver an old session event to a new same-name subscription", async () => {
+    subscribeTestChannel("buyer:session-reused");
+    await flushRealtimeSetup();
+    const oldChannel = mockChannel.mock.results[0]!.value as MockRealtimeChannel;
+    clearRealtimeSessionState();
+    const onNew = jest.fn();
+    subscribeChannel({ name: "buyer:session-reused", scope: "buyer", route: "/buyer", bindings: [binding], onEvent: onNew });
+    await flushRealtimeSetup();
+    const newChannel = mockChannel.mock.results[1]!.value as MockRealtimeChannel;
+    oldChannel.postgresHandlers[0]!({ eventType: "UPDATE", new: { id: "old-session-row" } });
+    expect(onNew).not.toHaveBeenCalled();
+    newChannel.postgresHandlers[0]!({ eventType: "UPDATE", new: { id: "new-session-row" } });
+    expect(onNew).toHaveBeenCalledTimes(1);
+  });
+
+  it("an old primary disposer cannot remove the reused subscriber token after logout", async () => {
+    const disposeOld = subscribeTestChannel("buyer:disposer-reused");
+    await flushRealtimeSetup();
+    clearRealtimeSessionState();
+    const disposeNew = subscribeTestChannel("buyer:disposer-reused");
+    await flushRealtimeSetup();
+    const newChannel = mockChannel.mock.results[1]!.value as MockRealtimeChannel;
+    disposeOld();
+    expect(getRealtimeDebugState().activeSubscriberCount).toBe(1);
+    expect(newChannel.unsubscribe).not.toHaveBeenCalled();
+    disposeNew();
+    expect(getRealtimeDebugState().activeSubscriberCount).toBe(0);
+    expect(newChannel.unsubscribe).toHaveBeenCalledTimes(1);
+  });
+
+  it("an old shared disposer cannot remove a new session's second subscriber", async () => {
+    subscribeTestChannel("buyer:shared-disposer");
+    const disposeOldShared = subscribeTestChannel("buyer:shared-disposer");
+    await flushRealtimeSetup();
+    clearRealtimeSessionState();
+    subscribeTestChannel("buyer:shared-disposer");
+    const onNewSecond = jest.fn();
+    subscribeChannel({ name: "buyer:shared-disposer", scope: "buyer", route: "/buyer", bindings: [binding], onEvent: onNewSecond });
+    await flushRealtimeSetup();
+    disposeOldShared();
+    expect(getRealtimeDebugState().activeSubscriberCount).toBe(2);
+    const newChannel = mockChannel.mock.results[1]!.value as MockRealtimeChannel;
+    newChannel.postgresHandlers[0]!({ eventType: "UPDATE", new: { id: "new-row" } });
+    expect(onNewSecond).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores late payloads and status from a replaced binding entry", async () => {
+    const disposeOld = subscribeTestChannel("buyer:binding-replaced");
+    await flushRealtimeSetup();
+    const oldChannel = mockChannel.mock.results[0]!.value as MockRealtimeChannel;
+    const onNew = jest.fn();
+    subscribeChannel({ name: "buyer:binding-replaced", scope: "buyer", route: "/buyer", bindings: [{ ...binding, filter: "id=eq.new" }], onEvent: onNew });
+    await flushRealtimeSetup();
+    oldChannel.postgresHandlers[0]!({ eventType: "UPDATE", new: { id: "old-row" } });
+    oldChannel.statusCallback!("TIMED_OUT");
+    disposeOld();
+    expect(onNew).not.toHaveBeenCalled();
+    expect(getRealtimeDebugState().reconnectBackoffAttemptCount).toBe(0);
+    expect(getRealtimeDebugState().activeSubscriberCount).toBe(1);
+  });
+
+  it("stops dispatch when the first subscriber resets the session", async () => {
+    const onNew = jest.fn();
+    subscribeChannel({ name: "buyer:dispatch-reset", scope: "buyer", route: "/buyer", bindings: [binding], onEvent: () => {
+      clearRealtimeSessionState();
+      subscribeChannel({ name: "buyer:dispatch-reset", scope: "buyer", route: "/buyer", bindings: [binding], onEvent: onNew });
+    } });
+    const onOldSecond = jest.fn();
+    subscribeChannel({ name: "buyer:dispatch-reset", scope: "buyer", route: "/buyer", bindings: [binding], onEvent: onOldSecond });
+    await flushRealtimeSetup();
+    const oldChannel = mockChannel.mock.results[0]!.value as MockRealtimeChannel;
+    oldChannel.postgresHandlers[0]!({ eventType: "UPDATE", new: { id: "old-row" } });
+    expect(onOldSecond).not.toHaveBeenCalled();
+    expect(onNew).not.toHaveBeenCalled();
+    await flushRealtimeSetup();
+    expect(getRealtimeDebugState().activeSubscriberCount).toBe(1);
+  });
+
+  it("does not set an old token when getSession finishes after session reset", async () => {
+    let releaseOld!: (value: { data: { session: { access_token: string } } }) => void;
+    mockGetSession.mockImplementationOnce(() => new Promise((resolve) => { releaseOld = resolve; }));
+    subscribeTestChannel("buyer:auth-get-reset");
+    await flushRealtimeSetup();
+    clearRealtimeSessionState();
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: "new-actor-token" } } });
+    subscribeTestChannel("buyer:auth-get-reset");
+    releaseOld({ data: { session: { access_token: "old-actor-token" } } });
+    await flushRealtimeSetup();
+    expect(mockSetAuth.mock.calls).toEqual([["new-actor-token"]]);
+    expect(mockChannel).toHaveBeenCalledTimes(1);
+  });
+
+  it("orders a new actor's setAuth after an in-flight old setAuth completes", async () => {
+    let releaseOld!: () => void;
+    const appliedTokens: string[] = [];
+    mockGetSession.mockResolvedValueOnce({ data: { session: { access_token: "old-inflight-token" } } });
+    mockSetAuth.mockImplementationOnce(async (token: string) => {
+      await new Promise<void>((resolve) => { releaseOld = resolve; });
+      appliedTokens.push(token);
+    }).mockImplementation(async (token: string) => { appliedTokens.push(token); });
+    subscribeTestChannel("buyer:auth-set-reset");
+    await flushRealtimeSetup();
+    clearRealtimeSessionState();
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: "new-current-token" } } });
+    subscribeTestChannel("buyer:auth-set-reset");
+    await flushRealtimeSetup();
+    expect(mockSetAuth).toHaveBeenCalledTimes(1);
+    expect(mockChannel).not.toHaveBeenCalled();
+    releaseOld();
+    await flushRealtimeSetup();
+    expect(appliedTokens).toEqual(["old-inflight-token", "new-current-token"]);
+    expect(mockChannel).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not share a same-name channel or cached auth across distinct clients", async () => {
+    subscribeTestChannel("buyer:distinct-client");
+    await flushRealtimeSetup();
+    const otherSetAuth = jest.fn().mockResolvedValue(undefined);
+    const otherChannel = jest.fn((name: string) => buildChannel(name));
+    const client = {
+      auth: { getSession: mockGetSession }, realtime: { setAuth: otherSetAuth },
+      channel: otherChannel, removeChannel: jest.fn(),
+    } as unknown as NonNullable<Parameters<typeof subscribeChannel>[0]["client"]>;
+    const onOther = jest.fn();
+    subscribeChannel({ client, name: "buyer:distinct-client", scope: "buyer", route: "/buyer", bindings: [binding], onEvent: onOther });
+    await flushRealtimeSetup();
+    expect(otherSetAuth).toHaveBeenCalledWith("test-access-token");
+    expect(otherChannel).toHaveBeenCalledTimes(1);
+    const oldChannel = mockChannel.mock.results[0]!.value as MockRealtimeChannel;
+    oldChannel.postgresHandlers[0]!({ eventType: "UPDATE", new: { id: "old-client-row" } });
+    expect(onOther).not.toHaveBeenCalled();
+  });
+
+
+  it("a pending old getSession cannot block the new actor's channel", async () => {
+    let releaseOld!: (value: { data: { session: { access_token: string } } }) => void;
+    mockGetSession.mockImplementationOnce(() => new Promise((resolve) => { releaseOld = resolve; }));
+    subscribeTestChannel("buyer:old-read-pending");
+    await flushRealtimeSetup();
+    clearRealtimeSessionState();
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: "new-live-token" } } });
+    subscribeTestChannel("buyer:old-read-pending");
+    await flushRealtimeSetup();
+    try {
+      expect(mockSetAuth.mock.calls).toEqual([["new-live-token"]]);
+      expect(mockChannel).toHaveBeenCalledTimes(1);
+    } finally {
+      releaseOld({ data: { session: { access_token: "old-stale-token" } } });
+      await flushRealtimeSetup();
+    }
+    expect(mockSetAuth.mock.calls).toEqual([["new-live-token"]]);
+  });
+
+  it("an unrelated client can authenticate while the first client's setAuth is pending", async () => {
+    let releaseOld!: () => void;
+    mockSetAuth.mockImplementationOnce(() => new Promise<void>((resolve) => { releaseOld = resolve; }));
+    subscribeTestChannel("buyer:first-client-pending");
+    await flushRealtimeSetup();
+    const otherSetAuth = jest.fn().mockResolvedValue(undefined);
+    const otherChannel = jest.fn((name: string) => buildChannel(name));
+    const client = {
+      auth: { getSession: mockGetSession }, realtime: { setAuth: otherSetAuth },
+      channel: otherChannel, removeChannel: jest.fn(),
+    } as unknown as NonNullable<Parameters<typeof subscribeChannel>[0]["client"]>;
+    subscribeChannel({ client, name: "buyer:other-client-ready", scope: "buyer", route: "/buyer", bindings: [binding], onEvent: jest.fn() });
+    await flushRealtimeSetup();
+    try {
+      expect(otherSetAuth).toHaveBeenCalledWith("test-access-token");
+      expect(otherChannel).toHaveBeenCalledTimes(1);
+    } finally {
+      releaseOld();
+      await flushRealtimeSetup();
+    }
   });
 });

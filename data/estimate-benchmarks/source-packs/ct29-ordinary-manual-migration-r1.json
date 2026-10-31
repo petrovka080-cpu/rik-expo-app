@@ -1,0 +1,23 @@
+{
+  "contract": "ct29-ordinary-manual-migration/r1",
+  "catalogId": "canonical-work:master:ct29_existing_cement_lime_plaster_indoor_standard",
+  "from": {
+    "id": "01ed8913-a832-5297-ab6f-7d2519216f5b",
+    "catalogId": "canonical-work:master:ct29_existing_cement_lime_plaster_indoor_standard",
+    "sha256": "cca545297fc6c5b41a2f4aa0582b9dab4bb48b3ac0ec85c224db4dbc903f7ee8",
+    "semanticSha256": "b15f80646bbe3948398760a0f37025ba99d60c8b73d830c2c0c082d6710af3b0"
+  },
+  "to": {
+    "id": "97a5b9be-2bee-564b-8171-799b75f8a214",
+    "catalogId": "canonical-work:master:ct29_existing_cement_lime_plaster_indoor_standard",
+    "sha256": "b459c0d4cc6ea920d5dd82c4c1306a1982eada495cb497c15445ccabca15fd7e",
+    "semanticSha256": "b31c0917f87e7b02763d7b8e1b93727965c1ed4e5afdd0ed952a7ac0075cb6d1"
+  },
+  "preservedBudgetRowId": "plaster:ct29-existing:cement-lime-indoor:logistics-cleanup",
+  "resetOnlyRowId": "plaster:ct29-existing:cement-lime-indoor:net-mixture",
+  "oldInternalQuantityParameterId": "open_qty_logistics_cleanup",
+  "newInternalQuantityParameterId": "ct29_logistics_cleanup_qty",
+  "quantityAndPriceAreUserBudgetOnly": true,
+  "missingNormClosed": false,
+  "oldSavedRevisionsUnchanged": true
+}

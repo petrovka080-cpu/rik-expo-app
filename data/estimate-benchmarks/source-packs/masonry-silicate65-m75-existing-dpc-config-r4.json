@@ -1,0 +1,82 @@
+{
+  "contract": "gox-build.masonry-silicate65-m75-existing-dpc-config/r4",
+  "status": "PRIVATE_LINKED_EXISTING_NORMAL_CONFIG_UNRUN_NOT_READY_OR_FULL",
+  "sourceId": "source:masonry:silicate65:ready-m75-own-cycle:r4",
+  "componentSourceId": "source:masonry:dpc:profiled-polyolefin-loose-2021:r4",
+  "parentDefinitionId": "9e2b5498-7b4d-5f82-ace7-6c6b822b4ef8",
+  "locatorKey": "masonry-silicate65-m75-existing-dpc-linked-config-r4",
+  "ordinaryGeometryInputs": 5,
+  "newOrdinaryInputs": 0,
+  "wholeDpcRows": 7,
+  "wholeDpcOperations": 4,
+  "independentNewDpcExpectations": 9,
+  "unknownDpcNorms": 4,
+  "engineeringFactsInRuntimeBaseline": 0,
+  "paidAndProcurementOwnersChanged": false,
+  "numericNormsChanged": false,
+  "newPublicCards": 0,
+  "full": false,
+  "inputs": [
+    {
+      "path": "scripts/estimate/r4a13/prepareMasonrySilicate65M75DpcReuseR4.ts",
+      "sha256": "581024ca4a1dc799145957d2c99428b82f35a9dab6bc2197eccbba8d94fdf891"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-silicate65-m75-own-cycle-r4.json",
+      "sha256": "b6816e5677dbe8f4fda393574099e02b16bbe65d54870a84fb41f8a0fd01f58f"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonrySilicate65M75CurrentCardR4.ts",
+      "sha256": "b85b57a91961751c97640f2b4a690842b2b33e7fb43bb8301c35cb18687c655c"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonrySilicate65M75CompletenessR4.ts",
+      "sha256": "584aa106c5343aa212df597ca9b969ed332b9d887ec061dae6abc192fda4d6ad"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasonrySilicate65M75CurrentCardR4.ts",
+      "sha256": "7972ca057ef24744093598b69c5fbc71bb646fcdaf6c831783b7a182a56492fa"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-silicate65-m75-own-cycle-r4/sgb-atr5-1-2025.pdf",
+      "sha256": "c645a13e6e76d2a452e974ccac2aa38aca9b04651be65e2333a54f0fe90050d3"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-silicate65-m75-own-cycle-r4/kg-book03-2016.pdf",
+      "sha256": "b5548573a4a8cc55d2b0f9dc890375ada41bb23edf2a1332a6f1af4d93d6a7ac"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonrySilicate65M75DpcReuseR4.ts",
+      "sha256": "5a54f3f3dfb44cbe3ae945739590bd9f815e7eb07c92ad28dd481485751768ae"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonrySilicate65M75DpcCompletenessR4.ts",
+      "sha256": "3f75104229e632281561c3d47c0cd6132a375d5bc30bd690c2d2f3560a033e83"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryBearingDpcLooseWholeMethodR4.ts",
+      "sha256": "b3c5178534fa1a26b1f287cfc492c55381cb22a06af01cc264408af13101ec4a"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-bearing-dpc-loose-whole-method-r4.json",
+      "sha256": "8c6d71afe3bc56542ed1ccd6a96fae7b4aaa934278c9a03e4b8510ba5adbfab0"
+    }
+  ],
+  "dpcMethodArtifacts": [
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-bearing-dpc-r4/doerken-dpc-own-maker-page-2026-10-23.html",
+      "sha256": "d8e34b4008fdee1fb3b151a0eb2f5e3e2aa759ff3768f1d2f572a9b7a7bfe896",
+      "locator": "Current maker web snapshot captured2026-10-23; Application"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-bearing-dpc-r4/doerken-dpc-own-tds-2021-12.pdf",
+      "sha256": "33f3eaaacc4bf3f559259f4f2c08144868b3c20a43c3a26881a04256e29c834e",
+      "locator": "PDF1, printed12.21"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-bearing-dpc-r4/doerken-dpc-own-dop-2016-06-09.pdf",
+      "sha256": "bd5b82c4aadd217f63c3a678467d39927a4b0c75ef00e24ef49159f3b32cd396",
+      "locator": "PDF1, DoP16-150-01, signed2016-06-09"
+    }
+  ]
+}

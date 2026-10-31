@@ -1,0 +1,770 @@
+{
+  "sourceAdmission": false,
+  "rootApprovals": [
+    "MEASURE_UNIT_VALUE actualprimary witness only, independent humanunit/value invariant; no fakeIDs",
+    "Retained13 historical pinnedsourceunit/DTO evidence before current reads permitted",
+    "Source-null case5 typedBBS negative,20m3 cannot be payableprimary"
+  ],
+  "sourceEvidencePins": {
+    "originalMap": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9",
+    "businessPlan": "a15b63e15f27f3a19717f40addde7f9d02142236c529e9296e2e5eaf29323c73",
+    "case10": "15bd2769038f2f84f62551b451eeee100d1397e85f7197495a5436bd0e2675e9",
+    "case8": "949d7c4a48cf1d8d70c4733ab8d25d76647d4f99077f67b3f165e58a76e12542",
+    "archived3Declarations": [
+      "6845b1e3e40492d39ba92491d8ebf48e44316541165669bd0c2adf9fc8d0b9cb",
+      "0d9fc3149b52d1214822c37ba29d8c1c374ff761de44a754ee1ad9ae609a7a03"
+    ]
+  },
+  "contract": "master30-current29-source-business-expectations/v1",
+  "full": false,
+  "cases": [
+    {
+      "originalPrompt": "Бетонирование ленточного фундамента, объём бетона 24 м³, бетон B25 W6 F150 П4, подача бетононасосом",
+      "expected": {
+        "source": {
+          "path": "tests/requestEstimate/fixtures/master30-current29/CURRENT29_SOURCE_PHYSICAL_PROOF.json",
+          "sha256": "30c534f8dc3ddf158ec9e7204d4ddce169b54b634d716aa211fee159434af675"
+        },
+        "kind": "TARGETED_TYPED_CLARIFICATION",
+        "missingParameterIds": [
+          "m212_preparation_net_volume_m3"
+        ],
+        "prompt": "Бетонирование ленточного фундамента, объём бетона 24 м³, бетон B25 W6 F150 П4, подача бетононасосом"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+      "ordinal": 1,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Captured sourceProfile geometry includes preparationvolume absent prompt; no invented0"
+    },
+    {
+      "originalPrompt": "Укладка и виброуплотнение бетона фундаментной плиты, объём 60 м³, бетон B25 W8 F150 П4",
+      "expected": {
+        "source": {
+          "path": "tests/requestEstimate/fixtures/master30-current29/CURRENT29_SOURCE_PHYSICAL_PROOF.json",
+          "sha256": "30c534f8dc3ddf158ec9e7204d4ddce169b54b634d716aa211fee159434af675"
+        },
+        "kind": "TARGETED_TYPED_CLARIFICATION",
+        "missingParameterIds": [
+          "m212_preparation_net_volume_m3"
+        ],
+        "prompt": "Укладка и виброуплотнение бетона фундаментной плиты, объём 60 м³, бетон B25 W8 F150 П4"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "ordinal": 2,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Captured sourceProfile geometry includes preparationvolume absent prompt; no invented0"
+    },
+    {
+      "originalPrompt": "Устройство буронабивных железобетонных свай, количество 12 шт., диаметр 600 мм, длина 12 м",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Устройство буронабивных железобетонных свай, количество 12 шт., диаметр 600 мм, длина 12 м",
+        "value": "12"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:expanded:foundation_pile_field",
+      "ordinal": 3,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Установка и выверка анкерных групп по шаблону, количество 10 шт., по 4 болта М24 класса 8.8",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Установка и выверка анкерных групп по шаблону, количество 10 шт., по 4 болта М24 класса 8.8",
+        "value": "10"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_anchor_standard",
+      "ordinal": 4,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt. Primary quantity is 10 anchor groups from the original prompt and the source compiler primary anchor_group_count; 40 bolts is a separate material formula result (10 groups * 4 bolts/group), not the primary measure. Independent source acceptance binds work:anchor-group:install-align-groups=10 and material:anchor-group:anchor-bolts=40; it does not claim current DB resource completeness or FULL."
+    },
+    {
+      "originalPrompt": "Монтаж арматурного каркаса монолитной конструкции, объём конструкции 20 м³, BBS подтверждена",
+      "expected": {
+        "forbiddenPayPrimaryIds": [
+          "structure_volume_m3"
+        ],
+        "source": {
+          "path": "tests/requestEstimate/fixtures/master30-current29/CURRENT29_SOURCE_PHYSICAL_PROOF.json",
+          "sha256": "30c534f8dc3ddf158ec9e7204d4ddce169b54b634d716aa211fee159434af675"
+        },
+        "kind": "SOURCE_NULL_PRIMARY_DEFERRED_OR_TYPED_CLARIFICATION",
+        "missingParameterIds": [
+          "rebar_d12_mass_kg"
+        ],
+        "prompt": "Монтаж арматурного каркаса монолитной конструкции, объём конструкции 20 м³, BBS подтверждена",
+        "contextualParameters": {
+          "structure_volume_m3": "20"
+        },
+        "schemaPolicyPredicates": [
+          {
+            "parameterId": "rebar_d12_mass_kg",
+            "preliminaryCompilationAllowed": true,
+            "guideValidationPolicy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          }
+        ]
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_standard",
+      "ordinal": 5,
+      "refinements": [],
+      "forbiddenPrimaryIds": "structure_volume_m3",
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Source model permits row-local missingBBS deferral: realtypedmissing OR actualoriginalplan with formula-connected BBSprimary but absent/null mass/no positivepayquantity. Context20 from actualparser844/992 is separate string20, neverprimary."
+    },
+    {
+      "originalPrompt": "Кладка наружной стены из керамических блоков 100 м², блок 440×250×219 мм",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Кладка наружной стены из керамических блоков 100 м², блок 440×250×219 мм",
+        "value": "100"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:masonry_interior_block_wall_lay_standard",
+      "ordinal": 6,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Монтаж и выверка стальных колонн и балок, количество 30 шт., общая масса 30 т",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Монтаж и выверка стальных колонн и балок, количество 30 шт., общая масса 30 т",
+        "value": "30"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:expanded:steel_frame_building",
+      "ordinal": 7,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Монтаж кровельной ПВХ-мембраны 500 м², толщина 1,5 мм, механическое крепление",
+      "expected": {
+        "kind": "SOURCE_PRELIMINARY_MEASURE_OR_TYPED_CLARIFICATION",
+        "prompt": "Монтаж кровельной ПВХ-мембраны 500 м², толщина 1,5 мм, механическое крепление",
+        "source": {
+          "path": "tests/requestEstimate/fixtures/master30-current29/CURRENT29_SOURCE_PHYSICAL_PROOF.json",
+          "sha256": "30c534f8dc3ddf158ec9e7204d4ddce169b54b634d716aa211fee159434af675"
+        },
+        "primaryParameterId": "area_m2",
+        "unitId": "m2",
+        "value": "500",
+        "missingParameterIds": [
+          "pvc15_base"
+        ],
+        "deferredSelectors": [
+          {
+            "parameterId": "pvc15_base",
+            "required": false,
+            "preliminaryCompilationAllowed": true,
+            "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+            "guideValidationPolicy": "MANDATORY_BLOCK",
+            "allowedValues": [
+              "Пенополистирол EPS или XPS",
+              "Минеральная вата",
+              "Битумное основание",
+              "Другое основание по согласованной системе",
+              "Не знаю — требуется уточнение по объекту"
+            ],
+            "requiredWhen": {
+              "kind": "greater_than",
+              "value": 0,
+              "parameterId": "area_m2"
+            }
+          }
+        ]
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_standard",
+      "ordinal": 8,
+      "refinements": [
+        {
+          "expected": {
+            "prompt": "Монтаж кровельной ПВХ-мембраны 500 м², толщина 1,5 мм, механическое крепление",
+            "kind": "EXPLICIT_PRIMARY_POSITIVE",
+            "unitId": "m2",
+            "primaryParameterId": "area_m2",
+            "value": "500",
+            "source": {
+              "path": "tests/requestEstimate/fixtures/master30-current29/CURRENT29_SOURCE_PHYSICAL_PROOF.json",
+              "sha256": "30c534f8dc3ddf158ec9e7204d4ddce169b54b634d716aa211fee159434af675"
+            }
+          },
+          "parameterOverrides": {
+            "pvc15_cleaner_mode": "Не требуется по подтверждённой границе",
+            "pvc15_system_profile": "Проверенная система LOGICROOF V-RP 1,5 мм",
+            "pvc15_base": "Минеральная вата",
+            "area_m2": "500",
+            "pvc15_joint_transition_scope": "Переход ПВХ–битум вне выбранного участка"
+          }
+        }
+      ],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Independent original source policy permits preliminary missing enum choice; exact original human area is verified separately. No system/base/brand choice, quantity norm or FULL is inferred."
+    },
+    {
+      "originalPrompt": "Монтаж минераловатного утеплителя фасада 300 м², плита 120 мм, дюбель 200 мм",
+      "expected": {
+        "source": {
+          "path": "tests/requestEstimate/fixtures/master30-current29/CURRENT29_SOURCE_PHYSICAL_PROOF.json",
+          "sha256": "30c534f8dc3ddf158ec9e7204d4ddce169b54b634d716aa211fee159434af675"
+        },
+        "kind": "EXACT_TYPED_CLARIFICATION",
+        "missingParameterIds": [
+          "m35_facade_source_system"
+        ],
+        "prompt": "Монтаж минераловатного утеплителя фасада 300 м², плита 120 мм, дюбель 200 мм"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:insulation_interior_facade_install_standard",
+      "ordinal": 9,
+      "refinements": [
+        {
+          "expected": {
+            "prompt": "Монтаж минераловатного утеплителя фасада 300 м², плита 120 мм, дюбель 200 мм",
+            "kind": "EXPLICIT_PRIMARY_POSITIVE",
+            "unitId": "m2",
+            "primaryParameterId": "area_m2",
+            "value": "300",
+            "source": {
+              "path": "tests/requestEstimate/fixtures/master30-current29/CURRENT29_SOURCE_PHYSICAL_PROOF.json",
+              "sha256": "30c534f8dc3ddf158ec9e7204d4ddce169b54b634d716aa211fee159434af675"
+            }
+          },
+          "parameterOverrides": {
+            "area_m2": "300",
+            "m35_facade_source_system": "Прежняя проектная система и отдельная ветвь клея KZ"
+          }
+        }
+      ],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Captured explicit primaryMeasureSelectionV1 source-managed selector PROJECT_DEFINED/DECLARED_WORK_SCOPE/MANDATORY_BLOCK/nulldefault"
+    },
+    {
+      "originalPrompt": "Механизированное оштукатуривание стен 400 м² гипсовой смесью, средняя толщина 15 мм",
+      "expected": {
+        "kind": "SOURCE_PRELIMINARY_MEASURE_OR_TYPED_CLARIFICATION",
+        "prompt": "Механизированное оштукатуривание стен 400 м² гипсовой смесью, средняя толщина 15 мм",
+        "source": {
+          "path": "tests/requestEstimate/fixtures/master30-current29/CURRENT29_SOURCE_PHYSICAL_PROOF.json",
+          "sha256": "30c534f8dc3ddf158ec9e7204d4ddce169b54b634d716aa211fee159434af675"
+        },
+        "primaryParameterId": "area_m2",
+        "unitId": "m2",
+        "value": "400",
+        "missingParameterIds": [
+          "interior_plaster_material_system"
+        ],
+        "deferredSelectors": [
+          {
+            "parameterId": "interior_plaster_material_system",
+            "required": true,
+            "preliminaryCompilationAllowed": true,
+            "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+            "guideValidationPolicy": "MANDATORY_BLOCK",
+            "allowedValues": [
+              "Исходная технология по проекту",
+              "МП75 по бетону, грунт Бетогрунд"
+            ]
+          }
+        ]
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_plaster_apply_standard",
+      "ordinal": 10,
+      "refinements": [
+        {
+          "expected": {
+            "prompt": "Механизированное оштукатуривание стен 400 м² гипсовой смесью, средняя толщина 15 мм",
+            "kind": "EXPLICIT_PRIMARY_POSITIVE",
+            "unitId": "m2",
+            "primaryParameterId": "area_m2",
+            "value": "400",
+            "source": {
+              "path": "tests/requestEstimate/fixtures/master30-current29/CURRENT29_SOURCE_PHYSICAL_PROOF.json",
+              "sha256": "30c534f8dc3ddf158ec9e7204d4ddce169b54b634d716aa211fee159434af675"
+            }
+          },
+          "parameterOverrides": {
+            "interior_plaster_material_system": "МП75 по бетону, грунт Бетогрунд",
+            "area_m2": "400"
+          }
+        }
+      ],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Independent original source policy permits preliminary missing enum choice; exact original human area is verified separately. No system/base/brand choice, quantity norm or FULL is inferred."
+    },
+    {
+      "originalPrompt": "Укладка керамогранитной плитки на пол 120 м², формат 600×600 мм, шов 2 мм",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Укладка керамогранитной плитки на пол 120 м², формат 600×600 мм, шов 2 мм",
+        "value": "120"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:tile_stone_interior_porcelain_tile_lay_standard",
+      "ordinal": 11,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Демонтаж существующей цементно-песчаной стяжки 150 м² толщиной 50 мм",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Демонтаж существующей цементно-песчаной стяжки 150 м² толщиной 50 мм",
+        "value": "150"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:demolition_interior_screed_remove_standard",
+      "ordinal": 12,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Укладка и уплотнение верхнего слоя асфальтобетона 120 м² толщиной 50 мм",
+      "expected": {
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "value": "120",
+        "kind": "MEASURE_UNIT_VALUE",
+        "unitId": "m2",
+        "prompt": "Укладка и уплотнение верхнего слоя асфальтобетона 120 м² толщиной 50 мм"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_lay_standard",
+      "ordinal": 13,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Human measured quantity/value, identity/count independently pinned; no currentprimaryID prebound"
+    },
+    {
+      "originalPrompt": "Электромуфтовая сварка стыков трубы ПЭ100 SDR17 Ø110 мм PN10, количество 20 шт.",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Электромуфтовая сварка стыков трубы ПЭ100 SDR17 Ø110 мм PN10, количество 20 шт.",
+        "value": "20"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:plumbing_interior_pnd_pipe_connect_standard",
+      "ordinal": 15,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Укладка канализационной трубы ПВХ SN8 Ø160 мм, длина 100 м, уклон 0,008",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Укладка канализационной трубы ПВХ SN8 Ø160 мм, длина 100 м, уклон 0,008",
+        "value": "100"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:plumbing_interior_sewer_route_standard",
+      "ordinal": 16,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Укладка перфорированной дренажной трубы Ø110 мм, длина 60 м, геотекстиль 300 г/м², щебень 20–40 мм",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Укладка перфорированной дренажной трубы Ø110 мм, длина 60 м, геотекстиль 300 г/м², щебень 20–40 мм",
+        "value": "60"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_drainage_lay_standard",
+      "ordinal": 17,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Монтаж стальных панельных радиаторов тип 22, 500×1000 мм, количество 8 шт., нижнее подключение",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Монтаж стальных панельных радиаторов тип 22, 500×1000 мм, количество 8 шт., нижнее подключение",
+        "value": "8"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:heating_hvac_interior_radiator_install_standard",
+      "ordinal": 18,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Монтаж воздуховода из оцинкованной стали, длина 120 м, сталь 0,7 мм, класс герметичности B",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Монтаж воздуховода из оцинкованной стали, длина 120 м, сталь 0,7 мм, класс герметичности B",
+        "value": "120"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:ventilation_interior_duct_install_standard",
+      "ordinal": 19,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Монтаж сплит-системы 3,5 кВт, количество 4 шт., длина трассы каждого комплекта 8 м",
+      "expected": {
+        "unitId": "set",
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Монтаж сплит-системы 3,5 кВт, количество 4 шт., длина трассы каждого комплекта 8 м",
+        "value": "4"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:heating_hvac_interior_split_install_standard",
+      "ordinal": 20,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Independent b563/v4/16-parameter original publication and exact producer hashes define system_count/set. Select matching A76 row before current read, retain current DTO equality. Explicit quantity4 belongs to existing unique named professional count owner, not generic pcs/set alias or observation-selected expectation.",
+      "retainedMainMeasureAuthority": {
+        "catalogId": "canonical-work:base:heating_hvac_interior_split_install_standard",
+        "contract": "independent-retained-main-measure-authority/v1",
+        "definitionVersionId": "b563a34e-5819-5e43-94c7-e5c2969fb9ac",
+        "definitionVersion": 4,
+        "parameterId": "system_count",
+        "parameterCount": 16,
+        "publicationReceipt": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-split-system-blocks-successor-v1/acceptance.json",
+          "sha256": "fdfb71188a55a1db98c8e86c469519c8822337f73c1233f9f0fa8d16a9e7f3e8"
+        },
+        "unitId": "set",
+        "producerSources": [
+          {
+            "path": "src/lib/estimate/v4/splitSystemBlocksR1.ts",
+            "sha256": "1fd23da32d58afdc605c437471ffdd8af63e92391b9c14a84de9bbc593a85c4c"
+          },
+          {
+            "path": "scripts/estimate/r4a13/prepareMasterSplitSystemBlocksSuccessor.ts",
+            "sha256": "2915a2f6665e13ee993ddbda8a8df32d78dc82e3e2105d24b563a3ace93466b6"
+          }
+        ]
+      }
+    },
+    {
+      "originalPrompt": "Монтаж спринклерных оросителей K80, 68 °C, резьба 1/2 дюйма, количество 40 шт.",
+      "expected": {
+        "unitId": null,
+        "kind": "MEASURE_UNIT_VALUE",
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "prompt": "Монтаж спринклерных оросителей K80, 68 °C, резьба 1/2 дюйма, количество 40 шт.",
+        "value": "40"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:expanded:sprinkler_system",
+      "ordinal": 21,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "ROOT-authorized immutable historical A76+sameoldUUID/count rawschema/actualhistoricalprimary unit BEFORE any current read, then strict current productionDTO equality. Human quantity stays originalprompt."
+    },
+    {
+      "originalPrompt": "Прокладка силового кабеля ВВГнг(А)-LS 5×6 мм², длина маршрута 150 м",
+      "expected": {
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "value": "150",
+        "kind": "MEASURE_UNIT_VALUE",
+        "unitId": "m",
+        "prompt": "Прокладка силового кабеля ВВГнг(А)-LS 5×6 мм², длина маршрута 150 м"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:electrical_interior_vvg_cable_lay_standard",
+      "ordinal": 22,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Human measured quantity/value, identity/count independently pinned; no currentprimaryID prebound"
+    },
+    {
+      "originalPrompt": "Монтаж светодиодных светильников 36 Вт, IP40, количество 30 шт., накладной монтаж",
+      "expected": {
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "value": "30",
+        "kind": "MEASURE_UNIT_VALUE",
+        "unitId": "pcs",
+        "prompt": "Монтаж светодиодных светильников 36 Вт, IP40, количество 30 шт., накладной монтаж"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_standard",
+      "ordinal": 23,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Human measured quantity/value, identity/count independently pinned; no currentprimaryID prebound"
+    },
+    {
+      "originalPrompt": "Прокладка кабеля витая пара U/UTP Cat.6 LSZH, длина 300 м, 12 линий",
+      "expected": {
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "value": "300",
+        "kind": "MEASURE_UNIT_VALUE",
+        "unitId": "m",
+        "prompt": "Прокладка кабеля витая пара U/UTP Cat.6 LSZH, длина 300 м, 12 линий"
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:expanded:site_telecom_connection",
+      "ordinal": 24,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Human measured quantity/value, identity/count independently pinned; no currentprimaryID prebound"
+    },
+    {
+      "originalPrompt": "Сварка оптических волокон SM G.652D с измерением затухания, количество 48 шт.",
+      "expected": {
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "value": "48",
+        "kind": "MEASURE_UNIT_VALUE",
+        "unitId": "pcs",
+        "prompt": "Сварка оптических волокон SM G.652D с измерением затухания, количество 48 шт."
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:expanded:fiber_optic_connection",
+      "ordinal": 25,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Human measured quantity/value, identity/count independently pinned; no currentprimaryID prebound"
+    },
+    {
+      "originalPrompt": "Монтаж адресных дымовых пожарных извещателей с базами, количество 25 шт.",
+      "expected": {
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "value": "25",
+        "kind": "MEASURE_UNIT_VALUE",
+        "unitId": "pcs",
+        "prompt": "Монтаж адресных дымовых пожарных извещателей с базами, количество 25 шт."
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:electrical_interior_fire_alarm_install_standard",
+      "ordinal": 26,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Human measured quantity/value, identity/count independently pinned; no currentprimaryID prebound"
+    },
+    {
+      "originalPrompt": "Монтаж, центровка и подключение насосных агрегатов 45 м³/ч, напор 55 м, количество 2 шт.",
+      "expected": {
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "value": "2",
+        "kind": "MEASURE_UNIT_VALUE",
+        "unitId": "set",
+        "prompt": "Монтаж, центровка и подключение насосных агрегатов 45 м³/ч, напор 55 м, количество 2 шт."
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:base:plumbing_interior_pump_install_standard",
+      "ordinal": 27,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Human measured quantity/value, identity/count independently pinned; no currentprimaryID prebound"
+    },
+    {
+      "originalPrompt": "Монтаж и обвязка водогрейного котла 500 кВт на природном газе, количество 1 шт.",
+      "expected": {
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "value": "1",
+        "kind": "MEASURE_UNIT_VALUE",
+        "unitId": "set",
+        "prompt": "Монтаж и обвязка водогрейного котла 500 кВт на природном газе, количество 1 шт."
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:expanded:boiler_installation",
+      "ordinal": 28,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Human measured quantity/value, identity/count independently pinned; no currentprimaryID prebound"
+    },
+    {
+      "originalPrompt": "Сварка стыков стального технологического трубопровода Ø219×8 мм, сталь 09Г2С, количество 16 шт.",
+      "expected": {
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "value": "16",
+        "kind": "MEASURE_UNIT_VALUE",
+        "unitId": "pcs",
+        "prompt": "Сварка стыков стального технологического трубопровода Ø219×8 мм, сталь 09Г2С, количество 16 шт."
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:expanded:pipeline_welding",
+      "ordinal": 29,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Human measured quantity/value, identity/count independently pinned; no currentprimaryID prebound"
+    },
+    {
+      "originalPrompt": "Монтаж и заземление серверных шкафов 42U, глубина 1200 мм, количество 6 шт.",
+      "expected": {
+        "source": {
+          "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+          "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9"
+        },
+        "value": "6",
+        "kind": "MEASURE_UNIT_VALUE",
+        "unitId": "pcs",
+        "prompt": "Монтаж и заземление серверных шкафов 42U, глубина 1200 мм, количество 6 шт."
+      },
+      "sourceAdmission": false,
+      "catalogId": "canonical-work:expanded:data_center_mep",
+      "ordinal": 30,
+      "refinements": [],
+      "forbiddenPrimaryIds": [],
+      "full": false,
+      "fullResourceCompile": "OPEN_NOT_CLAIMED",
+      "independentBusinessBasis": "Human measured quantity/value, identity/count independently pinned; no currentprimaryID prebound"
+    }
+  ]
+}

@@ -1,11 +1,11 @@
-import { computeReleaseFingerprints } from "../release/computeReleaseFingerprints";
+import { computeFrontendReleaseFingerprintPayloads } from "../release/computeReleaseFingerprints";
 
-const fingerprints = computeReleaseFingerprints();
+const fingerprints = computeFrontendReleaseFingerprintPayloads();
 
 process.stdout.write(
   JSON.stringify({
-    sourceTreeHash: fingerprints.sourceTreeHash,
-    productSourceHash: fingerprints.productSourceHash,
-    jsBundleFingerprint: fingerprints.jsBundleFingerprint,
+    sourceTreeHash: fingerprints.productSourceHash.hash,
+    productSourceHash: fingerprints.productSourceHash.hash,
+    jsBundleFingerprint: fingerprints.jsBundleFingerprint.hash,
   }),
 );

@@ -1,0 +1,1134 @@
+{
+  "contract": "gox-build.ceramic-floor-cement-mortar-resource-group.r2",
+  "status": "AUTHORED_SUCCESSOR_REQUIRES_INTEGRATOR_GATES",
+  "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+  "titleRu": "Керамические полы и прямой плинтус на растворе М150",
+  "parentFactory": "ceramicFloor02703DefinitionR1",
+  "parentImmutable": true,
+  "primaryParameterId": "net_ceramic_floor_area_m2",
+  "skirtingLengthParameterId": "ceramic_m150_skirting_length_m",
+  "source": {
+    "id": "pkti_36_03_ceramic_m150_kit_r2",
+    "url": "https://files.stroyinf.ru/Data2/1/4293853/4293853995.pdf",
+    "path": ".release-runtime/r568/next-wave/ceramic02703/r2-sources/tk36-03.pdf",
+    "sha256": "49328bf7ab36d8a5ad073145a64a520d506f895e3ffa1e92a7c2aa92a365a3a7",
+    "kind": "PRIMARY_AUTHORED_DOCUMENT_SCAN_ON_PUBLIC_MIRROR",
+    "edition": "ОАОПКТИпромстрой36-03ТК,2003",
+    "locatorRu": "PDF5–10§1.1–2.15; PDF20–24§3; PDF25–27§4; PDF28–29табл.3/4; PDF30§6.1",
+    "reusePolicy": "OPEN_REFERENCE_ONLY_NO_FULL_DOCUMENT_COPY_IN_GIT"
+  },
+  "overheadSource": {
+    "id": "kg_overhead_method",
+    "url": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/nakladnyerashodyvstroitelstv-938692055ac0ce2a6.16153263.pdf",
+    "path": ".release-runtime/r568/next-wave/ceramic02703/r2-sources/kr-overhead.pdf",
+    "sha256": "89afde6f0135bb465db576dc8e6d1a1154054df6887e8011447e6fcdee114a76",
+    "locatorRu": "PDF22приложениеII.4иIII.1–2:СИЗ,инвентарь,временныеподводы; PDF24–25III.9/11/12:контроль/содержание/сдача"
+  },
+  "profileScopeRu": "Предварительный профиль: одноцветная гладкая неглазурованная керамика100×100/150×150мм, ручная поштучная укладка по принятому железобетонному/цементному основанию на готовомМ150 слоем10–15мм, обычные внутренние условия, одна бригада6человек(3звена×2), последовательные захватки. Вода из доступной сети в пределах20–25м шланга. Не объявляет готовность конкретного объекта или фактическую закупку.",
+  "crew": {
+    "workers": 6,
+    "links": 3,
+    "workersPerLink": 2,
+    "parallelBrigades": 1,
+    "sourceTable3Scope": "WHOLE_SIX_WORKER_BRIGADE",
+    "sourceTable4Scope": "ONE_TWO_WORKER_LINK",
+    "scaleWithArea": false,
+    "purchasePerStage": false
+  },
+  "operations": [
+    {
+      "id": "preparation",
+      "titleRu": "Подготовить и проверить принятое основание",
+      "ordinal": 1
+    },
+    {
+      "id": "delivery",
+      "titleRu": "Подать материалы к месту работы",
+      "ordinal": 2
+    },
+    {
+      "id": "layout",
+      "titleRu": "Разметить, рассортировать и подогнать плитку",
+      "ordinal": 3
+    },
+    {
+      "id": "placing",
+      "titleRu": "Уложить плитку, прослойку и цементные швы",
+      "ordinal": 4
+    },
+    {
+      "id": "skirting",
+      "titleRu": "Установить прямой керамический плинтус наМ150",
+      "ordinal": 5
+    },
+    {
+      "id": "curing",
+      "titleRu": "Ухаживать за покрытием и ограничить нагрузку",
+      "ordinal": 6
+    },
+    {
+      "id": "control",
+      "titleRu": "Проверить и принять покрытие",
+      "ordinal": 7
+    },
+    {
+      "id": "cleanup",
+      "titleRu": "Очистить и промыть покрытие, убрать отходы",
+      "ordinal": 8
+    }
+  ],
+  "tools": [
+    {
+      "id": "sort-template",
+      "titleRu": "Шаблон сортировки плитки",
+      "count": 3,
+      "unitId": "pcs",
+      "specificationRu": "Чертёж1227",
+      "tableRows": [
+        3
+      ],
+      "operations": [
+        "layout"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "tile-trowel",
+      "titleRu": "Лопатка плиточника",
+      "count": 6,
+      "unitId": "pcs",
+      "specificationRu": "ЛП",
+      "tableRows": [
+        5
+      ],
+      "operations": [
+        "placing",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "mortar-shovel",
+      "titleRu": "Лопата растворная",
+      "count": 3,
+      "unitId": "pcs",
+      "specificationRu": "ЛР",
+      "tableRows": [
+        6
+      ],
+      "operations": [
+        "placing",
+        "skirting",
+        "cleanup"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "tile-nippers",
+      "titleRu": "Кусачки плиточные",
+      "count": 6,
+      "unitId": "pcs",
+      "specificationRu": "Ручные",
+      "tableRows": [
+        7
+      ],
+      "operations": [
+        "layout",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "tile-hammer",
+      "titleRu": "Молоток плиточный",
+      "count": 6,
+      "unitId": "pcs",
+      "specificationRu": "МПЛИ-1",
+      "tableRows": [
+        8
+      ],
+      "operations": [
+        "layout",
+        "placing",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "locksmith-hammer",
+      "titleRu": "Молоток 0,8 кг",
+      "count": 6,
+      "unitId": "pcs",
+      "specificationRu": "Квадратный боёк",
+      "tableRows": [
+        9
+      ],
+      "operations": [
+        "layout",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "roller-cutter",
+      "titleRu": "Роликовый плиткорез",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Ручной",
+      "tableRows": [
+        10
+      ],
+      "operations": [
+        "layout",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "lever-cutter",
+      "titleRu": "Рычажный плиткорез и приспособление резки",
+      "count": 3,
+      "unitId": "pcs",
+      "specificationRu": "Ручной рычажный плиткорез, чертёж 671",
+      "tableRows": [
+        11,
+        26
+      ],
+      "operations": [
+        "layout",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES",
+      "reuseDerivationRu": "Одно изделие по одному чертежу671 обеспечивает требования строк11(1шт)и26(3шт); последовательный максимум3, не сумма4."
+    },
+    {
+      "id": "straightedge",
+      "titleRu": "Окованное правило",
+      "count": 6,
+      "unitId": "pcs",
+      "specificationRu": "Контроль/разравнивание",
+      "tableRows": [
+        12
+      ],
+      "operations": [
+        "preparation",
+        "placing",
+        "control"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "steel-spatula",
+      "titleRu": "Шпатель стальной",
+      "count": 6,
+      "unitId": "pcs",
+      "specificationRu": "ШСД",
+      "tableRows": [
+        13
+      ],
+      "operations": [
+        "placing",
+        "skirting",
+        "cleanup"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "scarpel",
+      "titleRu": "Скарпель",
+      "count": 6,
+      "unitId": "pcs",
+      "specificationRu": "Бетон/камень",
+      "tableRows": [
+        14
+      ],
+      "operations": [
+        "preparation",
+        "layout",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "wood-mallet",
+      "titleRu": "Киянка деревянная",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Прямоугольная",
+      "tableRows": [
+        15
+      ],
+      "operations": [
+        "placing"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "steel-pin",
+      "titleRu": "Штырь 10×160 мм",
+      "count": 12,
+      "unitId": "pcs",
+      "specificationRu": "ЛШ",
+      "tableRows": [
+        16
+      ],
+      "operations": [
+        "layout"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "water-level",
+      "titleRu": "Гибкий водяной уровень",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "УС1-300",
+      "tableRows": [
+        17
+      ],
+      "operations": [
+        "layout",
+        "control"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "tape",
+      "titleRu": "Рулетка стальная",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "РС-20",
+      "tableRows": [
+        18
+      ],
+      "operations": [
+        "layout",
+        "control"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "marking-cord",
+      "titleRu": "Разметочный шнур 15 м",
+      "count": 3,
+      "unitId": "pcs",
+      "specificationRu": "В корпусе",
+      "tableRows": [
+        19
+      ],
+      "operations": [
+        "layout",
+        "control"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "square",
+      "titleRu": "Угольник стальной",
+      "count": 3,
+      "unitId": "pcs",
+      "specificationRu": "Разметка прямых углов",
+      "tableRows": [
+        20
+      ],
+      "operations": [
+        "layout",
+        "control"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "scraper",
+      "titleRu": "Скребок",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "РЧ210",
+      "tableRows": [
+        21
+      ],
+      "operations": [
+        "preparation",
+        "cleanup"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "steel-brush",
+      "titleRu": "Щётка стальная",
+      "count": 3,
+      "unitId": "pcs",
+      "specificationRu": "Прямоугольная",
+      "tableRows": [
+        22
+      ],
+      "operations": [
+        "preparation",
+        "cleanup"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "hair-brush",
+      "titleRu": "Щётка волосяная",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Ручная",
+      "tableRows": [
+        23
+      ],
+      "operations": [
+        "preparation",
+        "cleanup"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "maklovitsa",
+      "titleRu": "Кисть макловица",
+      "count": 3,
+      "unitId": "pcs",
+      "specificationRu": "КМА-1",
+      "tableRows": [
+        24
+      ],
+      "operations": [
+        "preparation",
+        "curing",
+        "cleanup"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "wood-float",
+      "titleRu": "Полутерок деревянный",
+      "count": 3,
+      "unitId": "pcs",
+      "specificationRu": "Чертёж669А",
+      "tableRows": [
+        25
+      ],
+      "operations": [
+        "placing",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "tile-scriber",
+      "titleRu": "Резец плиточный",
+      "count": 6,
+      "unitId": "pcs",
+      "specificationRu": "Ручной",
+      "tableRows": [
+        27
+      ],
+      "operations": [
+        "layout",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "mortar-cart",
+      "titleRu": "Тележка раствора",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Т-200",
+      "tableRows": [
+        28
+      ],
+      "operations": [
+        "delivery",
+        "placing",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "tile-cart",
+      "titleRu": "Тележка штучных материалов",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Трёхколёсная",
+      "tableRows": [
+        29
+      ],
+      "operations": [
+        "delivery",
+        "layout"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "bucket",
+      "titleRu": "Ведро",
+      "count": 2,
+      "unitId": "pcs",
+      "specificationRu": "Ведро для воды и ручной подачи",
+      "tableRows": [
+        30
+      ],
+      "operations": [
+        "preparation",
+        "placing",
+        "curing",
+        "cleanup"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "scoop",
+      "titleRu": "Ковш штукатурный",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Ручной",
+      "tableRows": [
+        31
+      ],
+      "operations": [
+        "placing",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "water-hose",
+      "titleRu": "Водяной шланг 20–25 м",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Резиновый водяной шланг длиной 20–25 м",
+      "tableRows": [
+        32
+      ],
+      "operations": [
+        "preparation",
+        "curing",
+        "cleanup"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES",
+      "applicabilityRu": "Доступен совместимый водопроводный пост, маршрут укладывается в длину шланга; ёмкость и длина не заменяют норму воды."
+    },
+    {
+      "id": "beacon-rail",
+      "titleRu": "Маячная рейка до 2 м",
+      "count": 2,
+      "unitId": "pcs",
+      "specificationRu": "Чертёж389",
+      "tableRows": [
+        33
+      ],
+      "operations": [
+        "layout",
+        "placing"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "mortar-rail",
+      "titleRu": "Рейка разравнивания раствора",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Чертёж389",
+      "tableRows": [
+        34
+      ],
+      "operations": [
+        "placing"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "control-rail",
+      "titleRu": "Контрольная рейка",
+      "count": 3,
+      "unitId": "pcs",
+      "specificationRu": "Чертёж1226",
+      "tableRows": [
+        35
+      ],
+      "operations": [
+        "control"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "wood-block",
+      "titleRu": "Брусок 500×150×50 мм",
+      "count": 2,
+      "unitId": "pcs",
+      "specificationRu": "Деревянный",
+      "tableRows": [
+        36
+      ],
+      "operations": [
+        "placing"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "broom",
+      "titleRu": "Метла",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Очистка поверхности",
+      "tableRows": [
+        37
+      ],
+      "operations": [
+        "preparation",
+        "cleanup"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "cutter-bench",
+      "titleRu": "Верстак 1000×1000×800 мм",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Под ручной плиткорез",
+      "tableRows": [
+        38
+      ],
+      "operations": [
+        "layout",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "mortar-box",
+      "titleRu": "Ящик раствора",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Чертёж3241.42.000",
+      "tableRows": [
+        39
+      ],
+      "operations": [
+        "delivery",
+        "placing",
+        "skirting"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    },
+    {
+      "id": "tile-container",
+      "titleRu": "Контейнер плитки",
+      "count": 1,
+      "unitId": "pcs",
+      "specificationRu": "Чертёж2471-00-00А",
+      "tableRows": [
+        40
+      ],
+      "operations": [
+        "delivery",
+        "layout"
+      ],
+      "countBasis": "MAX_CONCURRENT_BRIGADE_DEMAND_REUSED_BETWEEN_STAGES"
+    }
+  ],
+  "ppe": [
+    {
+      "id": "coverall",
+      "titleRu": "Комбинезон",
+      "countPerLink": 2,
+      "count": 6,
+      "unitId": "pcs",
+      "tableRow": 1,
+      "operations": [
+        "preparation",
+        "layout",
+        "placing",
+        "skirting",
+        "cleanup"
+      ]
+    },
+    {
+      "id": "helmet",
+      "titleRu": "Каска",
+      "countPerLink": 2,
+      "count": 6,
+      "unitId": "pcs",
+      "tableRow": 2,
+      "operations": [
+        "preparation",
+        "layout",
+        "placing",
+        "skirting",
+        "cleanup"
+      ]
+    },
+    {
+      "id": "goggles",
+      "titleRu": "Защитные очки для прирубки",
+      "countPerLink": 1,
+      "count": 3,
+      "unitId": "pcs",
+      "tableRow": 3,
+      "operations": [
+        "preparation",
+        "layout",
+        "placing",
+        "skirting",
+        "cleanup"
+      ]
+    },
+    {
+      "id": "respirator",
+      "titleRu": "Респиратор для пыльных операций",
+      "countPerLink": 2,
+      "count": 6,
+      "unitId": "pcs",
+      "tableRow": 4,
+      "operations": [
+        "preparation",
+        "layout",
+        "placing",
+        "skirting",
+        "cleanup"
+      ]
+    },
+    {
+      "id": "rubber-boots",
+      "titleRu": "Сапоги резиновые",
+      "countPerLink": 2,
+      "count": 6,
+      "unitId": "pair",
+      "tableRow": 5,
+      "operations": [
+        "preparation",
+        "layout",
+        "placing",
+        "skirting",
+        "cleanup"
+      ]
+    },
+    {
+      "id": "mittens",
+      "titleRu": "Рукавицы",
+      "countPerLink": 2,
+      "count": 6,
+      "unitId": "pair",
+      "tableRow": 6,
+      "operations": [
+        "preparation",
+        "layout",
+        "placing",
+        "skirting",
+        "cleanup"
+      ]
+    },
+    {
+      "id": "rubber-gloves",
+      "titleRu": "Перчатки резиновые",
+      "countPerLink": 2,
+      "count": 6,
+      "unitId": "pair",
+      "tableRow": 7,
+      "operations": [
+        "preparation",
+        "layout",
+        "placing",
+        "skirting",
+        "cleanup"
+      ]
+    },
+    {
+      "id": "knee-pads",
+      "titleRu": "Наколенники плиточника",
+      "countPerLink": 2,
+      "count": 6,
+      "unitId": "pair",
+      "tableRow": 0,
+      "sourceLocatorRu": "ТК§4.6; личное обеспечение каждого из6человек однойпарой",
+      "operations": [
+        "placing",
+        "skirting"
+      ],
+      "countDerivation": "ONE_PERSONAL_PAIR_PER_ACTIVE_WORKER_NOT_MATERIAL_CONSUMPTION_RATE"
+    }
+  ],
+  "notImported": [
+    {
+      "id": "compressor-and-mortar-pump",
+      "tableRows": [
+        1,
+        2
+      ],
+      "reasonRu": "§2.10 допускает альтернативные способы подачи. Этот профиль сохраняет погрузчик/подъёмник/автомобильКРЕР; часы компрессора/УПТЖР не добавляет. Фактическая схема подачи подтверждается отдельно."
+    },
+    {
+      "id": "cell-template",
+      "tableRows": [
+        4
+      ],
+      "reasonRu": "Выбрана ручная поштучная укладка§2.13а; клеточный шаблон нужен альтернативе§2.13б."
+    },
+    {
+      "id": "tk-material-labor-rates",
+      "reasonRu": "Табл.2/5/6ТК отличаются от точнойКРЕР03; ни103м², ни2.06м³, ни0.68ч/м² не заменяютКРЕР."
+    }
+  ],
+  "skirting": {
+    "normId": "KRER11-01-039-04",
+    "locatorRu": "КРЕР11официальныйPDF46состав/измеритель100м; PDF47колонка04",
+    "laborPer100M": "23.60",
+    "grade": "3.9",
+    "truckPer100M": "0.06",
+    "mortarPer100M": "0.16",
+    "tilePer100M": "101",
+    "tileResourceCode": "01-3211-0001",
+    "mortarResourceCode": "03-0406-0005",
+    "truckResourceCode": "40-0001",
+    "tileTitleRu": "Плитки керамические плинтусные прямые",
+    "lengthDerivedFromArea": false,
+    "sharedMortarStockOwner": "ready-mortar-m150-order",
+    "sharedTruckPhysicalOwner": "truck5t-consumed"
+  },
+  "quality": [
+    {
+      "id": "input-check",
+      "titleRu": "Входной контроль плитки, готовогоМ150 и документов",
+      "operations": [
+        "preparation",
+        "delivery"
+      ],
+      "locatorRu": "ТК§3.3–3.7"
+    },
+    {
+      "id": "bedding-thickness",
+      "titleRu": "Контроль толщины прослойки10–15мм и уровня пола",
+      "operations": [
+        "placing",
+        "control"
+      ],
+      "locatorRu": "ТК§1.1/2.8/3.14/3.17"
+    },
+    {
+      "id": "flatness",
+      "titleRu": "Проверка плоскости двухметровой рейкой: просвет≤4мм",
+      "operations": [
+        "control"
+      ],
+      "locatorRu": "ТК§3.18"
+    },
+    {
+      "id": "tile-step",
+      "titleRu": "Контроль уступов: соседние плитки≤1мм, окаймление≤2мм",
+      "operations": [
+        "control"
+      ],
+      "locatorRu": "ТК§3.21"
+    },
+    {
+      "id": "adhesion",
+      "titleRu": "Простукивание всей площади покрытия",
+      "operations": [
+        "control"
+      ],
+      "locatorRu": "ТК§3.22"
+    },
+    {
+      "id": "joint-check",
+      "titleRu": "Проверка заполнения/закрытия швов и рисунка",
+      "operations": [
+        "placing",
+        "control"
+      ],
+      "locatorRu": "ТК§3.17/3.23–3.24"
+    }
+  ],
+  "remaining": [
+    {
+      "id": "project-applicability",
+      "reasonRu": "Фактические основания/режим/геометрия/изделия и доставка должны соответствовать выбранному профилю; исходные актыR1 не синтезируются."
+    },
+    {
+      "id": "kneepads-skin-paste-fire-access",
+      "reasonRu": "§4.6/4.18ТК дополнительно требуют наколенники, защитные пасты и противопожарное обеспечение; конкретные совместимые изделия/норма пасты/расстановка не заданытабл.4. Не подставлять0/1комплект."
+    },
+    {
+      "id": "deformation-junctions",
+      "reasonRu": "Измеренные узлы/геометрия и материалы/технология деформационных сопряжений вне обычных цементных межплиточных швов не установленыэтими источниками."
+    },
+    {
+      "id": "additional-protection-and-external-waste",
+      "reasonRu": "Численные количества дополнительного экранирования, тары/массы/маршрута внешних отходов и конкретный состав включённой услуги не опубликованы. Прежниеneeds сохраняются."
+    },
+    {
+      "id": "supply-and-price-admission",
+      "reasonRu": "Профиль задаёт потребность инструмента/СИЗ и границу включения, не доказывает фактическое наличие/износ/новуюпокупку. Новый владелец обеспечения требует точного коммерческого состава; исходные цены и правила машин сохраняются."
+    }
+  ],
+  "fullTechnicalAcceptance": false,
+  "newAcceptedCompleteTypes": 0,
+  "publicationPerformed": false,
+  "parentOperationBindings": {
+    "whole-labor": [
+      "preparation",
+      "layout",
+      "placing",
+      "curing",
+      "cleanup"
+    ],
+    "operator-information": [
+      "delivery"
+    ],
+    "included-base-preparation": [
+      "preparation"
+    ],
+    "included-tiles-bedding-joints": [
+      "layout",
+      "placing"
+    ],
+    "included-curing": [
+      "curing"
+    ],
+    "included-cleaning-washing": [
+      "cleanup"
+    ],
+    "forklift5t-consumed": [
+      "delivery"
+    ],
+    "forklift5t-own": [
+      "delivery"
+    ],
+    "forklift5t-hired": [
+      "delivery"
+    ],
+    "hoist500kg45m-consumed": [
+      "delivery"
+    ],
+    "hoist500kg45m-own": [
+      "delivery"
+    ],
+    "hoist500kg45m-hired": [
+      "delivery"
+    ],
+    "truck5t-consumed": [
+      "delivery",
+      "skirting"
+    ],
+    "truck5t-own": [
+      "delivery",
+      "skirting"
+    ],
+    "truck5t-hired": [
+      "delivery",
+      "skirting"
+    ],
+    "water-consumed": [
+      "preparation",
+      "placing",
+      "curing",
+      "cleanup"
+    ],
+    "water-order": [
+      "preparation",
+      "placing",
+      "curing",
+      "cleanup"
+    ],
+    "ceramic-tile-consumed": [
+      "layout",
+      "placing"
+    ],
+    "ceramic-tile-order": [
+      "layout",
+      "placing"
+    ],
+    "sawdust-consumed": [
+      "curing",
+      "cleanup"
+    ],
+    "sawdust-order": [
+      "curing",
+      "cleanup"
+    ],
+    "ready-mortar-m150-consumed": [
+      "placing",
+      "skirting"
+    ],
+    "ready-mortar-m150-order": [
+      "placing",
+      "skirting"
+    ]
+  },
+  "publicationSourceId": "ceramic_m150_group_krer02703_03904_pkti36_r2",
+  "sourceReuse": {
+    "skirtingPack": "data/estimate-benchmarks/source-packs/ceramic-skirting-m150-krer11-039-04-completion-r1.json",
+    "sourceProfileOnlyNotLegacyProjectFixture": true
+  },
+  "planningContract": {
+    "mode": "PRELIMINARY_GEOMETRY_PLAN_NOT_SITE_ACCEPTANCE",
+    "mandatoryUserInputs": [
+      "net_ceramic_floor_area_m2",
+      "ceramic_m150_skirting_length_m"
+    ],
+    "materialBalance": "CANONICAL_DECIMAL_NEW_ORDER_VS_REQUIRED_CONSUMPTION",
+    "stockCreditAssumed": false,
+    "supplierPackQuantumAssumed": false,
+    "oldR1ActualStockModePreservedInHistory": true,
+    "actReferencesSynthesized": false
+  },
+  "technologyConditions": [
+    {
+      "id": "ready-base",
+      "locatorRu": "ТК§2.1/2.5–2.8",
+      "ruleRu": "Предшествующие работы завершены; основание принято, исправно и готово к исходной подготовке; новые ремонт/гидроизоляция не включены."
+    },
+    {
+      "id": "water-post",
+      "locatorRu": "ТКтабл.3строка32",
+      "ruleRu": "Сеть чистой воды и совместимое подключение доступны по маршруту20–25м; иной маршрут требует другого плана подачи."
+    },
+    {
+      "id": "climate-and-curing",
+      "locatorRu": "ТК§2.11/3.1/3.10",
+      "ruleRu": "Температура цементного слоя≥5°C до50%проектной прочности; исключены интенсивное солнце/избыточное тепло; пешеходная нагрузка после2,5МПа. Исходные вода/опилки и уход сохранены."
+    },
+    {
+      "id": "access-and-fire",
+      "locatorRu": "ТК§2.1/4.10/4.18",
+      "ruleRu": "Освещённые свободные проходы и действующий оборудованный пожарный пункт предусмотрены организацией объекта. Это условия выполнения, не услуга1шт; при несоответствии профиль неприменим."
+    }
+  ],
+  "gapReaudit": [
+    {
+      "priorId": "provision-owner",
+      "classification": "KNOWN_PLAN_PRICE_UNKNOWN",
+      "reasonRu": "Табель44позиций и7контролей определяет план обеспечения однойбригады; неизвестнаяцена/фактическийсклад не являются неизвестностью количества. Владелецрасчётной услуги измеряется площадью."
+    },
+    {
+      "priorId": "acceptance-testing",
+      "classification": "COVERED_STANDARD_CONTROL_NOT_EXTRA_LAB_TEST",
+      "reasonRu": "7контролейТК§3.1–3.24 покрывают стандартную приёмку. Дополнительнаяуслуга испытаний по неназванному проекту не обязательныйресурс выбраннойтехнологии; §3.29собразцами относитсябетоннымэлементам."
+    },
+    {
+      "priorId": "extra-protection-control",
+      "classification": "TECHNOLOGY_CONDITION_WITH_EXISTING_CURING_RESOURCES",
+      "reasonRu": "Обычный профиль требует завершения повреждающихработ и допустимого климата; уход/вода/опилки и ограничениенагрузки сохранены. Неизвестнаяплёнка не добавляется универсально. Несоблюдениеусловия требует отдельного применимого плана защиты."
+    },
+    {
+      "priorId": "paste-fire-access",
+      "classification": "SPLIT_PERSONAL_PROVISION_SKIN_CONSUMABLE_AND_SITE_CONDITIONS",
+      "reasonRu": "Наколенники:6пар по личному обеспечению6работников, §4.6. Пожар/доступ проверяются какусловияобъекта. Дерматологическое средство при цементе остаётся обязательной материальной потребностью безвыдуманного расхода."
+    }
+  ],
+  "actualRemaining": [
+    {
+      "rowSuffix": "deformation-junctions",
+      "resourceRu": "Деформационные сопряжения",
+      "reasonRu": "Для применимых узлов нужны самостоятельная геометрия и выбранная совместимая система. Обычныецементныемежплиточныешвы уже включены."
+    },
+    {
+      "rowSuffix": "additional-logistics-waste",
+      "resourceRu": "Обращение с внешними отходами",
+      "reasonRu": "ТК§4.15требует удаленияотходов; не установлены количество/тара/масса и внешниймаршрут внеисходныхмашин/очистки. Покупкаилипоездка1штнеподставляется."
+    },
+    {
+      "rowSuffix": "r2:paste-fire-access",
+      "resourceRu": "Защитное средство для кожи при работе с цементным раствором",
+      "reasonRu": "ТК§4.6требует защитныепасты/мази. ПроизводительSCJohnsonзадаёт1млнананесениеиповторпослемытья, но числоцикловнаданныйпланнеподтверждено; чужаямесячнаянормаКРнеприсваивается."
+    }
+  ],
+  "skinProtectionSource": {
+    "url": "https://www.scjp.com/sites/default/files/uploads/product-sheets/en-us/stokoderm_aqua_pure_pi_0.pdf",
+    "path": ".release-runtime/r568/next-wave/ceramic02703/r2-sources/stokoderm-aqua-pure.pdf",
+    "sha256": "cd47d13ca0c8097f65d064d337f82000955ddb27d74ac00caa982ae40116c37e",
+    "locatorRu": "PDF1WHERE TO USE mixedcement/alkaline; INSTRUCTIONS FOR USE1mlbeforeeachworkperiod/afterwashing; PDF2tube100ml/cartridge1l",
+    "verifiedDoseMlPerApplication": 1,
+    "gloveCompatible": true,
+    "totalApplicationCount": null,
+    "noForeignMonthlyNormImported": true
+  },
+  "remainingInterpretation": "remaining is the frozen f05b constructor audit; gapReaudit and actualRemaining are authoritative for corrected R2. No historical baseline is changed.",
+  "parentProjectScaffoldDisposition": {
+    "definitionVersionId": "b6e328f2-f34a-57b0-848a-7d31ed2bb94a",
+    "baselineId": "49bb256b-3e0e-5f09-88cf-380171d82b3d",
+    "shape": [
+      177,
+      90,
+      90
+    ],
+    "historicalRowsAndSavedRevisionsPreserved": true,
+    "selectedSuccessor": "EXACT_SOURCE_FLOOR_PLUS_EXISTING_03904_SKIRTING_SOURCE_REUSE",
+    "numericProjectScaffoldRatesNotAdmitted": true,
+    "groups": [
+      {
+        "keys": [
+          "trowel",
+          "straightedge",
+          "level",
+          "tape-measure",
+          "mallet",
+          "bucket",
+          "grout-float",
+          "sponge",
+          "brush",
+          "gloves",
+          "goggles",
+          "tile-cutter",
+          "knee-pads",
+          "dust-mask"
+        ],
+        "disposition": "Functional needs resolved by explicit compatible TK table inventory/PPE. Cement pouring/brushing/sawdust washing is selected; modern adhesive grout method and sponge are not imported."
+      },
+      {
+        "keys": [
+          "dust-removal",
+          "extension-cord",
+          "cutting-blade"
+        ],
+        "disposition": "Manual lever cutting, brush/broom/rags and source washing/curing are selected; powered cutter blade, extraction vacuum and electrical extension are not applicable to this manual branch."
+      },
+      {
+        "keys": [
+          "joint-profile",
+          "joint-sealant",
+          "backer-rod",
+          "threshold"
+        ],
+        "disposition": "Retained real deformation/junction need requires independent node geometry and compatible system; ordinary cement tile joints are included in the source operation."
+      },
+      {
+        "keys": [
+          "cover",
+          "barrier",
+          "ownership-check0",
+          "ownership-check1",
+          "ownership-check2"
+        ],
+        "disposition": "Source-compatible base, completed preceding work, climate, clear lit access and site fire point are conditions of this planned profile. Water/sawdust/care and load restriction remain. Nonconforming site conditions require another applicable plan."
+      },
+      {
+        "keys": [
+          "material-delivery",
+          "unloading"
+        ],
+        "disposition": "Original forklift, hoist and truck source scope retained; truck includes exact added skirting rate under one selected owner. No arbitrary extra trip is assumed."
+      },
+      {
+        "keys": [
+          "waste-bags",
+          "waste-transport"
+        ],
+        "disposition": "Internal source cleaning/washing and inventory remain. External waste quantity, container and route remain SOURCE_BLOCKED rather than a fictional one-piece service."
+      },
+      {
+        "keys": [
+          "quality-test"
+        ],
+        "disposition": "Seven source controls provide ordinary acceptance. No independent laboratory count is inferred from concrete-only sample tests."
+      }
+    ]
+  },
+  "conditionClassificationReview": {
+    "id": "curing-release",
+    "source": "ТК36-03 §3.1",
+    "classification": "TECHNOLOGICAL_LOAD_ADMISSION_CONDITION",
+    "conditionId": "climate-and-curing",
+    "numericalServiceRowAdmitted": false,
+    "reasonRu": "Ограничение пешеходной нагрузки до прочности прослойки2,5МПа не задаёт самостоятельную услугу на100м²; условие сохранено без фиктивного количества."
+  }
+}

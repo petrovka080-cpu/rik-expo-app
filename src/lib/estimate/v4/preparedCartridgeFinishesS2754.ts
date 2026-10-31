@@ -46,6 +46,9 @@ export function preparedCartridgeDefinitionS2754(index:number):AutomaticOwnerDef
     truth_metadata:p.parameter_id.startsWith('open_qty_')?unresolvedApplicationNormTruthR1(p.truth_metadata,'Количество, часы, точная оснастка или владелец цены требуют источника/задания; не подменять пользовательским числом.'):
       {...p.truth_metadata,source_confirmation_required:false}})),resources:built.resources.map(resource=>{
       const id=resource.row_id.slice(prefix.length+1),gap=type.sourceNeeds.find(g=>g.id===id),operation=gap?.operation??(/reference|planned-use/.test(id)?'application':'opening');
+      // The source assigns these actions to the same unresolved owner.
+      // Reuse its ID; do not create another labour/tool quantity or price.
+      const related=id==='labor'?(index===0?['masking','finishing','cleaning']:['cleaning']):id==='tools'&&index===0?['finishing']:[];
       const details=gap?[gap.reasonRu]:[
         'Применение: только выбранная работа по уже принятому готовому узлу. Его подготовка и ранее поставленные материалы повторно не оплачиваются.',
         'План расходования и число вскрываемых картриджей заданы явно. Остаток целых невскрытых картриджей отделён от неиспользованного вскрытого объёма; пригодность последнего не назначена автоматически.',
@@ -53,7 +56,9 @@ export function preparedCartridgeDefinitionS2754(index:number):AutomaticOwnerDef
       ];
       const {row_sha256:_old,...content}=resource,result={...content,resource_graph:{...resource.resource_graph,
         operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:prefix,groupTitleRu:type.titleRu,operationId:`${prefix}:${operation}`,
-          operationTitleRu:operations[operation][0],processOrdinal:operations[operation][1],completionCriterionRu:'Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно.'},
+          operationTitleRu:operations[operation][0],processOrdinal:operations[operation][1],completionCriterionRu:'Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно.',
+          ...(related.length?{additionalOperations:related.map(stage=>({operationId:`${prefix}:${stage}`,operationTitleRu:operations[stage][0],
+            processOrdinal:operations[stage][1],completionCriterionRu:'Тот же ресурс обеспечивает указанный этап; количество и цена остаются у одного владельца.'}))}:{})},
         publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:resource.title_ru,nameRu:resource.title_ru,
           brandAndModelRu:gap?null:type.brandRu,specificationRu:gap?null:type.specificationRu,detailsRu:details}},
         source_metadata:{...resource.source_metadata,normativeTrace:[],official_url:type.source.officialUrl,source_artifact_sha256:type.source.sha256,exact_locator:type.source.locatorRu,
@@ -66,10 +71,12 @@ export function preparedCartridgeDefinitionS2754(index:number):AutomaticOwnerDef
 export function compilePreparedCartridgeS2754(index:number,input:Record<string,unknown>){return compileAutomaticConstructionOwnerR1({catalogId:pack.types[index].catalogId,
   compilerVersion:pack.contract,primaryMeasureParameterId:'work_length_m',definition:preparedCartridgeDefinitionS2754(index),submittedParameters:input});}
 export function preparedCartridgeCompletenessMapS2754(index:number){const type=pack.types[index],prefix=preparedCartridgePrefixS2754(index);return {
-  contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PRODUCT_SYSTEM_TDS',generatedFromCurrentRows:false,evidenceSha256:type.source.sha256,
+  contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PRODUCT_SYSTEM_TDS',generatedFromCurrentRows:false,operationResourceBindingRequired:true,evidenceSha256:type.source.sha256,
   evidenceReferences:[type.source.officialUrl,type.source.locatorRu],entries:[
-    {expectedResourceId:'cartridge',operationId:'opening',category:'material',specification:type.productNameRu,condition:'CONFIRMED_READY_NODE_AND_PROJECT_OPENING_PLAN',
+    {expectedResourceId:'cartridge',operationId:'opening',requiredOperationIds:[`${prefix}:opening`],category:'material',specification:type.productNameRu,condition:'CONFIRMED_READY_NODE_AND_PROJECT_OPENING_PLAN',
       sourceId:type.sourceId,unitId:'pcs',quantityRule:'PROJECT_OPENED_CARTRIDGES_PLUS_UNOPENED_RESERVE_MINUS_UNOPENED_STOCK',formulaId:`${prefix}:formula:cartridge-order`,resolution:{kind:'ROW',rowId:`${prefix}:cartridge-order`}},
-    ...type.sourceNeeds.map(gap=>({expectedResourceId:gap.id,operationId:gap.operation,category:gap.category,specification:gap.nameRu,condition:'OPEN_APPLICABLE_SOURCE_OR_TASK_SCOPE',
+    ...type.sourceNeeds.map(gap=>({expectedResourceId:gap.id,operationId:gap.operation,
+      requiredOperationIds:[gap.operation,...(gap.id==='labor'?(index===0?['masking','finishing','cleaning']:['cleaning']):gap.id==='tools'&&index===0?['finishing']:[])].map(stage=>`${prefix}:${stage}`),
+      category:gap.category,specification:gap.nameRu,condition:'OPEN_APPLICABLE_SOURCE_OR_TASK_SCOPE',
       sourceId:type.sourceId,unitId:gap.unitId,quantityRule:'OPEN_NO_ASSUMED_QUANTITY',formulaId:`${prefix}:formula:${gap.id}`,resolution:{kind:'ROW',rowId:`${prefix}:${gap.id}`}}))
   ]};}

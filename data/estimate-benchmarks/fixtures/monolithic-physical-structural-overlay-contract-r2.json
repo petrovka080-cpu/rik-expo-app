@@ -1,0 +1,131 @@
+{
+  "contract": "gox-build.monolithic-family-remaining-structures/r1",
+  "currentParentRawFileSha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+  "profiles": [
+    {
+      "profileKey": "column-107-01",
+      "status": "AUTHOR_LITERAL_ROSTER_PENDING_ROOT_SECOND_REVIEW",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_column_standard",
+      "parentDefinitionId": "2edcb2a4-1323-573b-9e8b-47e036928b33",
+      "parentDefinitionSha256": "ec1deb0944368465d3bda9b706bf87824caeb6aba70a13011ba3397c4ba3297d",
+      "parentBaselineId": "a56a6b5f-b764-5131-9c60-936f8bb3506e",
+      "selectorParameterId": "mono_family_source_method_r1",
+      "selectedPredicate": {
+        "kind": "equals",
+        "parameterId": "mono_family_source_method_r1",
+        "value": "Колонна высотой до 4 м, периметр сечения до 2 м"
+      },
+      "volumeParameterId": "mono_remaining_r1_column_107_01_volume_m3",
+      "positivePredicate": {
+        "kind": "greater_than",
+        "parameterId": "mono_remaining_r1_column_107_01_volume_m3",
+        "value": 0
+      },
+      "projectReferenceParameterId": "mono_remaining_r1_column_107_01_project_reference",
+      "projectSteelParameterId": "mono_remaining_r1_column_107_01_project_steel_kg",
+      "rebarRowId": "monolithic-remaining:krer06:r1:column-107-01:rebar",
+      "rebarUnitId": "kg",
+      "rebarRole": "PROJECT_MASS_COST_ONLY_NOT_DIRECT_ORDER",
+      "sourceRowPrefix": "monolithic-remaining:krer06:r1:column-107-01",
+      "sourceNorm": "107-01",
+      "physicalLeavesPrefix": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:",
+      "noInitialFormKitFromTurnoverNorm": true,
+      "noNewPaidLaborFromPhysicalOverlay": true,
+      "sourceHoursKnownButPhysicalCountUnknown": true
+    },
+    {
+      "profileKey": "beam-109-02",
+      "status": "AUTHOR_LITERAL_ROSTER_PENDING_ROOT_SECOND_REVIEW",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+      "parentDefinitionId": "d68949ea-1949-5e2f-a27c-1a24e69991ba",
+      "parentDefinitionSha256": "2b1cd728e5b8ea191fb544aca5db2f16d3960b368ad589510530920f1a74da13",
+      "parentBaselineId": "6c42ded5-cfff-5038-8947-111f0655e8ab",
+      "selectorParameterId": "mono_family_source_method_r1",
+      "selectedPredicate": {
+        "kind": "equals",
+        "parameterId": "mono_family_source_method_r1",
+        "value": "Прямолинейная балка высотой более 500 до 800 мм, опоры до 6 м"
+      },
+      "volumeParameterId": "mono_remaining_r1_beam_109_02_volume_m3",
+      "positivePredicate": {
+        "kind": "greater_than",
+        "parameterId": "mono_remaining_r1_beam_109_02_volume_m3",
+        "value": 0
+      },
+      "projectReferenceParameterId": "mono_remaining_r1_beam_109_02_project_reference",
+      "projectSteelParameterId": "mono_remaining_r1_beam_109_02_project_steel_kg",
+      "rebarRowId": "monolithic-remaining:krer06:r1:beam-109-02:rebar",
+      "rebarUnitId": "kg",
+      "rebarRole": "PROJECT_MASS_COST_ONLY_NOT_DIRECT_ORDER",
+      "sourceRowPrefix": "monolithic-remaining:krer06:r1:beam-109-02",
+      "sourceNorm": "109-02",
+      "physicalLeavesPrefix": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:",
+      "noInitialFormKitFromTurnoverNorm": true,
+      "noNewPaidLaborFromPhysicalOverlay": true,
+      "sourceHoursKnownButPhysicalCountUnknown": true
+    },
+    {
+      "profileKey": "stair-111-02",
+      "status": "AUTHOR_LITERAL_ROSTER_PENDING_ROOT_SECOND_REVIEW",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard",
+      "parentDefinitionId": "67087a24-8029-58cc-84a2-be54326cecb8",
+      "parentDefinitionSha256": "766a00f1b958fd4f789dd65f2828a3964ec8460ef79521a1c74b64db49ee3b0b",
+      "parentBaselineId": "f395fece-c36d-5cf2-a014-d6028a5bc597",
+      "selectorParameterId": "mono_family_source_method_r1",
+      "selectedPredicate": {
+        "kind": "equals",
+        "parameterId": "mono_family_source_method_r1",
+        "value": "Криволинейный лестничный марш"
+      },
+      "volumeParameterId": "mono_remaining_r1_stair_111_02_volume_m3",
+      "positivePredicate": {
+        "kind": "greater_than",
+        "parameterId": "mono_remaining_r1_stair_111_02_volume_m3",
+        "value": 0
+      },
+      "projectReferenceParameterId": "mono_remaining_r1_stair_111_02_project_reference",
+      "projectSteelParameterId": "mono_remaining_r1_stair_111_02_project_steel_kg",
+      "rebarRowId": "monolithic-remaining:krer06:r1:stair-111-02:rebar",
+      "rebarUnitId": "kg",
+      "rebarRole": "PROJECT_MASS_COST_ONLY_NOT_DIRECT_ORDER",
+      "sourceRowPrefix": "monolithic-remaining:krer06:r1:stair-111-02",
+      "sourceNorm": "111-02",
+      "physicalLeavesPrefix": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:",
+      "noInitialFormKitFromTurnoverNorm": true,
+      "noNewPaidLaborFromPhysicalOverlay": true,
+      "sourceHoursKnownButPhysicalCountUnknown": true
+    },
+    {
+      "profileKey": "beam-109-01",
+      "status": "SOURCE_ONE_OPERATOR_CELL_PENDING_NO_EMITTED_ROWS",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+      "parentDefinitionId": "d68949ea-1949-5e2f-a27c-1a24e69991ba",
+      "parentDefinitionSha256": "2b1cd728e5b8ea191fb544aca5db2f16d3960b368ad589510530920f1a74da13",
+      "parentBaselineId": "6c42ded5-cfff-5038-8947-111f0655e8ab",
+      "selectorParameterId": "mono_family_source_method_r1",
+      "selectedPredicate": {
+        "kind": "equals",
+        "parameterId": "mono_family_source_method_r1",
+        "value": "Прямолинейная балка высотой до 500 мм, опоры до 6 м"
+      },
+      "volumeParameterId": "mono_remaining_r1_beam_109_01_volume_m3",
+      "positivePredicate": {
+        "kind": "greater_than",
+        "parameterId": "mono_remaining_r1_beam_109_01_volume_m3",
+        "value": 0
+      },
+      "projectReferenceParameterId": "mono_remaining_r1_beam_109_01_project_reference",
+      "projectSteelParameterId": "mono_remaining_r1_beam_109_01_project_steel_kg",
+      "rebarRowId": "monolithic-remaining:krer06:r1:beam-109-01:rebar",
+      "rebarUnitId": "kg",
+      "rebarRole": "PROJECT_MASS_COST_ONLY_NOT_DIRECT_ORDER",
+      "sourceRowPrefix": "monolithic-remaining:krer06:r1:beam-109-01",
+      "sourceNorm": "109-01",
+      "physicalLeavesPrefix": "monolithic-remaining:krer06:r1:beam-109-01:need-leaf:",
+      "noInitialFormKitFromTurnoverNorm": true,
+      "noNewPaidLaborFromPhysicalOverlay": true,
+      "sourceHoursKnownButPhysicalCountUnknown": true
+    }
+  ],
+  "newFull": 0
+}

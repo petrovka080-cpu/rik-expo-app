@@ -1,5 +1,6 @@
 import { projectCanonicalEstimateParameterSessionSnapshot } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot";
 import { readFileSync } from "node:fs";
+import * as ts from "typescript";
 import { resolve } from "node:path";
 
 import { buildConsumerCanonicalParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -21,12 +22,53 @@ import {
 } from "../../src/lib/estimate/backendPlatform/contracts";
 
 const ASPHALT_CATALOG_ID =
-  "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_large_area_professional_expanded_v1";
+  "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_standard_professional_expanded_v1";
 const ASPHALT_REVISION_ID = "3f697e7c-e53b-45a7-b1cf-1d05680f9cb9";
 const PIPELINE_REVISION_ID = "36ee30db-f4d9-4ea9-af9c-27b4a8f58179";
 const PIPELINE_ARTIFACT_ID = "0601a039-d897-45dd-b15a-35b379944491";
 const RELEASE_ID = "94443669-8f5b-5cc7-b364-2f8e9f9e3506";
 const CHECKSUM = "a".repeat(64);
+
+// Finite source guards inspect real owners, not obsolete alias slices.
+function sourceNodes<T extends ts.Node>(rootNode: ts.Node, predicate: (node: ts.Node) => node is T): T[] {
+  const matches: T[] = [];
+  const visit = (node: ts.Node): void => { if (predicate(node)) matches.push(node); ts.forEachChild(node, visit); };
+  visit(rootNode); return matches;
+}
+function screenOwner(source: ts.SourceFile, name: string): ts.ArrowFunction {
+  const members = sourceNodes(source, ts.isPropertyDeclaration).filter(node => ts.isIdentifier(node.name) && node.name.text === name);
+  expect(members).toHaveLength(1);
+  const initializer = members[0]?.initializer;
+  if (!initializer || !ts.isArrowFunction(initializer)) throw new Error('EXACT_SCREEN_ARROW_OWNER_REQUIRED:' + name);
+  return initializer;
+}
+function sourceCalls(owner: ts.Node, name: string): ts.CallExpression[] {
+  return sourceNodes(owner, ts.isCallExpression).filter(call => ts.isIdentifier(call.expression) ? call.expression.text === name
+    : ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === name);
+}
+function sourceExpression(expression: ts.Expression): ts.Expression {
+  while (ts.isAsExpression(expression) || ts.isParenthesizedExpression(expression) || ts.isNonNullExpression(expression)) expression = expression.expression;
+  return expression;
+}
+function sourceProperty(expression: ts.Expression, name: string): ts.Expression {
+  const object = sourceExpression(expression);
+  if (!ts.isObjectLiteralExpression(object)) throw new Error('EXACT_OBJECT_ARGUMENT_REQUIRED:' + name);
+  const properties = object.properties.filter(ts.isPropertyAssignment).filter(property =>
+    (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) && property.name.text === name);
+  expect(properties).toHaveLength(1); return properties[0]!.initializer;
+}
+function sourceLiteral(expression: ts.Expression): string {
+  const value = sourceExpression(expression);
+  if (!ts.isStringLiteral(value)) throw new Error('EXACT_STRING_LITERAL_REQUIRED');
+  return value.text;
+}
+function sourceBinding(expression: ts.Expression): string { return sourceExpression(expression).getText().replace(/\s+/gu, ''); }
+function savedReportRequest(owner: ts.Node): ts.Expression {
+  const declarations = sourceNodes(owner, ts.isVariableDeclaration).filter(node => ts.isIdentifier(node.name) && node.name.text === 'reportRequest');
+  expect(declarations).toHaveLength(1); const initializer = declarations[0]?.initializer;
+  if (!initializer) throw new Error('EXACT_SAVED_REPORT_REQUEST_REQUIRED');
+  return initializer;
+}
 
 function revision(input: {
   revisionId: string;
@@ -68,7 +110,7 @@ const asphaltCatalog: CanonicalEstimateCatalogItem = {
   releaseId: RELEASE_ID,
   namespace: "global",
   domain: "roadworks",
-  workKey: "asphalt_drain_large_area",
+  workKey: "asphalt_drain_standard",
   titleRu: "Водоотвод для асфальтового покрытия на большой площади",
   definitionVersion: 6,
   applicability: {},
@@ -208,7 +250,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     })).toBe(true);
   });
 
-  it("shows an application-supplied runtime profile as an editable field with its accepted reference", () => {
+  it("retains a protected technical runtime profile and its baseline outside the ordinary editor", () => {
     const profileParameter = {
       ...asphaltCatalog.parameterSchema[0],
       parameterId: "excavator_productivity_m3_h",
@@ -232,28 +274,27 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     });
 
     expect(isCanonicalEstimateConsumerSuppliedParameter(profileParameter)).toBe(false);
-    expect(isCanonicalEstimateVisibleReplaceableProfile(profileParameter)).toBe(true);
+    expect(isCanonicalEstimateVisibleReplaceableProfile(profileParameter)).toBe(false);
+    expect(isCanonicalEstimateUserEditableParameter(profileParameter)).toBe(false);
+    const parentBefore = JSON.stringify({ catalog, parent });
 
     const rootSession = buildConsumerCanonicalParameterSession({
       catalog,
       revision: parent,
       draftId: "visible-runtime-profile",
     });
-    expect(rootSession.parameters).toEqual([
+    expect(rootSession.parameters).toEqual([]);
+    expect(rootSession.applicationParameters).toEqual([
       expect.objectContaining({
         parameterId: "excavator_productivity_m3_h",
         value: 35,
         referenceValue: 35,
         source: "ASSUMED",
+        inputOwnership: "APPLICATION", consumerInputRole: "APPLICATION_TECHNICAL",
       }),
     ]);
-    expect(buildCanonicalParameterCards({ session: rootSession, revision: null })).toEqual([
-      expect.objectContaining({
-        key: "excavator_productivity_m3_h",
-        source: "catalog_default",
-        editable: true,
-      }),
-    ]);
+    expect(buildCanonicalParameterCards({ session: rootSession, revision: null })).toEqual([]);
+    expect(JSON.stringify({ catalog, parent })).toBe(parentBefore);
 
     const child = revision({
       revisionId: "a09900f2-5711-4ab6-9735-b73d41372f7a",
@@ -262,17 +303,33 @@ describe("P0 canonical parameter editor and professional PDF", () => {
       parameters: { excavator_productivity_m3_h: 40 },
       acceptedBaselineSnapshot: { excavator_productivity_m3_h: 35 },
     });
+    const childBefore = JSON.stringify(child);
     const childSession = buildConsumerCanonicalParameterSession({
       catalog,
       revision: child,
       parent,
       draftId: "edited-runtime-profile",
     });
-    expect(childSession.parameters[0]).toMatchObject({
+    expect(childSession.parameters).toEqual([]);
+    expect(childSession.applicationParameters?.[0]).toMatchObject({
       value: 40,
       referenceValue: 35,
-      source: "USER_EXPLICIT",
+      source: "ASSUMED",
+      inputOwnership: "APPLICATION", consumerInputRole: "APPLICATION_TECHNICAL",
     });
+    expect(buildCanonicalParameterCards({ session: childSession, revision: null })).toEqual([]);
+    expect(JSON.stringify(child)).toBe(childBefore);
+    // A changed stored technical scalar alone is not proof of user confirmation.
+    // Preserve an actual saved explicit snapshot separately without making it editable.
+    const explicitChild = { ...child, userInputSnapshot: { excavator_productivity_m3_h: 40 } };
+    const explicitBefore = JSON.stringify(explicitChild);
+    const explicitSession = buildConsumerCanonicalParameterSession({ catalog, revision: explicitChild, parent, draftId: "saved-explicit-runtime-profile" });
+    expect(explicitSession.applicationParameters?.[0]).toMatchObject({ value: 40, referenceValue: 35, source: "USER_EXPLICIT",
+      inputOwnership: "APPLICATION", consumerInputRole: "APPLICATION_TECHNICAL" });
+    expect(explicitSession.parameters).toEqual([]);
+    expect(buildCanonicalParameterCards({ session: explicitSession, revision: null })).toEqual([]);
+    expect(JSON.stringify(explicitChild)).toBe(explicitBefore);
+    expect(JSON.stringify({ catalog, parent })).toBe(parentBefore);
   });
 
   it("activates source-managed requirements only for the selected technology branch", () => {
@@ -514,11 +571,17 @@ describe("P0 canonical parameter editor and professional PDF", () => {
       parameters: Object.fromEntries(asphaltCatalog.parameterSchema.map((schema) => [schema.parameterId, schema.defaultValue])),
     });
     const session = buildConsumerCanonicalParameterSession({ catalog, revision: root, draftId: "transport-inputs" });
-    const cardKeys = buildCanonicalParameterCards({ session, revision: null }).map((card) => card.key);
-
-    expect(cardKeys).not.toContain("truck_average_speed_km_per_machine_hour");
-    expect(cardKeys).not.toContain("truck_turnaround_machine_hours");
-    expect(cardKeys).toEqual(asphaltCatalog.parameterSchema.map((parameter) => parameter.parameterId));
+    const cards = buildCanonicalParameterCards({ session, revision: null });
+    const technicalIds = ["truck_average_speed_km_per_machine_hour", "truck_turnaround_machine_hours"];
+    for (const key of technicalIds) {
+      expect(cards.some(card => card.key === key)).toBe(false);
+      expect(session.applicationParameters?.find(parameter => parameter.parameterId === key))
+        .toMatchObject({inputOwnership: "APPLICATION", consumerInputRole: "APPLICATION_TECHNICAL", value: null});
+      expect(session.parameters.some(parameter => parameter.parameterId === key)).toBe(false);
+      expect(session.blockingMissingParameterIds).not.toContain(key);
+    }
+    expect(cards.filter(card => card.editable).map(card => card.key))
+      .toEqual(asphaltCatalog.parameterSchema.map((parameter) => parameter.parameterId));
   });
 
   it("preserves the complete public position name and technical designation around a colon", () => {
@@ -739,16 +802,36 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     const worker = readFileSync(resolve(process.cwd(), "supabase/functions/canonical-estimate-worker/index.ts"), "utf8");
     const professionalProjection = readFileSync(resolve(process.cwd(), "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts"), "utf8");
     const artifactContract = readFileSync(resolve(process.cwd(), "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts"), "utf8");
-    const pdfFlow = screen.slice(screen.indexOf("private completePdfOpen"), screen.indexOf("private openDraftFromHistory"));
-
-    expect(pdfFlow).toContain('kind: "pdf"');
-    expect(pdfFlow).toContain('documentProfile: "professional_v1"');
-    expect(pdfFlow).toContain("prepareAndPreviewPdfDocument({");
-    expect(pdfFlow).toContain("descriptor: createPdfDocumentDescriptor({");
-    expect(pdfFlow).toContain("expectedByteSize: artifact.byteSize");
-    expect(pdfFlow).not.toContain("Linking.openURL(artifact.signedUrl)");
-    expect(screen).toContain("context?.definitionId ?? revision.catalogId");
-    expect(screen).toContain("historyRecord?.title");
+    const source = ts.createSourceFile('ConsumerRepairRequestScreen.tsx', screen, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const report = screenOwner(source, 'completeSavedPreliminaryReport'), request = savedReportRequest(report);
+    for (const [key, value] of [['kind', 'pdf'], ['documentProfile', 'professional_v1'], ['issuancePurpose', 'PRELIMINARY_REVIEW']])
+      expect(sourceLiteral(sourceProperty(request, key))).toBe(value);
+    const ack = sourceProperty(request, 'reviewRequest');
+    for (const key of ['revisionId', 'releaseId', 'definitionVersionId', 'checksumSha256'])
+      expect(sourceBinding(sourceProperty(ack, key))).toBe('revision.' + key);
+    expect(sourceBinding(sourceProperty(ack, 'acknowledgedPreliminaryReview'))).toBe('true');
+    for (const alias of ['completePdfOpen', 'completeHistoryPdfOpen']) {
+      const calls = sourceCalls(screenOwner(source, alias), 'completeSavedPreliminaryReport');
+      expect(calls).toHaveLength(1); expect(sourceBinding(calls[0]!.expression)).toBe('this.completeSavedPreliminaryReport');
+    }
+    const reads = sourceCalls(report, 'getCanonicalEstimateRevision'), artifacts = sourceCalls(report, 'getCanonicalEstimateArtifact');
+    expect(reads).toHaveLength(1); expect(artifacts).toHaveLength(1);
+    expect(sourceBinding(reads[0]!.arguments[0]!)).toBe('binding.revisionId');
+    expect(sourceLiteral(sourceProperty(reads[0]!.arguments[1]!, 'issuancePurpose'))).toBe('PRELIMINARY_REVIEW');
+    expect(reads[0]!.getStart()).toBeLessThan(artifacts[0]!.getStart());
+    const viewer = sourceCalls(report, 'prepareAndPreviewPdfDocument'), descriptors = sourceCalls(report, 'createPdfDocumentDescriptor');
+    expect(viewer).toHaveLength(1); expect(descriptors).toHaveLength(1);
+    expect(sourceProperty(viewer[0]!.arguments[0]!, 'descriptor')).toBe(descriptors[0]);
+    expect(sourceBinding(sourceProperty(descriptors[0]!.arguments[0]!, 'expectedByteSize'))).toBe('artifact.byteSize??undefined');
+    const identity = sourceProperty(descriptors[0]!.arguments[0]!, 'contentIdentity');
+    for (const key of ['revisionId', 'releaseId', 'definitionVersionId', 'checksumSha256'])
+      expect(sourceBinding(sourceProperty(identity, key))).toBe('revision.' + key);
+    expect(sourceLiteral(sourceProperty(identity, 'documentStatus'))).toBe('PRELIMINARY_READ');
+    expect(sourceBinding(sourceProperty(identity, 'viewerUserId'))).toBe('ownerId');
+    expect(sourceCalls(report, 'openURL')).toHaveLength(0);
+    expect(sourceCalls(report, 'getCanonicalEstimateCatalogItem')).toHaveLength(0);
+    expect(sourceCalls(report, 'compileCanonicalEstimateCore')).toHaveLength(0);
+    expect(sourceCalls(report, 'approveDraft')).toHaveLength(0);
     expect(screen).not.toContain("локальный контекст исторической версии отсутствует");
     expect(runtime).toContain("buildCanonicalArtifactMetadata");
     expect(artifactContract).toContain('templateVersion: CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION');
@@ -779,8 +862,21 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     expect(editor).toContain("getCanonicalEstimateParameterSessionSnapshot(input.revisionId, undefined, hydrationTrace)");
     expect(client).toContain("?releaseId=${encodeURIComponent(releaseId.trim())}");
     expect(client).toContain("/parameter-session`");
-    expect(runtime).toContain('url.searchParams.get("releaseId") ?? TARGET_RELEASE_ID');
-    expect(runtime).toContain("requestedReleaseId || null");
+    const runtimeSource = ts.createSourceFile('serveCanonicalEstimateLocalR1.ts', runtime, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const catalogReads = sourceCalls(runtimeSource, 'readCanonicalCatalogItemLocalR1');
+    expect(catalogReads.filter(call => sourceBinding(call.arguments[1]!) === 'String(url.searchParams.get("releaseId")??TARGET_RELEASE_ID).trim()')).toHaveLength(1);
+    const catalogOwners = sourceNodes(runtimeSource, ts.isFunctionDeclaration).filter(node => node.name?.text === 'readCanonicalCatalogItemLocalR1');
+    expect(catalogOwners).toHaveLength(1);
+    expect(sourceCalls(catalogOwners[0]!, 'query').some(call => call.arguments.length === 2
+      && sourceBinding(call.arguments[1]!) === '[catalogId,requestedReleaseId||null,ALLOW_PREPARED_RELEASE_COMPILE,]')).toBe(true);
+    const snapshotOwners = sourceNodes(runtimeSource, ts.isFunctionDeclaration).filter(node => node.name?.text === 'localParameterSessionSnapshot');
+    expect(snapshotOwners).toHaveLength(1);
+    const snapshotQueries = sourceCalls(snapshotOwners[0]!, 'query');
+    expect(snapshotQueries.some(call => call.arguments.length === 2
+      && sourceBinding(call.arguments[1]!) === '[revision.release_id,revision.catalog_id]'
+      && sourceBinding(call.arguments[0]!).includes('wheremanifest.release_id=$1andmanifest.catalog_id=$2'))).toBe(true);
+    expect(snapshotQueries.some(call => call.arguments.length === 2
+      && sourceBinding(call.arguments[1]!) === '[revisionId,currentOwnerId(),currentTenantId()]')).toBe(true);
     expect(runtime).toContain('path[2] === "parameter-session"');
   });
 });

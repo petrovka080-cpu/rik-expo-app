@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   anchorGroupVibrationPromptDetailsR1,
@@ -97,8 +97,7 @@ describe("anchor-group concrete vibration canonical family", () => {
       .toBe(false);
   });
 
-  it("round-trips through the ordinary shared parameter screen", () => {
-    const target = ANCHOR_GROUP_VIBRATION_TARGETS[5];
+  it.each(ANCHOR_GROUP_VIBRATION_TARGETS)("round-trips through the ordinary shared parameter screen: $contextKey", (target) => {
     const input = anchorGroupVibrationAcceptanceInputR1(target.contextKey);
     const prompt = [target.titleRu, ...anchorGroupVibrationPromptDetailsR1(input)].join("\n");
     expect(extractConcretePlacementCanonicalParametersR1({

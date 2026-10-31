@@ -1,0 +1,142 @@
+{
+  "contract": "gox.electrical.socket.complete-surface-project/r266",
+  "catalogId": "canonical-work:base:electrical_interior_socket_install_standard",
+  "workKey": "electrical_interior_socket_install_standard",
+  "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+  "normId": "EXACT_COMPLETE_SURFACE_SOCKET_MANUFACTURER_QUALIFICATION_WITH_PROJECT_RESOURCES_NOT_LABOUR_RATE",
+  "prefix": "electrical:socket-complete-surface-r266",
+  "privateManufacturerReference": "LEGRAND PLEXO 069730L",
+  "publicAssemblyTitle": "Розетка 2P+E 16 А 250 В в комплектном накладном корпусе",
+  "source": {
+    "logicalPath": "data/estimate-benchmarks/source-artifacts/socket-complete-surface-r266/PLEXO_F03972EN_00_OFFICIAL.pdf",
+    "officialUrl": "https://assets.legrand.com/pim/NP-FT-GT/F03972EN-00.pdf",
+    "sha256": "2393d3d995a30c345481b546237f1383ec43e5e7ff9367f1729c867a5e5a7b43",
+    "documentId": "F03972EN/00",
+    "dateOnPdf1": "08/10/2024",
+    "pages": 2,
+    "locator": "PDF1 range Surface-mounting complete0 69730L and connection/complete housing; PDF2 matching range:16A/250V/50Hz and temperature",
+    "internalSecondPageHeaderDifference": "PDF2 prints F03975EN/00 although file/PDF1 F03972EN/00; matching refs retained verbatim, no correction or document-identity alias invented."
+  },
+  "readback": {
+    "assembly": "Complete surface-mounting unit including housing/support, mechanism,frontplate/flap and entry parts; no independent loose-parts quantities or orders inferred.",
+    "selectedReference": "069730L",
+    "terminalType": "automatic",
+    "terminalCrossSectionMm2": [
+      1.5,
+      2.5
+    ],
+    "conductorsPerTerminal": [
+      1,
+      2
+    ],
+    "stripLengthMm": 12,
+    "ratingAmpere": 16,
+    "ratingVoltageAc": 250,
+    "frequencyHz": 50,
+    "ipWithFlapClosed": "IP55",
+    "ipWithFlapOpen": "IP44",
+    "impact": "IK08",
+    "surfaceDimensionsMm": [
+      84.5,
+      82,
+      61.55
+    ],
+    "usageTemperatureC": [
+      -10,
+      40
+    ],
+    "supplierOrderQuantum": "UNKNOWN_ACTUAL_SUPPLIER_TERM_REQUIRED; no grouping quantity is an automatic trade quantum",
+    "fasteningCountSizeAndSubstrate": "UNKNOWN_ACTUAL_APPROVED_DETAIL; not guessed from drawing or q"
+  },
+  "scope": "Only one admitted complete surface-mounted2P+E Schuko factory assembly in a prepared accessible indoor location, with brought-up compatible circuit and accepted PPR/QA plan. No cable laying, chasing, flush-backbox or Ex/EV design.",
+  "methodParameterId": "socket_complete_surface_method",
+  "method": "Комплектная накладная розетка 2P+E по принятой ведомости и готовому основанию",
+  "legacyMethod": "Существующий состав; новый комплект и его квалификация не применяются",
+  "countParameterId": "socket_complete_surface_node_count",
+  "acceptedQualification": "Принята ведомость одиночных комплектных розеток069730L; готовое основание и крепёж; подготовленный совместимый обесточенный ввод; проверены маркировка изделия, проводники и программа электроиспытаний; работы выполняет допущенный персонал",
+  "fixingModes": [
+    "Прямое винтовое крепление по принятому основанию",
+    "Крепление с дюбелями по принятому основанию"
+  ],
+  "toolQualification": "Собственный пригодный монтажный и электроизмерительный комплект по принятому ППР; аренда/оператор/спецтехника не включены",
+  "newInputs": "Actual object schedule/count,base/fasteners,stock/reserve/supplier terms,total labour hours,own toolkit count,QA count and logistics; all defaultnull. Manufacturer readbacks never become new questions.",
+  "priceScope": "One supply owner per material; one complete labour owner covers housing/mechanism/frame/connection/QA and onsite handling/cleanup. No paid tool hire or second testing wage. Delivery/offsite disposal are separate actual trips, with quote scope still subject to ROOT review; TEST_ONLY prices are not supplier authority.",
+  "legacyPreservation": "All63 IDs/formulas/source/payment/proc fields and old q decimal/default100/constraints retained; only mutually exclusive selected-profile gates can suppress unsupported legacy economics. Absent selector preserves exact legacy behaviour. Never copy q into new measured integer count.",
+  "operations": [
+    {
+      "id": "housing-fix",
+      "titleRu": "Монтаж комплектного накладного корпуса по принятому основанию"
+    },
+    {
+      "id": "mechanism-front",
+      "titleRu": "Установка комплектного механизма, рамки и лицевого элемента"
+    },
+    {
+      "id": "connection",
+      "titleRu": "Подключение подготовленного совместимого ввода"
+    },
+    {
+      "id": "qa-close",
+      "titleRu": "Электропроверки, закрытие и приёмка узла"
+    },
+    {
+      "id": "delivery",
+      "titleRu": "Доставка изделий и внутриобъектовое обращение по ППР"
+    },
+    {
+      "id": "cleanup",
+      "titleRu": "Уборка зоны и вывоз упакованных отходов по ППР"
+    }
+  ],
+  "holds": {
+    "installationNormHours": "SOURCE_GAP: no exact held KRERm08 table was found; generic source registry18 entries are not a norm. Actual whole PPR hours are an object input, no norm rate authored.",
+    "legacySourceAuthority": "QUALIFICATION: source-free current63/q approved-template metadata cannot be promoted to physical authority; existing retainer approved-template contract must be satisfied from actual evidence, not fabricated.",
+    "actualObjectFacts": "UNKNOWN until real PPR/schedule/fasteners/circuit/QA/stock/supplier/price evidence; enum text alone does not authenticate these facts.",
+    "newSourceRegistryPreimage": "UNKNOWN; R266 parent closure is not a global/exact new-source absence query."
+  },
+  "sourceAuthorityPromoted": false,
+  "projectAuthenticated": false,
+  "full": false,
+  "ready": false,
+  "newPublicCatalogs": 0,
+  "resourceOperationRoles": {
+    "assembly-consumed": [
+      "housing-fix",
+      "mechanism-front",
+      "connection",
+      "qa-close"
+    ],
+    "fixing-consumed": [
+      "housing-fix"
+    ],
+    "supply": [
+      "delivery"
+    ],
+    "measured-nodes": [
+      "housing-fix"
+    ],
+    "owned-tools": [
+      "housing-fix",
+      "mechanism-front",
+      "connection",
+      "qa-close"
+    ],
+    "whole-labour": [
+      "housing-fix",
+      "mechanism-front",
+      "connection",
+      "qa-close",
+      "delivery",
+      "cleanup"
+    ],
+    "qa-included": [
+      "qa-close"
+    ],
+    "delivery": [
+      "delivery"
+    ],
+    "waste-removal": [
+      "cleanup"
+    ]
+  }
+}

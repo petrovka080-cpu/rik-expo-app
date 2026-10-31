@@ -20,6 +20,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
+import { AppState, Platform } from "react-native";
+import { useMfaSessionAssuranceGate, type MfaAuthAcceptedReason, type MfaSessionCheckStatus } from "./useMfaSessionAssuranceGate";
 
 import { getSessionSafe, hasPersistedAuthSessionHint } from "../supabaseClient";
 import { warmCurrentSessionProfile } from "../sessionRole";
@@ -63,6 +65,9 @@ export function authPrincipalFingerprint(session: Session | null): string | null
 }
 
 export type AuthLifecycleState = {
+  assuranceStatus: MfaSessionCheckStatus;
+  acceptSessionAfterAssurance: (session: Session, reason: MfaAuthAcceptedReason) => Promise<boolean>;
+  retryAuthAssurance: () => Promise<boolean>;
   authSessionState: AuthSessionState;
   authenticatedUserId: string | null;
   authenticatedRole: string | null;
@@ -100,6 +105,7 @@ export type AuthLifecycleState = {
 };
 
 export type AuthSessionState =
+  | { status: "mfa_required"; reason: "mfa_verification_required" }
   | {
       status: "unknown";
       reason:
@@ -139,6 +145,11 @@ export type AuthRouteDecision =
   | {
       type: "wait_for_post_auth_settle";
       reason: "recent_auth_stack_exit";
+    }
+  | {
+      type: "redirect_mfa";
+      target: "/auth/mfa";
+      reason: "mfa_verification_required";
     }
   | {
       type: "redirect_login";
@@ -185,6 +196,8 @@ export function useAuthLifecycle(deps: {
   const authExitSessionProbeTokenRef = useRef(0);
   const authExitSessionProbeInFlightRef = useRef(false);
   const authPrincipalFingerprintRef = useRef<string | null>(null);
+  const authEventGenerationRef = useRef(0);
+  const sessionReadEpochRef = useRef(0);
 
   const setAuthSessionState = useCallback((next: AuthSessionState) => {
     if (
@@ -195,7 +208,7 @@ export function useAuthLifecycle(deps: {
     }
     authSessionStateRef.current = next;
     const nextHasSession =
-      next.status === "authenticated"
+      (next.status === "authenticated" || next.status === "mfa_required")
         ? true
         : next.status === "unauthenticated"
           ? false
@@ -321,6 +334,136 @@ export function useAuthLifecycle(deps: {
     }
   }, [recordAuthCheckEvent]);
 
+  const { status: assuranceStatus, checkSession, cancel: cancelAssurance, markUnavailable, beginSessionRead } = useMfaSessionAssuranceGate({
+    onAllowed: (session, context) => {
+      setAuthenticatedUserId(session.user.id);
+      setAuthSessionState({ status: "authenticated", reason: context.reason });
+      if (context.warmRole) void loadRoleForCurrentSession(session.user);
+    },
+    onRequired: (session) => {
+      setAuthenticatedUserId(session.user.id);
+      setAuthenticatedRole(null);
+      setAuthSessionState({ status: "mfa_required", reason: "mfa_verification_required" });
+    },
+    onUnavailable: () => recordAuthGateEvent("auth_assurance_unavailable", "error"),
+  });
+
+  const acceptSessionAfterAssurance = useCallback((session: Session, reason: MfaAuthAcceptedReason) => {
+    resetPendingAuthExitSessionProbe();
+    authPrincipalFingerprintRef.current = authPrincipalFingerprint(session);
+    return checkSession(session, { reason, warmRole: true });
+  }, [checkSession, resetPendingAuthExitSessionProbe]);
+
+  const retryAuthAssurance = useCallback(async () => {
+    const generation = authEventGenerationRef.current;
+    const readEpoch = ++sessionReadEpochRef.current;
+    const isCurrentRead = () => generation === authEventGenerationRef.current && readEpoch === sessionReadEpochRef.current;
+    beginSessionRead();
+    try {
+      const result = await getSessionSafe({ caller: "root_layout_assurance_retry" });
+      if (!isCurrentRead()) return false;
+      setSessionLoaded(true);
+      if (result.degraded) { markUnavailable(); return false; }
+      if (result.session) return acceptSessionAfterAssurance(result.session, "auth_event_authenticated");
+      cancelAssurance();
+      authPrincipalFingerprintRef.current = null;
+      setAuthSessionState({ status: "unauthenticated", reason: "bootstrap_no_session" });
+      await clearSessionBoundaryState("bootstrap_no_session");
+    } catch {
+      if (isCurrentRead()) markUnavailable();
+    }
+    return false;
+  }, [acceptSessionAfterAssurance, beginSessionRead, cancelAssurance, clearSessionBoundaryState, markUnavailable, setAuthSessionState]);
+
+  // Resume uses the same gate and subscriber. A focus transfer to/from an iframe
+  // can blur the window while the document still has focus; that is not an app
+  // return. Only that observed internal pair, or duplicate signals for one
+  // in-flight return, are coalesced. Unknown/unpaired focus still checks MFA.
+  useEffect(() => {
+    const web = Platform.OS === "web";
+    const documentActivity = () => {
+      let visible: boolean | null = null;
+      let focusWithin: boolean | null = null;
+      if (typeof document !== "undefined") {
+        try {
+          const visibility = document.visibilityState;
+          visible = visibility === "visible" ? true : visibility === "hidden" ? false : null;
+        } catch { /* Missing browser facts must not authorize a focus skip. */ }
+        try {
+          const focused = document.hasFocus();
+          focusWithin = typeof focused === "boolean" ? focused : null;
+        } catch { /* Recheck on an ambiguous activation. */ }
+      }
+      return { visible, focusWithin };
+    };
+    const isDocumentActive = (activity: ReturnType<typeof documentActivity>) =>
+      activity.visible === true && activity.focusWithin === true;
+    let returnPending = web ? !isDocumentActive(documentActivity()) : AppState.currentState !== "active";
+    let activationHandled = false;
+    let internalFocusPending = false;
+    let coalescedFocusPending = false;
+    let activationEpoch = 0;
+    const depart = () => {
+      activationEpoch += 1;
+      returnPending = true;
+      activationHandled = false;
+      internalFocusPending = false;
+      coalescedFocusPending = false;
+    };
+    const resume = () => authPrincipalFingerprintRef.current !== null ? retryAuthAssurance() : undefined;
+    const activateDocument = (source: "focus" | "visibility" | "app_state") => {
+      const activity = documentActivity();
+      if (activity.visible === false || (source !== "focus" && activity.focusWithin === false)) {
+        depart();
+        return;
+      }
+      const active = isDocumentActive(activity);
+      if (source === "focus") {
+        const internalOrDuplicate = active && !returnPending && (internalFocusPending || coalescedFocusPending);
+        internalFocusPending = false;
+        coalescedFocusPending = false;
+        if (internalOrDuplicate) return;
+      } else if (active && !returnPending && activationHandled) return;
+      // Do not turn missing/contradictory document facts into a known activation.
+      returnPending = !active;
+      activationHandled = active;
+      if (active && source !== "focus") coalescedFocusPending = true;
+      const epoch = ++activationEpoch;
+      const pending = resume();
+      if (coalescedFocusPending) {
+        const clearDuplicate = () => { if (activationEpoch === epoch) coalescedFocusPending = false; };
+        if (pending) void pending.then(clearDuplicate, clearDuplicate);
+        else clearDuplicate();
+      }
+    };
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state !== "active") { depart(); return; }
+      if (web) activateDocument("app_state");
+      else if (returnPending || !activationHandled) { returnPending = false; activationHandled = true; resume(); }
+    });
+    const blur = () => {
+      if (isDocumentActive(documentActivity()) && !returnPending) {
+        internalFocusPending = true;
+        coalescedFocusPending = false;
+      } else depart();
+    };
+    const focus = () => activateDocument("focus");
+    const visibility = () => activateDocument("visibility");
+    if (web && typeof window !== "undefined") {
+      window.addEventListener("blur", blur);
+      window.addEventListener("focus", focus);
+    }
+    if (web && typeof document !== "undefined") document.addEventListener("visibilitychange", visibility);
+    return () => {
+      subscription.remove();
+      if (web && typeof window !== "undefined") {
+        window.removeEventListener("blur", blur);
+        window.removeEventListener("focus", focus);
+      }
+      if (web && typeof document !== "undefined") document.removeEventListener("visibilitychange", visibility);
+    };
+  }, [retryAuthAssurance]);
+
   // --- App launch marker (once) ---
   useEffect(() => {
     if (launchMarkerRef.current) return;
@@ -356,6 +499,8 @@ export function useAuthLifecycle(deps: {
     });
 
     let active = true;
+    const bootstrapGeneration = authEventGenerationRef.current;
+    const isCurrentBootstrap = () => active && bootstrapGeneration === authEventGenerationRef.current;
 
     (async () => {
       try {
@@ -365,7 +510,7 @@ export function useAuthLifecycle(deps: {
         const { session, degraded } = await getSessionSafe({
           caller: "root_layout",
         });
-        if (!active) return;
+        if (!isCurrentBootstrap()) return;
 
         recordAuthCheckEvent("auth_check_result", "success", {
           caller: "root_layout",
@@ -378,7 +523,7 @@ export function useAuthLifecycle(deps: {
             caller: "root_layout",
             reason: "bootstrap_degraded",
           });
-          if (!active) return;
+          if (!isCurrentBootstrap()) return;
 
           if (!persistedHint.hasStoredSession && !persistedHint.degraded) {
             recordAuthGateEvent("auth_degraded_without_persisted_session", "success", {
@@ -420,6 +565,7 @@ export function useAuthLifecycle(deps: {
             status: "unknown",
             reason: "bootstrap_degraded",
           });
+          markUnavailable();
           setSessionLoaded(true);
           return;
         }
@@ -444,7 +590,7 @@ export function useAuthLifecycle(deps: {
             caller: "root_layout",
             reason: "bootstrap_no_session_on_protected_route",
           });
-          if (!active) return;
+          if (!isCurrentBootstrap()) return;
 
           if (persistedHint.hasStoredSession || persistedHint.degraded) {
             recordAuthRedirectBlocked("protected_app_route_session_unknown", {
@@ -457,6 +603,7 @@ export function useAuthLifecycle(deps: {
               status: "unknown",
               reason: "bootstrap_protected_route_unknown",
             });
+            markUnavailable();
             setSessionLoaded(true);
             return;
           }
@@ -467,21 +614,11 @@ export function useAuthLifecycle(deps: {
           });
         }
 
-        setAuthSessionState(
-          has
-            ? {
-                status: "authenticated",
-                reason: "bootstrap_authenticated",
-              }
-            : {
-                status: "unauthenticated",
-                reason: "bootstrap_no_session",
-              },
-        );
         setSessionLoaded(true);
-
-        if (has) loadRoleForCurrentSession(session?.user ?? null);
+        if (session) void acceptSessionAfterAssurance(session, "bootstrap_authenticated");
         else {
+          cancelAssurance();
+          setAuthSessionState({ status: "unauthenticated", reason: "bootstrap_no_session" });
           await clearSessionBoundaryState("bootstrap_no_session");
         }
       } catch (e: unknown) {
@@ -522,13 +659,13 @@ export function useAuthLifecycle(deps: {
             e instanceof Error ? e.message : e,
           );
         }
-        if (!active) return;
+        if (!isCurrentBootstrap()) return;
 
         const persistedHint = await hasPersistedAuthSessionHint({
           caller: "root_layout",
           reason: "bootstrap_error",
         });
-        if (!active) return;
+        if (!isCurrentBootstrap()) return;
 
         if (!persistedHint.hasStoredSession && !persistedHint.degraded) {
           recordAuthGateEvent("auth_bootstrap_error_without_persisted_session", "success", {
@@ -550,6 +687,7 @@ export function useAuthLifecycle(deps: {
           status: "unknown",
           reason: "bootstrap_error",
         });
+        markUnavailable();
 
         // ❌ НЕ ЧИСТИМ состояние при timeout
         // clearDocumentSessions();
@@ -561,9 +699,11 @@ export function useAuthLifecycle(deps: {
 
     const { data: listener } = subscribeAuthLifecycleStateChange(
       (event, session) => {
+        if (!active) return;
         const has = Boolean(session);
         const isTerminalSignOut =
           event === "SIGNED_OUT" || String(event) === "USER_DELETED";
+        if (has || isTerminalSignOut) authEventGenerationRef.current += 1;
         const nextPrincipalFingerprint = authPrincipalFingerprint(session);
         const duplicatePrincipalRefresh =
           event === "TOKEN_REFRESHED" &&
@@ -594,7 +734,6 @@ export function useAuthLifecycle(deps: {
             authEvent: event,
             reason: "same_principal_fingerprint",
           });
-          return;
         }
 
         setSessionLoaded(true);
@@ -614,10 +753,12 @@ export function useAuthLifecycle(deps: {
               status: "unknown",
               reason: "non_terminal_auth_event",
             });
+            markUnavailable();
             return;
           }
 
           resetPendingAuthExitSessionProbe();
+          cancelAssurance();
           authPrincipalFingerprintRef.current = null;
           setAuthSessionState({
             status: "unauthenticated",
@@ -629,21 +770,26 @@ export function useAuthLifecycle(deps: {
 
         resetPendingAuthExitSessionProbe();
         authPrincipalFingerprintRef.current = nextPrincipalFingerprint;
-        setAuthSessionState({
-          status: "authenticated",
+        if (session) void checkSession(session, {
           reason: "auth_event_authenticated",
+          warmRole: !duplicatePrincipalRefresh || authSessionStateRef.current.status !== "authenticated",
         });
-        loadRoleForCurrentSession(session?.user ?? null);
       },
     );
 
     return () => {
       active = false;
+      initStartedRef.current = false;
+      authEventGenerationRef.current += 1;
+      cancelAssurance();
       listener?.subscription?.unsubscribe();
     };
   }, [
     clearSessionBoundaryState,
-    loadRoleForCurrentSession,
+    acceptSessionAfterAssurance,
+    cancelAssurance,
+    checkSession,
+    markUnavailable,
     recordAuthCheckEvent,
     recordAuthGateEvent,
     recordAuthRedirectBlocked,
@@ -656,6 +802,9 @@ export function useAuthLifecycle(deps: {
   ]);
 
   return {
+    assuranceStatus,
+    acceptSessionAfterAssurance,
+    retryAuthAssurance,
     authSessionState,
     authenticatedUserId,
     authenticatedRole,
@@ -687,6 +836,7 @@ function resolveRouteFromAuth(params: {
   inAuthStack: boolean;
   isPdfViewerRoute: boolean;
   hasRecentAuthExit: boolean;
+  isMfaRoute?: boolean;
 }): AuthRouteDecision {
   if (!params.sessionLoaded) {
     return {
@@ -708,6 +858,12 @@ function resolveRouteFromAuth(params: {
       type: "none",
       reason: "session_present_on_app_route",
     };
+  }
+
+  if (params.sessionState.status === "mfa_required") {
+    return params.isMfaRoute
+      ? { type: "none", reason: "session_present_on_app_route" }
+      : { type: "redirect_mfa", target: "/auth/mfa", reason: "mfa_verification_required" };
   }
 
   if (params.sessionState.status === "unknown") {

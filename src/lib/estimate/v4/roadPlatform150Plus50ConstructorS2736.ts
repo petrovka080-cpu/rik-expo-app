@@ -3,7 +3,7 @@ import {buildAutomaticConstructionOwnerR1,type AutomaticParameterSpec,type Autom
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';
 import {effectivePurchaseBalanceExpressionsR1} from './effectivePurchaseBalanceR1';
 import {GRAVEL_BASE_DEFINITION_S2735} from './gravelBaseOperationS2735';
-import {ASPHALT_INSTALL_KRER27_PARAMETERS,ASPHALT_INSTALL_KRER27_FORMULAS,ASPHALT_INSTALL_KRER27_RESOURCES,ASPHALT_INSTALL_KRER27_RUNTIME_INPUT,ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS,ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,ASPHALT_INSTALL_KRER27_SOURCE_ID,ASPHALT_INSTALL_KRER27_SOURCE_METADATA} from './asphaltInstallLargeAreaKrer27ProfileR1';
+import {ASPHALT_INSTALL_KRER27_PARAMETERS,ASPHALT_INSTALL_KRER27_FORMULAS,ASPHALT_INSTALL_KRER27_RESOURCES,ASPHALT_INSTALL_KRER27_RUNTIME_INPUT,ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS,ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,ASPHALT_INSTALL_KRER27_SOURCE_ID,ASPHALT_INSTALL_KRER27_SOURCE_METADATA} from './asphaltInstallKrer27ProfileR1';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 
 export const ROAD_PLATFORM_CONTRACT_S2736=pack.contract;
@@ -97,7 +97,7 @@ const withComposition=(resources:AutomaticOwnerDefinition['resources'],stage:'ba
     scopeContextParameterIds:[...(r.resource_graph.scopeContextParameterIds as string[]??[]),'base_thickness_mm'],
     ...(included?{includedInResourceOwnerRowId:included}:{}),
     operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:'road-platform-150-plus-50',groupTitleRu:'Выбранная площадка: щебёночное основание15см → асфальт50мм',operationId:stage,operationTitleRu:stage==='base'?'Нормативное однослойное щебёночное основание':'Готовая укладка асфальта с собственным уплотнением',completionCriterionRu:'Подтвердить проект, материалы, доставку и применимый контроль слоёв'},
-  },source_metadata:{...r.source_metadata,operationInstanceId:stage,reusedOperation:stage==='asphalt'?{module:'asphaltInstallLargeAreaKrer27ProfileR1',sourcePackSha256:ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,originalRowId:r.row_id,formulaArithmeticPreserved:true}:null,projectApprovalClaimed:false}};
+  },source_metadata:{...r.source_metadata,operationInstanceId:stage,reusedOperation:stage==='asphalt'?{module:'asphaltInstallKrer27ProfileR1',sourcePackSha256:ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,originalRowId:r.row_id,formulaArithmeticPreserved:true}:null,projectApprovalClaimed:false}};
   return {...result,row_sha256:estimateDeterministicHash({...result,row_sha256:''})};
 });
 const asphaltParameters=ASPHALT_INSTALL_KRER27_PARAMETERS.filter(p=>p.parameter_id!=='area_m2').map((p)=>{

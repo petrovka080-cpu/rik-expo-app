@@ -1,0 +1,244 @@
+{
+  "contract": "master29-floor-drywall-exact-source-pins/r1",
+  "hashAlgorithm": "SHA256_FILE_BYTES",
+  "publicNamePinsMayNotBeRewritten": true,
+  "sharedDependenciesInCopyPlan": false,
+  "pins": [
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts",
+      "sha256": "49c4e729df611a646bcf9c732a816d63a9847151350a2fb65672af470897bc7b",
+      "role": "ROOT_OWNED_EXACT_SHARED_MEASURE_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.test.ts",
+      "sha256": "68a81598f210d4e4566e7ff931bcc9328233619d30ca026a9257b9e413544d76",
+      "role": "ROOT_OWNED_EXACT_SHARED_MEASURE_DEPENDENCY"
+    },
+    {
+      "path": "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+      "sha256": "a5df8be85820b8d90eca3408c66930554c262df2a2bd36863145c35290bf0af9",
+      "role": "ROOT_OWNED_EXACT_SHARED_MEASURE_DEPENDENCY"
+    },
+    {
+      "path": "src/features/consumerRepair/consumerCanonicalConditionalPrimaryMeasure.test.ts",
+      "sha256": "0a03e49afb6e63732ca145d007fba11cf1bd88c11fbe6e9678281faf71304496",
+      "role": "ROOT_OWNED_EXACT_SHARED_MEASURE_DEPENDENCY"
+    },
+    {
+      "path": "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts",
+      "sha256": "9446aa5731d80ca4fc47e307bd13c440a9a713b72200cb84e41f24502b85bc7f",
+      "role": "ROOT_OWNED_EXACT_SHARED_MEASURE_DEPENDENCY"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json",
+      "sha256": "d46879709c79f99485203f86b86f631521fd11469597ed81c2c3703fd1b841d1",
+      "role": "ROOT_OWNED_PUBLIC_NAME_DEPENDENCY"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json",
+      "sha256": "82c26fabe15fea774a4ac2f806b3490eeefae037f82b7aeb8e33bf25d716aed3",
+      "role": "ROOT_OWNED_PUBLIC_NAME_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "sha256": "56ffadc92ec669df51ab0f94a5bfc1d8f25a12b9eb9121f4c6323ea30a40cfc0",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+      "sha256": "021602e3309f07ab67db0dbd369b731535319509380b5297077a9fb3244d1bb7",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/v4/cm11SmallCeramicS2754.ts",
+      "sha256": "c977317949e3e1bbf0f71b053acc2807b4edf25aa9e6a1b400df56b6743beb01",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/v4/ce40ReadyCeramicGroutingS2754.ts",
+      "sha256": "12955fcf83d8c8c4a7f996902ce3128154e00bb2fed81b9e5ce1991a817609d3",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/estimateDeterministicHash.ts",
+      "sha256": "5a53bea2ea6e1cc5f3f22c95e4463c89a3d97a74c95856dde9d2670b3e5c096f",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/formulaGraph.ts",
+      "sha256": "60ee28eaf8374f736f22c9f1ea7cd8827ef8fc98719c531cdb948ebe1c1fb17c",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+      "sha256": "85dfc9527926034ac2c02b3d84cb30be752c1ed2d7ac451502b5e5cccf8c9fd2",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts",
+      "sha256": "4c6d76236a919c848d34dbc486e656ed920ad9e2b29bb045e13f61b7ba248aec",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts",
+      "sha256": "f40e1f5cf38d85485e1d4bf43b78874d3d8e6ad577740560b5b55021f83a5f6e",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts",
+      "sha256": "27447089b102d8db0b4d58efb9e177e42fb03ca7570071cbb4ed19e6dcc69016",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+      "sha256": "69a216a511b4406fce92a7af961fa18b1d211b1d5548a09b103ea18ec5fa2e54",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+      "sha256": "f2987e141198ca5f7733e9c29dc3b722e7f95926cd9afe44a5af184a1dd59761",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport.ts",
+      "sha256": "921abd1a43765647d1085a5f8b0af34e7c82745fcbf271ecf314490591be1de6",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts",
+      "sha256": "425cfdf621557b6de2b7d3249e54a1c71898ccd2e8eab0c6f2750150568bcae2",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter.ts",
+      "sha256": "1b98fe2db8f98581ec06d6c41d02a009b4ce0c039c7b425d20f522dc17e4750c",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts",
+      "sha256": "c38a7f07bf7cc4a8f2c30908ea9bf426ba7553b40efbaa709676026a2fbaf67b",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts",
+      "sha256": "544d561544bf476be60a6de7a9fba207e2c7fb258b44d09458fefd76e9844bfc",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts",
+      "sha256": "6f921cbb7d49169b69102ddf2260feb0b9a51403282ff435ededc6931fe537da",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/contracts.ts",
+      "sha256": "e5d0fed4e59e486e86b4ae0de1eb1cd6dded4a0781553d1e0dfe7f99a5b21693",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimateStructuredPipeline/structuredEstimateRequestBinding.ts",
+      "sha256": "9eefb88cfb36e11584c8355f5aa001d1dabef24dfdc7655ab3c435bb73a0290a",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection.ts",
+      "sha256": "94f653040bb58d569403161e742903e62abdcaca118fd4bb025fe37db6145532",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/features/consumerRepair/requestEstimateViewModel.ts",
+      "sha256": "0ad69ec5d277f18be894c2e4511e429afdebf6dcb6fab47f01ce9db1037c25a0",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/consumerRequests/consumerRequestTypes.ts",
+      "sha256": "8fa1d8f2f4f4ea2437e2ff603c6393894b8b15e03738f6c369a323b65f4fc499",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
+      "sha256": "fc246ea7012eb78ffb50283442bb192d6ff20cbce6fdae2cf35a1eb287a7f933",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
+      "sha256": "3437f63dbfc2e1f261d761cbb82da58093d23cbe95ecc61c52ccac5bb8f50031",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/public-calculation-detail-roles-r1.json",
+      "sha256": "df1d4c31d64225b66c90ac9e2bbb6fc481137efa5a5710b000f848ee2c77beec",
+      "role": "IMMUTABLE_CANONICAL_DEPENDENCY"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/drywall-partition-c111-s27-36.json",
+      "sha256": "b981d031cc05ca11e41bc6800afb0fc9f6f482110e7befb67fc4d20612f3e107",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/CM-11-ru_KZ.pdf",
+      "sha256": "4cde3e76ffd7221bc15ca6aa0106a442ead0b8d4cd556e50b17353b96b769989",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/s27-35/professional-wet-room-sources/CE-40-ru_KZ.pdf",
+      "sha256": "1bb1140499e41734d8ce91f36a1f826d8ecb875bc1b501be21dedad716c676ae",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_ADAPTERS.html",
+      "sha256": "acf7d9a7a5abd6932ce9eccc111c45d5795326443d20677a354ca59653736047",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_MIXGRIP.html",
+      "sha256": "bc67a333030cd0e7c4bf731a5885ab68f2d44377f02323d9a3c9273093d218ff",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_MIXAGON.pdf",
+      "sha256": "ff3288f31a6305113a83dbdd0a0b105037caf29b3ef06e16b939b379021cd775",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/s27-35/professional-wet-room-sources/CT-17-ru_KZ.pdf",
+      "sha256": "cbb38df0d507d67832e527a8a476835ec2fe8804dd6702f3ab9676f55d1fa508",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_PADDLES.pdf",
+      "sha256": "5fc27fe728dccbd25f4a4e6ce42340c5fc24d531948ce61806a953235844a337",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf",
+      "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_BUCKETS_45711_DE.pdf",
+      "sha256": "3af7f7a39eb8a37cbd23e28c8aa627d3b40efa64f27be4144ae3ce0a4cdd29e0",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/BUERKLE_7204_1000.html",
+      "sha256": "c6ca6b7bcbc56120707ce4c624acd3d4aa078546e588859132cf58a3b7499770",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/s27-35/g2-sources/knauf-c11-2025.pdf",
+      "sha256": "b811497cee980d793565aad404c03e66e8c7f09dd4d7a4fabeb97b955867e290",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/ceiling-high-load-geometry-r1/sources/KNAUF_FUGEN_2025_07.pdf",
+      "sha256": "3a6e5980c1e3009793f5b490f68ce80a80b675cb4c903d6725d907075455fdc6",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    },
+    {
+      "path": ".release-runtime/r568/ceiling-high-load-geometry-r1/sources/KNAUF_TIEFENGRUND_2026_06.pdf",
+      "sha256": "9487c60444959b35d40e9532af4b3fba2e699a9b44239279d999c5ba016b01a9",
+      "role": "EXACT_PRIMARY_SOURCE_OR_ACCEPTED_WHOLE_KIT"
+    }
+  ],
+  "missingCanonicalPrimarySources": []
+}

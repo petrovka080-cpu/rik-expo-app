@@ -30,6 +30,11 @@ it('allows null clear and rejects equal pins that would become stale after param
   for (const manual of ['0', '1', '3', '3.000', '7', '3.5']) expect(() => assertCanonicalDerivedQuantityAmendmentV1(p, manual))
     .toThrow(expect.objectContaining({ code: 'ROW_AMENDMENT_INVALID' }));
 });
+it('permits an explicit manual amendment while the automatic policy remains unchanged',()=>{
+  const p=validate(policy),before=JSON.stringify(p);
+  for(const quantity of ['0','3','7','3.5'])expect(()=>assertCanonicalDerivedQuantityAmendmentV1(p,quantity,true)).not.toThrow();
+  expect(JSON.stringify(p)).toBe(before);
+});
 it('locks a known derived physical UI row while preserving ordinary quantity editors', () => {
   expect(canonicalDerivedQuantityEditPolicyV1(policy)).toEqual(policy);
   expect(consumerRepairRowHasSourceManagedQuantity({ quantity: 12, sourceParameters: {

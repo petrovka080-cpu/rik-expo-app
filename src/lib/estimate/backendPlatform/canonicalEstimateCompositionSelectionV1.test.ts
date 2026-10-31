@@ -65,6 +65,32 @@ test('physical exclusion zeros dependencies; cost-only exclusion preserves physi
   expect(row(cost,'truck').quantity).toBe('0.052');expect(row(cost,'counter').quantity).toBe('0.052');
 });
 
+test('composition selection retains a shared operation presence gate through exclusion and restoration',async()=>{
+  const input=fixture();
+  const graph=input.resourceDefinitions[0]!.resource_graph;
+  const operation=graph.operationCompositionV1 as {additionalOperations:Record<string,unknown>[]};
+  operation.additionalOperations[0]!.whenResourcePresent=['counter'];
+  const before=JSON.stringify(input);
+  const sections=(compiled:Awaited<ReturnType<typeof compileCanonicalEstimateCore>>,excludedMarker:boolean)=>
+    canonicalEstimateResourceOperationSections(compiled.rows.filter(resource=>!excludedMarker||resource.row_id!=='counter')
+      .map(resource=>({rowId:resource.row_id,titleRu:String(resource.title_ru),
+        operation:(resource.calculation_trace as {resourceGraph:Record<string,unknown>}).resourceGraph.operationCompositionV1})));
+  for(const excludedMarker of [false,true,false]){
+    const compiled=await compileCanonicalEstimateCore({...input,compositionSelectionV1:selection([],excludedMarker?['counter']:[])});
+    const owner=row(compiled,'truck');
+    const operation=canonicalEstimateOperationReference((owner.calculation_trace as {resourceGraph:Record<string,unknown>}).resourceGraph.operationCompositionV1)!;
+    expect(operation.additionalOperations?.[0]?.whenResourcePresent).toEqual(['counter']);
+    expect(sections(compiled,excludedMarker).some(section=>section.operation?.operationId==='primer')).toBe(!excludedMarker);
+    expect(owner).toMatchObject({quantity:'0.052',unit_price:'100',title_ru:'Saved manual name',included_in_estimate:true});
+    expect(compiled.rows.filter(resource=>resource.included_in_estimate)).toHaveLength(1);
+    expect(compiled.totals.amount).toBe('5.2');
+  }
+  const costOnly=await compileCanonicalEstimateCore({...input,compositionSelectionV1:selection(),
+    rowOverrides:{...input.rowOverrides,counter:{includedInEstimate:false,provenance:{kind:'manual'}}}});
+  expect(sections(costOnly,false).some(section=>section.operation?.operationId==='primer')).toBe(true);
+  expect(JSON.stringify(input)).toBe(before);
+});
+
 test('excluded contribution needs no unused geometry; unknown active geometry remains unresolved',async()=>{
   const input=fixture(),result=await compileCanonicalEstimateCore({...input,submittedParameters:{q:'40'},compositionSelectionV1:selection(['["roof","primer"]'])});
   expect(row(result,'truck').quantity).toBe('0.036');

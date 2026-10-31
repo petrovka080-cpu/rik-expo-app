@@ -1,4 +1,6 @@
-param(
+﻿param(
+  [switch]$VerifyCanonicalDatabaseOnly,
+  [string]$DatabaseVerificationCommandPath = "",
   [switch]$PreflightOnly,
   [switch]$PrepareBuildOnly,
   [ValidateSet("Host", "AndroidEmulator")]
@@ -6,11 +8,21 @@ param(
   [switch]$UseStandaloneLocalEstimateDatabase,
   [switch]$VerifyFullTypecheck,
   [string]$MasterPath = "",
+  [string]$PreparedReferenceManifestPath = "",
+  [string]$PreparedReferenceManifestSha256 = "",
+  [ValidateSet("Combined", "Web")]
+  [string]$WarmupTarget = "Combined",
+  [ValidateSet('Metro','StaticExport')]
+  [string]$WebServingMode = 'Metro',
+  [switch]$ReuseTransformCache,
   [ValidateRange(1024, 65535)]
   [int]$Port = 8081
 )
 
 $ErrorActionPreference = "Stop"
+if ($WebServingMode -eq 'StaticExport' -and ($WarmupTarget -ne 'Web' -or $EmbeddedBuildTarget -ne 'Host' -or $PrepareBuildOnly)) {
+  throw 'WHOLE_APP_STATIC_EXPORT_REQUIRES_HOST_WEB_REVIEW'
+}
 if ($PrepareBuildOnly -and ($PreflightOnly -or $VerifyFullTypecheck)) {
   throw "WHOLE_APP_BUILD_PREPARATION_SWITCH_CONFLICT"
 }
@@ -33,6 +45,56 @@ function Record-ReviewStage([string]$StageName) {
 function Fail-Review([string]$Code, [string]$Recovery) {
   Write-Error "WHOLE_APP_DEVELOPER_REVIEW_RED: $Code`nВосстановление: $Recovery"
   exit 1
+}
+
+function Resolve-WholeAppFrontendBuildStamp(
+  [string]$RuntimeRoot, [object]$Identity, [object]$BackendManager
+) {
+  # A cached bundle keeps the timestamp of its first build attempt. A launcher
+  # restart is not a new build of the same immutable source/release tuple.
+  $tuple = [ordered]@{
+    source_tree_hash = [string]$Identity.sourceTreeHash
+    product_source_hash = [string]$Identity.productSourceHash
+    js_bundle_fingerprint = [string]$Identity.jsBundleFingerprint
+    master_sha256 = [string]$BackendManager.master_sha256
+    definition_release_id = [string]$BackendManager.definition_release_id
+    search_release_id = [string]$BackendManager.search_release_id
+    capability_id = [string]$BackendManager.capability_id
+  }
+  $tupleHash = Get-Sha256 ($tuple | ConvertTo-Json -Compress)
+  $stampRoot = Join-Path $RuntimeRoot "frontend-build-stamps"
+  New-Item -ItemType Directory -Path $stampRoot -Force | Out-Null
+  $stampPath = Join-Path $stampRoot "$tupleHash.json"
+  if (Test-Path -LiteralPath $stampPath) {
+    $stamp = Get-Content -LiteralPath $stampPath -Raw | ConvertFrom-Json
+    if ($stamp.schema_version -cne 'rik-expo-app.frontend-build-stamp.v1' `
+      -or $stamp.tuple_sha256 -cne $tupleHash) { throw "WHOLE_APP_FRONTEND_BUILD_STAMP_INVALID" }
+    foreach ($name in $tuple.Keys) {
+      if ([string]$stamp.tuple.$name -cne [string]$tuple[$name]) {
+        throw "WHOLE_APP_FRONTEND_BUILD_STAMP_TUPLE_DRIFT"
+      }
+    }
+    # PowerShell 7 deserializes ISO JSON dates; normalize its date object
+    # back to the same invariant UTC string written by this owner.
+    if ($stamp.build_time -is [DateTime]) {
+      $stamp.build_time = ([DateTimeOffset]$stamp.build_time).ToUniversalTime().ToString("o", [Globalization.CultureInfo]::InvariantCulture)
+    }
+    [void][DateTimeOffset]::ParseExact([string]$stamp.build_time, "o",
+      [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::None)
+    return $stamp
+  }
+  $stamp = [ordered]@{
+    schema_version = 'rik-expo-app.frontend-build-stamp.v1'
+    tuple_sha256 = $tupleHash
+    tuple = $tuple
+    build_time = [DateTimeOffset]::UtcNow.ToString("o")
+  }
+  $stream = [IO.File]::Open($stampPath, [IO.FileMode]::CreateNew,
+    [IO.FileAccess]::Write, [IO.FileShare]::Read)
+  $writer = [IO.StreamWriter]::new($stream, [Text.UTF8Encoding]::new($false))
+  try { $writer.Write(($stamp | ConvertTo-Json -Depth 4)) }
+  finally { $writer.Dispose() }
+  return [pscustomobject]$stamp
 }
 
 function Resolve-WholeAppCanonicalFunctionUrl(
@@ -260,6 +322,171 @@ if ($GitRootExitCode -ne 0 `
   Fail-Review "PROJECT_ROOT_MISMATCH" "используйте только $ExpectedCanonicalRoot; копии и другие worktree не являются рабочим ядром"
 }
 Set-Location -LiteralPath $Root
+if ($VerifyCanonicalDatabaseOnly) {
+  # Finite local verification only. No provider/backend/Web capability is used.
+  if ($PreflightOnly -or $PrepareBuildOnly -or $VerifyFullTypecheck -or
+      $EmbeddedBuildTarget -ne 'Host' -or $WebServingMode -ne 'Metro' -or
+      $ReuseTransformCache -or $PreparedReferenceManifestPath -or $PreparedReferenceManifestSha256 -or
+      $MasterPath -or $Port -ne 8081 -or $WarmupTarget -ne 'Combined') { throw 'DB_ONLY_SWITCH_CONFLICT' }
+  $dbCommand = [IO.Path]::GetFullPath($DatabaseVerificationCommandPath)
+  $dbStage = Split-Path -Parent $dbCommand
+  $dbSpec = Get-Content -LiteralPath $dbCommand -Raw | ConvertFrom-Json -DateKind String
+  $dbContext = Get-Content -LiteralPath (Join-Path $dbStage 'DB_OWNER_CONTEXT.json') -Raw | ConvertFrom-Json
+  $dbIncoming = $env:GOX_DB_VERIFICATION_CONTEXT | ConvertFrom-Json
+  if ($dbSpec.commandRole -cne 'FINITE_DB_VERIFICATION' -or
+      $dbContext.commandPath -cne $dbCommand -or $dbContext.childPid -ne $PID -or
+      $dbContext.childStartFiletime -ne (Get-Process -Id $PID).StartTime.ToUniversalTime().ToFileTimeUtc() -or
+      $dbContext.commandSha256 -cne (Get-FileHash -LiteralPath $dbCommand -Algorithm SHA256).Hash.ToLowerInvariant() -or
+      $dbIncoming.commandSha256 -cne $dbContext.commandSha256 -or
+      $dbIncoming.instanceNonce -cne $dbContext.instanceNonce -or
+      $dbIncoming.rootThreadId -cne $dbContext.rootThreadId -or
+      $dbSpec.db.instanceNonce -cne $dbContext.instanceNonce) { throw 'DB_ONLY_OWNER_CONTEXT_REQUIRED' }
+  if ($dbSpec.db.contract -cne 'gox-finite-db-fixed-groups/v3' -or
+      $dbSpec.db.group -cnotin @('NORMAL_LOCKED_THREE','ASPHALT_PREPARED_THREE','MASTER30_PROMPT_INGRESS_ONE')) { throw 'DB_ONLY_LITERAL_V3_GROUP_REQUIRED' }
+  if (($dbSpec.db.PSObject.Properties.Name -contains 'capturePrelude') -and
+      ($dbSpec.db.group -cne 'NORMAL_LOCKED_THREE' -or $dbSpec.db.capturePrelude -cnotin @('PANEL_SOCKET_CURRENT_INPUTS','MONOLITHIC_WALL_CURRENT_INPUTS','MONOLITHIC_WALL_NUMERIC_INVENTORY_ONLY','MONOLITHIC_WALL_COMPLETE_RAW_INPUTS_R2'))) { throw 'DB_ONLY_FIXED_CAPTURE_PRELUDE_REQUIRED' }
+  $dbData = Join-Path $Root '.release-runtime/r568/runtime/postgres-r4'
+  $dbCtl = 'C:\Program Files\PostgreSQL\17\bin\pg_ctl.exe'
+  function Write-DbMarker([string]$Name, [object]$Value) {
+    $target = Join-Path $dbStage $Name
+    $temporary = "$target.$PID.tmp"
+    $stream = [IO.File]::Open($temporary, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::Read)
+    $writer = [IO.StreamWriter]::new($stream, [Text.UTF8Encoding]::new($false))
+    try { $writer.Write(($Value | ConvertTo-Json -Depth 8 -Compress)) } finally { $writer.Dispose() }
+    [IO.File]::Move($temporary, $target)
+  }
+  function Assert-DbWindow {
+    if ($env:GOX_HOOK_COORDINATOR_CONTEXT) {
+      $outer = $env:GOX_HOOK_COORDINATOR_CONTEXT | ConvertFrom-Json
+      if (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $outer.commandPath) 'HOOK_STOP_REQUEST.json')) { throw 'DB_ONLY_OUTER_CONTROLLED_STOP' }
+    }
+    if ((Get-Date).ToUniversalTime() -ge [DateTimeOffset]::Parse($dbSpec.db.leaseEndUtc).UtcDateTime -or
+        (Test-Path -LiteralPath (Join-Path $dbStage 'DB_STOP_REQUEST.json'))) { throw 'DB_ONLY_CONTROLLED_STOP' }
+  }
+  function Start-DbChild([string]$Executable, [string[]]$Arguments, [string]$Name) {
+    Assert-DbWindow
+    foreach ($argument in $Arguments) {
+      if ($argument.Contains('"') -or $argument.Contains("`r") -or $argument.Contains("`n") -or $argument.EndsWith('\')) { throw 'DB_ONLY_ARGUMENT_ENCODING' }
+    }
+    $encoded = ($Arguments | ForEach-Object { '"' + $_ + '"' }) -join ' '
+    return Start-Process -FilePath $Executable -ArgumentList $encoded -WorkingDirectory $Root -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $dbStage "$Name.stdout.log") -RedirectStandardError (Join-Path $dbStage "$Name.stderr.log")
+  }
+  function Wait-DbChild([Diagnostics.Process]$Process) {
+    $ownedStart = $Process.StartTime.ToUniversalTime().ToFileTimeUtc()
+    try {
+      while (-not $Process.HasExited) { Assert-DbWindow; Start-Sleep -Milliseconds 100; $Process.Refresh() }
+      $Process.WaitForExit()
+      return $Process.ExitCode
+    } catch {
+      $Process.Refresh()
+      if (-not $Process.HasExited -and $Process.StartTime.ToUniversalTime().ToFileTimeUtc() -eq $ownedStart) {
+        $Process.Kill(); $Process.WaitForExit(5000) | Out-Null
+      }
+      throw
+    }
+  }
+  # Privacy boundary: never serialize ErrorRecord, Message, ScriptStackTrace,
+  # InvocationInfo.Line/PositionMessage, URL or environment values.
+  function Get-DbFailureDiagnostic([System.Management.Automation.ErrorRecord]$Record, [string]$Phase) {
+    $allowedPhases = @('WINDOW_PRECHECK', 'CAPTURE_CONTRACT', 'GROUP_ENV_REFERENCE', 'URL_PRESENT', 'URL_PARSE', 'URL_ENDPOINT', 'PG_VERSION', 'LISTENER_PRECHECK', 'PG_STATUS_START', 'PG_STATUS_WAIT', 'PG_START_MARKER', 'PG_START', 'PG_START_WAIT', 'PG_OWNERSHIP_WAIT', 'TEST_ENVIRONMENT', 'CAPTURE_START', 'CAPTURE_WAIT', 'JEST_0_START', 'JEST_0_WAIT', 'JEST_1_START', 'JEST_1_WAIT', 'JEST_2_START', 'JEST_2_WAIT')
+    $safePhase = if ($Phase -cin $allowedPhases) { $Phase } else { 'UNKNOWN_PHASE' }
+    $type = $Record.Exception.GetType().FullName
+    if ($type.Length -gt 160 -or $type -cnotmatch '^[A-Za-z_][A-Za-z0-9_.+`]*$') { $type = 'UNCLASSIFIED_EXCEPTION' }
+    $line = 0
+    if ($null -ne $Record.InvocationInfo) { $line = [Math]::Max(0, [int]$Record.InvocationInfo.ScriptLineNumber) }
+    return @{ phase = $safePhase; exceptionType = $type; scriptLineNumber = $line; category = $Record.CategoryInfo.Category.ToString() }
+  }
+  $dbPassed = $false
+  $dbError = $null
+  $dbFailureDiagnostic = $null
+  $dbPhase = 'WINDOW_PRECHECK'
+  try {
+    Assert-DbWindow
+    $dbPhase = 'CAPTURE_CONTRACT'
+    if ($dbSpec.db.PSObject.Properties.Name -contains 'capturePrelude') {
+      if ($dbSpec.db.capturePrelude -cnotin @('PANEL_SOCKET_CURRENT_INPUTS','MONOLITHIC_WALL_CURRENT_INPUTS','MONOLITHIC_WALL_NUMERIC_INVENTORY_ONLY','MONOLITHIC_WALL_COMPLETE_RAW_INPUTS_R2') -or $dbSpec.db.group -cne 'NORMAL_LOCKED_THREE') { throw 'DB_ONLY_FIXED_CAPTURE_PRELUDE_REQUIRED' }
+    }
+    $dbPhase = 'GROUP_ENV_REFERENCE'
+    switch ([string]$dbSpec.db.group) {
+      'NORMAL_LOCKED_THREE' { $dbUrlValue = $env:ESTIMATE_MIGRATION_DATABASE_URL }
+      'ASPHALT_PREPARED_THREE' { $dbUrlValue = $env:R4A13_DATABASE_URL }
+      'MASTER30_PROMPT_INGRESS_ONE' { $dbUrlValue = $env:R4A13_DATABASE_URL }
+      default { throw 'DB_ONLY_LITERAL_GROUP_REQUIRED' }
+    }
+    $dbPhase = 'URL_PRESENT'
+    if ([string]::IsNullOrWhiteSpace($dbUrlValue)) { throw 'DB_ONLY_EXISTING_URL_ENV_REQUIRED' }
+    $dbPhase = 'URL_PARSE'
+    $dbUri = [Uri]$dbUrlValue
+    $dbPhase = 'URL_ENDPOINT'
+    if ($dbUri.Scheme -cne 'postgresql' -or $dbUri.Host -cne '127.0.0.1' -or $dbUri.Port -ne 55432 -or $dbUri.AbsolutePath -cne '/rik_r4_runtime_b5_v2') { throw 'DB_ONLY_ENDPOINT_MISMATCH' }
+    $dbPhase = 'PG_VERSION'
+    if ((Get-Content -LiteralPath (Join-Path $dbData 'PG_VERSION') -Raw).Trim() -cne '17') { throw 'DB_ONLY_PG_VERSION' }
+    $dbPhase = 'LISTENER_PRECHECK'
+    if (@(Get-NetTCPConnection -LocalPort 55432 -State Listen -ErrorAction SilentlyContinue).Count) { throw 'DB_ONLY_FOREIGN_LISTENER' }
+    $dbPhase = 'PG_STATUS_START'
+    $statusProcess = Start-DbChild $dbCtl @('status', '-D', $dbData) 'pg-status'
+    $dbPhase = 'PG_STATUS_WAIT'
+    if ((Wait-DbChild $statusProcess) -ne 3) { throw 'DB_ONLY_EXISTING_OR_UNKNOWN_POSTMASTER' }
+    $dbPhase = 'PG_START_MARKER'
+    Write-DbMarker 'DB_PG_STARTING.json' @{ context = $dbContext }
+    $dbPhase = 'PG_START'
+    $startProcess = Start-DbChild $dbCtl @('start', '-D', $dbData, '-l', (Join-Path $dbStage 'owned-postgres.log'), '-o', '-h 127.0.0.1 -p 55432 -c shared_buffers=16MB', '-w', '-t', '45') 'pg-start'
+    $dbPhase = 'PG_START_WAIT'
+    if ((Wait-DbChild $startProcess) -ne 0) { throw 'DB_ONLY_PG_START_FAILED' }
+    $dbPhase = 'PG_OWNERSHIP_WAIT'
+    while (-not (Test-Path -LiteralPath (Join-Path $dbStage 'DB_PG_OWNED.json'))) { Assert-DbWindow; Start-Sleep -Milliseconds 100 }
+    $dbPhase = 'TEST_ENVIRONMENT'
+    $env:NODE_OPTIONS = '--max-old-space-size=624 --max-semi-space-size=1'
+    $env:EXPO_NO_DOTENV = '1'
+    $env:R4A13_ALLOWED_LOCAL_DATABASE_NAME = 'rik_r4_runtime_b5_v2'
+    $env:R4A13_ALLOW_HASHED_DIRTY_SOURCE = 'true'
+    $env:CONCRETE_REGISTRY_R145_CONSUMER_KEY = 'wall'
+    $env:CONCRETE_REGISTRY_R275_CONSUMER_KEY = 'wall'
+    $env:CONCRETE_REGISTRY_R145_OUTPUT = Join-Path $dbStage 'r145-output'
+    $env:CONCRETE_REGISTRY_R275_OUTPUT = Join-Path $dbStage 'r275-output'
+    $env:FACADE_NVF_STEEL_NORMAL_LOCKED_OUTPUT = Join-Path $dbStage 'r5-output'
+    $dbTests = switch -CaseSensitive ($dbSpec.db.group) {
+      'NORMAL_LOCKED_THREE' { @('scripts/estimate/r4a13/concreteCuringRegistryNormalLockedR145.test.ts', 'scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts', 'scripts/estimate/r4a13/facadeVentilatedSteelExistingNormalLockedR5.test.ts'); break }
+      'ASPHALT_PREPARED_THREE' { @('tests/estimateNorms/asphaltCompactionS26PreparedDbDriven.contract.test.ts', 'tests/estimateNorms/asphaltInstallS26PreparedDbDriven.contract.test.ts', 'tests/estimateNorms/asphaltLevelS2716PreparedDbDriven.contract.test.ts'); break }
+      'MASTER30_PROMPT_INGRESS_ONE' { @('tests/requestEstimate/master30CurrentPromptIngress.db.contract.test.ts'); break }
+      default { throw 'DB_ONLY_LITERAL_V3_GROUP_REQUIRED' }
+    }
+    $dbTests = @($dbTests)
+    if ($dbSpec.db.group -cin @('ASPHALT_PREPARED_THREE','MASTER30_PROMPT_INGRESS_ONE')) {
+      $env:R4A13_CURRENT_RELEASE_PATH = Join-Path $Root 'data/estimate-benchmarks/r568-local-developer-canonical-release.json'
+    }
+    if ($dbSpec.db.PSObject.Properties.Name -contains 'capturePrelude') {
+      $dbPhase = 'CAPTURE_START'
+      $captureProcess = Start-DbChild ([string]$dbSpec.db.nodeExecutable) @('--max-old-space-size=624', '--max-semi-space-size=1', '--import', 'tsx', 'scripts/verification/capturePanelSocketCurrentInputsR1.ts', $dbCommand) 'panel-socket-capture'
+      $dbPhase = 'CAPTURE_WAIT'
+      if ((Wait-DbChild $captureProcess) -ne 0) { throw 'DB_ONLY_CURRENT_INPUT_CAPTURE_FAILED' }
+    }
+    for ($testIndex = 0; $testIndex -lt $dbTests.Count; $testIndex++) {
+      $dbPhase = @('JEST_0_START', 'JEST_1_START', 'JEST_2_START')[$testIndex]
+      $testProcess = Start-DbChild ([string]$dbSpec.db.nodeExecutable) @('--max-old-space-size=624', '--max-semi-space-size=1', 'node_modules/jest/bin/jest.js', '--config', 'jest.config.js', '--runInBand', '--watch=false', '--runTestsByPath', $dbTests[$testIndex], '--json', '--outputFile', (Join-Path $dbStage "jest-$testIndex.json")) "jest-$testIndex"
+      $dbPhase = @('JEST_0_WAIT', 'JEST_1_WAIT', 'JEST_2_WAIT')[$testIndex]
+      if ((Wait-DbChild $testProcess) -ne 0) { throw 'DB_ONLY_REAL_JEST_FAILED' }
+    }
+    $dbPassed = $true
+  } catch {
+    $dbError = 'DB_ONLY_LAUNCHER_FAILED_OR_CONTROLLED_STOP'
+    $dbFailureDiagnostic = Get-DbFailureDiagnostic -Record $_ -Phase $dbPhase
+  }
+  finally {
+    if ($null -eq $dbFailureDiagnostic) {
+      Write-DbMarker 'DB_FINISHED.json' @{ context = $dbContext; testsPassed = $dbPassed; error = $dbError }
+    } else {
+      Write-DbMarker 'DB_FINISHED.json' @{ context = $dbContext; testsPassed = $dbPassed; error = $dbError; failureDiagnostic = $dbFailureDiagnostic }
+    }
+    # Governor alone validates job membership and authorizes normal PG stop.
+    $closeClock = [Diagnostics.Stopwatch]::StartNew()
+    while (-not (Test-Path -LiteralPath (Join-Path $dbStage 'DB_PG_CLOSED.json')) -and $closeClock.Elapsed.TotalSeconds -lt 45) { Start-Sleep -Milliseconds 100 }
+    if (-not (Test-Path -LiteralPath (Join-Path $dbStage 'DB_PG_CLOSED.json'))) { $dbPassed = $false }
+  }
+  if ($dbPassed) { exit 0 } else { exit 1 }
+}
+if ($DatabaseVerificationCommandPath) { throw 'DB_ONLY_COMMAND_REQUIRES_DB_ONLY_MODE' }
+
 
 # An explicitly selected current MASTER takes precedence over any historical
 # process/user value. The backend must attest that exact digest even before an
@@ -326,6 +553,9 @@ if ($ProviderConfigAvailable -and $SupabaseCli) {
   }
   finally {
     $ErrorActionPreference = "Stop"
+if ($WebServingMode -eq 'StaticExport' -and ($WarmupTarget -ne 'Web' -or $EmbeddedBuildTarget -ne 'Host' -or $PrepareBuildOnly)) {
+  throw 'WHOLE_APP_STATIC_EXPORT_REQUIRES_HOST_WEB_REVIEW'
+}
     Pop-Location
   }
 }
@@ -386,15 +616,39 @@ if (-not $localProviderClassOk) {
 
 $Node = (Get-Command node -ErrorAction Stop).Source
 Record-ReviewStage "providers_and_database_preflight"
-$TsxCli = Join-Path $Root "node_modules\tsx\dist\cli.mjs"
-$IdentityRaw = & $Node $TsxCli (Join-Path $Root "scripts\dev\printLocalDeveloperBuildIdentity.ts") 2>$null
+$IdentityRaw = & $Node --import tsx (Join-Path $Root "scripts\dev\printLocalDeveloperBuildIdentity.ts") 2>$null
 if ($LASTEXITCODE -ne 0 -or -not $IdentityRaw) {
   Fail-Review "SOURCE_IDENTITY_RED" "выполните npm install и повторите запуск"
 }
 $Identity = $IdentityRaw | ConvertFrom-Json
 $BuildCommit = (& git -C $Root rev-parse HEAD).Trim()
 $BuildBranch = (& git -C $Root branch --show-current).Trim()
-$ReleaseManifest = Get-Content -LiteralPath (Join-Path $Root "data\estimate-benchmarks\r568-local-developer-canonical-release.json") -Raw | ConvertFrom-Json
+$SelectedReleaseManifestPath = Join-Path $Root "data\estimate-benchmarks\r568-local-developer-canonical-release.json"
+$ReleaseManifestPath = $SelectedReleaseManifestPath
+$PreparedReferenceMode = -not [string]::IsNullOrWhiteSpace($PreparedReferenceManifestPath)
+if ($PreparedReferenceMode -or -not [string]::IsNullOrWhiteSpace($PreparedReferenceManifestSha256)) {
+  if (-not $PreparedReferenceMode -or $PreparedReferenceManifestSha256 -cnotmatch '^[0-9a-f]{64}$' `
+    -or -not [IO.Path]::IsPathRooted($PreparedReferenceManifestPath) `
+    -or -not (Test-Path -LiteralPath $PreparedReferenceManifestPath -PathType Leaf)) {
+    throw "WHOLE_APP_PREPARED_REFERENCE_MANIFEST_PIN_REQUIRED"
+  }
+  $ReleaseManifestPath = [IO.Path]::GetFullPath($PreparedReferenceManifestPath)
+  if ($ReleaseManifestPath.Equals([IO.Path]::GetFullPath($SelectedReleaseManifestPath), [StringComparison]::OrdinalIgnoreCase)) {
+    throw "WHOLE_APP_PREPARED_REFERENCE_REQUIRES_SEPARATE_POINTER"
+  }
+  $ReferenceFile = Get-Item -LiteralPath $ReleaseManifestPath
+  if ($ReferenceFile.Length -gt 1048576 -or $ReferenceFile.Length -le 0 `
+    -or (Get-FileHash -LiteralPath $ReleaseManifestPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $PreparedReferenceManifestSha256) {
+    throw "WHOLE_APP_PREPARED_REFERENCE_MANIFEST_DRIFT"
+  }
+}
+$ReleaseManifest = Get-Content -LiteralPath $ReleaseManifestPath -Raw | ConvertFrom-Json
+if ($PreparedReferenceMode -and ($ReleaseManifest.schemaVersion -ne 'r568-local-developer-canonical-release.v1' `
+  -or $ReleaseManifest.definitionReleaseStatus -ne 'prepared' -or $ReleaseManifest.searchReleaseStatus -ne 'draft' `
+  -or $ReleaseManifest.productionAccessed -ne $false)) {
+  throw "WHOLE_APP_PREPARED_REFERENCE_STATUS_INVALID"
+}
+$ReleaseManifestSha256 = (Get-FileHash -LiteralPath $ReleaseManifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
 Record-ReviewStage "source_identity"
 
 $RuntimeRoot = if ($Port -eq 8081) {
@@ -416,12 +670,30 @@ $env:LOCAL_DEVELOPER_SOURCE_TREE_HASH = [string]$Identity.sourceTreeHash
 $env:LOCAL_DEVELOPER_PRODUCT_SOURCE_HASH = [string]$Identity.productSourceHash
 $env:LOCAL_DEVELOPER_JS_BUNDLE_FINGERPRINT = [string]$Identity.jsBundleFingerprint
 
-$BackendManagerRaw = & $Node $TsxCli (Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts") $(if ($PreflightOnly) { "--preflight" }) 2>$null
+$DeferBackendForColdBundle = -not $PreflightOnly -and -not $PrepareBuildOnly `
+  -and (-not $ReuseTransformCache -or $WarmupTarget -eq 'Web') `
+  -and @(Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue).Count -eq 0
+$BackendManagerRaw = & $Node --import tsx (Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts") $(if ($PreflightOnly) { "--preflight" } elseif ($DeferBackendForColdBundle) { "--prepare-only" }) 2>$null
 if ($LASTEXITCODE -ne 0 -or -not $BackendManagerRaw) {
   Fail-Review "CANONICAL_ESTIMATE_BACKEND_RED" "проверьте local estimate capability и backend 8765"
 }
 $BackendManager = $BackendManagerRaw | ConvertFrom-Json
-$RuntimeIdentity = Invoke-RestMethod -Uri "http://127.0.0.1:8765/runtime-identity" -TimeoutSec 15
+function Assert-WholeAppBackendRuntimeIdentity([object]$BackendManager, [switch]$WaitForStartup) {
+$StartupWait = [Diagnostics.Stopwatch]::StartNew()
+$RuntimeIdentity = $null
+do {
+  try {
+    $RuntimeIdentity = Invoke-RestMethod -Uri "http://127.0.0.1:8765/runtime-identity" -TimeoutSec 1
+    if ($null -eq $RuntimeIdentity) { throw "CANONICAL_ESTIMATE_RUNTIME_IDENTITY_EMPTY" }
+  }
+  catch {
+    if (-not $WaitForStartup -or $StartupWait.ElapsedMilliseconds -ge 25000 `
+      -or $null -eq (Get-Process -Id ([int]$BackendManager.backend_pid) -ErrorAction SilentlyContinue)) {
+      throw
+    }
+    Start-Sleep -Milliseconds 200
+  }
+} while ($null -eq $RuntimeIdentity)
 $RuntimeIdentityRoot = [System.IO.Path]::GetFullPath([string]$RuntimeIdentity.workingDirectory)
 $RuntimeFrontend = $RuntimeIdentity.frontendBuildIdentity
 $RuntimeIdentityOk = $RuntimeIdentity.schemaVersion -eq "rik-expo-app.local-runtime-identity.v1" `
@@ -430,6 +702,10 @@ $RuntimeIdentityOk = $RuntimeIdentity.schemaVersion -eq "rik-expo-app.local-runt
   -and [string]$RuntimeIdentity.sourceHead -eq $BuildCommit `
   -and [string]$RuntimeIdentity.sourceTree -eq [string]$Identity.sourceTreeHash `
   -and [string]$RuntimeIdentity.specSha256 -eq [string]$BackendManager.master_sha256 `
+  -and [int]$RuntimeIdentity.processId -eq [int]$BackendManager.backend_pid `
+  -and [string]$RuntimeIdentity.runtimeSourceSha256 -eq [string]$BackendManager.backend_runtime_source_sha256 `
+  -and [string]$RuntimeIdentity.authProviderUrlSha256 -eq [string]$BackendManager.auth_provider_url_sha256 `
+  -and [string]$RuntimeIdentity.authPublicKeySha256 -eq [string]$BackendManager.auth_public_key_sha256 `
   -and [string]$RuntimeIdentity.definitionReleaseId -eq [string]$BackendManager.definition_release_id `
   -and [string]$RuntimeIdentity.searchReleaseId -eq [string]$BackendManager.search_release_id `
   -and [string]$RuntimeFrontend.sourceTreeHash -eq [string]$Identity.sourceTreeHash `
@@ -441,7 +717,20 @@ $RuntimeIdentityOk = $RuntimeIdentity.schemaVersion -eq "rik-expo-app.local-runt
 if (-not $RuntimeIdentityOk) {
   Fail-Review "CANONICAL_ESTIMATE_RUNTIME_IDENTITY_RED" "перезапустите единый backend 8765 из $Root с release из канонического manifest"
 }
+$BackendManager.runtime_identity_verified = $true
+}
+if ($DeferBackendForColdBundle) {
+  if ($BackendManager.status -ne 'R568_BACKEND_INPUTS_PREPARED_PROCESS_NOT_STARTED' `
+    -or $BackendManager.runtime_identity_verified -ne $false `
+    -or $BackendManager.backend_pid -ne 0 -or $BackendManager.active_compile_jobs -ne 0) {
+    Fail-Review "CANONICAL_ESTIMATE_DEFERRED_INPUTS_RED" "проверьте штатный prepare-only и отсутствие активного расчёта"
+  }
+  Record-ReviewStage "backend_inputs_prepared_without_process"
+}
+else {
+  Assert-WholeAppBackendRuntimeIdentity -BackendManager $BackendManager
 Record-ReviewStage "backend_ensure_and_identity"
+}
 
 $ProviderFingerprint = (Get-Sha256 $WholeAppUrl).Substring(0, 12)
 $PublicKeyFingerprint = (Get-Sha256 $WholeAppKey).Substring(0, 12)
@@ -466,7 +755,8 @@ $env:EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH = [string]$Identity.productSourceHa
 $env:EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT = [string]$Identity.jsBundleFingerprint
 $env:EXPO_PUBLIC_BUILD_COMMIT = $BuildCommit
 $env:EXPO_PUBLIC_BUILD_BRANCH = $BuildBranch
-$env:EXPO_PUBLIC_BUILD_TIME = (Get-Date).ToUniversalTime().ToString("o")
+$FrontendBuildStamp = Resolve-WholeAppFrontendBuildStamp -RuntimeRoot $RuntimeRoot -Identity $Identity -BackendManager $BackendManager
+$env:EXPO_PUBLIC_BUILD_TIME = [string]$FrontendBuildStamp.build_time
 $env:EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID = [string]$BackendManager.definition_release_id
 $env:EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID = [string]$BackendManager.search_release_id
 $env:EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID = [string]$BackendManager.capability_id
@@ -484,7 +774,16 @@ $listeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction 
 foreach ($pidValue in @($listeners | Select-Object -ExpandProperty OwningProcess -Unique)) {
   $owner = Get-CimInstance Win32_Process -Filter "ProcessId=$pidValue" -ErrorAction SilentlyContinue
   $normalized = ([string]$owner.CommandLine).Replace("\", "/")
-  if ($owner.Name -ne "node.exe" -or -not $normalized.Contains($Root.Replace("\", "/")) -or $normalized -notmatch "expo[/\\]bin[/\\]cli") {
+  $ownedFrontend = $normalized -match "expo[/\\]bin[/\\]cli"
+  if (-not $ownedFrontend -and $normalized.Contains('scripts/render/serveExpoWebStaging.mjs') -and $normalized.Contains(($RuntimeRoot+'\static-web\').Replace([IO.Path]::DirectorySeparatorChar,[char]'/'))) {
+    $priorStaticPath=Join-Path $RuntimeRoot 'static-web.json'
+    if(Test-Path -LiteralPath $priorStaticPath){
+      $priorStatic=Get-Content -LiteralPath $priorStaticPath -Raw|ConvertFrom-Json
+      $ownedFrontend=$priorStatic.schema_version -ceq 'rik-expo-app.whole-app-static-web-runtime.v1' -and [int]$priorStatic.pid -eq $pidValue `
+        -and (Get-Process -Id $pidValue -ErrorAction Stop).StartTime.ToUniversalTime().Ticks -eq [long]$priorStatic.started_utc_ticks
+    }
+  }
+  if ($owner.Name -ne "node.exe" -or -not $normalized.Contains($Root.Replace("\", "/")) -or -not $ownedFrontend) {
     Fail-Review "PORT_8081_FOREIGN_OWNER_PID_$pidValue" "освободите порт после проверки владельца"
   }
   $OwnedMetroProcess = Get-Process -Id $pidValue -ErrorAction Stop
@@ -511,6 +810,8 @@ if ($PrepareBuildOnly) {
     masterSha256 = [string]$BackendManager.master_sha256
     definitionReleaseId = [string]$BackendManager.definition_release_id
     searchReleaseId = [string]$BackendManager.search_release_id
+    preparedReferenceMode = $PreparedReferenceMode
+    releaseManifestSha256 = $ReleaseManifestSha256
     capabilityId = [string]$BackendManager.capability_id
     buildTime = $env:EXPO_PUBLIC_BUILD_TIME
     authenticatedRuntimeManifestVerified = $false
@@ -598,13 +899,151 @@ if ($VerifyFullTypecheck) {
   }
   Write-Host "full_typecheck_exit=$FullTypecheckExitCode"
 }
+# Opt-in Web-only build-and-serve branch. The existing Combined/Android Metro
+# path below remains the default. No persistent bundler or replacement backend.
+if($WebServingMode -eq 'StaticExport'){
+  $StaticDeadlineMs=98000L
+  function Assert-StaticStartupBudget {
+    if($ReviewClock.ElapsedMilliseconds -ge $StaticDeadlineMs){throw 'WHOLE_APP_STATIC_STARTUP_98S_DEADLINE'}
+  }
+  function Assert-StaticSourceFreeze {
+    Assert-StaticStartupBudget
+    $freshRaw=& $Node --import tsx (Join-Path $Root 'scripts/dev/printLocalDeveloperBuildIdentity.ts') 2>$null
+    if($LASTEXITCODE -ne 0 -or -not $freshRaw){throw 'WHOLE_APP_STATIC_IDENTITY_UNREADABLE'}
+    $fresh=$freshRaw|ConvertFrom-Json
+    foreach($field in @('sourceTreeHash','productSourceHash','jsBundleFingerprint')){
+      if([string]$fresh.$field -cne [string]$Identity.$field){throw 'WHOLE_APP_STATIC_SOURCE_DRIFT'}
+    }
+    if((Get-FileHash -LiteralPath $ReleaseManifestPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $ReleaseManifestSha256){throw 'WHOLE_APP_STATIC_RELEASE_POINTER_DRIFT'}
+  }
+  function Assert-StaticBootstrapScripts([string]$Html,[string]$StaticRoot,$Files){
+    # Installed Expo dev export hashes empty source: root index.js and route
+    # app/index.tsx then collide. HTTP200/runtime-only scripts cannot prove boot.
+    $scriptRefs=@([regex]::Matches($Html,'<script\b[^>]*\bsrc=["'']([^"'']+\.js)(?:\?[^"'']*)?["'']')|ForEach-Object {$_.Groups[1].Value})
+    $hasBootstrap=$false
+    foreach($ref in $scriptRefs){
+      if($ref -match '^[a-z]+:' -or $ref.Contains('..')){throw 'WHOLE_APP_STATIC_EXTERNAL_ENTRY_REJECTED'}
+      $relative=$ref.TrimStart('/');$asset=$Files|Where-Object path -CEQ $relative
+      if(-not $asset){throw 'WHOLE_APP_STATIC_ENTRY_OUTSIDE_EXPORTED_MANIFEST'}
+      # Metro getAppendScripts appends __r(<JSON module id>); on its own line.
+      # Registration-only __d chunks and an unlinked entry do not start the app.
+      if(Select-String -LiteralPath (Join-Path $StaticRoot $relative) -Pattern '^\s*__r\([^\r\n]*\);\s*$' -Quiet){$hasBootstrap=$true}
+    }
+    if(-not $hasBootstrap){throw 'WHOLE_APP_STATIC_BOOTSTRAP_ENTRY_MISSING'}
+  }
+  function Read-StaticHttpProof([string]$Uri,[string]$ExpectedSha,[string]$ExpectedMime){
+    Assert-StaticStartupBudget
+    $handler=[Net.Http.HttpClientHandler]::new();$handler.AllowAutoRedirect=$false
+    $client=[Net.Http.HttpClient]::new($handler)
+    $client.Timeout=[TimeSpan]::FromMilliseconds([Math]::Min(10000,[Math]::Max(1,$StaticDeadlineMs-$ReviewClock.ElapsedMilliseconds)))
+    $response=$null;$stream=$null;$hash=[Security.Cryptography.SHA256]::Create()
+    try{
+      $response=$client.GetAsync($Uri,[Net.Http.HttpCompletionOption]::ResponseHeadersRead).GetAwaiter().GetResult()
+      if([int]$response.StatusCode -ne 200){throw 'WHOLE_APP_STATIC_HTTP_STATUS_INVALID'}
+      $mime=[string]$response.Content.Headers.ContentType.MediaType
+      if($ExpectedMime -and $mime -cne $ExpectedMime){throw 'WHOLE_APP_STATIC_HTTP_MIME_INVALID'}
+      $stream=$response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();$buffer=[byte[]]::new(65536);$bytes=0L
+      while(($read=$stream.Read($buffer,0,$buffer.Length)) -gt 0){Assert-StaticStartupBudget;$bytes+=$read;[void]$hash.TransformBlock($buffer,0,$read,$buffer,0)}
+      [void]$hash.TransformFinalBlock([byte[]]::new(0),0,0)
+      $actual=([BitConverter]::ToString($hash.Hash)).Replace('-','').ToLowerInvariant()
+      if($bytes -le 0 -or $actual -cne $ExpectedSha){throw 'WHOLE_APP_STATIC_HTTP_BYTES_MISMATCH'}
+      return @{uri_sha256=Get-Sha256 $Uri;sha256=$actual;bytes=$bytes;content_type=$mime}
+    }finally{if($stream){$stream.Dispose()};if($response){$response.Dispose()};$hash.Dispose();$client.Dispose();$handler.Dispose()}
+  }
+  $StaticExporter=$null;$StaticServer=$null
+  try{
+    Assert-StaticStartupBudget
+    $expoConfig=Get-Content -LiteralPath (Join-Path $Root 'app.json') -Raw|ConvertFrom-Json
+    if($expoConfig.expo.web.PSObject.Properties['output'] -and [string]$expoConfig.expo.web.output -cne 'single'){throw 'WHOLE_APP_STATIC_SINGLE_OUTPUT_REQUIRED'}
+    $staticParent=[IO.Path]::GetFullPath((Join-Path $RuntimeRoot 'static-web'))
+    $StaticOutput=[IO.Path]::GetFullPath((Join-Path $staticParent ($FrontendBuildStamp.tuple_sha256+'-'+[Guid]::NewGuid().ToString('N'))))
+    if(-not $StaticOutput.StartsWith($staticParent+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase) -or (Test-Path -LiteralPath $StaticOutput)){throw 'WHOLE_APP_STATIC_FRESH_OUTPUT_REQUIRED'}
+    $ExportArguments=@($ExpoCli,'export','--platform','web','--no-minify','--max-workers','1','--output-dir',$StaticOutput)
+    if(-not $ReuseTransformCache){$ExportArguments+='--clear'}
+    $StaticExporter=Start-Process -FilePath $Node -ArgumentList $ExportArguments -WorkingDirectory $Root -WindowStyle Hidden `
+      -RedirectStandardOutput (Join-Path $RuntimeRoot 'static-export.stdout.log') -RedirectStandardError (Join-Path $RuntimeRoot 'static-export.stderr.log') -PassThru
+    $remaining=[Math]::Max(1,$StaticDeadlineMs-$ReviewClock.ElapsedMilliseconds)
+    if(-not $StaticExporter.WaitForExit([int]$remaining)){Stop-Process -Id $StaticExporter.Id -Force -ErrorAction SilentlyContinue;throw 'WHOLE_APP_STATIC_EXPORT_98S_DEADLINE'}
+    if($StaticExporter.ExitCode -ne 0){throw 'WHOLE_APP_STATIC_EXPORT_FAILED'}
+    Record-ReviewStage 'static_export_process_fully_exited'
+    if(@(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue).Count -ne 0){throw 'WHOLE_APP_STATIC_EXPORT_LEFT_PORT_LISTENER'}
+    Assert-StaticSourceFreeze
+    $indexPath=Join-Path $StaticOutput 'index.html'
+    if(-not(Test-Path -LiteralPath $indexPath -PathType Leaf)){throw 'WHOLE_APP_STATIC_INDEX_MISSING'}
+    $exportFiles=@(Get-ChildItem -LiteralPath $StaticOutput -Recurse -File|ForEach-Object {@{path=[IO.Path]::GetRelativePath($StaticOutput,$_.FullName).Replace([IO.Path]::DirectorySeparatorChar,[char]'/');bytes=$_.Length;sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}})
+    if(-not($exportFiles|Where-Object {$_.path -match '\.js$'})){throw 'WHOLE_APP_STATIC_COMPLETE_BUNDLE_MISSING'}
+    # Expo copies the complete public directory. Verify every byte, including
+    # PDF modules, all fonts, cmaps and decoder wasm; do not subset the app.
+    foreach($public in @(Get-ChildItem -LiteralPath (Join-Path $Root 'public') -Recurse -File)){
+      $relative=[IO.Path]::GetRelativePath((Join-Path $Root 'public'),$public.FullName).Replace([IO.Path]::DirectorySeparatorChar,[char]'/')
+      $exported=$exportFiles|Where-Object path -CEQ $relative
+      if(-not $exported -or $exported.sha256 -cne (Get-FileHash -LiteralPath $public.FullName -Algorithm SHA256).Hash.ToLowerInvariant()){throw 'WHOLE_APP_STATIC_PUBLIC_ASSET_DRIFT'}
+    }
+    $jsFiles=@($exportFiles|Where-Object {$_.path -match '\.js$'})
+    Assert-StaticBootstrapScripts ([IO.File]::ReadAllText($indexPath)) $StaticOutput $exportFiles
+    $frontendLiteralChecks=@([string]$Identity.sourceTreeHash,[string]$Identity.productSourceHash,[string]$Identity.jsBundleFingerprint,$BuildCommit,[string]$BackendManager.definition_release_id,[string]$BackendManager.search_release_id,[string]$BackendManager.capability_id,$WholeAppUrl,$WholeAppKey,'http://127.0.0.1:8765')
+    foreach($literal in $frontendLiteralChecks){
+      $found=$false
+      foreach($asset in $jsFiles){if(Select-String -LiteralPath (Join-Path $StaticOutput $asset.path) -SimpleMatch -Pattern $literal -Quiet){$found=$true;break}}
+      if(-not $found){throw 'WHOLE_APP_STATIC_COMPILED_FRONTEND_TUPLE_MISSING'}
+    }
+    $manifest=[ordered]@{schema_version='rik-expo-app.whole-app-static-export.v1';web_output='single';serving_mode='StaticExport';canonical_root=$Root;source_tree_hash=[string]$Identity.sourceTreeHash;product_source_hash=[string]$Identity.productSourceHash;js_bundle_fingerprint=[string]$Identity.jsBundleFingerprint;build_commit=$BuildCommit;build_branch=$BuildBranch;frontend_build_stamp_tuple_sha256=[string]$FrontendBuildStamp.tuple_sha256;definition_release_id=[string]$BackendManager.definition_release_id;search_release_id=[string]$BackendManager.search_release_id;master_sha256=[string]$BackendManager.master_sha256;capability_id=[string]$BackendManager.capability_id;provider_url_fingerprint=$ProviderFingerprint;provider_public_fingerprint=$PublicKeyFingerprint;exporter_pid=$StaticExporter.Id;exporter_exited=$true;files=$exportFiles}
+    $manifestPath=Join-Path $StaticOutput 'whole-app-static-export.json'
+    [IO.File]::WriteAllText($manifestPath,($manifest|ConvertTo-Json -Depth 6),[Text.UTF8Encoding]::new($false))
+    $manifestSha=(Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    if($DeferBackendForColdBundle){
+      $preparedStaticBackend=$BackendManager
+      $raw=& $Node --import tsx (Join-Path $Root 'scripts/dev/ensureLocalDeveloperCanonicalBackend.ts') --return-after-start 2>$null
+      if($LASTEXITCODE -ne 0 -or -not $raw){throw 'WHOLE_APP_STATIC_BACKEND_START_FAILED'}
+      $BackendManager=$raw|ConvertFrom-Json
+      foreach($field in @('capability_id','definition_release_id','search_release_id','master_sha256')){if($BackendManager.$field -cne $preparedStaticBackend.$field){throw 'WHOLE_APP_STATIC_BACKEND_TUPLE_DRIFT'}}
+    }
+    Assert-WholeAppBackendRuntimeIdentity -BackendManager $BackendManager -WaitForStartup
+    $priorStaticEnv=@{};foreach($key in @('PORT','HOST','AI_ESTIMATE_RUNTIME','RENDER_GIT_COMMIT','RENDER_GIT_BRANCH')){$priorStaticEnv[$key]=[Environment]::GetEnvironmentVariable($key,'Process')}
+    try{
+      $env:PORT=[string]$Port;$env:HOST='127.0.0.1';$env:AI_ESTIMATE_RUNTIME='staging';$env:RENDER_GIT_COMMIT=$BuildCommit;$env:RENDER_GIT_BRANCH=$BuildBranch
+      $StaticServer=Start-Process -FilePath $Node -ArgumentList @((Join-Path $Root 'scripts/render/serveExpoWebStaging.mjs'),'--root',$StaticOutput,'--port',[string]$Port) -WorkingDirectory $Root -WindowStyle Hidden `
+        -RedirectStandardOutput (Join-Path $RuntimeRoot 'static-web.stdout.log') -RedirectStandardError (Join-Path $RuntimeRoot 'static-web.stderr.log') -PassThru
+    }finally{foreach($key in $priorStaticEnv.Keys){[Environment]::SetEnvironmentVariable($key,$priorStaticEnv[$key],'Process')}}
+    $startedTicks=$StaticServer.StartTime.ToUniversalTime().Ticks;$health=$null
+    while(-not $health){Assert-StaticStartupBudget;$StaticServer.Refresh();if($StaticServer.HasExited){throw 'WHOLE_APP_STATIC_SERVER_EXITED'};try{$health=Invoke-RestMethod -Uri "http://127.0.0.1:$Port/health" -TimeoutSec 1}catch{Start-Sleep -Milliseconds 100}}
+    if($health.status -cne 'ok' -or $health.source_sha -cne $BuildCommit -or $health.branch -cne $BuildBranch -or $health.runtime -cne 'staging'){throw 'WHOLE_APP_STATIC_HEALTH_IDENTITY_INVALID'}
+    $listeners=@(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction Stop|Select-Object -ExpandProperty OwningProcess -Unique)
+    if($listeners.Count -ne 1 -or $listeners[0] -ne $StaticServer.Id){throw 'WHOLE_APP_STATIC_PORT_OWNER_INVALID'}
+    $proofs=@();$indexSha=(Get-FileHash -LiteralPath $indexPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    foreach($route in @('/','/office/foreman','/request')){$proofs+=Read-StaticHttpProof "http://127.0.0.1:$Port$route" $indexSha 'text/html'}
+    $html=[IO.File]::ReadAllText($indexPath);$refs=@([regex]::Matches($html,'(?:src|href)=["'']([^"'']+\.(?:js|css))(?:\?[^"'']*)?["'']')|ForEach-Object {$_.Groups[1].Value})
+    if(-not($refs|Where-Object {$_ -match '\.js$'})){throw 'WHOLE_APP_STATIC_ENTRY_ASSET_MISSING'}
+    foreach($relative in @($refs)+@('/pdfjs/pdf.mjs','/pdfjs/pdf.worker.mjs','/pdfjs/standard_fonts/LiberationSans-Regular.ttf','/pdfjs/wasm/qcms_bg.wasm')){
+      if($relative -match '^[a-z]+:' -or $relative.Contains('..')){throw 'WHOLE_APP_STATIC_EXTERNAL_ENTRY_REJECTED'}
+      $rel=$relative.TrimStart('/');$asset=$exportFiles|Where-Object path -CEQ $rel;if(-not $asset){throw 'WHOLE_APP_STATIC_ENTRY_OUTSIDE_EXPORTED_MANIFEST'}
+      $mime=switch -Regex ($rel){'\.m?js$'{'text/javascript';break}'\.css$'{'text/css';break}'\.ttf$'{'font/ttf';break}'\.wasm$'{'application/wasm';break}}
+      $proofs+=Read-StaticHttpProof "http://127.0.0.1:$Port/$rel" $asset.sha256 $mime
+    }
+    Assert-StaticSourceFreeze
+    foreach($asset in $exportFiles){if((Get-FileHash -LiteralPath (Join-Path $StaticOutput $asset.path) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $asset.sha256){throw 'WHOLE_APP_STATIC_EXPORTED_BYTES_DRIFT'}}
+    Assert-WholeAppBackendRuntimeIdentity -BackendManager $BackendManager
+    $StaticServer.Refresh();if($StaticServer.HasExited -or $StaticServer.StartTime.ToUniversalTime().Ticks -ne $startedTicks){throw 'WHOLE_APP_STATIC_SERVER_LIFETIME_INVALID'}
+    $receipt=[ordered]@{schema_version='rik-expo-app.whole-app-static-web-runtime.v1';serving_mode='StaticExport';warmup_target='Web';runtime_profile='whole_app_staging_plus_local_estimate';canonical_root=$Root;git_root=[IO.Path]::GetFullPath($GitRoot);pid=$StaticServer.Id;started_utc_ticks=$startedTicks;port=$Port;health_uri="http://127.0.0.1:$Port/health";static_root=$StaticOutput;export_manifest_path=$manifestPath;export_manifest_sha256=$manifestSha;source_tree_hash=[string]$Identity.sourceTreeHash;product_source_hash=[string]$Identity.productSourceHash;js_bundle_fingerprint=[string]$Identity.jsBundleFingerprint;build_commit=$BuildCommit;build_branch=$BuildBranch;master_sha256=[string]$BackendManager.master_sha256;definition_release_id=[string]$BackendManager.definition_release_id;search_release_id=[string]$BackendManager.search_release_id;capability_id=[string]$BackendManager.capability_id;release_manifest_sha256=$ReleaseManifestSha256;frontend_build_stamp_tuple_sha256=[string]$FrontendBuildStamp.tuple_sha256;provider_url_fingerprint=$ProviderFingerprint;provider_public_fingerprint=$PublicKeyFingerprint;estimate_backend_runtime_identity_verified=[bool]$BackendManager.runtime_identity_verified;estimate_backend_authenticated_probe_pending=-not [bool]$BackendManager.authenticated_runtime_manifest_verified;backend_pid=[int]$BackendManager.backend_pid;exporter_pid=$StaticExporter.Id;exporter_exited=$true;metro_service_running=$false;android_transport_ready=$false;http_asset_proofs=$proofs;launch_duration_ms=$ReviewClock.ElapsedMilliseconds;launch_stages=$ReviewStages.ToArray();caps_changed=$false}
+    $receipt|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $RuntimeRoot 'static-web.json') -Encoding utf8
+    Write-Host 'runtime_action=started_whole_app_static_web_plus_local_estimate';Write-Host "backend_pid=$($BackendManager.backend_pid)";Write-Host "static_web_pid=$($StaticServer.Id)"
+    if($VerifyFullTypecheck -and $FullTypecheckExitCode -ne 0){throw 'FULL_TYPECHECK_NOT_GREEN_STATIC_RUNTIME_RESTORED'}
+    exit 0
+  }catch{
+    if($StaticExporter -and -not $StaticExporter.HasExited){Stop-Process -Id $StaticExporter.Id -Force -ErrorAction SilentlyContinue}
+    if($StaticServer -and -not $StaticServer.HasExited){Stop-Process -Id $StaticServer.Id -Force -ErrorAction SilentlyContinue}
+    Fail-Review 'WHOLE_APP_STATIC_EXPORT_START_RED' ([string]$_.Exception.Message)
+  }
+}
 $MetroStdout = Join-Path $RuntimeRoot "metro.stdout.log"
 Record-ReviewStage "optional_typecheck"
 $MetroStderr = Join-Path $RuntimeRoot "metro.stderr.log"
 New-Item -ItemType Directory -Path $RuntimeRoot -Force | Out-Null
-$Metro = Start-Process -FilePath $Node -ArgumentList @(
-  $ExpoCli, "start", "--dev-client", "--host", "localhost", "--port", "$Port", "--clear", "--max-workers", "1"
-) -WorkingDirectory $Root -WindowStyle Hidden -RedirectStandardOutput $MetroStdout -RedirectStandardError $MetroStderr -PassThru
+$MetroArguments = @($ExpoCli, "start", "--dev-client", "--host", "localhost", "--port", "$Port")
+if (-not $ReuseTransformCache) { $MetroArguments += "--clear" }
+$MetroArguments += @("--max-workers", "1")
+$Metro = Start-Process -FilePath $Node -ArgumentList $MetroArguments `
+  -WorkingDirectory $Root -WindowStyle Hidden -RedirectStandardOutput $MetroStdout -RedirectStandardError $MetroStderr -PassThru
 $MetroStartedUtcTicks = $Metro.StartTime.ToUniversalTime().Ticks
 
 $deadline = (Get-Date).AddSeconds(90)
@@ -631,6 +1070,33 @@ while ((Get-Date) -lt $deadline) {
 # The cold, single-worker graph can exceed three minutes on the review host.
 # Keep a finite startup deadline and still require the complete bundle before
 # warming Android or publishing the shared runtime identity.
+# Use the same pinned transport checker before the large Web graph in Web-only review.
+# Combined review still warms Android after releasing its pre-client Web graph.
+$RunWholeAppTransportWarmup = {
+  $WholeAppWarmup = Start-Process -FilePath $Node -ArgumentList @(
+    (Join-Path $Root "scripts/dev/warmWholeAppDeveloperRuntime.cjs"), "$Port", $Root,
+    (Join-Path $RuntimeRoot "web-android-pdf-readiness.json"), $WarmupTarget.ToLowerInvariant()
+  ) -WorkingDirectory $Root -WindowStyle Hidden -Wait -PassThru `
+    -RedirectStandardOutput (Join-Path $RuntimeRoot "web-android-pdf-readiness.log") `
+    -RedirectStandardError (Join-Path $RuntimeRoot "web-android-pdf-readiness.error.log")
+  if ($WholeAppWarmup.ExitCode -ne 0) {
+    Fail-Review "WHOLE_APP_ANDROID_PDF_START_RED" "проверьте web-android-pdf-readiness.error.log в $RuntimeRoot; текущий контур сохранён"
+  }
+  Record-ReviewStage $(if ($WarmupTarget -eq "Combined") { "android_bundle_and_pdf_assets" } else { "web_pdf_assets" })
+  $WarmupReceipt = Get-Content -LiteralPath (Join-Path $RuntimeRoot "web-android-pdf-readiness.json") -Raw | ConvertFrom-Json
+  if ($WarmupReceipt.target -cne $WarmupTarget.ToLowerInvariant() `
+    -or [bool]$WarmupReceipt.androidTransportReady -ne ($WarmupTarget -eq "Combined") `
+    -or ($WarmupTarget -eq "Combined" -and $WarmupReceipt.status -cne 'WHOLE_APP_WEB_ANDROID_PDF_TRANSPORT_READY') `
+    -or ($WarmupTarget -eq "Web" -and $WarmupReceipt.status -cne 'WHOLE_APP_WEB_PDF_TRANSPORT_READY_ANDROID_NOT_CHECKED')) {
+    Fail-Review "WHOLE_APP_PLATFORM_READINESS_SCOPE_RED" "проверьте точную платформу и действительный receipt прогрева"
+  }
+  return $WarmupReceipt
+}
+$WarmupReceipt = $null
+if ($WarmupTarget -eq "Web") {
+  $WarmupReceipt = & $RunWholeAppTransportWarmup
+}
+
 $InitialWebBundle = $null
 if (-not $ready `
   -or -not (Test-WholeAppMetroLifetime -MetroProcess $Metro -StartedUtcTicks $MetroStartedUtcTicks -Port $Port) `
@@ -644,30 +1110,26 @@ $InitialWebBundle.metro_pid = $Metro.Id
 $InitialWebBundle.metro_started_utc_ticks = $MetroStartedUtcTicks
 # Limit cold-transform overlap before this task opens any clients. This is a
 # transient-memory hypothesis; the final Web and Android graphs must coexist.
+if ($WarmupTarget -eq "Combined") {
 if (-not (Remove-WholeAppPreClientWebGraph -CompletedBundle $InitialWebBundle `
   -MetroProcess $Metro -StartedUtcTicks $MetroStartedUtcTicks -Port $Port)) {
   Fail-Review "WHOLE_APP_PRECLIENT_WEB_GRAPH_RELEASE_RED" "проверьте exact Web GET/revision и owned Metro lifetime; запуск завершён без READY"
 }
 Record-ReviewStage "preclient_web_graph_release"
-
-# Web readiness alone leaves the first Android graph compiling while the user
-# opens a PDF. That cold build can delay even static renderer files past the
-# unchanged viewer deadline. Warm the manifest-selected bundle sequentially.
-$WholeAppWarmup = Start-Process -FilePath $Node -ArgumentList @(
-  (Join-Path $Root "scripts/dev/warmWholeAppDeveloperRuntime.cjs"), "$Port", $Root,
-  (Join-Path $RuntimeRoot "web-android-pdf-readiness.json")
-) -WorkingDirectory $Root -WindowStyle Hidden -Wait -PassThru `
-  -RedirectStandardOutput (Join-Path $RuntimeRoot "web-android-pdf-readiness.log") `
-  -RedirectStandardError (Join-Path $RuntimeRoot "web-android-pdf-readiness.error.log")
-if ($WholeAppWarmup.ExitCode -ne 0) {
-  Fail-Review "WHOLE_APP_ANDROID_PDF_START_RED" "проверьте web-android-pdf-readiness.error.log в $RuntimeRoot; текущий контур сохранён"
 }
-Record-ReviewStage "android_bundle_and_pdf_assets"
+else {
+  Record-ReviewStage "web_graph_retained_for_web_review"
+}
+
+if ($WarmupTarget -eq "Combined") {
+  $WarmupReceipt = & $RunWholeAppTransportWarmup
+}
 
 # Reconstruct Web once from the existing transform cache before any READY.
 # The distinct Android platform graph is retained; never evict either graph
 # after this barrier or introduce a retry/eviction loop for client requests.
 $FinalWebBundle = $null
+if ($WarmupTarget -eq "Combined") {
 if (-not (Test-WholeAppMetroLifetime -MetroProcess $Metro -StartedUtcTicks $MetroStartedUtcTicks -Port $Port) `
   -or -not (Test-WebBundleReady -Port $Port -TimeoutSec 360 -CompletedBundle ([ref]$FinalWebBundle)) `
   -or -not (Test-WholeAppMetroLifetime -MetroProcess $Metro -StartedUtcTicks $MetroStartedUtcTicks -Port $Port) `
@@ -676,12 +1138,43 @@ if (-not (Test-WholeAppMetroLifetime -MetroProcess $Metro -StartedUtcTicks $Metr
   Fail-Review "WHOLE_APP_FINAL_WEB_GRAPH_REBUILD_RED" "проверьте полный Web rebuild после Android/PDF в прежнем Metro; READY не опубликован"
 }
 Record-ReviewStage "web_graph_rebuilt_after_android_pdf"
+}
+else {
+  if (-not (Test-WholeAppMetroLifetime -MetroProcess $Metro -StartedUtcTicks $MetroStartedUtcTicks -Port $Port)) {
+    Fail-Review "WHOLE_APP_WEB_REVIEW_METRO_LIFETIME_RED" "проверьте тот же Metro после проверки PDF-ресурсов"
+  }
+  $FinalWebBundle = $InitialWebBundle
+  Record-ReviewStage "web_graph_ready_android_not_checked"
+}
+
+if ($DeferBackendForColdBundle) {
+  $PreparedBackendManager = $BackendManager
+  $BackendManagerRaw = & $Node --import tsx (Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts") --return-after-start 2>$null
+  if ($LASTEXITCODE -ne 0 -or -not $BackendManagerRaw) {
+    Fail-Review "CANONICAL_ESTIMATE_BACKEND_AFTER_BUNDLE_RED" "проверьте единый backend после последовательной сборки"
+  }
+  $BackendManager = $BackendManagerRaw | ConvertFrom-Json
+  if ($BackendManager.capability_id -ne $PreparedBackendManager.capability_id `
+    -or $BackendManager.definition_release_id -ne $PreparedBackendManager.definition_release_id `
+    -or $BackendManager.search_release_id -ne $PreparedBackendManager.search_release_id `
+    -or $BackendManager.master_sha256 -ne $PreparedBackendManager.master_sha256) {
+    Fail-Review "CANONICAL_ESTIMATE_PREPARED_TUPLE_DRIFT" "сборка и backend должны использовать один и тот же допуск, MASTER и release"
+  }
+  Assert-WholeAppBackendRuntimeIdentity -BackendManager $BackendManager -WaitForStartup
+  Record-ReviewStage "backend_started_after_cold_bundles"
+}
 
 @{
   schema_version = "rik-expo-app.whole-app-developer-runtime.v1"
   generated_utc = (Get-Date).ToUniversalTime().ToString("o")
   launch_duration_ms = $ReviewClock.ElapsedMilliseconds
   launch_stages = $ReviewStages.ToArray()
+  warmup_target = $WarmupTarget
+  frontend_build_time = [string]$FrontendBuildStamp.build_time
+  frontend_build_stamp_tuple_sha256 = [string]$FrontendBuildStamp.tuple_sha256
+  metro_transform_cache_policy = $(if ($ReuseTransformCache) { "EXISTING_METRO_CONTENT_ADDRESSED_CACHE" } else { "EXPLICIT_RESET" })
+  android_transport_ready = [bool]$WarmupReceipt.androidTransportReady
+  transport_readiness_status = [string]$WarmupReceipt.status
   preclient_graph_schedule = @{
     schema_version = "rik-expo-app.whole-app-preclient-graph-schedule.v1"
     metro_pid = $Metro.Id
@@ -689,7 +1182,7 @@ Record-ReviewStage "web_graph_rebuilt_after_android_pdf"
     web_bundle_uri_sha256 = Get-Sha256 $InitialWebBundle.uri
     initial_web_revision_id = $InitialWebBundle.revision_id
     initial_web_bytes = $InitialWebBundle.bytes
-    exact_web_delete_status = 204
+    exact_web_delete_status = $(if ($WarmupTarget -eq "Combined") { 204 } else { $null })
     final_web_revision_id = $FinalWebBundle.revision_id
     final_web_bytes = $FinalWebBundle.bytes
     same_exact_web_uri = $true
@@ -711,11 +1204,14 @@ Record-ReviewStage "web_graph_rebuilt_after_android_pdf"
   build_branch = $BuildBranch
   definition_release_id = [string]$BackendManager.definition_release_id
   search_release_id = [string]$BackendManager.search_release_id
+  prepared_reference_mode = $PreparedReferenceMode
+  release_manifest_sha256 = $ReleaseManifestSha256
   capability_id = [string]$BackendManager.capability_id
   catalog_transport = "bff_primary_supabase_rls_unavailable_fallback"
   estimate_backend_auth_profile = [string]$BackendManager.auth_profile
   estimate_backend_authenticated_probe_pending = -not [bool]$BackendManager.authenticated_runtime_manifest_verified
   estimate_backend_runtime_identity_verified = [bool]$BackendManager.runtime_identity_verified
+  backend_started_after_cold_bundles = $DeferBackendForColdBundle
 } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $RuntimeRoot "metro.json") -Encoding UTF8
 
 Write-Host "runtime_action=started_whole_app_staging_plus_local_estimate"

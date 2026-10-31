@@ -243,7 +243,7 @@ function operationOf(catalogId: string): DrywallArchitecturalElementOperationV4 
 }
 
 function variantOf(catalogId: string): Batch002VariantR3 {
-  for (const variant of ["technical_room", "large_area", "small_area", "wet_zone", "standard"] as const) {
+  for (const variant of ["technical_room", "wet_zone", "standard"] as const) {
     if (catalogId.endsWith(`_${variant}`)) return variant;
   }
   throw new Error(`BATCH002_R3_VARIANT_UNRESOLVED:${catalogId}`);
@@ -256,8 +256,8 @@ function systemOf(catalogId: string): Batch002SystemR3 {
 }
 
 function variantLabel(variant: Batch002VariantR3): string {
-  if (variant === "large_area") return "большой площади";
-  if (variant === "small_area") return "малой площади";
+
+
   if (variant === "technical_room") return "в техническом помещении";
   if (variant === "wet_zone") return "во влажной зоне";
   return "стандартного исполнения";
@@ -479,61 +479,7 @@ function applyVariantBlueprints(input: {
     key, group: "construction_work", titleRu, unitId, expression, sourceKeys, normativeKind: operation === "REPAIR" ? "REPAIR" : "WORK", procurementEligible: false,
   });
 
-  if (variant === "large_area") {
-    if (operation === "ALIGN") {
-      userIds.add("large_area_reference_zone_count");
-      material("large_area_reference_markers", "Реперы проектного радиуса по захваткам", "item", "large_area_reference_zone_count", ["variant_large_control_zones"]);
-      work("large_area_reference_zones", "Установка реперов проектного радиуса по захваткам", "item", "large_area_reference_zone_count", ["align_reference_radius"]);
-      return;
-    }
-    userIds.add("large_area_deformation_joint_length_m");
-    if (operation === "INSULATE") {
-      material("large_area_insulation_joint_insert", "Изоляционная вставка деформационных швов", "m", "large_area_deformation_joint_length_m", ["variant_large_deformation_joint_decision"]);
-      work("large_area_insulation_joint", "Монтаж изоляционной вставки деформационных швов", "m", "large_area_deformation_joint_length_m", ["insulate_layer_installation"]);
-    } else if (operation === "PREPARE") {
-      material("large_area_joint_edge_primer", "Грунтовка кромок деформационных швов", "kg", "large_area_deformation_joint_length_m * large_area_joint_primer_kg_m", ["prepare_substrate_primer"]);
-      work("large_area_prepare_joint_edges", "Подготовка кромок деформационных швов", "m", "large_area_deformation_joint_length_m", ["prepare_local_cleaning"]);
-    } else if (operation === "REPAIR") {
-      material("large_area_repair_edge_tape", "Армирующая лента границ ремонтных карт", "m", "large_area_deformation_joint_length_m", ["repair_joint_tape_profile"]);
-      work("large_area_repair_boundaries", "Армирование протяжённых границ ремонтных карт", "m", "large_area_deformation_joint_length_m", ["repair_joint_reinstatement"]);
-    } else {
-      const materialTitle = operation === "FRAME"
-        ? "Профиль разрыва криволинейного каркаса под деформационный шов"
-        : operation === "CLAD"
-          ? "Профиль окончания гипсокартонных листов у деформационного шва"
-          : "Финишный профиль деформационного шва гипсокартонной системы";
-      const workTitle = operation === "FRAME"
-        ? "Формирование разрыва криволинейного каркаса под деформационный шов"
-        : operation === "CLAD"
-          ? "Формирование разрыва обшивки у деформационного шва"
-          : "Финишная заделка кромок деформационного шва";
-      material("large_area_deformation_profile", materialTitle, "m", "large_area_deformation_joint_length_m", ["variant_large_deformation_joint_decision"]);
-      work("large_area_form_deformation_joint", workTitle, "m", "large_area_deformation_joint_length_m", ["joint_perimeter_sealing", "clad_end_return_formation", "frame_track_installation"]);
-    }
-  } else if (variant === "small_area") {
-    if (operation === "INSULATE") {
-      userIds.add("small_area_cavity_count");
-      work("small_area_fit_cavities", "Подгонка изоляции в малых полостях", "item", "small_area_cavity_count", ["insulate_mep_fitting"]);
-    } else if (operation === "REPAIR") {
-      userIds.add("small_area_patch_perimeter_m");
-      material("small_area_patch_tape", "Армирующая лента малых ремонтных карт", "m", "small_area_patch_perimeter_m", ["repair_joint_tape_profile"]);
-      work("small_area_finish_patch_edges", "Заделка периметра малых ремонтных карт", "m", "small_area_patch_perimeter_m", ["repair_joint_reinstatement"]);
-    } else {
-      userIds.add("small_area_return_length_m");
-      if (operation === "FINISH_JOINT") material("small_area_flexible_corner_tape", "Гибкая лента коротких углов и возвратов", "m", "small_area_return_length_m", ["joint_flexible_tape"]);
-      if (operation === "FRAME") material("small_area_return_profile", "Профиль коротких возвратов криволинейного каркаса", "m", "small_area_return_length_m", ["frame_straight_return_track"]);
-      const workTitle = operation === "PREPARE"
-        ? "Очистка и локальная доводка коротких примыканий и возвратов"
-        : operation === "ALIGN"
-          ? "Выравнивание и повторная фиксация коротких возвратов каркаса"
-          : operation === "CLAD"
-            ? "Раскрой и крепление листов на коротких возвратах обшивки"
-            : operation === "FRAME"
-              ? "Монтаж профилей коротких возвратов криволинейного каркаса"
-              : "Армирование и заделка коротких углов и возвратов";
-      work("small_area_returns", workTitle, "m", "small_area_return_length_m", ["variant_small_confined_cutting"]);
-    }
-  } else if (variant === "technical_room") {
+  if (variant === "technical_room") {
     userIds.add("technical_penetration_count");
     userIds.add("technical_penetration_perimeter_m");
     if (operation === "FRAME") {
@@ -684,7 +630,7 @@ function parameterMeta(parameterId: string): { titleRu: string; guideRu: string 
 }
 
 const ALL_BATCH002_VARIANTS: readonly Batch002VariantR3[] = [
-  "standard", "large_area", "small_area", "technical_room", "wet_zone",
+  "standard", "technical_room", "wet_zone",
 ];
 
 function parameterUnit(parameterId: string): string | null {
@@ -847,26 +793,8 @@ function variantTechnologyScope(
   if (variant === "standard") return {
     includedScopeRu: [], excludedScopeRu: [], technologyStepsRu: [], dependencyRu: [],
   };
-  if (variant === "large_area") {
-    if (operation === "ALIGN") return {
-      includedScopeRu: ["реперы проектного радиуса по отдельным захваткам"],
-      excludedScopeRu: ["исполнительная геодезическая съёмка как отдельная коммерческая строка"],
-      technologyStepsRu: ["Разбить площадь на проектные захватки и установить реперы радиуса."],
-      dependencyRu: ["Количество захваток принимается из схемы производства работ."],
-    };
-    return {
-      includedScopeRu: ["операционная часть проектного деформационного шва без дублирования соседних стадий"],
-      excludedScopeRu: ["части деформационного шва, относящиеся к другой самостоятельной операции"],
-      technologyStepsRu: ["Выполнить относящуюся к текущей операции часть проектного деформационного шва."],
-      dependencyRu: ["Требуется проектная схема и длина деформационных швов."],
-    };
-  }
-  if (variant === "small_area") return {
-    includedScopeRu: [operation === "INSULATE" ? "подгонка изоляции в малых полостях" : operation === "REPAIR" ? "границы малых ремонтных карт" : "короткие примыкания и возвраты текущей операции"],
-    excludedScopeRu: ["произвольное уменьшение нормы материала из-за малой площади"],
-    technologyStepsRu: ["Обработать малые полости, примыкания или возвраты с сохранением системной последовательности."],
-    dependencyRu: ["Размер и число малых участков определяются фактической геометрией."],
-  };
+
+
   if (variant === "technical_room") return {
     includedScopeRu: ["узлы гипсокартонной системы вокруг предусмотренных инженерных проходов"],
     excludedScopeRu: ["монтаж или переделка инженерных сетей", "сертифицированная противопожарная проходка, если она задана отдельным проектным решением"],
@@ -975,12 +903,8 @@ function buildSuccessorAdditionsR4(
 }
 
 function variantParameterIds(operation: DrywallArchitecturalElementOperationV4, variant: Batch002VariantR3): readonly string[] {
-  if (variant === "large_area") return operation === "ALIGN" ? ["large_area_reference_zone_count"] : ["large_area_deformation_joint_length_m"];
-  if (variant === "small_area") {
-    if (operation === "INSULATE") return ["small_area_cavity_count"];
-    if (operation === "REPAIR") return ["small_area_patch_perimeter_m"];
-    return ["small_area_return_length_m"];
-  }
+
+
   if (variant === "technical_room") return operation === "PREPARE"
     ? ["technical_penetration_count", "technical_penetration_perimeter_m", "technical_equipment_protection_area_m2"]
     : ["technical_penetration_count", "technical_penetration_perimeter_m"];

@@ -1,0 +1,465 @@
+{
+  "contract": "master212.roof.primary-transcription/r1",
+  "reviewStatus": "ROOT_INDEPENDENT_PDF_ROSTER_RATES_AND_UNIT_CONVERSIONS_CONFIRMED_2026_10_22",
+  "sourceArtifacts": [
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/kg-krer12-2015-roofs-114a0db0.pdf",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+      "historicalPricesImported": false
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/kg-krer09-metal-structures-32c46cf8.pdf",
+      "sha256": "32c46cf8625c84489677e0d2ca38001097ed7cde12c8ca832302f60f30a8f574",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no9stroitelnyemetalliceskiekonstrukcii_compressed1-921690834145dfae5.06878280.pdf",
+      "historicalPricesImported": false
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/kg-krer-general-application-5f9f8fc4.pdf",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+      "historicalPricesImported": false
+    }
+  ],
+  "wholeColumns": [
+    {
+      "key": "mastic_field",
+      "kind": "flat_mastic",
+      "prefix": "master212:roof:r1:mastic_field",
+      "normId": "12-01-033-01",
+      "titleRu": "Трёхслойное мастичное покрытие толщиной 1,8 мм",
+      "measureId": "m212_roof_mastic_field_measure",
+      "measureUnit": "m2",
+      "basis": "100",
+      "methodId": "m212_roof_mastic_field_method",
+      "methodValue": "Проект назначает точную систему 12-01-033-01 с мастикой MASTIGUM2 и указанными в столбце грунтовкой/геотекстилем; обычные условия нового строительства до15м и применимая нормативная база подтверждены",
+      "sourceArtifactIndex": 0,
+      "locator": "КРЕР12 PDF40, entire exactcolumn12-01-033-01; technicalpart PDF4–6",
+      "rows": [
+        {
+          "role": "workers",
+          "titleRu": "Труд рабочих-кровельщиков",
+          "unitId": "man_hour",
+          "rate": "8.29",
+          "category": "labor",
+          "resourceCode": "000-1003-5",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "machinists",
+          "titleRu": "Труд машинистов нормативного комплекса",
+          "unitId": "man_hour",
+          "rate": "0.76",
+          "category": "labor",
+          "resourceCode": null,
+          "operator": null,
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "role": "forklift",
+          "titleRu": "Автопогрузчик 5 т",
+          "unitId": "machine_hour",
+          "rate": "0.15",
+          "category": "equipment",
+          "resourceCode": "03-0020",
+          "operator": "OPERATOR",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "lift",
+          "titleRu": "Грузопассажирский подъёмник до 0,8 т",
+          "unitId": "machine_hour",
+          "rate": "0.2",
+          "category": "equipment",
+          "resourceCode": "03-0330",
+          "operator": "OPERATOR",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "compressor",
+          "titleRu": "Передвижной компрессор до 686 кПа, 5 м³/мин",
+          "unitId": "machine_hour",
+          "rate": "0.41",
+          "category": "equipment",
+          "resourceCode": "05-0005",
+          "operator": "OPERATOR",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "airless",
+          "titleRu": "Установка безвоздушного распыления 4,1 кВт",
+          "unitId": "machine_hour",
+          "rate": "2.43",
+          "category": "equipment",
+          "resourceCode": "39-0541",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "kerosene",
+          "titleRu": "Керосин технический",
+          "unitId": "kg",
+          "rate": "2",
+          "category": "material",
+          "resourceCode": "01-1504-0001",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "mastic",
+          "titleRu": "Полимерная кровельная мастика",
+          "unitId": "kg",
+          "rate": "240",
+          "category": "material",
+          "resourceCode": "01-4606-0005",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "primer",
+          "titleRu": "Битумная грунтовка",
+          "unitId": "kg",
+          "rate": "40",
+          "category": "material",
+          "resourceCode": "01-0201-0002*",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        }
+      ],
+      "aggregateAdmission": true
+    },
+    {
+      "key": "mastic_junction",
+      "kind": "flat_mastic",
+      "prefix": "master212:roof:r1:mastic_junction",
+      "normId": "12-01-033-02",
+      "titleRu": "Примыкания мастичной кровли",
+      "measureId": "m212_roof_mastic_junction_measure",
+      "measureUnit": "linear_m",
+      "basis": "100",
+      "methodId": "m212_roof_mastic_junction_method",
+      "methodValue": "Проект назначает точную систему 12-01-033-02 с мастикой MASTIGUM2 и указанными в столбце грунтовкой/геотекстилем; обычные условия нового строительства до15м и применимая нормативная база подтверждены",
+      "sourceArtifactIndex": 0,
+      "locator": "КРЕР12 PDF40, entire exactcolumn12-01-033-02; technicalpart PDF4–6",
+      "rows": [
+        {
+          "role": "workers",
+          "titleRu": "Труд рабочих-кровельщиков",
+          "unitId": "man_hour",
+          "rate": "6.75",
+          "category": "labor",
+          "resourceCode": "000-1003-5",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "machinists",
+          "titleRu": "Труд машинистов нормативного комплекса",
+          "unitId": "man_hour",
+          "rate": "0.5",
+          "category": "labor",
+          "resourceCode": null,
+          "operator": null,
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "role": "forklift",
+          "titleRu": "Автопогрузчик 5 т",
+          "unitId": "machine_hour",
+          "rate": "0.1",
+          "category": "equipment",
+          "resourceCode": "03-0020",
+          "operator": "OPERATOR",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "lift",
+          "titleRu": "Грузопассажирский подъёмник до 0,8 т",
+          "unitId": "machine_hour",
+          "rate": "0.15",
+          "category": "equipment",
+          "resourceCode": "03-0330",
+          "operator": "OPERATOR",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "compressor",
+          "titleRu": "Передвижной компрессор до 686 кПа, 5 м³/мин",
+          "unitId": "machine_hour",
+          "rate": "0.25",
+          "category": "equipment",
+          "resourceCode": "05-0005",
+          "operator": "OPERATOR",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "airless",
+          "titleRu": "Установка безвоздушного распыления 4,1 кВт",
+          "unitId": "machine_hour",
+          "rate": "1.93",
+          "category": "equipment",
+          "resourceCode": "39-0541",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "geotextile",
+          "titleRu": "Иглопробивной геотекстиль",
+          "unitId": "m2",
+          "rate": "52",
+          "category": "material",
+          "resourceCode": "01-1207-0001",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "kerosene",
+          "titleRu": "Керосин технический",
+          "unitId": "kg",
+          "rate": "1",
+          "category": "material",
+          "resourceCode": "01-1504-0001",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "mastic",
+          "titleRu": "Полимерная кровельная мастика",
+          "unitId": "kg",
+          "rate": "188",
+          "category": "material",
+          "resourceCode": "01-4606-0005",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "primer",
+          "titleRu": "Битумная грунтовка",
+          "unitId": "kg",
+          "rate": "24",
+          "category": "material",
+          "resourceCode": "01-0201-0002*",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        }
+      ],
+      "aggregateAdmission": false
+    },
+    {
+      "key": "mastic_valley",
+      "kind": "flat_mastic",
+      "prefix": "master212:roof:r1:mastic_valley",
+      "normId": "12-01-033-03",
+      "titleRu": "Усиление ендов мастичной кровли",
+      "measureId": "m212_roof_mastic_valley_measure",
+      "measureUnit": "linear_m",
+      "basis": "100",
+      "methodId": "m212_roof_mastic_valley_method",
+      "methodValue": "Проект назначает точную систему 12-01-033-03 с мастикой MASTIGUM2 и указанными в столбце грунтовкой/геотекстилем; обычные условия нового строительства до15м и применимая нормативная база подтверждены",
+      "sourceArtifactIndex": 0,
+      "locator": "КРЕР12 PDF40, entire exactcolumn12-01-033-03; technicalpart PDF4–6",
+      "rows": [
+        {
+          "role": "workers",
+          "titleRu": "Труд рабочих-кровельщиков",
+          "unitId": "man_hour",
+          "rate": "1.58",
+          "category": "labor",
+          "resourceCode": "000-1003-5",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "machinists",
+          "titleRu": "Труд машинистов нормативного комплекса",
+          "unitId": "man_hour",
+          "rate": "0.1",
+          "category": "labor",
+          "resourceCode": null,
+          "operator": null,
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "role": "forklift",
+          "titleRu": "Автопогрузчик 5 т",
+          "unitId": "machine_hour",
+          "rate": "0.05",
+          "category": "equipment",
+          "resourceCode": "03-0020",
+          "operator": "OPERATOR",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "lift",
+          "titleRu": "Грузопассажирский подъёмник до 0,8 т",
+          "unitId": "machine_hour",
+          "rate": "0.05",
+          "category": "equipment",
+          "resourceCode": "03-0330",
+          "operator": "OPERATOR",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "airless",
+          "titleRu": "Установка безвоздушного распыления 4,1 кВт",
+          "unitId": "machine_hour",
+          "rate": "0.39",
+          "category": "equipment",
+          "resourceCode": "39-0541",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "geotextile",
+          "titleRu": "Иглопробивной геотекстиль",
+          "unitId": "m2",
+          "rate": "52",
+          "category": "material",
+          "resourceCode": "01-1207-0001",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "kerosene",
+          "titleRu": "Керосин технический",
+          "unitId": "kg",
+          "rate": "1",
+          "category": "material",
+          "resourceCode": "01-1504-0001",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "mastic",
+          "titleRu": "Полимерная кровельная мастика",
+          "unitId": "kg",
+          "rate": "40",
+          "category": "material",
+          "resourceCode": "01-4606-0005",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        }
+      ],
+      "aggregateAdmission": false
+    },
+    {
+      "key": "metal_cut",
+      "kind": "pitched_metal",
+      "prefix": "master212:roof:r1:metal_cut",
+      "normId": "09-05-006-01",
+      "titleRu": "Раскрой металлического покрытия",
+      "measureId": "m212_roof_metal_cut_length_m",
+      "measureUnit": "linear_m",
+      "basis": "1",
+      "methodId": "m212_roof_metal_cut_method",
+      "methodValue": "Угловая шлифмашина с кругом 230×3×22; объём реза проверен, КРЕР12§1.9 и09-05-006-01 применимы",
+      "sourceArtifactIndex": 1,
+      "locator": "КРЕР09 PDF122, entire09-05-006-01 column; direct applicabilitylink КРЕР12 PDF5§1.9",
+      "rows": [
+        {
+          "role": "workers",
+          "titleRu": "Труд рабочих по раскрою покрытия",
+          "unitId": "man_hour",
+          "rate": "0.34",
+          "category": "labor",
+          "resourceCode": "000-1003-4",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "grinder",
+          "titleRu": "Угловая шлифовальная машина",
+          "unitId": "machine_hour",
+          "rate": "0.31",
+          "category": "equipment",
+          "resourceCode": "33-0367",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "role": "disc",
+          "titleRu": "Отрезной круг 230×3×22 мм",
+          "unitId": "piece",
+          "rate": "0.51",
+          "category": "material",
+          "resourceCode": "01-6102-0046",
+          "operator": null,
+          "costTreatment": "OWN_COST"
+        }
+      ],
+      "aggregateAdmission": true
+    }
+  ],
+  "unitConversions": [
+    {
+      "sourceUnit": "t",
+      "targetUnit": "kg",
+      "factor": "1000",
+      "rows": "033 kerosene only"
+    },
+    {
+      "sourceUnit": "10m2",
+      "targetUnit": "m2",
+      "factor": "10",
+      "rows": "033 geotextile only"
+    }
+  ],
+  "operatorScopeEvidence": [
+    {
+      "norm": "12-01-033-01",
+      "printedMachinistsHours": "0.76",
+      "operatorMachineHours": [
+        "0.15",
+        "0.2",
+        "0.41"
+      ],
+      "noAdditionalOperatorNorm": "39-0541 airless; application and washing included in printed work scope/worker labor"
+    },
+    {
+      "norm": "12-01-033-02",
+      "printedMachinistsHours": "0.5",
+      "operatorMachineHours": [
+        "0.1",
+        "0.15",
+        "0.25"
+      ],
+      "noAdditionalOperatorNorm": "39-0541 airless"
+    },
+    {
+      "norm": "12-01-033-03",
+      "printedMachinistsHours": "0.1",
+      "operatorMachineHours": [
+        "0.05",
+        "0.05"
+      ],
+      "noAdditionalOperatorNorm": "39-0541 airless"
+    },
+    {
+      "norm": "09-05-006-01",
+      "printedMachinistsHours": null,
+      "noAdditionalOperatorNorm": "33-0367 grinder; full entire column has worker labor0.34, grinder0.31 and disc0.51 only"
+    }
+  ],
+  "physicalCutApproval": {
+    "parameterId": "m212_roof_cut_coating_compatibility",
+    "acceptedValue": "Документ изготовителя конкретного покрытия разрешает абразивный рез кругом 230×3×22 с сохранением требуемых свойств; проект это допускает",
+    "documentParameterId": "m212_roof_cut_coating_document_ref",
+    "sourceNormDoesNotGrantPhysicalCompatibility": true,
+    "documentMustIdentify": "Изготовитель, точное покрытие, документ/редакция и пункт о допустимом способе реза; запись проекта о применимости"
+  },
+  "historicalPricesImported": false,
+  "fullRoofTechnicalAcceptance": false,
+  "rootPublicationRequired": true,
+  "compositionRevisionR2": {
+    "status": "SOURCE_REQUIRED",
+    "fieldMeasureRule": "KRER12 PDF5 section2.1 full project covering area; no unsupported subtraction",
+    "heldNorms": [
+      "12-01-033-02",
+      "12-01-033-03"
+    ],
+    "sourceEvidence": "KRER12 PDF40 work scope for both02/03 includes three main layers; existing full-area01 cannot be assumed disjoint",
+    "returnCriterion": "Exact applicable sourced rule for joint measurement and exclusion of repeated basic work, plus measured project surface/node boundaries. No consumer checkbox or width inferred from geotextile or material rates."
+  },
+  "rootSourceReviewDoesNotMeanCompositeScopeAdmission": true
+}

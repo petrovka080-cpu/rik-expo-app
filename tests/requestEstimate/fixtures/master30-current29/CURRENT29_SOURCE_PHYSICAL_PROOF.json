@@ -1,0 +1,524 @@
+{
+  "scope": "Only source data declarations, not complete raw archives or source admission",
+  "case5": {
+    "baselineErrorOwner": "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+    "default": null,
+    "sourcePath": "src/lib/estimate/v4/monolithicRebarCageR1.ts",
+    "errorPath": "blocking REQUIRED/REQUIRED_WHEN→CanonicalBaselineContractMissingError.missingParameterIds; no arbitrary error accepted",
+    "sourceModelPrimary": null,
+    "physicalUnit": "kg",
+    "required": true,
+    "kgPerM3FactorRejected": true,
+    "requiredBbsField": "rebar_d12_mass_kg",
+    "contextOnlyField": "structure_volume_m3",
+    "baselineErrorOwnerSha256": "8fdbbfd841f801b050cc683fdd9715fc2ddfe80fbff94df7e019b8e900cd73a7",
+    "sourceSha256": "60aaf258b2500af8d36d8238186d4cc8eb29a51d61dafea46c544c8bd472e297",
+    "preliminaryCompilationAllowed": true,
+    "guideValidationPolicy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE",
+    "permittedBusinessOutcome": "Actual typed missing BBS OR actual deferred originalplan with absent/nullBBSmass and no positivepayquantity; context string20 separate, neverpayprimary",
+    "contextParser": {
+      "representation": "string",
+      "structureVolumeAssignmentLine": 992,
+      "path": "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+      "value": "20",
+      "numberHelperLine": 844
+    }
+  },
+  "contract": "current29-source-physical-proof-portable/v1",
+  "case10": {
+    "parentToCurrentGap": [
+      "Original acceptance binds UUID/count/publisherPayload, but contains no complete v6parameter array or definitionSha column; observed e23 SHA is not promoted to expected.",
+      "Original overlay6c7329 and publisher receipt pin differ from current source hashes; current source reading cannot certify byteexact original transformation without archived original owner bodies.",
+      "No full successor rawschema/draftplan adjacent to original publication acceptance/dryrun; preDB v6orderedIDs/DTOcompanion remain unbound. Parent ordered list is labelled parent-only."
+    ],
+    "declarationSha256": "15bd2769038f2f84f62551b451eeee100d1397e85f7197495a5436bd0e2675e9",
+    "physicalSource": {
+      "parentDefinitionVersionId": "09d849a5-a038-5255-8b23-c19ba64689dc",
+      "primary": {
+        "parameter_id": "area_m2",
+        "unit_id": "m2",
+        "value_type": "decimal",
+        "required": true,
+        "default_value": null
+      },
+      "parentVersion": 5,
+      "primaryMeasureParameterId": "area_m2",
+      "newLabourClosures": 0,
+      "newMachineClosures": 0,
+      "selector": {
+        "parameter_id": "interior_plaster_material_system",
+        "value_type": "enum",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "values": [
+            "Исходная технология по проекту",
+            "МП75 по бетону, грунт Бетогрунд"
+          ]
+        }
+      },
+      "role": "Original captured parent physical profile, independently referenced by publisher source pack. Not silently exact v6 DTO.",
+      "primerOnly": true,
+      "newPhysicalNormClosures": 0,
+      "oldOwner": "rc09:mechanized_gypsum_wall_plaster"
+    },
+    "preliminaryIngressContract": {
+      "kind": "SOURCE_PRELIMINARY_MEASURE_OR_TYPED_CLARIFICATION",
+      "primaryParameterId": "area_m2",
+      "unitId": "m2",
+      "sourceHumanMeasure": "400",
+      "missingParameterIds": [
+        "interior_plaster_material_system"
+      ],
+      "deferredSelectors": [
+        {
+          "parameterId": "interior_plaster_material_system",
+          "required": true,
+          "preliminaryCompilationAllowed": true,
+          "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+          "guideValidationPolicy": "MANDATORY_BLOCK",
+          "allowedValues": [
+            "Исходная технология по проекту",
+            "МП75 по бетону, грунт Бетогрунд"
+          ]
+        }
+      ],
+      "success": "Exact measured primary; selector unprovided; source policy and enum set equal; original planner called once. No complete composition/FULL assertion.",
+      "typedAlternative": "Only native class-shaped Error named CanonicalBaselineContractMissingError; exact missing set and same source measure in error.parameters; selector unprovided. Other errors remain HOLD.",
+      "productionReturnedState": "Shared planner returns parameters/primaryMeasureParameterId/assumptions. It supplies no structured deferred-needs or FULL status; verifier marks choices OPEN without inventing one.",
+      "currentDtoAuthority": "Narrow independent source policy predicate verified against actual schema, not a whole-current-DTO oracle."
+    }
+  },
+  "case9": {
+    "noSourceProfileSelectionMetadata": true,
+    "selectorGuide": {
+      "guide_kind": "PROJECT_DEFINED",
+      "default_value": null,
+      "source_role": "DECLARED_WORK_SCOPE",
+      "guide_validation_policy": "MANDATORY_BLOCK",
+      "value_source_role": "PROJECT_SPECIFIC_INPUT"
+    },
+    "declarationSha256": "10ca9a2d0e93b4135c5bbcfee4ca07a00fa28db59c9d27d4d54af21ab2bedee9",
+    "physicalScope": {
+      "currentPromptOrProfileNotApproved": true,
+      "primaryMeasureSelectionV1": {
+        "contract": "canonical-primary-measure-selection/v1",
+        "selections": [
+          {
+            "unitId": "m2",
+            "selectorValue": "Прежняя проектная система и отдельная ветвь клея KZ",
+            "primaryMeasureParameterId": "area_m2"
+          },
+          {
+            "unitId": "m",
+            "selectorValue": "Точная система минваты120мм по КРЕР15-2015,080-03",
+            "primaryMeasureParameterId": "m35_facade_facade_length_m"
+          },
+          {
+            "unitId": "m2",
+            "selectorValue": "Минераловатный фасад с базовым слоем 4 мм и цветной силиконовой штукатуркой 2 мм",
+            "primaryMeasureParameterId": "facade_r3_current_wet_area_m2"
+          }
+        ],
+        "selectorParameterId": "m35_facade_source_system"
+      },
+      "canonicalRuName": "Монтаж минераловатного фасадного утепления120мм",
+      "profileDefault": null,
+      "profileDefaultInvented": false,
+      "physicalResultRu": "Утеплённый фасад по отдельно выбранной согласованной системе; текущий профиль включает цветную силиконовую отделку2мм. Полный ресурсный статус остаётся предварительным.",
+      "operationClass": "INSTALL_FACADE_MINERAL_WOOL_INSULATION",
+      "legacyArea_m2": "Present but not a license to choose anysource profile; selector has explicit3source choices and null default.",
+      "sourceContract": "gox-build.facade-current-family-whole-systems/r3"
+    }
+  },
+  "sourceProfiles": [
+    {
+      "originSha256": "81e3f607f5b649b57aa9d40e38e596f3985d8c645e3e08987c2a1612454e3a31",
+      "primarySelection": {
+        "contract": "canonical-primary-measure-selection/v1",
+        "selections": [
+          {
+            "unitId": "m3",
+            "selectorValue": "Сохранённый исходный состав фундамента",
+            "primaryMeasureParameterId": "plan_dimension_concrete_volume_m3"
+          },
+          {
+            "unitId": "m3",
+            "selectorValue": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+            "primaryMeasureParameterId": "m212_concrete_net_volume_m3"
+          },
+          {
+            "unitId": "m3",
+            "selectorValue": "Ленточный фундамент шириной поверху до 1 м с деревянной щитовой опалубкой",
+            "primaryMeasureParameterId": "m212_completion_structural_volume_m3"
+          }
+        ],
+        "selectorParameterId": "m212_foundation_cycle_profile"
+      },
+      "originPath": "data/estimate-benchmarks/fixtures/concrete-curing-roller-current-strip-foundation-r124.json",
+      "sourceProfile": {
+        "contract": "canonical-source-profile-selection/v1",
+        "profiles": [
+          {
+            "when": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "formula_greater_than",
+                  "value": 0,
+                  "unitId": "m3",
+                  "expression": "m212_concrete_net_volume_m3"
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "equals",
+                      "value": 0,
+                      "parameterId": "m212_preparation_net_volume_m3"
+                    },
+                    {
+                      "kind": "formula_greater_than",
+                      "value": 0,
+                      "unitId": "m3",
+                      "expression": "m212_preparation_net_volume_m3"
+                    }
+                  ]
+                }
+              ]
+            },
+            "sources": [
+              {
+                "locator": "MASTER2.12 §2Б; complete accepted component arrays; КРЕР06-01-001-01 exact column",
+                "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+                "artifactSha256": "f1ddfee0b316e741ae2e8939a0c21d12f95fd052fe416021cb1fd22ab4bbd87b"
+              }
+            ],
+            "selectorValue": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+            "geometryCopies": []
+          }
+        ],
+        "selectorParameterId": "m212_foundation_cycle_profile",
+        "geometryParameterIds": [
+          "m212_concrete_net_volume_m3",
+          "m212_preparation_net_volume_m3"
+        ]
+      },
+      "ordinal": 1,
+      "selector": {
+        "parameter_id": "m212_foundation_cycle_profile",
+        "default_value": null,
+        "constraints_json": {
+          "values": [
+            "Сохранённый исходный состав фундамента",
+            "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+            "Ленточный фундамент шириной поверху до 1 м с деревянной щитовой опалубкой"
+          ]
+        }
+      }
+    },
+    {
+      "originSha256": "d8ca9ce8252675baf2f8697ebde3a8250cba414be70f09c06668755b3d400cc0",
+      "primarySelection": {
+        "contract": "canonical-primary-measure-selection/v1",
+        "selections": [
+          {
+            "unitId": "m2",
+            "selectorValue": "Сохранённый исходный состав фундамента",
+            "primaryMeasureParameterId": "slab_area_m2"
+          },
+          {
+            "unitId": "m3",
+            "selectorValue": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+            "primaryMeasureParameterId": "m212_concrete_net_volume_m3"
+          },
+          {
+            "unitId": "m3",
+            "selectorValue": "Монолитная бетонная фундаментная плита без армирования",
+            "primaryMeasureParameterId": "m212_family_b_plain15_net_concrete_volume_m3"
+          }
+        ],
+        "selectorParameterId": "m212_foundation_cycle_profile"
+      },
+      "originPath": "data/estimate-benchmarks/fixtures/concrete-curing-roller-current-foundation-slab-r124.json",
+      "sourceProfile": {
+        "contract": "canonical-source-profile-selection/v1",
+        "profiles": [
+          {
+            "when": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "formula_greater_than",
+                  "value": 0,
+                  "unitId": "m3",
+                  "expression": "m212_concrete_net_volume_m3"
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "equals",
+                      "value": 0,
+                      "parameterId": "m212_preparation_net_volume_m3"
+                    },
+                    {
+                      "kind": "formula_greater_than",
+                      "value": 0,
+                      "unitId": "m3",
+                      "expression": "m212_preparation_net_volume_m3"
+                    }
+                  ]
+                }
+              ]
+            },
+            "sources": [
+              {
+                "locator": "MASTER2.12 §2Б; complete accepted component arrays; КРЕР06-01-001-01 exact column",
+                "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+                "artifactSha256": "f1ddfee0b316e741ae2e8939a0c21d12f95fd052fe416021cb1fd22ab4bbd87b"
+              }
+            ],
+            "selectorValue": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+            "geometryCopies": []
+          }
+        ],
+        "selectorParameterId": "m212_foundation_cycle_profile",
+        "geometryParameterIds": [
+          "m212_concrete_net_volume_m3",
+          "m212_preparation_net_volume_m3"
+        ]
+      },
+      "ordinal": 2,
+      "selector": {
+        "parameter_id": "m212_foundation_cycle_profile",
+        "default_value": null,
+        "constraints_json": {
+          "values": [
+            "Сохранённый исходный состав фундамента",
+            "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+            "Монолитная бетонная фундаментная плита без армирования"
+          ]
+        }
+      }
+    }
+  ],
+  "sourceAdmission": false,
+  "case8": {
+    "physicalDeclaration": {
+      "physicalResultRu": "Смонтированное и проверенное выбранное поле ПВХ1,5 мм с применимыми деталями и завершением; соседние слои отдельно; выбранный армированный переход только после подтверждения его границы и совместимости",
+      "identityMode": "WORK",
+      "redirectCatalogId": null,
+      "applicabilityScope": "EXISTING_PVC15_OPTIONAL_ACCEPTED_REINFORCED_TRANSITION_COMPOSITION",
+      "primaryMeasureParameterId": "area_m2",
+      "primaryUnit": "m2",
+      "primaryDefaultRaw": "null",
+      "sourceGapIsNotCustomerQuestion": true,
+      "selectedParametersFromParentRaw": [
+        {
+          "parameterId": "area_m2",
+          "ordinal": 0,
+          "titleRu": "Площадь монтажа кровельной ПВХ-мембраны 1,5 мм",
+          "unitId": "m2",
+          "valueType": "decimal",
+          "defaultValueRaw": "null",
+          "constraintsJsonRaw": "{\n            \"min\": 0.000001\n          }"
+        },
+        {
+          "parameterId": "pvc15_base",
+          "ordinal": 19,
+          "titleRu": "Фактическое основание непосредственно под мембраной",
+          "unitId": null,
+          "valueType": "enum",
+          "defaultValueRaw": "null",
+          "constraintsJsonRaw": "{\n            \"values\": [\n              \"Пенополистирол EPS или XPS\",\n              \"Минеральная вата\",\n              \"Битумное основание\",\n              \"Другое основание по согласованной системе\",\n              \"Не знаю — требуется уточнение по объекту\"\n            ],\n            \"requiredWhen\": {\n              \"kind\": \"greater_than\",\n              \"value\": 0,\n              \"parameterId\": \"area_m2\"\n            }\n          }"
+        },
+        {
+          "parameterId": "pvc15_system_profile",
+          "ordinal": 20,
+          "titleRu": "Выбранная система мембраны 1,5 мм; условия изготовителя применяются только к совместимой системе",
+          "unitId": null,
+          "valueType": "enum",
+          "defaultValueRaw": "null",
+          "constraintsJsonRaw": "{\n            \"values\": [\n              \"Проверенная система LOGICROOF V-RP 1,5 мм\",\n              \"Другая проектная ПВХ-система 1,5 мм с отдельным подтверждением\",\n              \"Не знаю — требуется уточнение по объекту\"\n            ],\n            \"requiredWhen\": {\n              \"kind\": \"greater_than\",\n              \"value\": 0,\n              \"parameterId\": \"area_m2\"\n            }\n          }"
+        },
+        {
+          "parameterId": "pvc15_cleaner_mode",
+          "ordinal": 92,
+          "titleRu": "Нужна ли очистка или отдельная активация ПВХ-мембраны",
+          "unitId": null,
+          "valueType": "enum",
+          "defaultValueRaw": "null",
+          "constraintsJsonRaw": "{\n            \"values\": [\n              \"Требуется по подтверждённой границе\",\n              \"Не требуется по подтверждённой границе\"\n            ],\n            \"requiredWhen\": {\n              \"kind\": \"greater_than\",\n              \"value\": 0,\n              \"parameterId\": \"area_m2\"\n            }\n          }"
+        },
+        {
+          "parameterId": "pvc15_joint_transition_scope",
+          "ordinal": 150,
+          "titleRu": "Входит ли армированный переход ПВХ–битум в выбранную границу",
+          "unitId": null,
+          "valueType": "enum",
+          "defaultValueRaw": "null",
+          "constraintsJsonRaw": "{\n            \"values\": [\n              \"Переход ПВХ–битум входит в выбранный участок\",\n              \"Переход ПВХ–битум вне выбранного участка\",\n              \"Не знаю — требуется уточнение по объекту\"\n            ],\n            \"requiredWhen\": {\n              \"kind\": \"greater_than\",\n              \"value\": 0,\n              \"parameterId\": \"area_m2\"\n            }\n          }"
+        },
+        {
+          "parameterId": "pvc15_cleaner_product_choice",
+          "ordinal": 293,
+          "titleRu": "Чем очищаем ПВХ-мембрану в этой работе",
+          "unitId": null,
+          "valueType": "enum",
+          "defaultValueRaw": "null",
+          "constraintsJsonRaw": "{\n            \"values\": [\n              \"Очистка грязной ПВХ: ТЕХНОНИКОЛЬ ЕКН472219, 3 л; отдельный активатор и другие применения в этой работе не нужны\",\n              \"Другой очиститель или отдельная активация по проекту\"\n            ],\n            \"requiredWhen\": {\n              \"kind\": \"equals\",\n              \"value\": \"Требуется по подтверждённой границе\",\n              \"parameterId\": \"pvc15_cleaner_mode\"\n            }\n          }"
+        },
+        {
+          "parameterId": "pvc15_cleaner_472219_dirty_area_m2",
+          "ordinal": 294,
+          "titleRu": "Площадь загрязнённой ПВХ-мембраны, которую очищаем",
+          "unitId": "m2",
+          "valueType": "decimal",
+          "defaultValueRaw": "null",
+          "constraintsJsonRaw": "{\n            \"min\": 0.001,\n            \"requiredWhen\": {\n              \"kind\": \"and\",\n              \"operands\": [\n                {\n                  \"kind\": \"equals\",\n                  \"value\": \"Требуется по подтверждённой границе\",\n                  \"parameterId\": \"pvc15_cleaner_mode\"\n                },\n                {\n                  \"kind\": \"equals\",\n                  \"value\": \"Очистка грязной ПВХ: ТЕХНОНИКОЛЬ ЕКН472219, 3 л; отдельный активатор и другие применения в этой работе не нужны\",\n                  \"parameterId\": \"pvc15_cleaner_product_choice\"\n                }\n              ]\n            }\n          }"
+        }
+      ],
+      "selectorAcceptance": "Every shown default is null. No particular base/system/transition/cleaner choice is accepted or inferred by this declaration.",
+      "repairSource": "scripts/estimate/r4a13/s2763Pvc15CleanerOverlay.ts:13-34",
+      "repair": "Only pvc15_cleaner_mode truth.value_source_role changes NORM_REQUIRED_BUT_PROJECT_SELECTED to PROJECT_SPECIFIC_INPUT and visible_when literal true; every parameter truth.contract advances. Baseline schema digest recalculated. No parameter IDs/order/count/default/constraints or formulas/resources/bindings change in repair; publisher adds definition/baseline/release identity.",
+      "repairProducerGuard": "Exact parentv8/materialSeriesContract, enum/defaultnull/unitnull/source guide/source hash/object-fact/consumer ownership guards and formulas/resources/bindings equality retained",
+      "materialSourcePack": "data/estimate-benchmarks/source-packs/tn-pvc15-cleaner472219-series-s27-63.json",
+      "limitedCleanerScope": "0.25l/m2 only measured dirty PVC area, selected4722193l supply, explicit no separate activation/other cleaner use; not whole roof area, seam width, losses, labour or other material norm",
+      "onePayOwner": "pvc15:material:cleaner:tn-472219-volume",
+      "legacyOwner": "pvc15:material:cleaner",
+      "priceStockTransfer": "No automatic transfer between products",
+      "quantityScopeLabel": "Historical passport quantityScope FULL retained; materialSourceScopeOnly true, legacyPreliminarySourcesRemainUnaccepted true, completeTechnicalEstimateAccepted false; this is not modern composition/FULL admission"
+    },
+    "declarationSha256": "949d7c4a48cf1d8d70c4733ab8d25d76647d4f99077f67b3f165e58a76e12542",
+    "preliminaryIngressContract": {
+      "kind": "SOURCE_PRELIMINARY_MEASURE_OR_TYPED_CLARIFICATION",
+      "primaryParameterId": "area_m2",
+      "unitId": "m2",
+      "sourceHumanMeasure": "500",
+      "missingParameterIds": [
+        "pvc15_base"
+      ],
+      "deferredSelectors": [
+        {
+          "parameterId": "pvc15_base",
+          "required": false,
+          "preliminaryCompilationAllowed": true,
+          "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+          "guideValidationPolicy": "MANDATORY_BLOCK",
+          "allowedValues": [
+            "Пенополистирол EPS или XPS",
+            "Минеральная вата",
+            "Битумное основание",
+            "Другое основание по согласованной системе",
+            "Не знаю — требуется уточнение по объекту"
+          ],
+          "requiredWhen": {
+            "kind": "greater_than",
+            "value": 0,
+            "parameterId": "area_m2"
+          }
+        }
+      ],
+      "success": "Exact measured primary; selector unprovided; source policy and enum set equal; original planner called once. No complete composition/FULL assertion.",
+      "typedAlternative": "Only native class-shaped Error named CanonicalBaselineContractMissingError; exact missing set and same source measure in error.parameters; selector unprovided. Other errors remain HOLD.",
+      "productionReturnedState": "Shared planner returns parameters/primaryMeasureParameterId/assumptions. It supplies no structured deferred-needs or FULL status; verifier marks choices OPEN without inventing one.",
+      "currentDtoAuthority": "Narrow independent source policy predicate verified against actual schema, not a whole-current-DTO oracle."
+    }
+  },
+  "full": false,
+  "case4": {
+    "humanFactors": {
+      "bolts_per_group": "4",
+      "anchor_group_count": "10"
+    },
+    "sourceSha256": "59d1ff72894da8e864865b60f16ac55d3be153f5cb11296a6c06201a7f8d540e",
+    "sourcePath": "src/lib/estimate/v4/anchorGroupInstallationR1.ts",
+    "primaryMeasureParameterId": "anchor_group_count",
+    "expectedPrimaryQuantity": "10",
+    "formula": "anchor_group_count_v1 = anchor_group_count",
+    "expectedBoltQuantity": "40",
+    "boltMaterialFormula": "anchor_bolt_quantity_v1 = anchor_group_count * bolts_per_group",
+    "boltMaterialRowId": "material:anchor-group:anchor-bolts",
+    "basis": "Original MASTER case4 states 10 groups and 4 bolts/group. The independently pinned source compiler chooses anchor_group_count as primary; 10 is the group work measure, 40 is the separate bolt material quantity. No normative consumption factor or observed DB value supplies this expectation; the source primary ID records evidence and adds no mandatory prebound-ID guard to MEASURE_UNIT_VALUE.",
+    "independentSourceAcceptance": {
+      "function": "verifyThroughExistingCore",
+      "executionClaim": "EXISTING_SOURCE_ASSERTION_ONLY_NOT_A_NEW_RUN_OR_DB_RESOURCE_FULL",
+      "expectedMaterialQuantity": "40",
+      "workRowId": "work:anchor-group:install-align-groups",
+      "sha256": "5933d6e2331ae3b42d1ca24ec9e254856c239ffd7ddc89597c6e288394de09cf",
+      "path": "scripts/estimate/r4a13/prepareAnchorGroupInstallationFamilySuccessor.ts",
+      "expectedWorkQuantity": "10",
+      "materialRowId": "material:anchor-group:anchor-bolts",
+      "assertion": "STOP_ANCHOR_GROUP_INSTALLATION_MASTER_SHORT_GEOMETRY"
+    },
+    "sourceAdmission": false,
+    "full": false
+  },
+  "case20": {
+    "catalogId": "canonical-work:base:heating_hvac_interior_split_install_standard",
+    "originalQuantityOwnership": {
+      "sourceProof": "Producer declares system_count as count of mounted split systems, user-supplied known scope and compiler main measure. Named professional extraction maps explicit quantity4 into this owner; no unit conversion.",
+      "rule": "Existing extractPromptOwnedProfessionalParameters explicit количество N шт count-owner assignment requires exactly one candidate ID present in schema",
+      "expectedScalar": "4",
+      "exact16ProducerOnlyCandidate": "system_count",
+      "expectedUnitId": "set",
+      "expectedPrimaryId": "system_count",
+      "genericQuantityPath": "parameterAcceptsQuantity rejects pcs as set, unchanged"
+    },
+    "definitionVersionId": "b563a34e-5819-5e43-94c7-e5c2969fb9ac",
+    "observedA25": "Defect confirmation only, not oracle",
+    "full": false,
+    "historicalFallback": {
+      "role": "Historical minimal-catalog outcome only, not operation unit authority",
+      "unitId": "pcs",
+      "primaryId": "fire_rated_penetration_seal_quantity_piece"
+    },
+    "sourceOwnerRefs": [
+      {
+        "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\features\\consumerRepair\\consumerCanonicalBaselineCompile.ts",
+        "sha256": "8fdbbfd841f801b050cc683fdd9715fc2ddfe80fbff94df7e019b8e900cd73a7"
+      },
+      {
+        "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalEstimateParameterSemantics.ts",
+        "sha256": "cac2b06547720c704b21d15d87df00b1393966f5fd07c5a13884d7d10f045b81"
+      },
+      {
+        "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\professionalUnitRegistry.ts",
+        "sha256": "9b96b27d96b4261c5c4919e79fae56f05ed1f9a38d6c45996eee19fdcfaeae94"
+      }
+    ],
+    "retainedMainMeasureAuthority": {
+      "catalogId": "canonical-work:base:heating_hvac_interior_split_install_standard",
+      "contract": "independent-retained-main-measure-authority/v1",
+      "definitionVersionId": "b563a34e-5819-5e43-94c7-e5c2969fb9ac",
+      "definitionVersion": 4,
+      "parameterId": "system_count",
+      "parameterCount": 16,
+      "publicationReceipt": {
+        "path": ".release-runtime/r4a13-6/s19-first-estimate/master-split-system-blocks-successor-v1/acceptance.json",
+        "sha256": "fdfb71188a55a1db98c8e86c469519c8822337f73c1233f9f0fa8d16a9e7f3e8"
+      },
+      "unitId": "set",
+      "producerSources": [
+        {
+          "path": "src/lib/estimate/v4/splitSystemBlocksR1.ts",
+          "sha256": "1fd23da32d58afdc605c437471ffdd8af63e92391b9c14a84de9bbc593a85c4c"
+        },
+        {
+          "path": "scripts/estimate/r4a13/prepareMasterSplitSystemBlocksSuccessor.ts",
+          "sha256": "2915a2f6665e13ee993ddbda8a8df32d78dc82e3e2105d24b563a3ace93466b6"
+        }
+      ]
+    },
+    "sourceAdmission": false,
+    "preliminaryPolicy": {
+      "requiredMissing": "Existing preliminary policy defers REQUIRED/REQUIRED_WHEN only; invalid supplied values and cross-field conflicts stay blocking",
+      "guideValidationPolicy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE",
+      "preliminaryCompilationAllowed": true,
+      "unknownProjectFacts": "Remain preliminary, no FULL/composition/payable resource assertion",
+      "all16ProducerFieldsPreliminaryAllowed": true,
+      "valueSourceRole": "USER_INPUT"
+    }
+  }
+}

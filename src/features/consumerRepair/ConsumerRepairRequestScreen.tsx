@@ -10,7 +10,7 @@ import {roofStageRestoreTargetsV1} from '../../lib/estimate/backendPlatform/cano
 import {roofStageRestoreTargetsV2} from '../../lib/estimate/backendPlatform/canonicalRoofScreedMigrationV1';
 import {roofStageRestoreTargetsV3} from '../../lib/estimate/backendPlatform/canonicalRoofMetalTrimMigrationV1';
 import {roofStageRestoreTargetsV4,roofStageExcludeTargetsV4} from '../../lib/estimate/backendPlatform/canonicalRoofLowerLayersMigrationV1';
-import { enrichCanonicalPreliminaryNamingEvidence, missingCanonicalPreliminaryNamingEvidence,
+import { enrichCanonicalPreliminaryNamingEvidence, missingCanonicalPreliminaryNamingEvidenceRevisionIds,canonicalPreliminaryNamingEvidenceReadRevisionIds,canonicalPreliminaryNamingEvidenceMatchesProjection,
   type CanonicalPreliminaryNamingEvidence } from '../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { publishMountedAndroidPdfCaller } from "../../lib/pdf/androidPdfCallerReadiness";
@@ -27,10 +27,13 @@ import {
   deleteConsumerRepairRequestDraft,
   listConsumerRepairApprovedHistory, listConsumerRepairWorkspaceHistory, removeConsumerRepairRequestItem,
   prepareConsumerRepairRequestItemQuantityUpdate, updateConsumerRepairRequestItemUnitPrice,
+  saveConsumerRepairEstimateNote,
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests/consumerRequestService";
 import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
 import { consumerRepairEstimateApprovalParameterErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
+import { consumerEstimateManualQuantityApprovalCandidate, consumerEstimateSavedPreliminaryApprovalCandidate, consumerEstimateManualQuantityApprovalRecord, consumerEstimateManualQuantityApprovalMatches } from '../../lib/consumerRequests/consumerEstimateManualQuantityApproval';
+import {consumerEstimateProfessionalPdfReviewEligible,consumerEstimateSavedReportBinding,type ConsumerEstimateSavedReportBinding} from '../../lib/consumerRequests/consumerEstimateProfessionalPdfReview';
 import { consumerRepairSourceRequestDraftId } from "../../lib/consumerRequests/consumerRequestHistoryLineage";
 import { logger } from "../../lib/logger";
 import { createConsumerEstimateHydrationTrace, createConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
@@ -43,7 +46,7 @@ import {
   hasUnhydratedTransactionalConsumerRepairBundles,
   hydrateNextTransactionalConsumerRepairHistoryPage,
 } from "../../lib/consumerRequests/consumerRequestRepository";
-import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
+import { resolveGlobalWorkConditionSuggestionV1, type GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
@@ -66,6 +69,7 @@ import {
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateParameterInputValue,
+  type CanonicalEstimateRevisionView,
   type CanonicalEstimateRowOverride,
 } from "../../lib/estimate/backendPlatform/contracts";
 import { createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
@@ -84,14 +88,16 @@ import {
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
+import { ConsumerRepairEstimateNotes } from "./ConsumerRepairEstimateNotes";
 import { loadConsumerCanonicalProcurementArtifact } from "./consumerCanonicalArtifactHydration";
 import {
   refreshLoadedApprovedHistoryPage,
-  addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection,
+  addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection,
   buildApprovedConsumerRepairWorkspaceClearedState,
   canonicalBaselineContractMissingStatusMessage,
   buildEstimateDraftSessionTransitionStatusMessage, canonicalSearchItemToConsumerRepairSuggestion,
   buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
+  buildConsumerRepairSavedDraftEditorFields,
   buildConsumerRepairExactCatalogLaunchSelectedWork, buildMultiDomainReferenceSelectedWorkBinding, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem, composeResolvedWorkProblemText, consumerRepairCanonicalWorkSearchQuery,
   composeSelectedTemplateCandidateActiveInputText, focusConsumerRepairProblemInputAtEnd,
   emptyConsumerRepairCanonicalWorkSearchState, mergeConsumerRepairCanonicalWorkSearchPage,
@@ -124,6 +130,7 @@ import {
 } from "./consumerRepairCanonicalEstimateReadiness";
 import { consumerCanonicalPrecompileParameterOverrides } from "./consumerCanonicalParameterEditor";
 import type { ConsumerRepairParameterApplyResult } from "./ConsumerRepairProgressiveEstimatePanel";
+import { consumerParameterApplyFailure } from './consumerParameterApplyFeedback';
 import {
   beginConsumerCanonicalScopeSelection,
   bindConsumerCanonicalScopeChoice,
@@ -280,6 +287,7 @@ export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestSc
     requestDraftId?: string | null,
     selectedRoadScope?: ConsumerCanonicalScopeSelectionId | null,
     parameterOverrides?: Record<string, CanonicalEstimateParameterInputValue>,
+    showInitialPreview?: boolean,
   ) => Promise<ConsumerRepairDraftBundle | null>;
   onLoadCanonicalRevisionDraft: (input: {
     revisionId: string;
@@ -445,6 +453,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private canonicalRowAmendmentInFlightKey: string | null = null;
   private canonicalParameterBatchInFlight = false;
   private pendingCanonicalRowOverrides: Record<string, CanonicalEstimateRowOverride> = {};
+  private pendingCanonicalRowInvalidInputs: Record<string, Partial<Record<"quantity" | "unitPrice", string>>> = {};
   private pendingCanonicalRowQuantityBaselines: Record<string, {
     manual: boolean; quantity: number | null; exactQuantityText: string | null; exactPolicy: boolean; unitPrice: number | null; item: ConsumerRepairRequestItem;
   }> = {};
@@ -499,6 +508,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   }
   componentWillUnmount(): void {
+    this.historyReviewGeneration += 1;
     this.canonicalRevisionOpenGeneration += 1;
     this.canonicalNamingEvidenceDisposed = true;
     this.canonicalNamingEvidenceGeneration += 1;
@@ -523,6 +533,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       && this.canonicalRowAmendmentInFlightKey == null
     ) {
       this.pendingCanonicalRowOverrides = {};
+      this.pendingCanonicalRowInvalidInputs = {};
       this.pendingCanonicalRowQuantityBaselines = {};
       this.pendingCanonicalRowBaseRevisionId = null;
       if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
@@ -612,6 +623,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       history: listConsumerRepairWorkspaceHistory(this.props.consumerUserId, { exactDraftId: this.props.initialDraftId }),
       approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
     });
+    const hydrationBaseline = buildInitialConsumerRepairRequestState({
+      initialProblemText: this.props.initialProblemText,
+      initialDraftId: this.props.initialDraftId,
+      history: [],
+      approvedHistoryPage: buildEmptyConsumerRepairApprovedHistoryPage(),
+    });
     const freshLaunchWorkspace =
       isFreshRequestEstimateLaunchWorkspace(this.props);
     const expectedPrompt = this.props.initialProblemText?.trim() ?? "";
@@ -646,17 +663,22 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             : null,
         };
       }
+      // A new prompt or selection owns a new composer. Background recovery
+      // may refresh its history, but must not attach the old draft to that input.
+      const restoreHydratedBundle = !current.bundle && hydrated.bundle
+        && current.problemText === hydrationBaseline.problemText
+        && current.selectedWork === hydrationBaseline.selectedWork;
       return {
         ...current,
         history: hydrated.history,
         approvedHistoryPage: hydrated.approvedHistoryPage,
-        bundle: current.bundle ?? hydrated.bundle,
-        problemText: current.bundle || !hydrated.bundle
-          ? current.problemText
-          : "",
-        statusMessage: current.bundle || !hydrated.bundle
-          ? current.statusMessage
-          : hydrated.statusMessage,
+        ...(restoreHydratedBundle
+          ? buildConsumerRepairSavedDraftEditorFields(hydrated.bundle!, {
+            pendingEdits: { current, baseline: hydrationBaseline },
+          })
+          : {}),
+        bundle: current.bundle ?? (restoreHydratedBundle ? hydrated.bundle : null),
+        statusMessage: restoreHydratedBundle ? hydrated.statusMessage : current.statusMessage,
       };
     });
   }
@@ -671,6 +693,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.historyLoaded = true;
     this.setState({
       bundle,
+      repairType: buildConsumerRepairSavedDraftEditorFields(bundle).repairType,
       history: listConsumerRepairWorkspaceHistory(this.props.consumerUserId),
       approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
       problemText: "",
@@ -1111,6 +1134,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       : null;
     this.setState({
       bundle,
+      repairType: buildConsumerRepairSavedDraftEditorFields(bundle).repairType,
       canonicalBackendParameterSession: parameterSession === undefined
         ? retainedSession
         : parameterSession,
@@ -1124,21 +1148,33 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private hydrateCurrentCanonicalNamingEvidence = async (): Promise<void> => {
     const bundle = this.state.bundle, load = this.props.onLoadCanonicalNamingEvidence;
     const binding = consumerRepairCanonicalBackendBinding(bundle);
-    if (!bundle || !binding || !load || !missingCanonicalPreliminaryNamingEvidence(bundle)
+    const revisionIds=missingCanonicalPreliminaryNamingEvidenceRevisionIds(bundle);
+    // Every saved canonical draft, including zero-needs legacy rows, needs a fresh read
+    // of this exact revision after durable compaction removes the payload.
+    if(bundle?.draft.status==='draft' && binding && !bundle.structuredEstimatePayload?.canonicalBackend
+      && !bundle.canonicalBackendApprovalEvidence
+      && bundle.items.length>0
+      && canonicalPreliminaryNamingEvidenceReadRevisionIds(bundle).includes(binding.revisionId)
+      && !revisionIds.includes(binding.revisionId))revisionIds.push(binding.revisionId);
+    if (!bundle || !binding || !load || !revisionIds.length
       || bundle.draft.consumerUserId !== this.props.consumerUserId || this.canonicalNamingEvidenceDisposed) return;
     const generation = this.canonicalNamingEvidenceGeneration;
     const key = `${generation}|${bundle.draft.id}|${binding.revisionId}|${binding.releaseId}`;
     if (this.canonicalNamingEvidenceAttemptKey === key) return;
     this.canonicalNamingEvidenceAttemptKey = key;
-    try {
-      const evidence = await load(binding.revisionId, bundle.draft.id);
-      if (!evidence || this.canonicalNamingEvidenceDisposed || generation !== this.canonicalNamingEvidenceGeneration) return;
+    for(const revisionId of revisionIds)try {
+      if(this.canonicalNamingEvidenceDisposed||generation!==this.canonicalNamingEvidenceGeneration)return;
+      const evidence = await load(revisionId, bundle.draft.id);
+      if (this.canonicalNamingEvidenceDisposed || generation !== this.canonicalNamingEvidenceGeneration) return;
+      if (!evidence) continue;
       this.setState(current => {
         const latest = current.bundle, owner = consumerRepairCanonicalBackendBinding(latest);
         if (!latest || latest.draft.id !== bundle.draft.id || latest.draft.consumerUserId !== this.props.consumerUserId
           || owner?.revisionId !== binding.revisionId || owner.releaseId !== binding.releaseId
-          || evidence.revisionId !== binding.revisionId || evidence.releaseId !== binding.releaseId) return null;
-        const enriched = enrichCanonicalPreliminaryNamingEvidence(latest, evidence);
+          || evidence.revisionId !== revisionId || !canonicalPreliminaryNamingEvidenceMatchesProjection(latest,evidence)) return null;
+        const named = enrichCanonicalPreliminaryNamingEvidence(latest, evidence);
+        const enriched = evidence.revisionId===owner.revisionId && named.draft.status==='draft'
+          ? {...named,canonicalBackendApprovalEvidence:evidence} : named;
         return enriched === latest ? null : {bundle: enriched};
       });
     } catch {
@@ -1380,6 +1416,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     throw error;
   }
   private handleCanonicalArtifactOpenError = (error: unknown): void => {
+    if (error instanceof ConsumerEstimateActionContextError) {
+      this.handleActionContextError(error);
+      return;
+    }
     if (error instanceof ConsumerRepairValidationError) {
       this.handleValidationError(error);
       return;
@@ -1392,7 +1432,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       statusMessage: identityFailure
         ? "PDF для выбранной версии сметы не найден. Другой документ не был открыт."
         : quarantined
-          ? "Для этой старой версии новый PDF создавать нельзя. Если ранее созданный PDF отсутствует, сформируйте исправленную смету."
+          ? "Сохранённая версия сейчас не допущена источником к выпуску PDF. Смета и история сохранены; требуется проверка источника."
         : error instanceof CanonicalEstimateApiError
           ? error.message
           : "PDF выбранной версии не удалось открыть. Другой документ не был открыт.",
@@ -1453,9 +1493,47 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     successMessage: string;
   }): Promise<void> => {
     const openGeneration = ++this.canonicalRevisionOpenGeneration;
+    const editorFieldsAtOpen = this.state;
+    const launchIdAtOpen = this.props.launchId;
+    let restoredBundle = input.source;
+    const sameWorkspace = (
+      current: ConsumerRepairDraftBundle | null,
+      expected: ConsumerRepairDraftBundle | null,
+    ): boolean => {
+      if (!current || !expected) return current === expected;
+      const binding = consumerRepairCanonicalBackendBinding(expected);
+      return binding
+        ? consumerRepairCanonicalMutationSourceMatchesBundle({ ...binding, draftId: expected.draft.id }, current)
+        : current.draft.id === expected.draft.id
+          && current.estimateDraftRevisionState?.currentRevisionId === expected.estimateDraftRevisionState?.currentRevisionId;
+    };
+    const openStillOwnsEditor = (current = this.state): boolean => {
+      if (openGeneration !== this.canonicalRevisionOpenGeneration
+        || this.canonicalNamingEvidenceDisposed || this.props.launchId !== launchIdAtOpen) return false;
+      const originalIntent = current.problemText === editorFieldsAtOpen.problemText
+        && current.selectedWork === editorFieldsAtOpen.selectedWork;
+      const originalWorkspace = sameWorkspace(current.bundle, editorFieldsAtOpen.bundle);
+      // A loader may publish the requested exact target itself before returning.
+      // Its expected empty composer is allowed; a foreign/new work is not.
+      const targetPublished = Boolean(restoredBundle
+        && sameWorkspace(current.bundle, restoredBundle)
+        && current.problemText === "" && current.selectedWork == null);
+      if (!(originalIntent && originalWorkspace) && !targetPublished) return false;
+      if (!restoredBundle) return true;
+      const scalarKeys = ["repairType", "city", "addressText", "preferredTimeText", "contactPhone"] as const;
+      const changedScalars = scalarKeys.filter(key => current[key] !== editorFieldsAtOpen[key]);
+      if (changedScalars.length === 0) return true;
+      const targetOwnedAtStart = sameWorkspace(editorFieldsAtOpen.bundle, restoredBundle);
+      const emptyInitialTarget = !editorFieldsAtOpen.bundle
+        && this.props.initialCanonicalRevisionId?.trim() === input.revisionId;
+      if (targetOwnedAtStart || emptyInitialTarget) return true;
+      // Changes made to an unrelated former draft cannot become target fields.
+      const targetFields = buildConsumerRepairSavedDraftEditorFields(restoredBundle);
+      return targetPublished && changedScalars.every(key => current[key] === targetFields[key]);
+    };
     try {
       const revision = await getCanonicalEstimateRevision(input.revisionId);
-      if (openGeneration !== this.canonicalRevisionOpenGeneration || this.canonicalNamingEvidenceDisposed) return;
+      if (!openStillOwnsEditor()) return;
       if (
         revision.revisionId !== input.revisionId ||
         revision.status === "failed" ||
@@ -1468,6 +1546,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         requestDraftId: input.requestDraftId,
         problemText: input.problemText,
       });
+      restoredBundle = bundle;
+      if (!openStillOwnsEditor()) return;
       const restoredBinding = consumerRepairCanonicalBackendBinding(bundle);
       if (
         !bundle ||
@@ -1483,29 +1563,35 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       if (session.revisionId !== revision.revisionId) {
         throw new Error("HISTORY_PARAMETER_SESSION_IDENTITY_MISMATCH");
       }
-      if (openGeneration !== this.canonicalRevisionOpenGeneration || this.canonicalNamingEvidenceDisposed) return;
-      // The route names the initial immutable revision. Accepted edits may
-      // publish children while retaining this URL; they must remain visible.
-      if (this.props.initialCanonicalRevisionId?.trim() === revision.revisionId) {
-        this.openedCanonicalRouteRevisionId = revision.revisionId;
-      }
-      this.historyLoaded = true;
-      this.setState({
-        bundle,
-        history: listConsumerRepairWorkspaceHistory(this.props.consumerUserId),
-        approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
-        problemText: "",
-        city: bundle.draft.city ?? "",
-        addressText: bundle.draft.addressText ?? "",
-        preferredTimeText: bundle.draft.preferredTimeText ?? "",
-        contactPhone: bundle.draft.contactPhone ?? "",
-        selectedWork: selectedWorkFromBundle(bundle),
-        selectedHistoryId: null,
-        canonicalBackendParameterSession: session,
-        statusMessage: input.successMessage,
-        validationErrors: [],
+      if (!openStillOwnsEditor()) return;
+      let publishedFields: ReturnType<typeof buildConsumerRepairSavedDraftEditorFields> | null = null;
+      this.setState((current) => {
+        if (!openStillOwnsEditor(current)) return null;
+        // The route names the initial immutable revision. Accepted edits may
+        // publish children while retaining this URL; they must remain visible.
+        if (this.props.initialCanonicalRevisionId?.trim() === revision.revisionId) {
+          this.openedCanonicalRouteRevisionId = revision.revisionId;
+        }
+        this.historyLoaded = true;
+        publishedFields = buildConsumerRepairSavedDraftEditorFields(bundle, {
+          selectedWork: selectedWorkFromBundle(bundle),
+          pendingEdits: { current, baseline: editorFieldsAtOpen },
+        });
+        return {
+          ...publishedFields,
+          bundle,
+          history: listConsumerRepairWorkspaceHistory(this.props.consumerUserId),
+          approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
+          selectedHistoryId: null,
+          canonicalBackendParameterSession: session,
+          statusMessage: input.successMessage,
+          validationErrors: [],
+        };
       }, () => {
-        if (openGeneration !== this.canonicalRevisionOpenGeneration || this.canonicalNamingEvidenceDisposed) return;
+        if (!publishedFields || openGeneration !== this.canonicalRevisionOpenGeneration
+          || this.canonicalNamingEvidenceDisposed || !sameWorkspace(this.state.bundle, bundle)
+          || this.state.problemText !== publishedFields.problemText
+          || this.state.selectedWork !== publishedFields.selectedWork) return;
         if (this.props.initialCanonicalRevisionId?.trim() === revision.revisionId) {
           this.acknowledgeLaunchIntent(bundle);
         } else {
@@ -1513,7 +1599,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         }
       });
     } catch (error) {
-      if (openGeneration !== this.canonicalRevisionOpenGeneration || this.canonicalNamingEvidenceDisposed) return;
+      if (!openStillOwnsEditor()) return;
       const forbidden = error instanceof CanonicalEstimateApiError && ["ACCESS_DENIED", "NOT_FOUND"].includes(error.code);
       this.setState({
         statusMessage: forbidden
@@ -1605,15 +1691,18 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (!selectedWork) {
       try {
         const searchQuery = canonicalWorkSearchQueryFromPrompt(problemText);
-        const page = this.state.canonicalWorkSearch.query === searchQuery
-          && !this.state.canonicalWorkSearch.loading
-          && this.state.canonicalWorkSearch.searchIndexReleaseId
-          ? null
-          : await searchCanonicalEstimateCatalog({ query: searchQuery, pageSize: 2 });
-        const literalTotalCount = page?.literalTotalCount ?? this.state.canonicalWorkSearch.literalTotalCount;
-        const suggestions = page?.items.map(canonicalSearchItemToConsumerRepairSuggestion)
-          ?? this.state.canonicalWorkSearch.suggestions;
-        const exact = suggestions[0];
+        // Automatic selection must see current grouping, even with an older search page in memory.
+        const page = await searchCanonicalEstimateCatalog({ query: searchQuery, pageSize: 2 });
+        const literalTotalCount = page.literalTotalCount;
+        const suggestions = page.items.map(canonicalSearchItemToConsumerRepairSuggestion);
+        const candidate = suggestions[0];
+        const exact = candidate ? resolveGlobalWorkConditionSuggestionV1(candidate) : null;
+        if (literalTotalCount === 1 && candidate && !exact) {
+          this.workSuggestionsEnabled = true;
+          this.scheduleCanonicalWorkSearch(problemText);
+          return { status: "BLOCKED_WITH_REASON", bundle: pendingBundle,
+            message: "Выберите условия выполнения в карточке работы." };
+        }
         if (literalTotalCount !== 1 || !exact || !["exact_title", "exact_alias"].includes(exact.matchKind)) {
           this.workSuggestionsEnabled = true;
           this.scheduleCanonicalWorkSearch(problemText);
@@ -1929,7 +2018,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState({ deleteCommitBusy: false });
     }
   };
-  private approveDraft = async () => {
+  private approveManualQuantitiesDraft = () => this.approveDraft('manual-quantities');
+  private approveDraft = async (mode?: 'manual-quantities') => {
     if (this.approvalCommitInFlight) return;
     if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
       this.setState({
@@ -1992,8 +2082,24 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         });
         return;
       }
+      let manualQuantityApproval = mode === 'manual-quantities'
+        ? consumerEstimateManualQuantityApprovalCandidate({ ...synced, canonicalParameterSession: parameterSession }) : null;
+      let savedRevisionRead:Awaited<ReturnType<typeof getCanonicalEstimateRevision>>|undefined;
+      if(mode==='manual-quantities'){
+        savedRevisionRead=await getCanonicalEstimateRevision(canonical.revisionId);
+        const backend=synced.structuredEstimatePayload?.canonicalBackend??synced.canonicalBackendApprovalEvidence;
+        if(savedRevisionRead.revisionId!==canonical.revisionId||savedRevisionRead.releaseId!==canonical.releaseId
+          ||savedRevisionRead.catalogId!==backend?.catalogId||savedRevisionRead.checksumSha256!==backend?.checksumSha256||savedRevisionRead.contentWithdrawalReasonRu)
+          throw new ConsumerEstimateActionContextError('Подтверждение остановлено: сохранённая версия изменилась или недоступна.');
+        manualQuantityApproval=manualQuantityApproval??consumerEstimateSavedPreliminaryApprovalCandidate(
+          {...synced,canonicalParameterSession:parameterSession},savedRevisionRead);
+      }
+      if (mode === 'manual-quantities' && !manualQuantityApproval) {
+        this.setState({ statusMessage: 'Текущая версия требует дополнительных проверок. Проверьте сохранённые количества и состояние расчёта.' });
+        return;
+      }
       const unresolvedRowCount = consumerRepairCanonicalUnresolvedRowCount(synced);
-      if (unresolvedRowCount > 0) {
+      if (unresolvedRowCount > 0 && !manualQuantityApproval) {
         this.setState({
           bundle: synced,
           canonicalBackendParameterSession: parameterSession,
@@ -2001,7 +2107,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         });
         return;
       }
-      const parameterErrors = consumerRepairEstimateApprovalParameterErrors(synced);
+      const parameterErrors = consumerRepairEstimateApprovalParameterErrors(synced, manualQuantityApproval,savedRevisionRead);
       if (parameterErrors.length > 0) {
         this.setState({
           bundle: synced,
@@ -2011,7 +2117,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         });
         return;
       }
-      const canonicalArtifact = await buildCanonicalEstimateArtifact({
+      let canonicalArtifact:Awaited<ReturnType<typeof buildCanonicalEstimateArtifact>>|undefined;
+      if(!manualQuantityApproval){
+        canonicalArtifact = await buildCanonicalEstimateArtifact({
           revisionId: canonical.revisionId,
           // Approval keeps the established backend archival artifact contract.
           // The user-facing PDF button independently requests the professional profile;
@@ -2029,16 +2137,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         canonicalArtifact.revisionId !== canonical.revisionId ||
         canonicalArtifact.releaseId !== canonical.releaseId
       ) throw new Error("CANONICAL_APPROVAL_PDF_NOT_READY_OR_REVISION_MISMATCH");
+      }
+      if (manualQuantityApproval && ((this.state.pendingCanonicalRowEditCount ?? 0) > 0
+        || this.state.bundle?.draft.id !== synced.draft.id
+        || !consumerEstimateManualQuantityApprovalMatches({...this.state.bundle,canonicalParameterSession:parameterSession},manualQuantityApproval,savedRevisionRead))) {
+        this.setState({ statusMessage: 'Во время подготовки подтверждения смета изменилась. Примените новые правки и подтвердите сохранённую версию ещё раз.' });
+        return;
+      }
       const bundle = approveConsumerRepairRequestDraft({
         requestDraftId: synced.draft.id,
         userId: this.props.consumerUserId,
-        canonicalArtifact: {
-          artifactId: canonicalArtifact.artifactId,
-          revisionId: canonicalArtifact.revisionId,
-          releaseId: canonicalArtifact.releaseId,
-          status: "ready" as const,
-          sha256: canonicalArtifact.sha256,
-        },
+        ...(manualQuantityApproval ? { manualQuantityApproval } : {}),
+        ...(savedRevisionRead?{savedRevisionRead}:{}),
+        ...(canonicalArtifact?{canonicalArtifact:{artifactId:canonicalArtifact.artifactId,revisionId:canonicalArtifact.revisionId,
+          releaseId:canonicalArtifact.releaseId,status:'ready' as const,sha256:canonicalArtifact.sha256}}:{}),
       });
       await awaitConsumerRepairBundleDurableCommit({
         requestDraftId: bundle.draft.id,
@@ -2078,7 +2190,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState(buildApprovedConsumerRepairWorkspaceClearedState({
         history: nextHistory,
         approvedHistoryPage,
-        statusMessage: "Смета подтверждена и сохранена в истории. Можно выбрать следующую работу.",
+        statusMessage: manualQuantityApproval
+          ? manualQuantityApproval.mode === 'MANUAL_PRELIMINARY'
+            ? manualQuantityApproval.basis==='SAVED_VERSION_REVIEW'
+              ? 'Сохранённая версия подтверждена вручную как предварительная. Состав ещё требует проверки; PDF и закупка не подтверждены.'
+              : 'Предварительная смета подтверждена вручную и сохранена в истории. Неизвестные количества остались нерассчитанными; автоматическая проверка не завершена.'
+            : 'Смета с ручными количествами подтверждена и сохранена в истории. Автоматическая проверка этих позиций ещё не завершена.'
+          : "Смета подтверждена и сохранена в истории. Можно выбрать следующую работу.",
       }), () => {
         // Approval commits the immutable revision before leaving its workspace.
         // Clear both deep-link identities so the route cannot immediately
@@ -2104,242 +2222,134 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState({ approvalCommitBusy: false });
     }
   };
-  private completePdfOpen = async () => {
-    let stage = "action_context";
-    try {
-      const current = this.resolvedDraftBundle(this.ensureDraftBundle());
-      if (!current) return;
-      const context = this.actionContext("openProfessionalPdf", current);
-      {
-        stage = "revision_read";
-        const revision = await getCanonicalEstimateRevision(context.revisionId);
-        if (
-          revision.releaseId !== context.releaseId ||
-          (context.definitionId != null && revision.catalogId !== context.definitionId)
-        ) {
-          throw new ConsumerEstimateActionContextError(
-            "PDF не открыт: backend вернул другую версию или другую работу.",
-          );
-        }
-        stage = "catalog_read";
-        const currentCatalog = await getCanonicalEstimateCatalogItem(revision.catalogId);
-        let artifact;
-        if (currentCatalog.releaseId !== revision.releaseId) {
-          stage = "saved_artifact_read";
-          try {
-            artifact = await getCanonicalEstimateArtifact({
-              revisionId: context.revisionId,
-              kind: "pdf",
-              documentProfile: "professional_v1",
-            });
-          } catch (error) {
-            if (!(error instanceof CanonicalEstimateApiError) || error.code !== "NOT_FOUND") throw error;
-            throw new CanonicalEstimateApiError(
-              "Для этой старой версии ранее созданный PDF не найден.",
-              { code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 },
-            );
-          }
-        } else {
-          stage = "artifact_build";
-          artifact = await buildCanonicalEstimateArtifact({
-            revisionId: context.revisionId,
-            kind: "pdf",
-            documentProfile: "professional_v1",
-            idempotencyKey: `consumer-professional-pdf-${CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION}-${context.revisionId}`,
-          });
-        }
-        stage = "artifact_identity";
-        assertCanonicalEstimateArtifactIdentity({
-          artifact,
-          revision,
-          expectedKind: "pdf",
-          expectedDocumentProfile: "professional_v1",
-          expectedCatalogId: context.definitionId ?? revision.catalogId,
-          expectedRowCount: revision.rowCount,
-        });
-        if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
-        stage = "artifact_bind";
-        const artifactBoundBundle = bindConsumerRepairCanonicalArtifactReady({
-          requestDraftId: current.draft.id,
-          artifact: {
-            artifactId: artifact.artifactId,
-            kind: "pdf",
-            revisionId: artifact.revisionId,
-            releaseId: artifact.releaseId,
-          },
-        });
-        this.updateCurrentBundle(
-          artifactBoundBundle,
-          "Профессиональный PDF готов для текущей версии сметы.",
-        );
-        stage = "viewer_open";
-        await prepareAndPreviewPdfDocument({
-          supabase,
-          descriptor: createPdfDocumentDescriptor({
-          uri: artifact.signedUrl,
-          expectedByteSize: artifact.byteSize ?? undefined,
-          title: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || current.draft.title || current.draft.selectedWorkTitleRu || "Смета"),
-          documentType: "request",
-          source: "generated",
-          originModule: "reports",
-          entityId: current.draft.id,
-          contentIdentity: {
-            revisionId: revision.revisionId,
-            rendererVersion: String(artifact.metadata?.generatorVersion ?? artifact.metadata?.renderer ?? CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION),
-            displayTitle: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || current.draft.title || ""),
-            documentStatus: String(artifact.metadata?.grandTotalStatus ?? revision.status ?? ""),
-          },
-        }),
-          router,
-          // The action context owns the exact local return identity. Reusing it
-          // prevents PDF back from replacing unsaved state with a new canonical
-          // projection after Android activity/process recreation.
-          returnTo: context.returnRoute,
-          callerRouteKey: this.props.pdfCallerRouteKey,
-        });
-        this.setState({ statusMessage: Platform.OS === "web"
-          ? "Профессиональный PDF выбранной версии открыт."
-          : "Профессиональный PDF передан приложению для просмотра." });
-        return;
-      }
-    } catch (error) {
-      logger.error("ConsumerRepairPdfOpen", "canonical PDF open failed", {
-        stage,
-        errorName: error instanceof Error ? error.name : "unknown",
-        errorCode: error instanceof CanonicalEstimateApiError || error instanceof ConsumerEstimateActionContextError
-          ? error.code : null,
-      });
-      this.handleCanonicalArtifactOpenError(error);
-    } finally {
-      this.setState({ pdfOpenBusy: false });
-    }
-  };
-  private makePdf = () => {
-    if (this.state.pdfOpenBusy) return;
-    this.setState(
-      {
-        pdfOpenBusy: true,
-        statusMessage: "\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u043c PDF\u2026",
-      },
-      () => {
-        // Start from the committed busy state immediately. Deferring the only
-        // action behind requestAnimationFrame made a valid tap look inert when
-        // the browser throttled frames or Android was still settling a scroll.
-        void this.completePdfOpen();
-      },
-    );
-  };
-  private completeHistoryPdfOpen = async (requestDraftId?: string) => {
-    const requestedBundle = requestDraftId
-      ? this.findKnownHistoryBundle(requestDraftId) ?? (this.state.bundle?.draft.id === requestDraftId ? this.state.bundle : null)
-      : this.state.bundle;
-    const historyRecord = requestDraftId ? this.findKnownHistoryRecord(requestDraftId) : null;
-    const canonical = consumerRepairCanonicalBackendBinding(requestedBundle ?? null) ?? (
-      historyRecord?.sourceRevisionId && historyRecord.sourceReleaseId
-        ? { revisionId: historyRecord.sourceRevisionId, releaseId: historyRecord.sourceReleaseId }
-        : null
-    );
-    if (canonical) {
-      const context = requestedBundle
-        ? this.actionContext("openHistoryRevision", requestedBundle)
-        : null;
-      const revision = await getCanonicalEstimateRevision(canonical.revisionId);
-      if (
-        revision.revisionId !== canonical.revisionId ||
-        revision.releaseId !== canonical.releaseId ||
-        (context != null && (
-          revision.revisionId !== context.revisionId ||
-          revision.releaseId !== context.releaseId
-        ))
-      ) {
-        throw new ConsumerEstimateActionContextError("PDF не открыт: историческая версия не совпала.");
-      }
+  private historyReviewGeneration=0;
+  /** Every ordinary PDF tap reads the immutable saved snapshot. It does not
+   * approve, recompile, bind a STANDARD artifact or save the local projection. */
+  private completeSavedPreliminaryReport=async(requestDraftId?:string,expected?:{
+    revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string;
+  })=>{
+    const generation=++this.historyReviewGeneration,ownerId=this.props.consumerUserId,
+      currentAction=!requestDraftId,
+      targetId=requestDraftId??this.state.bundle?.draft.id;
+    let reportStage='target_binding';
+    try{
+      if(!targetId)throw new ConsumerEstimateActionContextError('Сначала сохраните версию сметы для PDF.');
+      const resolveTarget=()=>{
+        const saved=this.state.bundle?.draft.id===targetId?this.state.bundle:this.findKnownHistoryBundle(targetId),
+          record=this.findKnownHistoryRecord(targetId),
+          binding:ConsumerEstimateSavedReportBinding|null=consumerEstimateSavedReportBinding(saved)??(record?.sourceRevisionId&&record.sourceReleaseId
+            ?{revisionId:record.sourceRevisionId,releaseId:record.sourceReleaseId}:null);
+        if(saved&&saved.draft.consumerUserId!==ownerId)
+          throw new ConsumerEstimateActionContextError('Выбранная смета принадлежит другому пользователю.');
+        if(!binding)throw new ConsumerEstimateActionContextError('У выбранной сметы нет сохранённой версии для PDF.');
+        return{saved,binding};
+      };
+      const initial=resolveTarget(),binding=initial.binding;
+      let reportRevision:CanonicalEstimateRevisionView|undefined;
+      const assertTarget=()=>{
+        const latest=resolveTarget().binding;
+        if(generation!==this.historyReviewGeneration||this.props.consumerUserId!==ownerId
+          ||currentAction&&this.state.bundle?.draft.id!==targetId
+          ||latest.revisionId!==binding.revisionId||latest.releaseId!==binding.releaseId
+          ||binding.checksumSha256&&latest.checksumSha256&&latest.checksumSha256!==binding.checksumSha256
+          ||reportRevision&&latest.checksumSha256&&latest.checksumSha256!==reportRevision.checksumSha256
+          ||reportRevision&&latest.catalogId&&latest.catalogId!==reportRevision.catalogId
+          ||reportRevision&&latest.definitionVersionId&&latest.definitionVersionId!==reportRevision.definitionVersionId)
+          throw new ConsumerEstimateActionContextError('Выбранная сохранённая версия изменилась. Повторите запрос PDF.');
+      };
+      if(expected&&(expected.revisionId!==binding.revisionId||expected.releaseId!==binding.releaseId
+        ||binding.checksumSha256&&binding.checksumSha256!==expected.checksumSha256))
+        throw new ConsumerEstimateActionContextError('Выбранная сохранённая версия PDF не совпала.');
+      reportStage='revision_read';
+      const revision=await getCanonicalEstimateRevision(binding.revisionId,{issuancePurpose:'PRELIMINARY_REVIEW'});
+      reportRevision=revision;
+      assertTarget();
+      if(revision.revisionId!==binding.revisionId||revision.releaseId!==binding.releaseId
+        ||binding.checksumSha256&&revision.checksumSha256!==binding.checksumSha256
+        ||binding.catalogId&&revision.catalogId!==binding.catalogId
+        ||binding.definitionVersionId&&revision.definitionVersionId!==binding.definitionVersionId
+        ||expected&&(revision.definitionVersionId!==expected.definitionVersionId||revision.checksumSha256!==expected.checksumSha256)
+        ||!consumerEstimateProfessionalPdfReviewEligible(revision))
+        throw new ConsumerEstimateActionContextError('Сохранённая версия не совпала или недоступна для чтения.');
+      const reportRequest={revisionId:revision.revisionId,kind:'pdf' as const,documentProfile:'professional_v1' as const,
+        issuancePurpose:'PRELIMINARY_REVIEW' as const,reviewRequest:{revisionId:revision.revisionId,releaseId:revision.releaseId,
+          definitionVersionId:revision.definitionVersionId!,checksumSha256:revision.checksumSha256,acknowledgedPreliminaryReview:true as const},
+        idempotencyKey:'consumer-report-'+CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION+'-'+revision.revisionId+'-'+revision.professionalPdfReviewEligibilityV1!.auditSha256};
+      reportStage='artifact_read';
       let artifact;
-      try {
-        artifact = await getCanonicalEstimateArtifact({
-          revisionId: canonical.revisionId,
-          kind: "pdf",
-          documentProfile: "professional_v1",
-        });
-      } catch (error) {
-        if (!(error instanceof CanonicalEstimateApiError) || error.code !== "NOT_FOUND") throw error;
-        const currentCatalog = await getCanonicalEstimateCatalogItem(revision.catalogId);
-        if (currentCatalog.releaseId !== revision.releaseId) {
-          throw new CanonicalEstimateApiError(
-            "Для выбранной исторической сметы сохранённый PDF не найден. Сформируйте исправленную смету для нового документа.",
-            { code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 },
-          );
-        }
-        artifact = await buildCanonicalEstimateArtifact({
-          revisionId: canonical.revisionId,
-          kind: "pdf",
-          documentProfile: "professional_v1",
-          idempotencyKey: `consumer-history-professional-pdf-${CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION}-${canonical.revisionId}`,
-        });
+      try{
+        artifact=await getCanonicalEstimateArtifact({revisionId:revision.revisionId,kind:'pdf',
+          documentProfile:'professional_v1',issuancePurpose:'PRELIMINARY_REVIEW'});
+      }catch(error){
+        if(!(error instanceof CanonicalEstimateApiError)||!['NOT_FOUND','ARTIFACT_PRESENTATION_REFRESH_REQUIRED'].includes(error.code))throw error;
+        assertTarget();
+        reportStage='artifact_build';
+        artifact=await buildCanonicalEstimateArtifact(reportRequest);
       }
-      assertCanonicalEstimateArtifactIdentity({
-        artifact,
-        revision,
-        expectedKind: "pdf",
-        expectedDocumentProfile: "professional_v1",
-        expectedCatalogId: context?.definitionId ?? revision.catalogId,
-        expectedRowCount: revision.rowCount,
-      });
-      if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
-      await prepareAndPreviewPdfDocument({
-        supabase,
-        descriptor: createPdfDocumentDescriptor({
-        uri: artifact.signedUrl,
-        expectedByteSize: artifact.byteSize ?? undefined,
-        title: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || requestedBundle?.draft.title || requestedBundle?.draft.selectedWorkTitleRu || historyRecord?.title || "Смета"),
-        documentType: "request",
-        source: "generated",
-        originModule: "reports",
-        entityId: requestedBundle?.draft.id ?? requestDraftId ?? revision.revisionId,
-        contentIdentity: {
-          revisionId: revision.revisionId,
-          rendererVersion: String(artifact.metadata?.generatorVersion ?? artifact.metadata?.renderer ?? CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION),
-          displayTitle: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || requestedBundle?.draft.title || historyRecord?.title || ""),
-          documentStatus: String(artifact.metadata?.grandTotalStatus ?? revision.status ?? ""),
-        },
-      }),
-        router,
-        // A history PDF must return to the current workspace, not attempt to
-        // restore the archived estimate as an active draft on reload.
-        returnTo: this.state.bundle?.draft.status === "draft"
-          ? `/request?draftId=${encodeURIComponent(this.state.bundle.draft.id)}`
-          : "/request",
-        callerRouteKey: this.props.pdfCallerRouteKey,
-      });
-      this.setState({ statusMessage: Platform.OS === "web"
-        ? "Профессиональный PDF выбранной версии открыт из истории."
-        : "Профессиональный PDF из истории передан приложению для просмотра." });
-      return;
-    }
-    if (requestedBundle) {
-      throw new ConsumerEstimateActionContextError(
-        "PDF не открыт: у выбранной сметы нет подтверждённой backend-версии.",
-      );
-    }
-    throw new ConsumerEstimateActionContextError(
-      "PDF не открыт: выбранная запись истории не найдена.",
-    );
+      if(artifact.status==='queued'||artifact.status==='building'){
+        if(artifact.revisionId!==revision.revisionId||artifact.releaseId!==revision.releaseId||artifact.kind!=='pdf')
+          throw new ConsumerEstimateActionContextError('Получен отчёт другой сохранённой версии.');
+        assertTarget();
+        reportStage='artifact_build';
+        artifact=await buildCanonicalEstimateArtifact(reportRequest);
+      }
+      reportStage='artifact_identity';
+      assertCanonicalEstimateArtifactIdentity({artifact,revision,expectedKind:'pdf',expectedDocumentProfile:'professional_v1',
+        expectedIssuancePurpose:'PRELIMINARY_REVIEW',expectedCatalogId:revision.catalogId,expectedRowCount:revision.rowCount});
+      if(!artifact.signedUrl)throw new Error('CANONICAL_REPORT_PDF_SIGNED_URL_MISSING');
+      assertTarget();
+      const returnTo=this.state.bundle?.draft.status==='draft'?'/request?draftId='+encodeURIComponent(this.state.bundle.draft.id):'/request';
+      reportStage='viewer_prepare';
+      await prepareAndPreviewPdfDocument({supabase,descriptor:createPdfDocumentDescriptor({uri:artifact.signedUrl,
+        expectedByteSize:artifact.byteSize??undefined,title:'Предварительный отчёт сохранённой сметы',
+        documentType:'request',source:'generated',originModule:'reports',entityId:targetId,
+        contentIdentity:{revisionId:revision.revisionId,releaseId:revision.releaseId,definitionVersionId:revision.definitionVersionId!,
+          checksumSha256:revision.checksumSha256,issuancePurpose:'PRELIMINARY_REVIEW',documentStatus:'PRELIMINARY_READ',artifactSha256:artifact.sha256??undefined,
+          rendererVersion:String(artifact.metadata?.generatorVersion??CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION),
+          ownerUserId:String(artifact.metadata?.sourceOwnerUserId),viewerUserId:ownerId,organizationId:revision.organizationId??undefined,
+          currency:revision.currencyCode}}),router,returnTo,callerRouteKey:this.props.pdfCallerRouteKey});
+      if(generation===this.historyReviewGeneration)this.setState({statusMessage:'Предварительный отчёт сохранённой версии открыт. Несохранённые правки в него не входят. Подтверждение сметы и закупка остаются отдельными действиями.'});
+    }catch(error){if(generation===this.historyReviewGeneration){
+      try{logger.releaseEvidence('RikEstimatePdfOpen','SAVED_REPORT_OPEN_FAILED',{
+        stage:reportStage,errorType:error instanceof ConsumerEstimateActionContextError?'action_context':
+          error instanceof CanonicalEstimateApiError?'api':error instanceof TypeError?'type_error':'other_error',
+        code:error instanceof CanonicalEstimateApiError&&/^[A-Z0-9_]{1,80}$/u.test(error.code)?error.code:
+          error instanceof ConsumerEstimateActionContextError?'SAVED_REPORT_CONTEXT_INVALID':'SAVED_REPORT_OPEN_FAILED',
+      });}catch{/* Diagnostics must not replace the original action failure. */}
+      this.handleCanonicalArtifactOpenError(error);
+    }}
+    finally{if(generation===this.historyReviewGeneration)this.setState({pdfOpenBusy:false});}
   };
-  private openPdf = (requestDraftId?: string) => {
-    void this.completeHistoryPdfOpen(requestDraftId).catch(this.handleCanonicalArtifactOpenError);
+  private openPreliminaryReviewPdf=(expected:{revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string})=>{
+    this.setState({pdfOpenBusy:true});void this.completePreliminaryReviewPdfOpen(expected);
+  };
+  private completePreliminaryReviewPdfOpen=(expected?:{revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string})=>
+    this.completeSavedPreliminaryReport(undefined,expected);
+  private completePdfOpen=()=>this.completeSavedPreliminaryReport();
+  private makePdf=()=>{
+    if(this.state.pdfOpenBusy)return;
+    this.setState({pdfOpenBusy:true,statusMessage:'Открываем PDF сохранённой версии…'},()=>{void this.completePdfOpen();});
+  };
+  private completeHistoryPdfOpen=(requestDraftId?:string)=>this.completeSavedPreliminaryReport(requestDraftId);
+  private openPdf=(requestDraftId?:string)=>{
+    this.setState({pdfOpenBusy:true,statusMessage:'Открываем PDF сохранённой версии…'});
+    void this.completeHistoryPdfOpen(requestDraftId);
   };
   private openDraftFromHistory = (requestDraftId: string) => {
+    this.canonicalRevisionOpenGeneration += 1;
     const bundle = this.findKnownHistoryBundle(requestDraftId);
     if (bundle && bundle.draft.status !== "draft") {
       this.toggleHistorySnapshot(requestDraftId);
       return;
     }
-    this.setState({
+    this.setState((current) => ({
+      ...current,
+      ...(bundle ? buildConsumerRepairSavedDraftEditorFields(bundle) : {}),
       bundle,
       selectedWork: null,
       selectedHistoryId: null,
       statusMessage: bundle ? "Заявка открыта из истории." : null,
-    });
+    }));
     if (bundle) router.setParams({ draftId: bundle.draft.id });
   };
   private toggleHistorySnapshot = (requestDraftId: string) => {
@@ -2477,6 +2487,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       && this.pendingCanonicalRowBaseRevisionId !== input.revisionId
     ) {
       this.pendingCanonicalRowOverrides = {};
+      this.pendingCanonicalRowInvalidInputs = {};
       this.pendingCanonicalRowQuantityBaselines = {};
     }
     const originalItem = input.current.items.find((item) => item.id === input.itemId);
@@ -2511,9 +2522,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     };
     if (!Object.prototype.hasOwnProperty.call(pending, "quantity") && !Object.prototype.hasOwnProperty.call(pending, "unitPrice")) {
       delete this.pendingCanonicalRowOverrides[input.rowId];
-      delete this.pendingCanonicalRowQuantityBaselines[input.rowId];
+      if (!this.pendingCanonicalRowInvalidInputs[input.rowId]) delete this.pendingCanonicalRowQuantityBaselines[input.rowId];
     }
-    const pendingCount = Object.keys(this.pendingCanonicalRowOverrides).length;
+    const pendingCount = new Set([...Object.keys(this.pendingCanonicalRowOverrides), ...Object.keys(this.pendingCanonicalRowInvalidInputs)]).size;
     if (pendingCount === 0) this.pendingCanonicalRowBaseRevisionId = null;
     this.setState((state) => ({
       bundle: state.bundle?.draft.id === input.current.draft.id
@@ -2529,10 +2540,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private cancelPendingCanonicalRowEdits = (): void => {
     const current = this.state.bundle;
     const binding = consumerRepairCanonicalBackendBinding(current);
-    const pending = this.pendingCanonicalRowOverrides;
+    const pending = { ...this.pendingCanonicalRowOverrides };
+    for (const rowId of Object.keys(this.pendingCanonicalRowInvalidInputs)) pending[rowId] ??= {
+      provenance: { kind: "manual", reason: "consumer_estimate_row_batch_edit" },
+    };
     if (!current || !binding || !Object.keys(pending).length || this.canonicalRowMutationInFlight()
       || this.approvalCommitInFlight || binding.revisionId !== this.pendingCanonicalRowBaseRevisionId) return;
-    const token = JSON.stringify(pending);
+    const token = JSON.stringify([this.pendingCanonicalRowOverrides, this.pendingCanonicalRowInvalidInputs]);
     const source = { ...binding, draftId: current.draft.id };
     const descriptions = Object.entries(pending).map(([rowId, fields]) => {
       const saved = this.pendingCanonicalRowQuantityBaselines[rowId]?.item;
@@ -2541,6 +2555,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const values = [
         Object.prototype.hasOwnProperty.call(fields, "quantity") ? `количество ${canonicalExactPurchaseInputV1(item) ?? item.quantity ?? "не задано"} → ${canonicalExactPurchaseInputV1(saved) ?? saved.quantity ?? "не задано"}` : null,
         Object.prototype.hasOwnProperty.call(fields, "unitPrice") ? `цена ${item.unitPrice ?? "не задана"} → ${saved.unitPrice ?? "не задана"}` : null,
+        this.pendingCanonicalRowInvalidInputs[rowId] ? "незавершённый ввод" : null,
       ].filter(Boolean).join("; ");
       return `${saved.titleRu}: ${values}`;
     });
@@ -2548,7 +2563,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const restore = (): void => {
       if (!consumerRepairCanonicalMutationSourceMatchesBundle(source, this.state.bundle)
         || this.canonicalRowMutationInFlight() || this.approvalCommitInFlight
-        || token !== JSON.stringify(this.pendingCanonicalRowOverrides)) return;
+        || token !== JSON.stringify([this.pendingCanonicalRowOverrides, this.pendingCanonicalRowInvalidInputs])) return;
       const baselines = this.pendingCanonicalRowQuantityBaselines;
       this.canonicalRowEditorResetKeys = { ...this.canonicalRowEditorResetKeys };
       for (const rowId of Object.keys(pending)) {
@@ -2556,6 +2571,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         this.canonicalRowEditorResetKeys[itemId] = (this.canonicalRowEditorResetKeys[itemId] ?? 0) + 1;
       }
       this.pendingCanonicalRowOverrides = {};
+      this.pendingCanonicalRowInvalidInputs = {};
       this.pendingCanonicalRowQuantityBaselines = {};
       this.pendingCanonicalRowBaseRevisionId = null;
       this.setState(state => ({
@@ -2591,6 +2607,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
   };
   private applyPendingCanonicalRowEdits = async (): Promise<boolean> => {
+    if (Object.keys(this.pendingCanonicalRowInvalidInputs).length > 0) {
+      this.setState({ statusMessage: "Изменения не сохранены: завершите ввод количества или цены — нужно неотрицательное число." });
+      return false;
+    }
     const current = this.state.bundle;
     const binding = consumerRepairCanonicalBackendBinding(current);
     const rowOverrides = { ...this.pendingCanonicalRowOverrides };
@@ -2623,6 +2643,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       });
       if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return false;
       this.pendingCanonicalRowOverrides = {};
+      this.pendingCanonicalRowInvalidInputs = {};
       this.pendingCanonicalRowQuantityBaselines = {};
       this.pendingCanonicalRowBaseRevisionId = null;
       await new Promise<void>((resolve) => this.setState({
@@ -2686,7 +2707,29 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.approvalExpectedCanonicalRevisionId = canonical.revisionId;
     await this.approveDraft();
   };
-  private changeItemQuantity = async (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => {
+  private recordCanonicalNumericInput = (
+    current: ConsumerRepairDraftBundle, itemId: string, field: "quantity" | "unitPrice",
+    value: string, invalid: boolean, phase?: "input",
+  ): void => {
+    const binding=consumerRepairCanonicalBackendBinding(current),item=current.items.find(row=>row.id===itemId),rowId=consumerRepairRowCode(item);
+    if(!binding||!item||!rowId||this.canonicalRowMutationInFlight()||this.approvalCommitInFlight)return;
+    if(this.pendingCanonicalRowBaseRevisionId!=null&&this.pendingCanonicalRowBaseRevisionId!==binding.revisionId){
+      this.pendingCanonicalRowOverrides={};this.pendingCanonicalRowInvalidInputs={};this.pendingCanonicalRowQuantityBaselines={};
+      this.pendingCanonicalRowBaseRevisionId=null;
+    }
+    if(!invalid){
+      const fields={...this.pendingCanonicalRowInvalidInputs[rowId]};delete fields[field];
+      if(Object.keys(fields).length)this.pendingCanonicalRowInvalidInputs[rowId]=fields;
+      else delete this.pendingCanonicalRowInvalidInputs[rowId];
+      return;
+    }
+    this.pendingCanonicalRowInvalidInputs[rowId]={...this.pendingCanonicalRowInvalidInputs[rowId],[field]:value};
+    // Capture the original row for cancellation without replacing its last
+    // valid preview. An incomplete input must block Apply of that old preview.
+    this.stageCanonicalRowEdit({current,revisionId:binding.revisionId,itemId,rowId,amendment:{}});
+    this.setState({statusMessage:phase==="input"?"":"Завершите ввод количества или цены: нужно неотрицательное число."});
+  };
+  private changeItemQuantity = async (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta, phase?: "input") => {
     const current = this.state.bundle;
     if (!current) return;
     let quantity: string | number | null = parseEditableEstimateNumberInput(value);
@@ -2696,18 +2739,16 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const rowId = consumerRepairRowCode(item);
       if (canonicalExactPurchaseEditingV1(item)) {
         try { quantity = normalizeCanonicalExactPurchaseEditV1(value); }
-        catch { this.setState({statusMessage:"Количество не сохранено: введите точное неотрицательное десятичное число без округления."}); return; }
+        catch { this.recordCanonicalNumericInput(current,itemId,"quantity",value,true,phase); return; }
       }
       const quantityCleared = value.trim().length === 0;
-      const mayReturnToPreliminary = Boolean(
-        rowId?.startsWith("manual:") || consumerRepairRowHasManualQuantity(item),
-      );
       if (!item || !rowId
-        || (quantity == null && !(quantityCleared && mayReturnToPreliminary))
+        || (quantity == null && !quantityCleared)
         || (typeof quantity === "number" && quantity < 0)) {
-        this.setState({ statusMessage: "Количество не сохранено: укажите неотрицательное число для точной строки сметы." });
+        this.recordCanonicalNumericInput(current,itemId,"quantity",value,true,phase);
         return;
       }
+      this.recordCanonicalNumericInput(current,itemId,"quantity",value,false,phase);
       this.stageCanonicalRowEdit({
         current,
         revisionId: binding.revisionId,
@@ -2739,7 +2780,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
     this.updateCurrentBundleWithDeferredDurableQuantityCommit(bundle, itemId, { operation });
   };
-  private changeItemUnitPrice = async (itemId: string, value: string) => {
+  private changeItemUnitPrice = async (itemId: string, value: string, phase?: "input") => {
     const current = this.state.bundle;
     if (!current) return;
     const binding = consumerRepairCanonicalBackendBinding(current);
@@ -2749,9 +2790,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const unitPrice = parseEditableEstimateNumberInput(value);
       const priceCleared = value.trim().length === 0;
       if (!item || !rowId || (unitPrice == null && !priceCleared) || (unitPrice != null && unitPrice < 0)) {
-        this.setState({ statusMessage: "Цена не сохранена: укажите неотрицательное число для точной строки сметы." });
+        this.recordCanonicalNumericInput(current,itemId,"unitPrice",value,true,phase);
         return;
       }
+      this.recordCanonicalNumericInput(current,itemId,"unitPrice",value,false,phase);
       this.stageCanonicalRowEdit({
         current,
         revisionId: binding.revisionId,
@@ -2874,6 +2916,49 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (!current) return;
     await this.applyParamBatch([{ operation, paramKey, rawValue }]);
   };
+  private startFreshCanonicalComposition = async (
+    current: ConsumerRepairDraftBundle,
+    patches: ConsumerRepairDraftRevisionParamBatchPatch[],
+  ): Promise<ConsumerRepairParameterApplyResult> => {
+    const binding = consumerRepairCanonicalBackendBinding(current);
+    const catalogId = current.canonicalParameterSession?.workPassportId?.trim()
+      || this.state.canonicalBackendParameterSession?.workPassportId?.trim();
+    if (!binding || !catalogId || current.draft.consumerUserId !== this.props.consumerUserId) return false;
+    const message = 'Выбран другой состав работ. Создать для него новую смету? Прежняя смета, её количества и цены останутся в истории. В новую смету попадут только значения, которые вы сейчас изменили; остальные исходные данные и цены нужно проверить и заполнить отдельно.';
+    const confirmed = Platform.OS === 'web'
+      ? (globalThis as { confirm?: (message: string) => boolean }).confirm?.call(globalThis, message) === true
+      : await new Promise<boolean>(resolve => Alert.alert('Новая смета для выбранного состава', message, [
+        { text: 'Остаться в прежней смете', style: 'cancel', onPress: () => resolve(false) },
+        { text: 'Создать новую смету', onPress: () => resolve(true) },
+      ], { cancelable: true, onDismiss: () => resolve(false) }));
+    if (!confirmed || !consumerRepairCanonicalMutationSourceMatchesBundle({ ...binding, draftId: current.draft.id }, this.state.bundle)) return false;
+    // A different physical primary identity starts a root. Never carry the
+    // parent's parameters, row overrides, prices or approval into that root.
+    const parameterOverrides: Record<string, CanonicalEstimateParameterInputValue> = {};
+    for (const patch of patches) {
+      if (patch.operation === 'remove_param') delete parameterOverrides[patch.paramKey];
+      else parameterOverrides[patch.paramKey] = patch.rawValue;
+    }
+    const selected = selectedWorkFromBundle(current);
+    const fresh = createConsumerRepairRequestDraft({
+      consumerUserId: this.props.consumerUserId,
+      problemText: current.draft.problemText || current.draft.title || 'Смета',
+      selectedWork: selected ? toConsumerRepairSelectedWork(selected) : null,
+    });
+    this.updateCurrentBundle(fresh, 'Создаём новую смету для выбранного состава…', null);
+    const recovered = await this.props.onPrepareCanonicalEstimate(
+      fresh.draft.problemText || fresh.draft.title || 'Смета', catalogId, fresh.draft.id, null, parameterOverrides, false,
+    );
+    if (!recovered || recovered.draft.id !== fresh.draft.id || recovered.draft.consumerUserId !== this.props.consumerUserId) {
+      throw new Error('Новая смета пока не сохранена. Повторите расчёт.');
+    }
+    const session = consumerRepairPendingCanonicalParameterCollection(recovered)
+      ?? await this.loadCanonicalParameterSessionForBundle(recovered);
+    if (!session) throw new Error('Новая смета сохранена. Не удалось загрузить её исходные данные — откройте её из истории.');
+    this.updateCurrentBundle(recovered, 'Новая смета сохранена. Проверьте её исходные данные, количества и цены. Прежняя смета доступна в истории.', session);
+    router.setParams({ draftId: recovered.draft.id });
+    return { status: 'revision_opened', revisionId: session.revisionId };
+  };
   private applyParamBatch = async (patches: ConsumerRepairDraftRevisionParamBatchPatch[],deliveryConfirmation?: import('../../lib/estimate/backendPlatform/canonicalSelectedMaterialDeliveryContractR1').CanonicalSelectedMaterialDeliveryRequestR1): Promise<ConsumerRepairParameterApplyResult> => {
     const current = this.state.bundle;
     if (!current) return;
@@ -2967,7 +3052,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             ? error.message
             : "Исходные данные не сохранены: backend не подтвердил продолжение расчёта.",
         });
-        return false;
+        return consumerParameterApplyFailure(error);
       } finally {
         this.canonicalParameterBatchInFlight = false;
         this.setState({ canonicalEstimateMutationBusy: this.canonicalRowMutationInFlight() });
@@ -3007,12 +3092,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         revisionId: result.session.revisionId };
     } catch (error) {
       if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return false;
+      if (error instanceof CanonicalEstimateApiError && error.code === 'PRIMARY_MEASURE_NEW_ROOT_REQUIRED') {
+        try {
+          return await this.startFreshCanonicalComposition(current, patches);
+        } catch (freshError) {
+          this.setState({ statusMessage: freshError instanceof Error ? freshError.message : 'Новая смета пока не создана. Прежняя версия сохранена в истории.' });
+          return consumerParameterApplyFailure(freshError);
+        }
+      }
       this.setState({
         statusMessage: error instanceof Error
           ? error.message
           : "Параметры не сохранены: backend не подтвердил результат.",
       });
-      return false;
+      return consumerParameterApplyFailure(error);
     } finally {
       this.canonicalParameterBatchInFlight = false;
       this.setState({ canonicalEstimateMutationBusy: this.canonicalRowMutationInFlight() });
@@ -3310,8 +3403,27 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private addCustomItem = () => {
     const current = this.resolvedDraftBundle(this.ensureDraftBundle({ allowPendingDraftCreation: true }));
     if (!current) return;
-    const bundle = addConsumerRepairCustomNoteItem(current);
-    this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено к смете.");
+    this.setState({ estimateNotesVisible: true });
+  };
+  private saveEstimateNote = async (input: { draftId: string; revisionId: string | null; text: string; deleteCommentId?: string }): Promise<boolean> => {
+    const current = this.state.bundle;
+    if (!current || current.draft.id !== input.draftId || current.draft.consumerUserId !== this.props.consumerUserId
+      || (consumerRepairCanonicalBackendBinding(current)?.revisionId ?? null) !== input.revisionId) {
+      throw new Error("Заметка не сохранена: выбрана другая версия сметы.");
+    }
+    const metadata = saveConsumerRepairEstimateNote({ requestDraftId: input.draftId, ownerUserId: this.props.consumerUserId,
+      revisionId: input.revisionId, text: input.text, deleteCommentId: input.deleteCommentId });
+    // Durable storage may compact the backend payload. A metadata-only edit
+    // retains the already-read resources and naming/classification evidence.
+    const bundle = { ...current, draft: metadata.draft, estimateComments: metadata.estimateComments, events: metadata.events };
+    this.updateCurrentBundle(bundle, "Сохраняем заметки к смете…");
+    await awaitConsumerRepairBundleDurableCommit({ requestDraftId: input.draftId,
+      expectedStatus: bundle.draft.status, expectedRevisionId: bundle.estimateDraftRevisionState?.currentRevisionId ?? null });
+    if (this.state.bundle?.draft.id === input.draftId
+      && (consumerRepairCanonicalBackendBinding(this.state.bundle)?.revisionId ?? null) === input.revisionId) {
+      this.setState({ statusMessage: input.deleteCommentId ? "Заметка удалена." : "Заметка сохранена в черновике." });
+    }
+    return true;
   };
   private openCatalogForEstimateItem = async (itemId: string) => {
     const current = this.resolvedDraftBundle(this.ensureDraftBundle());
@@ -3404,6 +3516,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.updateCurrentBundle(result.bundle, result.statusMessage);
   };
   private createNew = () => {
+    this.canonicalRevisionOpenGeneration += 1;
     this.cancelCanonicalWorkSearch();
     this.workSuggestionsEnabled = true;
     router.setParams({ draftId: "" });
@@ -3420,6 +3533,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private selectWorkSuggestion = (suggestion: GlobalWorkSmartSearchSuggestion) => {
+    const selected = resolveGlobalWorkConditionSuggestionV1(suggestion);
+    if (!selected) {
+      this.setState({ statusMessage: "Выберите условия выполнения в карточке работы.", validationErrors: [] });
+      return;
+    }
+    suggestion = selected;
     if (suggestion.estimateReady !== true) {
       this.setState({
         statusMessage: suggestion.nonselectableReasonRu
@@ -3428,9 +3547,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       });
       return;
     }
+    this.canonicalRevisionOpenGeneration += 1;
     this.cancelCanonicalWorkSearch();
     const originalRawInput = this.state.problemText.trim();
-    const referenceSelectedWork = buildMultiDomainReferenceSelectedWorkBinding(originalRawInput);
+    const referenceSelectedWork = suggestion.conditionProfiles?.length
+      ? null : buildMultiDomainReferenceSelectedWorkBinding(originalRawInput);
     const nextProblemText = composeResolvedWorkProblemText(
       suggestion,
       originalRawInput,
@@ -3452,6 +3573,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private selectTemplateCandidate = (candidate: InlineWorkTemplateCandidate) => {
+    this.canonicalRevisionOpenGeneration += 1;
     this.cancelCanonicalWorkSearch();
     const originalRawInput = this.state.problemText.trim();
     const nextProblemText = composeSelectedTemplateCandidateActiveInputText(candidate);
@@ -3471,6 +3593,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private changeProblemText = (problemText: string) => {
+    if (problemText !== this.state.problemText) this.canonicalRevisionOpenGeneration += 1;
     this.workSuggestionsEnabled = true;
     const selectedWork = shouldPreserveSelectedWorkForProblemText(this.state.selectedWork, problemText)
       ? this.state.selectedWork
@@ -3681,7 +3804,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onSendHistoryToMarket={this.sendHistoryToMarket} onCloseCatalogPicker={this.closeCatalogPicker}
         onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
         onDeleteDraft={this.deleteDraft}
-        onApproveDraft={this.approveDraft} onApplyAndApproveDraft={this.applyAndApproveDraft} onPrepareDraft={this.prepareDraft}
+        onApproveDraft={this.approveDraft} onApproveManualQuantities={this.approveManualQuantitiesDraft} onOpenPreliminaryReviewPdf={this.openPreliminaryReviewPdf}
+        onApplyAndApproveDraft={this.applyAndApproveDraft} onPrepareDraft={this.prepareDraft}
         onSelectRoadScope={this.selectRoadScope}
         onOpenHistory={this.ensureHistoryLoaded}
         onLoadMoreHistory={this.loadMoreApprovedHistory}
@@ -3698,6 +3822,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     return (
       <>
         {this.renderScreenView(this.state)}
+        {this.state.estimateNotesVisible && this.state.bundle ? <ConsumerRepairEstimateNotes
+          key={`${this.state.bundle.draft.id}/${consumerRepairCanonicalBackendBinding(this.state.bundle)?.revisionId ?? ''}`}
+          bundle={this.state.bundle} busy={this.state.canonicalEstimateMutationBusy === true}
+          onSave={this.saveEstimateNote} onClose={() => this.setState({ estimateNotesVisible: false })} /> : null}
         {runtimeIngressProjection ? (
           <View
             accessibilityLiveRegion="polite"

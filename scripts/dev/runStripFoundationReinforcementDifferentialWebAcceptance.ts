@@ -1520,8 +1520,8 @@ async function main(): Promise<void> {
       ],
       backendAcceptedEquivalentOrIntermediateContexts: IS_ANCHOR || IS_CONCRETE_SLAB_CURING
         || IS_CONCRETE_SLAB_EMBEDDED_ITEMS
-        ? ["large_area", "small_area", "technical_room", "wet_zone"]
-        : ["large_area", "repair", "small_area", "technical_room", "wet_zone"],
+        ? ["technical_room", "wet_zone"]
+        : ["repair", "technical_room", "wet_zone"],
     },
     results,
     diagnostics: {

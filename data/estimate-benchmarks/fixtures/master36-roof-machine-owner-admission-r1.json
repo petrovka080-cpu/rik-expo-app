@@ -1,0 +1,386 @@
+{
+  "contract": "root-reviewed-roof-exact-machine-owner-oracle/r1",
+  "catalogAdmissions": 37,
+  "distinctOwners": 31,
+  "sourceTableSha256": "f68216e130632d0ee7a62720ee0b7261ec07e5b067f9cb3c392b88cfc77817c3",
+  "entries": [
+    {
+      "rowId": "master212:roof:r1:mastic_field:airless",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "39-0541",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-033-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:mastic_field:compressor",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "05-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-033-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:mastic_field:forklift",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "03-0020",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-033-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:mastic_field:lift",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "03-0330",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-033-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:metal_cut:grinder",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_metal_roof_install_standard"
+      ],
+      "resourceCode": "33-0367",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "32c46cf8625c84489677e0d2ca38001097ed7cde12c8ca832302f60f30a8f574",
+      "exactColumn": "09-05-006-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:forklift_5t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "03-0020",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-014-02",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:tower_crane_8t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-014-02",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:flatbed_truck_to_5t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room",
+        "canonical-work:base:roofing_interior_metal_roof_install_standard",
+        "canonical-work:base:roofing_interior_pitched_roof_install_standard"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-009-02",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:tower_crane_8t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room",
+        "canonical-work:base:roofing_interior_metal_roof_install_standard",
+        "canonical-work:base:roofing_interior_pitched_roof_install_standard"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-009-02",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:truck_crane_10t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room",
+        "canonical-work:base:roofing_interior_metal_roof_install_standard",
+        "canonical-work:base:roofing_interior_pitched_roof_install_standard"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-009-02",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:electric_drill",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_metal_roof_install_standard"
+      ],
+      "resourceCode": "33-0241",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-023-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:flatbed_truck",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_metal_roof_install_standard"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-023-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:tower_crane",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_metal_roof_install_standard"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-023-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:truck_crane",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_metal_roof_install_standard"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-023-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:forklift_5t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "03-0020",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-017-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:mortar_pump",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "10-0007",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-017-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:tower_crane_8t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-017-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:flatbed_truck",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_pitched_roof_install_standard"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-007-05",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:tower_crane",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_pitched_roof_install_standard"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-007-05",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:truck_crane",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_pitched_roof_install_standard"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-007-05",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:flatbed_truck_to_5t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-002-09",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:gas_flame_burner",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "15-0060",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-002-09",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:tower_crane_8t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-002-09",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:truck_crane_10t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-002-09",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:torch_primer:roof:prime-ready-emulsion:krer12-016-02:flatbed_truck",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-016-02",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:trim:roof:metal-trim:krer12-010-01:flatbed_truck_to_5t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-010-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:trim:roof:metal-trim:krer12-010-01:tower_crane_8t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-010-01",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:bitumen_kettle_400l",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "12-0340",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-015-03",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:flatbed_truck_to_5t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-015-03",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:tower_crane_8t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-015-03",
+      "columnMetadataKey": "exactColumn"
+    },
+    {
+      "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:truck_crane_10t",
+      "catalogIds": [
+        "canonical-work:base:roofing_interior_flat_roof_install_technical_room"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "exactColumn": "12-01-015-03",
+      "columnMetadataKey": "exactColumn"
+    }
+  ]
+}

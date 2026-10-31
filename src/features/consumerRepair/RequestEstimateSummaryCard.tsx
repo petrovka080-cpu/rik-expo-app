@@ -21,9 +21,11 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
       </View>;
     }
     const sourceGateCount = viewModel.sourceGates?.length ?? 0;
-    const consumerInputCount = viewModel.consumerQuestionCount ?? (typeof missingParameterCount === "number"
-      ? Math.max(0, missingParameterCount - sourceGateCount)
-      : null);
+    // The hydrated editor already separates customer inputs from source gaps.
+    // Row requirements are a fallback, not a second authoritative question count.
+    const consumerInputCount = typeof missingParameterCount === "number"
+      ? Math.max(0, missingParameterCount)
+      : viewModel.consumerQuestionCount ?? null;
     const parameterLabel = sourceGateCount > 0
       ? (consumerInputCount === 0 ? 'Данные объекта заполнены'
         : `Нужно указать данные объекта: ${consumerInputCount ?? missingParameterCount ?? 'неизвестны'}`)

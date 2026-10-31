@@ -1,9 +1,11 @@
 import { formatEstimateUnitLabel } from "../../src/lib/ai/globalEstimate";
 import {
+  convertProfessionalUnitQuantity,
   getProfessionalUnitDefinition,
   normalizeProfessionalPricedUnitForLocale,
   resolveProfessionalUnitDefinition,
 } from "../../src/lib/estimate/professionalUnitRegistry";
+import { normalizeCanonicalProfessionalBoqUnit } from "../../src/lib/estimate/canonicalUnits";
 import { resolveEngineeringUnitV4 } from "../../src/lib/estimate/v4/engineeringUnitRegistryV4";
 
 describe("shared professional unit registry", () => {
@@ -72,4 +74,49 @@ describe("shared professional unit registry", () => {
       },
     })).toBeNull();
   });
+});
+
+  it("registers pair and energy aliases without inventing a consumption rate", () => {
+    for (const alias of ["pairs", "пара"]) {
+      expect(resolveProfessionalUnitDefinition(alias)).toMatchObject({ code: "pair", dimension: "paired_count", canonicalSiUnit: "pair", discrete: true });
+      expect(normalizeCanonicalProfessionalBoqUnit(alias)).toBe("pair");
+      expect(formatEstimateUnitLabel(alias)).toBe("пара");
+    }
+    for (const alias of ["kWh", "кВт·ч"]) {
+      expect(resolveProfessionalUnitDefinition(alias)).toMatchObject({ code: "kwh", dimension: "energy", canonicalSiUnit: "J", conversionFactorToSi: 3_600_000 });
+      expect(normalizeCanonicalProfessionalBoqUnit(alias)).toBe("kwh");
+      expect(formatEstimateUnitLabel(alias)).toBe("кВт·ч");
+    }
+    expect(resolveEngineeringUnitV4("kWh")).toMatchObject({ dimension: "energy", conversion_factor_to_si: 3_600_000 });
+  });
+
+  it("does not convert pairs into pieces or sets, or energy into power", () => {
+    for (const [from, to] of [["pair", "pcs"], ["pcs", "pair"], ["pair", "set"], ["set", "pair"], ["kwh", "kW"], ["kW", "kwh"]]) {
+      expect(convertProfessionalUnitQuantity(2, from, to)).toBeNull();
+    }
+    expect(convertProfessionalUnitQuantity(2, "pairs", "пара")).toBe(2);
+    expect(convertProfessionalUnitQuantity(2, "kWh", "кВт·ч")).toBe(2);
+    expect(convertProfessionalUnitQuantity(2, "kW", "W")).toBe(2000);
+  });
+
+  it("preserves authored pair and energy quantities and prices in every locale route", () => {
+    for (const unit of ["pair", "kwh"]) {
+      for (const unitSystem of ["metric", "imperial", "mixed"] as const) {
+        expect(normalizeProfessionalPricedUnitForLocale({ quantity: 3, unitPrice: 17, unit, jurisdiction: "KG", unitSystem })).toMatchObject({
+          quantity: 3, unitPrice: 17, unit, total: 51,
+          provenance: { sourceUnit: unit, targetUnit: unit, quantityFactor: 1, converted: false },
+        });
+      }
+    }
+  });
+
+
+it('synchronizes the existing canonical backend item count with pcs without collapsing semantic count bases',()=>{
+  const definition=resolveProfessionalUnitDefinition('item');
+  expect(definition).toBe(resolveProfessionalUnitDefinition('pcs'));
+  expect(definition).toMatchObject({code:'pcs',dimension:'count',canonicalSiUnit:'pcs',conversionFactorToSi:1,discrete:true});
+  expect(normalizeCanonicalProfessionalBoqUnit('item')).toBe('pcs');expect(formatEstimateUnitLabel('item')).toBe('шт.');
+  expect(definition?.code).not.toBe(resolveProfessionalUnitDefinition('set')?.code);
+  expect(definition?.code).not.toBe(resolveProfessionalUnitDefinition('pair')?.code);
+  for(const unknown of ['unknown_item','item_pack','item_pair'])expect(resolveProfessionalUnitDefinition(unknown)).toBeNull();
 });

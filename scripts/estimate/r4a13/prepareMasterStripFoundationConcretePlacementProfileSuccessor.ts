@@ -174,7 +174,7 @@ void runMasterSingleDefinitionSuccessorR1({
   sourcePaths: [
     "scripts/estimate/r4a13/readbackS2731AncillaryMaterialOrdersIndependent.ts",
     "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
-    "src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1.ts",
+    "src/lib/estimate/v4/asphaltInstallKrer27ProfileR1.ts",
     "data/estimate-benchmarks/source-packs/strip-foundation-concrete-placement-preliminary-profile-r1.json",
     "src/lib/estimate/v4/stripFoundationConcretePlacementPreliminaryProfileR1.ts",
     "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts",
@@ -205,7 +205,7 @@ void runMasterSingleDefinitionSuccessorR1({
   validationScenario: "S26_4_SEPARATE_STRIP_FOUNDATION_CONCRETE_PLACEMENT_150_M_COMPLETE_FIRST_ESTIMATE",
   passport: {
     canonicalRuName: "Бетонирование ленточного фундамента на большой захватке",
-    workKey: "concrete_foundation_interior_strip_foundation_pour_large_area",
+    workKey: "concrete_foundation_interior_strip_foundation_pour_standard",
     physicalResultRu: "Подготовленная ленточная конструкция забетонирована товарной смесью с подачей насосом, виброуплотнением, отделкой открытой поверхности, уходом и подтверждённым контролем качества",
     includedScopeRu: [
       "заказ товарного бетона по проектному объёму и видимому выбранному резерву",
@@ -228,7 +228,7 @@ void runMasterSingleDefinitionSuccessorR1({
   applicability: {
     country: "KG",
     operationClass: "STRIP_FOUNDATION_CONCRETE_PLACEMENT_ONLY",
-    scopeClass: "LARGE_AREA_150_M_SCENARIO",
+    scopeClass: "PROJECT_150_M_SCENARIO",
     constructionState: "FORMWORK_AND_REINFORCEMENT_READY_BY_ADJACENT_SCOPE",
     primaryMeasureParameterId: "plan_dimension_concrete_volume_m3",
     geometryParameters: ["plan_dimension_concrete_volume_m3"],
@@ -247,7 +247,7 @@ void runMasterSingleDefinitionSuccessorR1({
     applicability: {
       technology_class: "READY_MIX_PUMPED_STRIP_FOUNDATION_POUR",
       operation_class: "STRIP_FOUNDATION_CONCRETE_PLACEMENT_ONLY",
-      scope_class: "LARGE_AREA",
+      scope_class: "PROJECT_MEASURED_QUANTITIES",
       source_id: STRIP_POUR_PROFILE_SOURCE_ID,
       norm_id: STRIP_POUR_PROFILE_NORM_ID,
       exact_locator: STRIP_POUR_PROFILE_SOURCE_METADATA.exact_locator,

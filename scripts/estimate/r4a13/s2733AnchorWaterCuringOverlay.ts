@@ -4,10 +4,10 @@ import { buildAnchorGroupWaterCuringResourcesS2733, ANCHOR_WATER_CURING_S2733_CO
 import type { PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
 import { CONCRETE_SLAB_CURING_SOURCE_ID } from "../../../src/lib/estimate/v4/concreteSlabCuringR1";
 
-export const ANCHOR_WATER_CURING_TARGETS_S2733 = ["standard", "large_area", "repair", "small_area", "technical_room", "wet_zone"]
+export const ANCHOR_WATER_CURING_TARGETS_S2733 = ["standard", "repair", "technical_room", "wet_zone"]
   .map(context => `canonical-work:base:concrete_foundation_interior_anchor_group_pour_${context}`);
 export const COMPOSITE_WATER_CURING_TARGETS_S2733 = ["concrete_slab", "stairs_concrete"].flatMap(family =>
-  ["standard", "high_load", "large_area", "repair", "small_area", "technical_room", "wet_zone"]
+  ["standard", "high_load", "repair", "technical_room", "wet_zone"]
     .filter(context => family !== "stairs_concrete" || context !== "standard")
     .map(context => `canonical-work:base:concrete_foundation_interior_${family}_form_${context}`));
 const hash = (value: unknown) => createHash("sha256").update(stringifyCanonicalEstimateJson(value)).digest("hex");

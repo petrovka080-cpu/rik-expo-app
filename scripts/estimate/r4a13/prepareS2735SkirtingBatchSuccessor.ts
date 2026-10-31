@@ -1,3 +1,13 @@
+import {buildCanonicalRevisionCommitPayload} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
+import {canonicalEstimateRevisionDetailFromStorage,canonicalEstimateRevisionRowFromStorage} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper';
+import {projectCanonicalEstimatePreliminaryNeedTransport} from '../../../src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport';
+import {canonicalEstimateOperationReferences,canonicalEstimateResourceOperationSections,canonicalEstimateWorkProcess} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
+import {compileCanonicalEstimateCore} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore';
+import {canonicalEstimateStableJson} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism';
+import {masterOperationValueSha256R1,assertMasterOperationCompositionDeclarationR1,assertMasterOperationCompositionComputationR1} from './masterOperationCompositionOnlyR1';
+import {masterRetainedParentCaptureSha256R1} from './masterSingleDefinitionRetainParentBindingsR1';
+import type {CanonicalPublisherJson as Json} from './canonicalDefinitionPublisherR1';
+import type {MasterRetainedParentCaptureR1} from './masterSingleDefinitionRetainParentBindingsR1';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {strict as assert} from 'node:assert';
@@ -10,6 +20,291 @@ const outputRoot=resolve('.release-runtime/r568/s27-35/skirting-batch');
 const titles={standard:'стандартная зона',small_area:'малый участок',large_area:'большой участок',high_load:'повышенная нагрузка по проекту',technical_room:'техническое помещение',wet_zone:'влажная зона'};
 const selected=process.argv.find(a=>a.startsWith('--target='))?.slice('--target='.length);
 assert(selected==null||targets.some(t=>t.operation+'-'+t.variant===selected),'UNKNOWN_SKIRTING_TARGET');
+
+const skirtingCurrentCaptureAnchorsR410:Readonly<Record<string,Json>>={
+  "canonical-work:base:flooring_interior_baseboard_install_standard": {
+    "definitionId": "93b889bd-375a-57af-8e9e-2a1fd3828186",
+    "baselineId": "a72284e3-aa67-5742-8b33-c8678346a98d",
+    "sourceReleaseId": "fcea3501-544c-5065-8a40-411d6c119292",
+    "shape": [
+      137,
+      37,
+      37
+    ],
+    "binding": {
+      "definition_version_id": "93b889bd-375a-57af-8e9e-2a1fd3828186",
+      "resource_spec_id": "8164c84d-3d44-5832-9962-74fcdc64327d",
+      "locator_id": "2a97cf89-50b7-5395-885d-42d0ac6345d7",
+      "applicability": {
+        "norm_id": "project:skirting:ready-gerflor-forbo-system:s27-35.v1",
+        "source_id": "manufacturer_bound_skirting_constructor_s27_35",
+        "exact_locator": "source-packs/skirting-constructor-s27-35.json: Gerflor6086 PMO516V1 p1; Forbo232 Performances/Application/Working Process/Articles; исходные операции труда и числитель потребления клея",
+        "quantity_basis": "MEASURED_LENGTH_AND_VISIBLE_SELECTED_MANUFACTURER_RATE",
+        "operation_class": "REUSED_NET_ADHESIVE_AND_SINGLE_INSTALLATION",
+        "technology_class": "PRELIMINARY_GERFLOR_6086_FORBO_232_WITH_ACTUAL_CONFIRMATION",
+        "universal_productivity_claimed": false
+      }
+    }
+  },
+  "canonical-work:base:flooring_interior_baseboard_install_high_load": {
+    "definitionId": "fac89522-c393-559b-8092-cc10937cc42a",
+    "baselineId": "5370c51a-1215-5e2f-87d6-18def873a284",
+    "sourceReleaseId": "de7f5166-afe8-52fa-b7a5-5fedccb6a78f",
+    "shape": [
+      137,
+      37,
+      37
+    ],
+    "binding": {
+      "definition_version_id": "fac89522-c393-559b-8092-cc10937cc42a",
+      "resource_spec_id": "78ddde38-0ddd-560d-a1c0-b8c1d8f15eaf",
+      "locator_id": "527838fe-e6e6-534e-bb92-b4feaac096f5",
+      "applicability": {
+        "norm_id": "project:skirting:ready-gerflor-forbo-system:s27-35.v1",
+        "source_id": "manufacturer_bound_skirting_constructor_s27_35",
+        "exact_locator": "source-packs/skirting-constructor-s27-35.json: Gerflor6086 PMO516V1 p1; Forbo232 Performances/Application/Working Process/Articles; исходные операции труда и числитель потребления клея",
+        "quantity_basis": "MEASURED_LENGTH_AND_VISIBLE_SELECTED_MANUFACTURER_RATE",
+        "operation_class": "REUSED_NET_ADHESIVE_AND_SINGLE_INSTALLATION",
+        "technology_class": "PRELIMINARY_GERFLOR_6086_FORBO_232_WITH_ACTUAL_CONFIRMATION",
+        "universal_productivity_claimed": false
+      }
+    }
+  },
+  "canonical-work:base:flooring_interior_baseboard_install_technical_room": {
+    "definitionId": "f58a8688-2cb0-58f9-8ee6-233aee3fa919",
+    "baselineId": "dfcd3111-9d92-5d59-ae8e-8232be2cd60d",
+    "sourceReleaseId": "c31d4a29-c9d5-5a13-8853-af9f5852eae4",
+    "shape": [
+      137,
+      37,
+      37
+    ],
+    "binding": {
+      "definition_version_id": "f58a8688-2cb0-58f9-8ee6-233aee3fa919",
+      "resource_spec_id": "9635b399-b6b4-557a-927b-8aa2ab24420c",
+      "locator_id": "e2fab132-9197-59a6-95d1-c0fec0275301",
+      "applicability": {
+        "norm_id": "project:skirting:ready-gerflor-forbo-system:s27-35.v1",
+        "source_id": "manufacturer_bound_skirting_constructor_s27_35",
+        "exact_locator": "source-packs/skirting-constructor-s27-35.json: Gerflor6086 PMO516V1 p1; Forbo232 Performances/Application/Working Process/Articles; исходные операции труда и числитель потребления клея",
+        "quantity_basis": "MEASURED_LENGTH_AND_VISIBLE_SELECTED_MANUFACTURER_RATE",
+        "operation_class": "REUSED_NET_ADHESIVE_AND_SINGLE_INSTALLATION",
+        "technology_class": "PRELIMINARY_GERFLOR_6086_FORBO_232_WITH_ACTUAL_CONFIRMATION",
+        "universal_productivity_claimed": false
+      }
+    }
+  },
+  "canonical-work:base:flooring_interior_baseboard_install_wet_zone": {
+    "definitionId": "473fc240-c7d2-5147-9024-0b27ab89664a",
+    "baselineId": "4b1e100f-4394-5ac5-ab74-00580e78cacb",
+    "sourceReleaseId": "ef2a86c0-226d-5ed8-889d-c5f8285707bf",
+    "shape": [
+      137,
+      37,
+      37
+    ],
+    "binding": {
+      "definition_version_id": "473fc240-c7d2-5147-9024-0b27ab89664a",
+      "resource_spec_id": "c4179e5c-f0c2-5088-801e-f87b888e6882",
+      "locator_id": "282f0209-297b-570f-bc39-d9f9285fc2fc",
+      "applicability": {
+        "norm_id": "project:skirting:ready-gerflor-forbo-system:s27-35.v1",
+        "source_id": "manufacturer_bound_skirting_constructor_s27_35",
+        "exact_locator": "source-packs/skirting-constructor-s27-35.json: Gerflor6086 PMO516V1 p1; Forbo232 Performances/Application/Working Process/Articles; исходные операции труда и числитель потребления клея",
+        "quantity_basis": "MEASURED_LENGTH_AND_VISIBLE_SELECTED_MANUFACTURER_RATE",
+        "operation_class": "REUSED_NET_ADHESIVE_AND_SINGLE_INSTALLATION",
+        "technology_class": "PRELIMINARY_GERFLOR_6086_FORBO_232_WITH_ACTUAL_CONFIRMATION",
+        "universal_productivity_claimed": false
+      }
+    }
+  },
+  "canonical-work:base:flooring_interior_baseboard_glue_standard": {
+    "definitionId": "2bd43810-bc33-57a1-b04d-5d4a43767e31",
+    "baselineId": "0e3fbbb1-f697-5000-8c00-91b0183cacdd",
+    "sourceReleaseId": "de98d80f-4ad6-5570-b2e3-1f201b2a0b88",
+    "shape": [
+      129,
+      35,
+      35
+    ],
+    "binding": {
+      "definition_version_id": "2bd43810-bc33-57a1-b04d-5d4a43767e31",
+      "resource_spec_id": "289ec50c-0a1b-5498-a17c-d4fdfad8cbca",
+      "locator_id": "af19be73-6ca7-5175-bf52-0ceabc4614b2",
+      "applicability": {
+        "norm_id": "project:skirting:ready-gerflor-forbo-system:s27-35.v1",
+        "source_id": "manufacturer_bound_skirting_constructor_s27_35",
+        "exact_locator": "source-packs/skirting-constructor-s27-35.json: Gerflor6086 PMO516V1 p1; Forbo232 Performances/Application/Working Process/Articles; исходные операции труда и числитель потребления клея",
+        "quantity_basis": "MEASURED_LENGTH_AND_VISIBLE_SELECTED_MANUFACTURER_RATE",
+        "operation_class": "REUSED_NET_ADHESIVE_AND_SINGLE_INSTALLATION",
+        "technology_class": "PRELIMINARY_GERFLOR_6086_FORBO_232_WITH_ACTUAL_CONFIRMATION",
+        "universal_productivity_claimed": false
+      }
+    }
+  },
+  "canonical-work:base:flooring_interior_baseboard_glue_high_load": {
+    "definitionId": "7c3fcf48-cced-518f-bc74-ae8feb276848",
+    "baselineId": "857ef8d1-37f8-5712-96f8-11a47328796d",
+    "sourceReleaseId": "fa9136cc-5308-542a-b8a7-f03338577cb1",
+    "shape": [
+      129,
+      35,
+      35
+    ],
+    "binding": {
+      "definition_version_id": "7c3fcf48-cced-518f-bc74-ae8feb276848",
+      "resource_spec_id": "5bb9e4ca-29bd-5cd5-8f77-9222b913f9d0",
+      "locator_id": "fe3cd1b7-356d-5ffc-a929-4d4ab77551dc",
+      "applicability": {
+        "norm_id": "project:skirting:ready-gerflor-forbo-system:s27-35.v1",
+        "source_id": "manufacturer_bound_skirting_constructor_s27_35",
+        "exact_locator": "source-packs/skirting-constructor-s27-35.json: Gerflor6086 PMO516V1 p1; Forbo232 Performances/Application/Working Process/Articles; исходные операции труда и числитель потребления клея",
+        "quantity_basis": "MEASURED_LENGTH_AND_VISIBLE_SELECTED_MANUFACTURER_RATE",
+        "operation_class": "REUSED_NET_ADHESIVE_AND_SINGLE_INSTALLATION",
+        "technology_class": "PRELIMINARY_GERFLOR_6086_FORBO_232_WITH_ACTUAL_CONFIRMATION",
+        "universal_productivity_claimed": false
+      }
+    }
+  },
+  "canonical-work:base:flooring_interior_baseboard_glue_technical_room": {
+    "definitionId": "3c9820fb-6ff2-53dc-99d7-7ad93a011174",
+    "baselineId": "ffdc8e65-a3be-5647-9fed-0c4b34b8c48a",
+    "sourceReleaseId": "d589ea06-3e21-5681-92d6-c49afbf2184f",
+    "shape": [
+      129,
+      35,
+      35
+    ],
+    "binding": {
+      "definition_version_id": "3c9820fb-6ff2-53dc-99d7-7ad93a011174",
+      "resource_spec_id": "efea8d1f-40c9-586d-9149-5df8c6dcb9dd",
+      "locator_id": "976f8217-e2a2-56b8-af4e-0809742b3b2d",
+      "applicability": {
+        "norm_id": "project:skirting:ready-gerflor-forbo-system:s27-35.v1",
+        "source_id": "manufacturer_bound_skirting_constructor_s27_35",
+        "exact_locator": "source-packs/skirting-constructor-s27-35.json: Gerflor6086 PMO516V1 p1; Forbo232 Performances/Application/Working Process/Articles; исходные операции труда и числитель потребления клея",
+        "quantity_basis": "MEASURED_LENGTH_AND_VISIBLE_SELECTED_MANUFACTURER_RATE",
+        "operation_class": "REUSED_NET_ADHESIVE_AND_SINGLE_INSTALLATION",
+        "technology_class": "PRELIMINARY_GERFLOR_6086_FORBO_232_WITH_ACTUAL_CONFIRMATION",
+        "universal_productivity_claimed": false
+      }
+    }
+  },
+  "canonical-work:base:flooring_interior_baseboard_glue_wet_zone": {
+    "definitionId": "4b97c7af-eb80-5ba2-83ef-5b3d59cc9561",
+    "baselineId": "02ec37d8-5f88-583d-b224-002d111a8fa9",
+    "sourceReleaseId": "d6035f58-cdef-5dac-b696-80a072167d88",
+    "shape": [
+      129,
+      35,
+      35
+    ],
+    "binding": {
+      "definition_version_id": "4b97c7af-eb80-5ba2-83ef-5b3d59cc9561",
+      "resource_spec_id": "24a2ab01-cc8f-59e9-a16e-20324aae6dbc",
+      "locator_id": "a15f3955-6906-557f-a980-c92d8453f510",
+      "applicability": {
+        "norm_id": "project:skirting:ready-gerflor-forbo-system:s27-35.v1",
+        "source_id": "manufacturer_bound_skirting_constructor_s27_35",
+        "exact_locator": "source-packs/skirting-constructor-s27-35.json: Gerflor6086 PMO516V1 p1; Forbo232 Performances/Application/Working Process/Articles; исходные операции труда и числитель потребления клея",
+        "quantity_basis": "MEASURED_LENGTH_AND_VISIBLE_SELECTED_MANUFACTURER_RATE",
+        "operation_class": "REUSED_NET_ADHESIVE_AND_SINGLE_INSTALLATION",
+        "technology_class": "PRELIMINARY_GERFLOR_6086_FORBO_232_WITH_ACTUAL_CONFIRMATION",
+        "universal_productivity_claimed": false
+      }
+    }
+  }
+};
+const skirtingCurrentRegistryLocatorIdentitiesR410=[
+  {
+    "id": "282f0209-297b-570f-bc39-d9f9285fc2fc",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-install-wet_zone-v1"
+  },
+  {
+    "id": "2a97cf89-50b7-5395-885d-42d0ac6345d7",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-install-standard-v1"
+  },
+  {
+    "id": "527838fe-e6e6-534e-bb92-b4feaac096f5",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-install-high_load-v1"
+  },
+  {
+    "id": "976f8217-e2a2-56b8-af4e-0809742b3b2d",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-glue-technical_room-v1"
+  },
+  {
+    "id": "a15f3955-6906-557f-a980-c92d8453f510",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-glue-wet_zone-v1"
+  },
+  {
+    "id": "af19be73-6ca7-5175-bf52-0ceabc4614b2",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-glue-standard-v1"
+  },
+  {
+    "id": "ba65f64c-f514-5274-a061-642bc432d7b7",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-glue-large_area-v1"
+  },
+  {
+    "id": "bb7f29be-794f-5813-9ad2-201c85eff7ef",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-glue-small_area-v1"
+  },
+  {
+    "id": "cc85dc76-aadb-5c4b-98c5-d5299f471da0",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-install-large_area-v1"
+  },
+  {
+    "id": "e2fab132-9197-59a6-95d1-c0fec0275301",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-install-technical_room-v1"
+  },
+  {
+    "id": "e6c552ba-873b-5868-808c-585fed9e8c11",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-install-small_area-v1"
+  },
+  {
+    "id": "fe3cd1b7-356d-5ffc-a929-4d4ab77551dc",
+    "sourceId": "5aaecb6b-7af3-5262-924e-694d06ea67d3",
+    "locatorKey": "skirting-s27-35-glue-high_load-v1"
+  }
+] as const;
+
+/** Close the retained capture over its real binding; preserve the whole raw
+ * source registry separately. This function neither authorizes nor publishes. */
+export function projectSkirtingCurrentRetainedCaptureR410(record:Json,parent:{releaseId:string;searchReleaseId:string}){
+  const c=record.capture as MasterRetainedParentCaptureR1,a=skirtingCurrentCaptureAnchorsR410[record.catalogId],m=record.membership,s=record.searchDocument;
+  assert(a,'SKIRTING_EXACT_CURRENT_CATALOG');
+  assert.equal(c.definition.catalog_id,record.catalogId);assert.equal(c.definition.id,a.definitionId,'SKIRTING_EXACT_CURRENT_DEFINITION');
+  assert.equal(c.definition.definition_version,4,'SKIRTING_EXACT_CURRENT_REVISION');
+  assert.deepEqual([c.parameters.length,c.formulas.length,c.resources.length],a.shape,'SKIRTING_EXACT_CURRENT_WHOLE_SHAPE');
+  assert.equal(c.baseline.id,a.baselineId);assert.equal(c.baseline.catalog_id,record.catalogId);assert.equal(c.baseline.definition_version_id,a.definitionId);
+  assert.equal(m.catalog_id,record.catalogId);assert.equal(m.definition_version_id,a.definitionId);assert.equal(m.approved_template_baseline_id,a.baselineId);
+  assert.equal(m.release_id,parent.releaseId);assert.equal(m.source_release_id,a.sourceReleaseId);assert.equal(c.definition.release_id,a.sourceReleaseId);
+  assert.equal(s.catalog_id,record.catalogId);assert.equal(s.definition_version_id,a.definitionId);
+  assert.equal(s.definition_release_id,parent.releaseId,'SKIRTING_EXACT_CURRENT_SEARCH_PARENT');assert.equal(s.search_release_id,parent.searchReleaseId);
+  assert.equal(record.contentPassport.definition_version_id,a.definitionId);
+  assert.equal(c.bindings.length,1);assert.deepEqual(c.bindings[0],a.binding,'SKIRTING_EXACT_CURRENT_BINDING');
+  assert.equal(c.resources.filter(row=>row.id===a.binding.resource_spec_id).length,1,'SKIRTING_EXISTING_RESOURCE_OWNER');
+  assert.equal(c.normativeSources.length,1);assert.equal(c.normativeSources[0]!.source_key,sourceId,'SKIRTING_EXACT_CURRENT_SOURCE_KEY');
+  assert.equal(c.normativeLocators.length,12,'SKIRTING_PRESERVE_TWELVE_RAW_LOCATORS');
+  const identities=c.normativeLocators.map(row=>({id:row.id,sourceId:row.source_id,locatorKey:row.locator_key})).sort((x,y)=>String(x.id).localeCompare(String(y.id)));
+  assert.deepEqual(identities,skirtingCurrentRegistryLocatorIdentitiesR410,'SKIRTING_EXACT_RAW_REGISTRY_IDENTITIES');
+  assert(c.normativeLocators.every(row=>row.source_id===c.normativeSources[0]!.id),'SKIRTING_EXACT_CURRENT_SOURCE_OWNER');
+  const bound=c.normativeLocators.filter(row=>row.id===a.binding.locator_id),siblings=c.normativeLocators.filter(row=>row.id!==a.binding.locator_id);
+  assert.equal(bound.length,1);assert.equal(siblings.length,11);
+  return {retainedCapture:{...c,normativeLocators:bound},rawCurrentCapture:c,
+    rawRegistryLocators:c.normativeLocators,untouchedRegistrySiblingLocators:siblings};
+}
+
 async function run(){const receipts:unknown[]=[];
 for(const [index,target]of targets.entries()){
   const {operation,variant,catalogId}=target,key=operation+'-'+variant;
@@ -61,4 +356,139 @@ for(const [index,target]of targets.entries()){
   mkdirSync(outputRoot,{recursive:true});writeFileSync(resolve(outputRoot,process.argv.includes('--apply')?'batch-apply-summary.json':'batch-dry-run-summary.json'),JSON.stringify({targets:receipts,current:JSON.parse(readFileSync(currentReleasePath,'utf8')),productionAccessed:false},null,2));
 }
 }
-void run().catch(error=>{process.stderr.write(String(error.stack??error)+'\n');process.exitCode=1;});
+
+/** Actual current inputs, loaded only on explicit use. No current DB authority
+ * is inferred from this retained artifact; the writer rechecks current tuples. */
+export function skirtingCurrentMetadataRecordsR411():Json[]{
+ const bytes=readFileSync(resolve(__dirname,'../../..',"data/estimate-benchmarks/fixtures/finishing-current12-metadata-records-r411.json"));
+ assert.equal(createHash('sha256').update(bytes).digest('hex'),"d3fd4fa3f0ee4c229624180b93fd0c08d01b8c7bca4ab91ca88ada7367b43348",'EXACT_CURRENT_METADATA_INPUT_BYTES');
+ const value=JSON.parse(bytes.toString('utf8'));assert.equal(value.status,'ACTUAL_CURRENT_TWELVE_RECIPE_INPUTS_NOT_ADMITTED');
+ return (value.records as Json[]).filter(row=>row.family.startsWith("SKIRTING"));
+}
+
+/** Existing Master retained recipe. Every current row/source/baseline is kept;
+ * only the reviewed operation field may change. Literal admission stays closed
+ * until ROOT accepts the genuine helper hashes and a separate guard forward. */
+/** Publication contract belongs to the whole captured native model, not its shared source row. */
+export function skirtingCurrentNativeContractR1(c:Pick<MasterRetainedParentCaptureR1,'parameters'|'definition'>):string{
+ const contracts=[...new Set(c.parameters.map(row=>row.truth_metadata?.contract))];
+ assert.equal(contracts.length,1,'CURRENT_NATIVE_PARAMETER_CONTRACT_UNIQUE');
+ const contract=contracts[0];assert(typeof contract==='string'&&contract.trim().length>0,'CURRENT_NATIVE_PARAMETER_CONTRACT_NONEMPTY');
+ assert.equal(contract,c.definition.source_metadata.contract,'CURRENT_NATIVE_DEFINITION_PARAMETER_CONTRACT');
+ return contract;
+}
+export function skirtingCurrentRetainedMetadataConfigR411(record:Json,parent:{releaseId:string;searchReleaseId:string;outputRoot?:string}):MasterSingleDefinitionSuccessorConfig{
+ const pinned=skirtingCurrentMetadataRecordsR411().find(row=>row.catalogId===record.catalogId);assert(pinned,'EXACT_CURRENT_METADATA_CATALOG');
+ assert.deepEqual(record,pinned,'EXACT_CURRENT_METADATA_RECORD');
+ const raw=record.capture as MasterRetainedParentCaptureR1,c=projectSkirtingCurrentRetainedCaptureR410(record,{releaseId:record.membership.release_id,searchReleaseId:record.searchDocument.search_release_id}).retainedCapture,p=record.contentPassport,s=record.searchDocument,membership=record.membership;
+ // Frozen origin is evidence, not a claim that its old global release is
+ // still the current pointer after another card's successor. The existing
+ // writer validates active parent, whole membership/capture twice under locks.
+ assert.equal(membership.release_id,s.definition_release_id,'EXACT_CAPTURED_ORIGIN_TUPLE');
+ const parentId=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u;
+ assert.match(parent.releaseId,parentId,'ACTIVE_PARENT_ID_SHAPE_ONLY_NOT_AUTHORITY');
+ assert.match(parent.searchReleaseId,parentId,'ACTIVE_SEARCH_ID_SHAPE_ONLY_NOT_AUTHORITY');
+ assert.equal(s.definition_version_id,c.definition.id);assert.equal(membership.approved_template_baseline_id,c.baseline.id);
+ const map=record.operationByRowId as Record<string,Json|null>,captureSha=masterRetainedParentCaptureSha256R1(c);
+ const mode={contract:'master-operation-composition-only/r1' as const,capturedContentPassport:p,capturedContentPassportSha256:masterOperationValueSha256R1(p),
+  operationByRowId:map,operationMapSha256:masterOperationValueSha256R1(map),};
+ // Intentionally HOLD with today's guard. Computing a hash never enrolls a new
+ // catalog/definition in its existing literal reviewed allowlist.
+ assertMasterOperationCompositionDeclarationR1({catalogId:record.catalogId,capture:c,captureSha256:captureSha,mode,newParameterSources:{}});
+ const resources=c.resources.map(row=>map[row.row_id]===null?row:{...row,resource_graph:{...row.resource_graph,operationCompositionV1:map[row.row_id]}});
+ assertMasterOperationCompositionComputationR1(c,mode,{parameters:c.parameters,formulas:c.formulas,resources},'REPRESENTATIVE');
+ const source=c.normativeSources.find(row=>row.source_key===record.sourceKey);assert(source);
+ const locators=c.normativeLocators.filter(row=>row.source_id===source.id);assert.equal(locators.length,1);
+ const locator=locators[0]!,bound=c.bindings.filter(row=>row.locator_id===locator.id);assert(bound.length>0);
+ const rowIds=bound.map(binding=>{const row=c.resources.find(row=>row.id===binding.resource_spec_id);assert(row);return row.row_id as string;});
+ const ownSourceKeys=c.normativeSources.map(row=>row.source_key),fixtureSources=Object.fromEntries(Object.entries(c.baseline.normative_source_ids)
+  .map(([id,keys])=>[id,(keys as string[]).filter(key=>!ownSourceKeys.includes(key))]).filter(([,keys])=>(keys as string[]).length));
+ const compileCurrent=(rows:readonly Json[],input:Record<string,unknown>=c.baseline.input_values)=>compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:'finishing-current-operation-only/r411',catalogId:record.catalogId,
+  primaryMeasureParameterId:'length_m',parameterDefinitions:[...c.parameters] as Parameters<typeof compileCanonicalEstimateCore>[0]['parameterDefinitions'],formulaDefinitions:[...c.formulas] as Parameters<typeof compileCanonicalEstimateCore>[0]['formulaDefinitions'],
+  resourceDefinitions:[...rows] as Parameters<typeof compileCanonicalEstimateCore>[0]['resourceDefinitions'],submittedParameters:input,confirmedParameters:{},currencyCode:'KGS',maximumResourceRows:rows.length,
+  hashJson:(value:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex')});
+ const nativeContract=skirtingCurrentNativeContractR1(c);
+ return{contract:nativeContract,stopCode:'SKIRTING_CURRENT_OPERATION_ONLY_R411',applicationName:'finishing-current-operation-'+record.catalogId.split(':').at(-1),expectedBranch:'codex/r4-a5-clean-08b18902',
+  masterPath:'C:/Users/User/Downloads/GOX_BUILD_MASTER_TZ_2_21_2026-10-26.txt',masterSha256:'3f5f8c0e2f0ad1cdaf960d66d7561853fa0e5f70d269b6a8227cea549dcbe602',
+  parentReleaseId:parent.releaseId,parentSearchReleaseId:parent.searchReleaseId,currentReleasePath:'data/estimate-benchmarks/r568-local-developer-canonical-release.json',
+  outputRoot:parent.outputRoot??('.release-runtime/r568/finishing-current-operation-r411/'+record.catalogId.replaceAll(':','_')),
+  sourcePaths:["data/estimate-benchmarks/fixtures/current-finishing-reviewed-operation-maps-r414.json","data/estimate-benchmarks/fixtures/finishing-current12-metadata-records-r411.json","scripts/estimate/r4a13/prepareS2735SkirtingBatchSuccessor.ts",'scripts/estimate/r4a13/masterOperationCompositionOnlyR1.ts','scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts',
+   'scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts','scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts','src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts','src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts','src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts','src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts','src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport.ts','src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts','data/estimate-benchmarks/source-packs/skirting-constructor-s27-35.json'],
+  catalogId:record.catalogId,sourceId:record.sourceKey,normId:normId,
+  sourceMetadata:{source_title:source.title_ru,source_authority:source.authority,official_url:source.official_url,artifact_sha256:source.artifact_sha256,
+   source_kind:source.metadata.sourceKind,exact_locator:sourceMetadata.exact_locator,use_restriction:source.metadata.useRestriction},
+  parameterDefinitions:c.parameters,formulaDefinitions:c.formulas,resourceDefinitions:resources,shortInput:c.baseline.input_values,acceptanceInput:c.baseline.input_values,
+  runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},expectedParentShape:[c.parameters.length,c.formulas.length,c.resources.length],benchmarkOrdinal:0,
+  validationScenario:'EXACT_CURRENT_WHOLE_MODEL_OPERATION_METADATA_ONLY',
+  passport:{canonicalRuName:c.definition.passport.canonicalRuName,workKey:c.definition.passport.workKey,physicalResultRu:c.definition.passport.physicalResultRu,
+   includedScopeRu:p.included_scope_ru,excludedScopeRu:p.excluded_scope_ru,
+   ...(p.decision.independentCompletenessMap?{independentCompletenessMap:p.decision.independentCompletenessMap}:{}),
+   ...(p.decision.unresolvedResourceRowIds?{unresolvedApplicableResourceRowIds:p.decision.unresolvedResourceRowIds}:{})},
+  applicability:c.definition.applicability,
+  binding:{rowId:rowIds[0]!,...(rowIds.length>1?{additionalRowIds:rowIds.slice(1)}:{}),applicability:bound[0]!.applicability,
+   applicabilityByRowId:Object.fromEntries(bound.map(binding=>[c.resources.find(row=>row.id===binding.resource_spec_id)!.row_id,binding.applicability])),
+   retainParentBindings:{capturedParent:c,capturedParentSha256:captureSha,newParameterSources:{},operationCompositionOnly:mode,
+    ...(Object.keys(fixtureSources).length?{legacyCapturedFixtureSources:{contract:'master-retained-captured-fixture-provenance/r1' as const,parameterSources:fixtureSources as Record<string,string[]>}}:{})},
+   reuseExistingNormativeRegistry:{contract:'master-existing-normative-registry-reuse/r1',locatorExcerptHashKind:'CAPTURED_PARENT_OPERATION_COMPOSITION_ONLY_R1',source,locators}},
+  locator:{key:locator.locator_key,payload:locator.locator},
+  search:{primaryUom:s.primary_uom,canonicalNameRu:s.canonical_name_ru,aliases:s.aliases,shortScopeRu:s.short_scope_ru,keyDistinguishingParameters:s.key_distinguishing_parameters,
+   clarificationFields:s.clarification_fields,includedBoundaries:s.included_boundaries,excludedBoundaries:s.excluded_boundaries,extraSearchTermsRu:'',sourceProvenance:s.source_provenance},
+  forbiddenAdjacentMatchers:[/materials_0[1-6]/iu,/professional_.*_set/iu,/floor_covering/iu,/underlay/iu],owner:'S2735_SKIRTING_BATCH',receiptFileStem:record.catalogId.split(':').at(-1)+'-current-operation-r411',
+  verifyCore:async()=>{
+   const before=await compileCurrent(c.resources),after=await compileCurrent(resources);
+   const arithmetic=(result:typeof before)=>({parameters:result.parameters,rows:result.rows.map(row=>({id:row.row_id,quantity:row.quantity,unit:row.unit_id,
+    included:row.included_in_estimate,procurement:row.included_in_procurement,eligible:row.procurement_eligible,ownership:row.ownership_status,price:row.unit_price,amount:row.amount})),
+    needs:JSON.parse(JSON.stringify(result.preliminaryNeeds,(key,value)=>key==='operationCompositionV1'||key==='need_sha256'?undefined:value)),totals:result.totals});
+   assert.deepEqual(arithmetic(after),arithmetic(before));
+
+   const hashJson=(value:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex');
+   const durable=(result:typeof after,input:Record<string,unknown>,requiredIds:readonly string[])=>{
+    const commit=buildCanonicalRevisionCommitPayload({rowCount:result.rows.length,currencyCode:'KGS',totals:result.totals,
+     checksumSha256:hashJson(result.revisionProjection),compilerVersion:'finishing-current-operation-only/r411',parameters:result.parameters,
+     approvedTemplateBaselineId:c.baseline.id,baselineAssumptions:{},effectiveUserParameters:input,parentRevisionId:null,
+     derivedParameters:result.derivedParameters,identityContract:{},preliminaryNeeds:result.preliminaryNeeds,purchaseSupplyIndexV1:result.purchaseSupplyIndexV1});
+    const stored={id:'11111111-1111-4111-8111-111111111111',release_id:parent.releaseId,definition_version_id:c.definition.id,catalog_id:record.catalogId,
+     price_snapshot_ids:result.priceSnapshotIds,input_parameters:commit.resolvedParameters,totals:commit.totals,row_count:commit.rowCount,revision_number:1,status:'ready',currency_code:'KGS',
+     compiler_version:'finishing-current-operation-only/r411',created_at:'2026-10-26T00:00:00Z',checksum_sha256:commit.checksumSha256,amendment_contract:{parameterSources:commit.parameterSources}};
+    const bytes=JSON.stringify(stored),transport=projectCanonicalEstimatePreliminaryNeedTransport(stored),detail=canonicalEstimateRevisionDetailFromStorage(stored);
+    assert.deepEqual(detail.preliminaryNeeds,transport.preliminaryNeeds);assert.deepEqual(transport.preliminaryNeeds.map(need=>need.rowId),result.preliminaryNeeds.map(need=>need.row_id));
+    const reopened=JSON.parse(JSON.stringify(detail)) as typeof detail;
+    const known=JSON.parse(JSON.stringify(result.rows)).map((row:Json)=>canonicalEstimateRevisionRowFromStorage(row,null,null,stored.amendment_contract));
+    const coldResources=[...known.map((row:ReturnType<typeof canonicalEstimateRevisionRowFromStorage>)=>({rowId:row.rowId,titleRu:row.titleRu,category:row.category,
+     operation:(row.calculationTrace.resourceGraph as Json).operationCompositionV1})),...reopened.preliminaryNeeds!.map(need=>({rowId:need.rowId,titleRu:need.titleRu,category:need.category,operation:need.operation}))];
+    const sections=canonicalEstimateResourceOperationSections(coldResources),process=canonicalEstimateWorkProcess(coldResources);
+    for(const id of requiredIds){const resource=coldResources.find(row=>row.rowId===id);assert(resource,'ACTUAL_CORE_ROW_OR_NEED_FOR_OPERATION:'+id);
+     assert.deepEqual(canonicalEstimateOperationReferences(resource.operation),canonicalEstimateOperationReferences(map[id]));
+     const operation=map[id]!;
+     for(const related of operation.additionalOperations??[]){
+      assert.equal(sections.filter(section=>section.resourceIds.includes(id)).length,1);
+      const section=sections.find(section=>section.operation?.operationId===related.operationId);assert(section);
+      assert.equal(section.resourceIds.includes(id),false);assert.equal(section.sharedResources.filter(row=>row.rowId===id).length,1);
+      assert.equal(process.flatMap(group=>group.operations).find(step=>step.operationId===related.operationId)!.resourceIds.filter(rowId=>rowId===id).length,1);
+     }
+    }
+    const firstNeed=result.preliminaryNeeds.find(need=>requiredIds.includes(need.row_id));
+    if(firstNeed){assert.match(firstNeed.need_sha256,/^[0-9a-f]{64}$/);const {need_sha256:_hash,...basis}=firstNeed;assert.equal(hashJson(basis),firstNeed.need_sha256);
+     const invalid=structuredClone(stored);(invalid.amendment_contract.parameterSources as {preliminaryNeeds:Json[]}).preliminaryNeeds.find(need=>need.row_id===firstNeed.row_id)!.need_sha256='eh_'+'0'.repeat(16);
+     assert.equal(projectCanonicalEstimatePreliminaryNeedTransport(invalid).preliminaryNeeds.some(need=>need.rowId===firstNeed.row_id),false);}
+    assert.equal(JSON.stringify(stored),bytes);return{known:known.length,needs:reopened.preliminaryNeeds!.length,assertedRows:requiredIds.length};
+   };
+   const actualBaselineDurable=durable(after,c.baseline.input_values,[]);
+   const controlEvidence:Json[]=[];
+   const controlInput={...c.baseline.input_values,length_m:30,end_cap_count:2,junction_sealing_mode:'REQUIRED',end_cap_sealant_consumption_ml:100,junction_sealant_consumption_l:0.3,
+    sealant_supply_grouping:'SHARED_COMPATIBLE_BATCH',shared_sealant_designation:'EXPLICIT_TEST_COMPATIBLE_BATCH',shared_sealant_cartridge_ml:310,shared_sealant_compatibility_confirmed:'YES',
+    material_skirting_shared_sealant_stock:80,material_skirting_shared_sealant_reserve:20};
+   const activeBefore=await compileCurrent(c.resources,controlInput),activeAfter=await compileCurrent(resources,controlInput);assert.deepEqual(arithmetic(activeAfter),arithmetic(activeBefore));
+   const owner='material:skirting:shared-sealant';assert.equal(activeAfter.rows.filter(row=>row.row_id===owner&&row.included_in_procurement).length,1);
+   assert.equal(activeAfter.rows.find(row=>row.row_id===owner)!.quantity,'620');
+   assert.equal(activeAfter.rows.filter(row=>row.row_id.startsWith('allocation:skirting:sealant:')).every(row=>!row.included_in_estimate&&!row.included_in_procurement),true);
+   controlEvidence.push({basis:'EXISTING_EXPLICIT_CONTROL_NOT_CAPTURED_BASELINE_OR_OBJECT_FACT',...durable(activeAfter,controlInput,[owner])});
+   return{status:'PASS_CURRENT_MODEL_METADATA_ARITHMETIC_INVARIANT_ONLY',catalogId:record.catalogId,capturedResources:c.resources.length,
+    changedOperationRows:record.changedRowIds,retainedMissingOperations:record.unchangedAbsentOperationRows.length,
+    currentKnownRows:after.rows.length,currentNeeds:after.preliminaryNeeds.length,currentProcurementRows:after.rows.filter(row=>row.included_in_procurement).length,
+    sourceQuantityNormsChanged:false,actualObjectFactsAccepted:false,actualBaselineDurable,controlEvidence,wholeDeliveryAcceptance:false,FULL:false};
+  }};
+}
+
+if(process.argv[1]?.replaceAll('\\','/').endsWith('/prepareS2735SkirtingBatchSuccessor.ts'))
+  void run().catch(error=>{process.stderr.write(String(error.stack??error)+'\n');process.exitCode=1;});

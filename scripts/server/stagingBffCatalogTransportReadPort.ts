@@ -1,4 +1,6 @@
-import { Client, type ClientConfig } from "pg";
+import { Client } from "pg";
+import { buildBffPostgresTlsConfig } from "./stagingBffPostgresTls";
+import { applyBffReadonlyRequestIdentity } from "./stagingBffRequestAuth";
 
 import {
   CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS,
@@ -373,13 +375,6 @@ export function buildCatalogTransportReadQueryPlan(
   );
 }
 
-const resolvePgSsl = (connectionString: string): ClientConfig["ssl"] => {
-  const url = new URL(connectionString);
-  const sslmode = url.searchParams.get("sslmode") ?? "require";
-  if (sslmode === "disable") return false;
-  return { rejectUnauthorized: sslmode === "verify-full" };
-};
-
 const runPlanRows = async (
   client: Client,
   queryPlan: CatalogTransportBffReadonlyQueryPlan,
@@ -388,6 +383,7 @@ const runPlanRows = async (
   try {
     await client.query("begin read only");
     transactionStarted = true;
+    await applyBffReadonlyRequestIdentity(client);
     const result = await client.query<PgQueryRow>(queryPlan.sql, [...queryPlan.values]);
     await client.query("commit");
     transactionStarted = false;
@@ -414,11 +410,10 @@ const runCatalogTransportRead = async (
   const queryPlan = buildCatalogTransportReadQueryPlan(input);
   const client = new Client({
     application_name: "rik_staging_bff_catalog_transport_readonly",
-    connectionString,
+    ...buildBffPostgresTlsConfig(connectionString),
     connectionTimeoutMillis: DEFAULT_CONNECTION_TIMEOUT_MS,
     query_timeout: DEFAULT_QUERY_TIMEOUT_MS,
     statement_timeout: DEFAULT_QUERY_TIMEOUT_MS,
-    ssl: resolvePgSsl(connectionString),
   });
 
   try {

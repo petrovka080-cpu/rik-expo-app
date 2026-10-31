@@ -94,7 +94,7 @@ async function main(): Promise<void> {
   invariant(batchIds.length === 3318, `STOP_S2721_BATCH001008_UNION:${batchIds.length}`);
 
   const globalInventory = buildGlobalCatalogInventoryV1();
-  invariant(globalInventory.catalog_total === 11610 && globalInventory.rows.length === 11610,
+  invariant(Number(globalInventory.catalog_total) === 11610 && globalInventory.rows.length === 11610,
     "STOP_S2721_GLOBAL_CATALOG_DENOMINATOR");
   const globalIdSet = new Set(globalInventory.rows.map((row) => row.catalog_id));
   const batchIdsOutsideGlobal = batchIds.filter((catalogId) => !globalIdSet.has(catalogId));

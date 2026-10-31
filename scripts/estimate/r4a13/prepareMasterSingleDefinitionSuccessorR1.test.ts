@@ -10,7 +10,38 @@ import {
   buildMasterScopeReadiness,
   resolveMasterSingleDefinitionNextCounts,
   validateIndependentCompletenessMapReferences,
+  readMasterSuccessorTargetPreimageR1,
+  assembleMasterSingleDefinitionManagedRegistryCandidateR1 as registryCandidate,
+  resolveMasterSingleDefinitionLocatorExcerptSha256R1 as publisherExcerpt,
 } from "./prepareMasterSingleDefinitionSuccessorR1";
+
+describe('whole successor target preimage on the existing writer connection',()=>{
+ const input={releaseId:'selected-release',catalogId:'selected-catalog',sourceId:'new-source'};
+ function client(bindings=['{"id":"b1"}','{"id":"b2"}']){
+  const calls:string[]=[];return{calls,query:jest.fn(async(sql:string)=>{calls.push(sql);
+   if(sql.includes("current_setting('TimeZone')"))return{rows:[{zone:'UTC'}]};
+   if(sql.includes('set_config')||sql.startsWith('lock table'))return{rows:[]};
+   if(sql.includes('select m.definition_version_id'))return{rows:[{definition_version_id:'d',approved_template_baseline_id:'b',definition_version:3,definition_sha256:'known'}]};
+   const table=/from public\.(\w+) t where/u.exec(sql)?.[1];
+   const raw=table==='estimate_work_normative_binding'?bindings:table==='estimate_normative_source'&&sql.includes('t.source_key')?[]:['{"id":"known"}'];
+   return{rows:raw.map(raw=>({raw}))};
+  })};
+ }
+ it('covers all ten row sets, ignores row order, detects changed or additional bindings and uses no data writes',async()=>{
+  const source=client(),before=await readMasterSuccessorTargetPreimageR1(source as never,input);
+  expect(Object.keys(before.sets)).toEqual(['definition','baseline','parameters','formulas','resources','bindings','locators','sources','newSource','identity']);
+  expect(before.sets.bindings.rowCount).toBe(2);
+  expect(await readMasterSuccessorTargetPreimageR1(client(['{"id":"b2"}','{"id":"b1"}']) as never,input)).toEqual(before);
+  for(const rows of [['{"id":"b1"}','{"id":"changed"}'],['{"id":"b1"}','{"id":"b2"}','{"id":"extra"}']])
+   expect(await readMasterSuccessorTargetPreimageR1(client(rows) as never,input)).not.toEqual(before);
+  expect(source.calls.some(sql=>/^(?:insert|update|delete|alter|commit|rollback)\b/iu.test(sql))).toBe(false);
+ });
+ it('takes the shared table locks before reading the selected target and restores the session timezone',async()=>{
+  const source=client();await readMasterSuccessorTargetPreimageR1(source as never,{...input,lock:true});
+  expect(source.calls[0]).toContain('lock table public.estimate_cumulative_manifest_entry');
+  expect(source.calls.at(-1)).toBe("select set_config('TimeZone',$1,$2)");
+ });
+});
 
 describe('preliminary publisher capability boundary', () => {
   it('persists named unresolved resources without declaring the applicable scope complete', () => {
@@ -360,5 +391,55 @@ describe("master successor definition count modes", () => {
       formulas: 586_737,
       resources: 586_966,
     });
+  });
+});
+
+describe("pure managed registry candidate before publisher effects", () => {
+  const verified = { projectSourcePackage: null, projectSourcePackageSet: null };
+  const config = () => ({
+    contract: "TEST_ONLY_PUBLISHER_CANDIDATE", stopCode: "TEST_CANDIDATE",
+    catalogId: "TEST_ONLY_CATALOG", parentReleaseId: "TEST_ONLY_PARENT",
+    sourceId: "TEST_ONLY_SOURCE", normId: "TEST_ONLY_NORM",
+    sourceMetadata: { source_title: "TEST ONLY", source_authority: "TEST ONLY",
+      exact_locator: "TEST ONLY exact locator", use_restriction: "TEST ONLY no admission",
+      source_kind: "TEST_ONLY_SOURCE", official_url: null, artifact_sha256: "a".repeat(64) },
+    locator: { key: "TEST_ONLY_LOCATOR", payload: { exactColumn: "TEST_ONLY_NORM", quantity: null } },
+    binding: { rowId: "TEST_ONLY_ROW", applicability: { full: false } },
+  });
+  it("assembles the exact managed rows without reading writer controls or invoking callbacks", () => {
+    const cfg = config(), before = JSON.stringify(cfg), forbidden = jest.fn(() => { throw Error("WRITER_EFFECT_FORBIDDEN"); });
+    for (const key of ["verifyCore", "verifyTargetPrecondition", "sourcePaths", "currentReleasePath", "outputRoot", "expectedBranch"])
+      Object.defineProperty(cfg, key, { get: forbidden });
+    const result = registryCandidate(cfg, verified), candidate = result.retentionCandidate;
+    expect(forbidden).not.toHaveBeenCalled();
+    expect(JSON.stringify(cfg)).toBe(before);
+    expect(candidate.config).toBe(cfg);
+    expect(candidate.newSource).toMatchObject({ source_key: cfg.sourceId, artifact_sha256: "a".repeat(64),
+      effective_from: null, effective_to: null, metadata: { contract: cfg.contract,
+        universalProductivityClaimed: false, universalConsumptionClaimed: false, activationAllowed: false } });
+    expect(candidate.newSource).not.toHaveProperty("created_at");
+    expect(candidate.newLocators).toEqual([{ id: expect.stringMatching(/^[a-f0-9-]{36}$/u),
+      source_id: candidate.newSource.id, locator_key: cfg.locator.key, locator: cfg.locator.payload,
+      excerpt_sha256: publisherExcerpt(cfg) }]);
+    expect(result.existingRegistryReuse).toBeNull();
+    expect(registryCandidate(cfg, verified).retentionCandidate).toEqual(candidate);
+  });
+  it("keeps source ownership stable when only a locator changes and separates another source contract", () => {
+    const cfg = config(), first = registryCandidate(cfg, verified).retentionCandidate;
+    const changedLocator = registryCandidate({ ...cfg, locator: { ...cfg.locator, key: "TEST_OTHER_LOCATOR" } }, verified).retentionCandidate;
+    expect(changedLocator.newSource).toEqual(first.newSource);
+    expect(changedLocator.newLocators[0]!.id).not.toBe(first.newLocators[0]!.id);
+    const other = registryCandidate({ ...cfg, contract: "TEST_OTHER_CONTRACT" }, verified).retentionCandidate;
+    expect(other.newSource.id).not.toBe(first.newSource.id);
+    expect(other.newLocators[0]!.id).not.toBe(first.newLocators[0]!.id);
+  });
+  it("refuses a package config without its already verified package instead of reading or falling back", () => {
+    expect(() => registryCandidate({ ...config(), projectSourcePackagePath: "TEST_MUST_NOT_READ.json" }, verified))
+      .toThrow("REGISTRY_CANDIDATE_VERIFIED_PACKAGE_REQUIRED");
+  });
+  it("retains the existing fail-closed behavior for a present malformed registry-reuse declaration", () => {
+    const cfg = config();
+    Object.defineProperty(cfg.binding, "reuseExistingNormativeRegistry", { value: null });
+    expect(() => registryCandidate(cfg, verified)).toThrow("EXISTING_REGISTRY_");
   });
 });

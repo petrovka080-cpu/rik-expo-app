@@ -1,6 +1,9 @@
+import {classifyProfessionalNormSourceAdmission} from '../professionalNormSourceAdmission';
+import {canonicalProjectedNormIdentityV1} from './canonicalNormativeTraceV1';
+import {canonicalNormResolutionIdentitySha256V1,type CanonicalNormSourceAdmissionContextV1,type CanonicalNormSourceAdmissionEvidenceV1} from './canonicalNormSourceAdmissionEvidenceV1';
+import type { CanonicalPhysicalNormRevisionV1 } from './canonicalPhysicalNormEvidenceV1';
 import type {
   CanonicalEstimateRevisionRowView,
-  CanonicalEstimateRevisionView,
 } from "./contracts";
 import {
   resolveProfessionalPhysicalNormParameterValuesV1,
@@ -150,7 +153,7 @@ export function resolveCanonicalEstimatePhysicalNormApplicabilityV1(input: {
  * does not evaluate a second quantity formula.
  */
 export function projectCanonicalEstimatePhysicalNormApplicabilityV1(input: {
-  revision: CanonicalEstimateRevisionView;
+  revision: CanonicalPhysicalNormRevisionV1;
   row: CanonicalEstimateRevisionRowView;
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 | null {
   const resourceGraph = record(input.row.calculationTrace?.resourceGraph);
@@ -160,4 +163,39 @@ export function projectCanonicalEstimatePhysicalNormApplicabilityV1(input: {
     resourceGraph,
     normativeTrace: input.row.normativeTrace,
   });
+}
+
+/** Called only after the existing rows endpoint has authorised the revision. */
+export function attachCanonicalPhysicalNormEvidenceV1(
+  revision: CanonicalPhysicalNormRevisionV1,
+  row: CanonicalEstimateRevisionRowView,
+): CanonicalEstimateRevisionRowView {
+  // Ignore any incoming presentation evidence and always use the existing resolver.
+  const resolution = projectCanonicalEstimatePhysicalNormApplicabilityV1({revision,row});
+  const admission=projectCanonicalNormSourceAdmissionEvidenceV1({revision,row,resolution});
+  return {...row,...(admission==null?{}:{normSourceAdmissionEvidenceV1:admission}),physicalNormEvidenceV1:{
+    contractVersion:'canonical-physical-norm-evidence/v1',owner:'canonical-estimate-backend',
+    revisionId:revision.revisionId,releaseId:revision.releaseId,catalogId:revision.catalogId,
+    revisionChecksumSha256:revision.checksumSha256,rowId:row.rowId,rowSha256:row.rowSha256,resolution,
+  }};
+}
+
+/** Uses the exact same stored inputs and timestamp representation as revision detail. */
+export function canonicalPhysicalNormRevisionFromStorageV1(row: Readonly<Record<string,unknown>>): CanonicalPhysicalNormRevisionV1 {
+  return {revisionId:String(row.id ?? ''),releaseId:String(row.release_id ?? ''),catalogId:String(row.catalog_id ?? ''),
+    checksumSha256:String(row.checksum_sha256 ?? ''),parameters:record(row.input_parameters) ?? {},createdAt:String(row.created_at ?? '')};
+}
+
+/** The existing source classifier runs only beside the existing server resolver. */
+export function projectCanonicalNormSourceAdmissionEvidenceV1(input:CanonicalNormSourceAdmissionContextV1):CanonicalNormSourceAdmissionEvidenceV1|null {
+  const {revision,row,resolution}=input;
+  const graph=record(row.calculationTrace?.resourceGraph);
+  // Unbound historic rows retain their exact presentation and quantities.
+  if(resolution===null&&!Object.hasOwn(graph ?? {},'professionalPhysicalNormBindingV1'))return null;
+  const identity=canonicalProjectedNormIdentityV1(row,resolution);
+  const normIdentity={normSourceId:identity.normSourceId,normId:identity.normId,normVersion:identity.normVersion};
+  const decision=classifyProfessionalNormSourceAdmission({...normIdentity,sourceParameters:{professionalPhysicalNormApplicabilityV1:resolution}});
+  return {contractVersion:'canonical-norm-source-admission/v1',owner:'canonical-estimate-backend',revisionId:revision.revisionId,
+    releaseId:revision.releaseId,catalogId:revision.catalogId,revisionChecksumSha256:revision.checksumSha256,rowId:row.rowId,rowSha256:row.rowSha256,
+    normIdentity,resolutionSha256:canonicalNormResolutionIdentitySha256V1(resolution),decision};
 }

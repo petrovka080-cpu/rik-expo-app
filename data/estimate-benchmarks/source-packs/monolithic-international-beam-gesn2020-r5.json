@@ -1,0 +1,341 @@
+{
+  "contract": "monolithic-international-beam-gesn2020-061900301/r5",
+  "catalogId": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+  "sourceId": "gox-monolithic-beam-gesn06-2020-061900301-r5",
+  "normId": "06-19-003-01",
+  "choiceRu": "Исходная система ГЭСН06-2020, балки до 500 мм в индустриальной опалубке",
+  "source": {
+    "edition": "ГЭСН 81-02-06-2020; приказ 871/пр от 26.12.2019",
+    "jurisdiction": "RU",
+    "url": "https://files.stroyinf.ru/Data2/1/4293723/4293723785.pdf",
+    "artifactPath": "data/estimate-benchmarks/source-artifacts/gesn06-2020-871pr-original-copy.pdf",
+    "sha256": "6bf1fbac1c69cf519d1bc9c8a0c3402628848d8cdf54341e1cf24f651ef637be",
+    "hostRole": "MIRROR_OF_ORIGINAL_GOVERNMENT_NORM_DOCUMENT",
+    "pages": [
+      1,
+      2,
+      3,
+      69,
+      70,
+      90
+    ],
+    "exactLocator": "06-19-003-01; PDF69 caption and complete operations; PDF70 first resource column; general1.6.1/2/4/6/17/33/35",
+    "currentLegalComplianceClaim": false
+  },
+  "scope": {
+    "depthMaxMm": 500,
+    "supportHeightMaxM": 6,
+    "workElevationMaxM": 15,
+    "shape": "STRAIGHT_HORIZONTAL",
+    "formwork": "INDUSTRIAL_INVENTORY",
+    "concreteFeed": "BUCKET",
+    "basisM3": 100,
+    "workerGradeLiteral": "3.1",
+    "noRegionalPriceInheritance": true
+  },
+  "operations": [
+    "Устройство и разборка инвентарной опалубки, стоек, прогонов, балок и вспомогательных деталей",
+    "Раскрой и крепление щитов из бакелизированной фанеры",
+    "Установка арматуры",
+    "Укладка бетона",
+    "Уход за бетоном"
+  ],
+  "rows": [
+    {
+      "key": "workers",
+      "sourceCode": null,
+      "titleRu": "Труд рабочих монолитного строительства",
+      "category": "labor",
+      "sourceUnit": "man_hour",
+      "unitId": "man_hour",
+      "literalRate": "1627",
+      "quantityRole": "NORM",
+      "operation": "whole-cycle"
+    },
+    {
+      "key": "operators",
+      "sourceCode": null,
+      "titleRu": "Труд машинистов",
+      "category": "labor",
+      "sourceUnit": "man_hour",
+      "unitId": "man_hour",
+      "literalRate": "60.43",
+      "quantityRole": "INCLUDED_MACHINE_OPERATOR",
+      "operation": "handling"
+    },
+    {
+      "key": "tower-crane8t",
+      "sourceCode": "91.05.01-017",
+      "titleRu": "Кран башенный грузоподъёмностью 8 т",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "unitId": "machine_hour",
+      "literalRate": "50.8",
+      "quantityRole": "NORM",
+      "operation": "handling"
+    },
+    {
+      "key": "truck-crane16t",
+      "sourceCode": "91.05.05-015",
+      "titleRu": "Кран автомобильный грузоподъёмностью 16 т",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "unitId": "machine_hour",
+      "literalRate": "2.89",
+      "quantityRole": "NORM",
+      "operation": "handling"
+    },
+    {
+      "key": "forklift5t",
+      "sourceCode": "91.06.05-011",
+      "titleRu": "Погрузчик грузоподъёмностью 5 т",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "unitId": "machine_hour",
+      "literalRate": "2.4",
+      "quantityRole": "NORM",
+      "operation": "handling"
+    },
+    {
+      "key": "vibrator",
+      "sourceCode": "91.07.04-001",
+      "titleRu": "Вибратор глубинный",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "unitId": "machine_hour",
+      "literalRate": "72.3",
+      "quantityRole": "NORM",
+      "operation": "placement"
+    },
+    {
+      "key": "flatbed8t",
+      "sourceCode": "91.14.02-002",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до 8 т",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "unitId": "machine_hour",
+      "literalRate": "4.34",
+      "quantityRole": "NORM",
+      "operation": "handling"
+    },
+    {
+      "key": "arc-welder",
+      "sourceCode": "91.17.04-233",
+      "titleRu": "Установка для ручной дуговой сварки постоянным током",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "unitId": "machine_hour",
+      "literalRate": "17.25",
+      "quantityRole": "NORM",
+      "operation": "reinforcement"
+    },
+    {
+      "key": "oil",
+      "sourceCode": "01.3.04.08-0012",
+      "titleRu": "Масло антраценовое",
+      "category": "material",
+      "sourceUnit": "t",
+      "unitId": "kg",
+      "literalRate": "0.196",
+      "quantityRole": "NORM",
+      "operation": "formwork"
+    },
+    {
+      "key": "water",
+      "sourceCode": "01.7.03.01-0001",
+      "titleRu": "Вода для нормативного цикла",
+      "category": "material",
+      "sourceUnit": "m3",
+      "unitId": "m3",
+      "literalRate": "0.235",
+      "quantityRole": "NORM",
+      "operation": "curing"
+    },
+    {
+      "key": "electrodes",
+      "sourceCode": "01.7.11.07-0032",
+      "titleRu": "Электроды сварочные Э42 диаметром 4 мм",
+      "category": "material",
+      "sourceUnit": "t",
+      "unitId": "kg",
+      "literalRate": "0.017",
+      "quantityRole": "NORM",
+      "operation": "reinforcement"
+    },
+    {
+      "key": "nails",
+      "sourceCode": "01.7.15.06-0111",
+      "titleRu": "Гвозди строительные",
+      "category": "material",
+      "sourceUnit": "t",
+      "unitId": "kg",
+      "literalRate": "0.01",
+      "quantityRole": "NORM",
+      "operation": "formwork"
+    },
+    {
+      "key": "wire",
+      "sourceCode": "08.3.03.04-0012",
+      "titleRu": "Проволока светлая диаметром 1,1 мм",
+      "category": "material",
+      "sourceUnit": "t",
+      "unitId": "kg",
+      "literalRate": "0.047",
+      "quantityRole": "NORM",
+      "operation": "reinforcement"
+    },
+    {
+      "key": "bars",
+      "sourceCode": "11.1.03.01-0079",
+      "titleRu": "Бруски обрезные хвойные 40–75 мм, сорт III",
+      "category": "material",
+      "sourceUnit": "m3",
+      "unitId": "m3",
+      "literalRate": "1.81",
+      "quantityRole": "TURNOVER_CONSUMPTION",
+      "operation": "formwork"
+    },
+    {
+      "key": "boards44III",
+      "sourceCode": "11.1.03.06-0095",
+      "titleRu": "Доска обрезная хвойная от 44 мм, сорт III",
+      "category": "material",
+      "sourceUnit": "m3",
+      "unitId": "m3",
+      "literalRate": "0.51",
+      "quantityRole": "TURNOVER_CONSUMPTION",
+      "operation": "formwork"
+    },
+    {
+      "key": "deck",
+      "sourceCode": "01.7.16.03",
+      "titleRu": "Палуба опалубки из бакелизированной фанеры",
+      "category": "material",
+      "sourceUnit": "m2",
+      "unitId": "m2",
+      "literalRate": "42.22",
+      "quantityRole": "TURNOVER_CONSUMPTION",
+      "operation": "formwork"
+    },
+    {
+      "key": "formMetal",
+      "sourceCode": "01.7.16.04",
+      "titleRu": "Амортизация металлических элементов инвентарной опалубки",
+      "category": "material",
+      "sourceUnit": "set",
+      "unitId": "set",
+      "literalRate": "П",
+      "quantityRole": "PROJECT_AMORTIZATION",
+      "operation": "formwork"
+    },
+    {
+      "key": "concrete",
+      "sourceCode": "04.1.02.05",
+      "titleRu": "Смесь тяжёлого бетона по проектной спецификации",
+      "category": "material",
+      "sourceUnit": "m3",
+      "unitId": "m3",
+      "literalRate": "101.5",
+      "quantityRole": "PROJECT_CONCRETE_SPEC",
+      "operation": "placement"
+    },
+    {
+      "key": "rebar",
+      "sourceCode": "08.4.03.03",
+      "titleRu": "Арматура по проектной ведомости",
+      "category": "material",
+      "sourceUnit": "t",
+      "unitId": "kg",
+      "literalRate": "31",
+      "quantityRole": "PROJECT_MASS_REFERENCE_ONLY",
+      "operation": "reinforcement"
+    }
+  ],
+  "blankCells": [
+    {
+      "sourceCode": "11.1.03.06-0087",
+      "titleRu": "Доска обрезная хвойная 25 мм, сорт III",
+      "column": "06-19-003-01",
+      "state": "BLANK_NOT_ZERO_NOT_NEIGHBOUR_RATE",
+      "emitted": false
+    }
+  ],
+  "needs": [
+    {
+      "key": "formwork-shoring-kit",
+      "titleRu": "Полный начальный комплект опалубки и опор",
+      "operation": "formwork",
+      "kind": "WHOLE_KIT",
+      "missingRu": "Палуба и нормативный износ не определяют начальные стойки, балки, соединения и крепление. Нужна полная спецификация и схема опирания по ППР.",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2"
+    },
+    {
+      "key": "reinforcement-bom-fabrication",
+      "titleRu": "Арматурная ведомость, заготовка и баланс поставки",
+      "operation": "reinforcement",
+      "kind": "WHOLE_KIT",
+      "missingRu": "Проектная масса не заменяет ведомость стержней, раскрой, заготовку, фиксаторы и баланс поставки. Печатные 31 т не являются проектной массой.",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2"
+    },
+    {
+      "key": "handling-rigging",
+      "titleRu": "Оснастка подачи бетона и строповки",
+      "operation": "handling",
+      "kind": "WHOLE_KIT",
+      "missingRu": "Машино-часы не определяют число и совместимость бадей, стропов, траверс, тары и мест разгрузки.",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2"
+    },
+    {
+      "key": "placement-physical-kit",
+      "titleRu": "Полный физический комплект укладки и уплотнения",
+      "operation": "placement",
+      "kind": "WHOLE_KIT",
+      "missingRu": "Норма вибратора в машино-часах не задаёт комплект, диаметр, питание, фактическое число и совместимость постов.",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2:deep"
+    },
+    {
+      "key": "curing-physical-kit",
+      "titleRu": "Оснащение полного ухода за бетоном",
+      "operation": "curing",
+      "kind": "WHOLE_KIT",
+      "missingRu": "Нормативная вода не определяет способ ухода, ёмкости, подачу, укрытия и совместимость последующих покрытий.",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2"
+    },
+    {
+      "key": "access-power-protection",
+      "titleRu": "Доступ, питание и средства защиты",
+      "operation": "whole-cycle",
+      "kind": "WHOLE_KIT",
+      "missingRu": "Нужны фактическая схема доступа и питания, рабочие посты и совместимые средства защиты; по объёму и машино-часам их число не выводится.",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2"
+    },
+    {
+      "key": "setting-out-control",
+      "titleRu": "Разметка и контроль геометрии",
+      "operation": "whole-cycle",
+      "kind": "WHOLE_KIT",
+      "missingRu": "Требуются фактическая схема разбивки, измерительное оснащение и проверка геометрии.",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2"
+    },
+    {
+      "key": "strength-control",
+      "titleRu": "Полный цикл контроля прочности",
+      "operation": "whole-cycle",
+      "kind": "WHOLE_KIT",
+      "missingRu": "Контроль должен использовать реальную программу и целый совместимый метод; число испытаний не выводится из объёма балки.",
+      "existingWholeOwnerCandidate": "monolithic-strength-direct:r2"
+    },
+    {
+      "key": "cleaning-waste",
+      "titleRu": "Очистка, сбор и удаление отходов",
+      "operation": "whole-cycle",
+      "kind": "WHOLE_KIT",
+      "missingRu": "Целый метод очистки, расходные материалы, сбор промывки и маршрут отходов не заданы этим столбцом.",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2"
+    }
+  ],
+  "reuseBoundary": "Existing whole source owners are candidates, not admitted through functional names. Compatibility and actual programme are required before linking; no new second engine, standalone public card or duplicate supply owner.",
+  "regionalBoundary": "This complete RU2020 column is a distinct source profile. KG06-01-109-01 unreadable operator glyph remains blocked unchanged.",
+  "fullTechnicalAcceptance": false,
+  "newFull": 0
+}

@@ -1,0 +1,53 @@
+{
+  "contract": "independent-concrete-curing-roller-whole-witness/r108",
+  "generatedFromImplementation": false,
+  "TEST_ONLY": true,
+  "realObjectApproval": false,
+  "surfaceAreaM2": "98",
+  "usableMaterialL": "5",
+  "retainedMaterialReserveL": "2",
+  "nominalMaterialL": "20",
+  "orderedMaterialL": "19",
+  "materialPackages": "1",
+  "completeCasesForActualPeriod": "2",
+  "componentStock": {
+    "roller-cover": "4",
+    "roller-frame": "2",
+    "tray": "2",
+    "tray-liner": "2",
+    "trim-brush": "2"
+  },
+  "scaledSurfaceAreaM2": "196",
+  "scaledNominalMaterialL": "40",
+  "scaledOrderedMaterialL": "38",
+  "materialUnitPrice": "10",
+  "casePeriodUnitPrice": "100",
+  "expectedAmount": "390",
+  "expectedCoreEntries": 8,
+  "expectedResults": 6,
+  "expectedRejects": 2,
+  "protectedNeeds": [
+    "surface_preparation",
+    "manual_mixing_transfer",
+    "access_ppe",
+    "regime_control",
+    "soap_water",
+    "wash_waste",
+    "case_replacements",
+    "logistics"
+  ],
+  "operations": [
+    "scope_and_readiness",
+    "material_takeoff",
+    "actual_post_and_initial_stock",
+    "mixing_and_transfer",
+    "roller_application",
+    "access_and_protection",
+    "film_and_regime_control",
+    "cleaning_and_waste",
+    "replacement_and_inventory",
+    "labour_payment_and_procurement"
+  ],
+  "wholeCareNeedClosures": 0,
+  "fullTechnicalAcceptance": false
+}

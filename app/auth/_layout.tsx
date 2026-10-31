@@ -7,6 +7,7 @@ export default function AuthLayout() {
       <Stack.Screen name="login" options={{ title: 'Вход' }} />
       <Stack.Screen name="register" options={{ title: 'Регистрация' }} />
       <Stack.Screen name="reset" options={{ title: 'Восстановление доступа' }} />
+      <Stack.Screen name="mfa" options={{ title: 'Подтверждение входа', headerBackVisible: false, gestureEnabled: false }} />
     </Stack>
   );
 }

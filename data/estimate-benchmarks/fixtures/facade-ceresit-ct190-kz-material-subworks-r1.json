@@ -1,0 +1,52 @@
+{
+  "contract": "facade-ceresit-ct190-kz-material-subworks/r1",
+  "synthetic": true,
+  "notSupplierOffer": true,
+  "facts": {
+    "area_m2": "100",
+    "ct190_base_layer_area_m2": "100",
+    "ct190_product_scope": "Ceresit CT 190 исполнения KZ, Ceresit WM, предварительный расход по этому паспорту",
+    "ct190_conditions": "Основание и проектная система проверены; условия +5…+30 °C, влажность до80%, защита от солнца/ветра/дождя обеспечена",
+    "ct190_usable_stock_kg": "0",
+    "ct190_required_reserve_kg": "0",
+    "ct190_supply_reference": "TEST_ONLY exact CT190 KZ25kg source-compatible supply"
+  },
+  "expected": [
+    {
+      "attach": "100",
+      "base": "100",
+      "attachment": "500",
+      "baseLayer": "580",
+      "total": "1080",
+      "order": "1100",
+      "bags": "44",
+      "remaining": "20",
+      "waterMin": "248.4",
+      "waterMax": "270"
+    },
+    {
+      "attach": "1",
+      "base": "1",
+      "attachment": "5",
+      "baseLayer": "5.8",
+      "total": "10.8",
+      "order": "25",
+      "bags": "1",
+      "remaining": "14.2",
+      "waterMin": "2.484",
+      "waterMax": "2.7"
+    },
+    {
+      "attach": "0",
+      "base": "20",
+      "attachment": "0",
+      "baseLayer": "116",
+      "total": "116",
+      "order": "125",
+      "bags": "5",
+      "remaining": "9",
+      "waterMin": "26.68",
+      "waterMax": "29"
+    }
+  ]
+}

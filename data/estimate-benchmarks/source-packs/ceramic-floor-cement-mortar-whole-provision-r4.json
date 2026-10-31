@@ -1,0 +1,209 @@
+{
+  "contract": "gox-build.ceramic-floor-m150-whole-provision.r4",
+  "publicationSourceId": "ceramic_m150_hand_preparation_supply_r4",
+  "namespace": "ceramic-floor:cement-mortar:krer11-01-027-03:r4",
+  "titleRu": "Керамические полы и прямой плинтус на растворе М150",
+  "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+  "parent": {
+    "factory": "ceramicFloorM150WholeProvisionDefinitionR3",
+    "sourceId": "ceramic_m150_whole_provision_r3",
+    "primaryParameterId": "net_ceramic_floor_area_m2",
+    "skirtingLengthParameterId": "ceramic_m150_skirting_length_m",
+    "pins": [
+      {
+        "path": "src/lib/estimate/v4/ceramicFloorCementMortarResourceGroupR2.ts",
+        "sha256": "c44cf81554ada489036784e34bcbfa48b8941d6d323b4d9fff9887f60edb31c5",
+        "immutable": true
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-resource-group-r2.json",
+        "sha256": "576d9d7ab5bcd1faaf8f8b14f0aaf4d3c1c01f6191054e65dc6f6fb8419d8a2b",
+        "immutable": true
+      },
+      {
+        "path": "src/lib/estimate/v4/ceramicFloorCementMortarWholeProvisionR3.ts",
+        "sha256": "48403f21e2778b7567142718111d31405aa3ae530fd21fee017f562d3f228e2b",
+        "immutable": true
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-whole-provision-r3.json",
+        "sha256": "ab7a7865e9aec2f60a9b993d0709ea5616aa4077c3d4b80bea94112c46adc755",
+        "immutable": true
+      },
+      {
+        "path": "src/lib/estimate/v4/ceramicFloorM150ExactFormatBranchesR1.ts",
+        "sha256": "566be19ba108e2354539525d5c216e396ef57d8e82ab948dee2eebeac40f6126",
+        "immutable": true
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/ceramic-floor-m150-exact-format-branches-r1.json",
+        "sha256": "a56a2e126aea94917a0600f7b9d1e66aefbb136af1a1fe01cadf59c4d54c3352",
+        "immutable": true
+      },
+      {
+        "path": "src/lib/estimate/v4/marlySkinNormalProvisionProfileR1.ts",
+        "sha256": "90f77dd7adea29ec8476b2593938efe25d3af8fe367fce522d7b56c0cfe38f6e",
+        "immutable": true
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/marly-skin-normal-provision-r1.json",
+        "sha256": "192e6a7e38072e3c7dc8c42069c1367a31db6838070adf7683b9608ced7d85bd",
+        "immutable": true
+      }
+    ]
+  },
+  "sharedProfile": {
+    "module": "src/lib/estimate/v4/normalHandPreparationProvisionProfileR1.ts",
+    "factory": "normalHandPreparationCleanserExpressionsR1",
+    "sourcePack": "data/estimate-benchmarks/source-packs/normal-hand-preparation-provision-r1.json",
+    "sourceId": "scjp-clear-foam-pure-normal-preparation-r1",
+    "owner": "B_SHARED_SOURCE_PROFILE_IMPORTED_WITHOUT_COPYING_IMPLEMENTATION"
+  },
+  "primaryEvidence": [
+    {
+      "name": "scjp-clear-foam-pure-uk-202504.pdf",
+      "url": "https://pi.scjp.com/uk/clear-foam-pure-uk.pdf",
+      "path": ".release-runtime/r568/interior-wall-finishing-provision-r7/sources/scjp-clear-foam-pure-uk-202504.pdf",
+      "sha256": "2af6e929fee5a8d5ead3189921baef529b6d69f1ea0ccd4f7ef913c607da7885",
+      "bytes": 685371,
+      "id": "scjp-clear-foam-pure-normal-preparation-r1",
+      "title": "SCJP CLEAR FOAM PURE product information 04/25",
+      "locatorRu": "PDF1: один полный дозированный приём обычной мойки, не менее30с без сушки, смыть чистой водой и тщательно высушить; PDF2: испытанная одна доза0,7мл, CLR1L1л и совместимыеTPW1LDS/TPB1LDS/WHB1LDS. Это обычная подготовка рук перед защитой кожи, не очистка от промышленных загрязнений.",
+      "role": "MANUFACTURER_NORMAL_PREPARATION_DOSE_AND_EXACT_COMPATIBLE_CARTRIDGE_DISPENSER"
+    },
+    {
+      "name": "scjp-manual-skincare-dispensers-us-202207.pdf",
+      "url": "https://www.scjp.com/sites/default/files/2022-08/G121657-Manual%20Skincare%20Dispensers-V2.pdf",
+      "path": ".release-runtime/r568/interior-wall-finishing-provision-r7/sources/scjp-manual-skincare-dispensers-us-202207.pdf",
+      "sha256": "54eafe903853a68ae6baed447a5392e057e156a5061f57401c86671d3b3538a3",
+      "bytes": 255165,
+      "id": "scjp-manual-dispenser-functional-primary-r1",
+      "title": "SCJP Manual Skincare Dispensers July2022, US",
+      "locatorRu": "PDF1:фиксированная доза, запечатанные безвоздушные картриджи с насосом, ручная смена, ремонт по состоянию;PDF3:точныйTPW1LDS совместим с1л картриджами и уход влажной ветошью. ГарантияUSA не переносится в выбранный профиль; нет источника числа новых закупок.",
+      "role": "EXACT_MODEL_FUNCTIONAL_AVAILABILITY_AND_MAINTENANCE_BOUNDARY"
+    },
+    {
+      "name": "scjp-washroom-manual-dispensers-dk-201904.pdf",
+      "url": "https://pi.scjp.com/dk/washroom-and-shower-manual-dispensers-dk.pdf",
+      "path": ".release-runtime/r568/interior-wall-finishing-provision-r7/sources/scjp-washroom-manual-dispensers-dk-201904.pdf",
+      "sha256": "8b8d8d654572c0a31fcab9de9fa39d4c3ecf099820eb7c2682b56a8441cc7a2a",
+      "bytes": 611090,
+      "id": "scjp-tpw1lds-metered-foam-primary-r1",
+      "title": "SCJP Washroom and Shower Manual Dispensers April2019, DK",
+      "locatorRu": "PDF2 exact TPW1LDS:1л,0,70мл foam/1мл lotion,1429/1000нажатий/картридж. Для CLR1L выбран foam, не lotion. PDF1:точное дозирование, закрытая насосная система и ручная смена картриджа. Срок2019 не подменяет актуальныйUK2025 список совместимости; один и тот же TPW1LDS подтверждён обоими.",
+      "role": "EXACT_SAME_MODEL_METERED_FOAM_DOSE_AND_SEALED_CARTRIDGE"
+    }
+  ],
+  "source": {
+    "path": ".release-runtime/r568/interior-wall-finishing-provision-r7/sources/scjp-clear-foam-pure-uk-202504.pdf",
+    "sha256": "2af6e929fee5a8d5ead3189921baef529b6d69f1ea0ccd4f7ef913c607da7885",
+    "url": "https://pi.scjp.com/uk/clear-foam-pure-uk.pdf",
+    "locatorRu": "PDF1: one dispensed normal wash dose; wash at least30seconds excluding drying; rinse with clean water and thoroughly dry. PDF2: tested0.7ml dose,1litreCLR1L cartridge,compatibleTPW1LDS dispenser."
+  },
+  "cleanser": {
+    "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-cleanser",
+    "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:hand-cleanser",
+    "parameterId": "ceramic_m150_r3_hand_cleanser_qty",
+    "titleRu": "Мягкое средство для очищения рук перед нанесением защиты кожи",
+    "unitId": "l",
+    "reasonRu": "Выбран обычный способ очистки водой с мягким средством для достижения чистой обезжиренной кожи; средство и его доза для этого плана не подтверждены.",
+    "consumedTitleRu": "Мыло-пена SCJP CLEAR FOAM PURE для подготовки рук",
+    "plannedPreparationsExpression": "6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m)))",
+    "consumedUnitL": "0.0007",
+    "cartridgeCode": "CLR1L",
+    "dispenserCode": "TPW1LDS",
+    "order": {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r4:hand-cleanser-supply",
+      "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r4:formula:hand-cleanser-supply",
+      "titleRu": "Мыло-пена SCJP CLEAR FOAM PURE, картридж CLR1L 1 л",
+      "category": "material",
+      "unitId": "l",
+      "quantityRule": "WHOLE_ONE_LITRE_CARTRIDGE_SUPPLY_FROM_COMMON_MANUFACTURER_DOSE_PROFILE"
+    },
+    "dispenser": {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r4:hand-cleanser-dispenser",
+      "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r4:formula:hand-cleanser-dispenser",
+      "titleRu": "Дозатор мыла-пены SCJP TPW1LDS",
+      "category": "tool",
+      "unitId": "pcs",
+      "quantityRule": "ONE_FUNCTIONAL_DISPENSER_FOR_ONE_SEQUENTIAL_PREPARATION_POST"
+    },
+    "existingCostOwnerRowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:provision-owner",
+    "requiredOperationIds": [
+      "ceramic-floor:cement-mortar:krer11-01-027-03:r2:operation:preparation",
+      "ceramic-floor:cement-mortar:krer11-01-027-03:r2:operation:delivery",
+      "ceramic-floor:cement-mortar:krer11-01-027-03:r2:operation:placing",
+      "ceramic-floor:cement-mortar:krer11-01-027-03:r2:operation:skirting",
+      "ceramic-floor:cement-mortar:krer11-01-027-03:r2:operation:cleanup"
+    ]
+  },
+  "scope": {
+    "normalPreparationOnly": true,
+    "onePreparationPerAlreadyAcceptedMarlyApplication": true,
+    "noNewWorkerOrWashSchedule": true,
+    "noNewGeometryQuestions": true,
+    "noWaterFromFloorWater": true,
+    "industrialDecontaminationNotClaimed": true,
+    "noSeparatePurchaseOrCostOwner": true,
+    "dispenserIsFunctionalProvisionNotNewPurchaseOrLifeNorm": true,
+    "sourceQuantityIsNotActualWarehouseOrAttendance": true,
+    "ordinaryFutureInspectionIsNotMissingDoseNorm": true
+  },
+  "independentExpected": {
+    "inherited": "ALL_R3_EXPECTED_ROWS_EXCEPT_HAND_CLEANSER_RULE_REPLACED_EXPLICITLY",
+    "consumed": {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-cleanser",
+      "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:hand-cleanser",
+      "category": "material",
+      "unitId": "l",
+      "quantityRule": "ACCEPTED_MARLY_PREPARATIONS_TIMES_MANUFACTURER0_7ML_NORMAL_DOSE"
+    },
+    "newRows": [
+      {
+        "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r4:hand-cleanser-supply",
+        "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r4:formula:hand-cleanser-supply",
+        "titleRu": "Мыло-пена SCJP CLEAR FOAM PURE, картридж CLR1L 1 л",
+        "category": "material",
+        "unitId": "l",
+        "quantityRule": "WHOLE_ONE_LITRE_CARTRIDGE_SUPPLY_FROM_COMMON_MANUFACTURER_DOSE_PROFILE"
+      },
+      {
+        "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r4:hand-cleanser-dispenser",
+        "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r4:formula:hand-cleanser-dispenser",
+        "titleRu": "Дозатор мыла-пены SCJP TPW1LDS",
+        "category": "tool",
+        "unitId": "pcs",
+        "quantityRule": "ONE_FUNCTIONAL_DISPENSER_FOR_ONE_SEQUENTIAL_PREPARATION_POST"
+      }
+    ]
+  },
+  "actualRemaining": [
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:deformation-junctions",
+      "resourceRu": "Деформационные сопряжения",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Для применимых узлов нужны самостоятельная геометрия и выбранная совместимая система. Обычныецементныемежплиточныешвы уже включены."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:additional-logistics-waste",
+      "resourceRu": "Обращение с внешними отходами",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "ТК§4.15требует удаленияотходов; не установлены количество/тара/масса и внешниймаршрут внеисходныхмашин/очистки. Покупкаилипоездка1штнеподставляется."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:handwash-water",
+      "resourceRu": "Вода для мытья рук перед нанесением защиты кожи",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Производитель требует мыть руки перед применением. Число нанесений известно, применимый расход воды не подтверждён; исходная вода для пола не присваивается мытью рук."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-drying-towels",
+      "resourceRu": "Одноразовые салфетки для сушки рук перед нанесением защиты кожи",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Производитель требует тщательно высушить руки. Выбрана одноразовая сушка; достаточное число и подходящая спецификация салфеток не подтверждены."
+    }
+  ],
+  "fullTechnicalAcceptance": false,
+  "physicalResourceCoverageComplete": false,
+  "published": false
+}

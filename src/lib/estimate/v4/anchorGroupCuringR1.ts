@@ -21,8 +21,6 @@ type Json = Record<string, unknown>;
 export const ANCHOR_GROUP_CURING_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_cure_standard", titleRu: "Уход за бетоном основания анкерной группы в стандартной зоне", contextRu: "стандартная зона" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_cure_high_load", titleRu: "Уход за бетоном основания анкерной группы в зоне высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_cure_large_area", titleRu: "Уход за бетоном оснований анкерных групп на большом участке", contextRu: "большой участок" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_cure_small_area", titleRu: "Уход за бетоном основания анкерной группы на малом участке", contextRu: "малый участок" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_cure_technical_room", titleRu: "Уход за бетоном основания анкерной группы в техническом помещении", contextRu: "техническое помещение" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_cure_wet_zone", titleRu: "Уход за бетоном основания анкерной группы во влажной зоне", contextRu: "влажная зона" },
 ] as const);

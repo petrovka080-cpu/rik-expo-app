@@ -216,3 +216,32 @@ describe("KRER 27-06-020 canonical physical norm", () => {
     }));
   });
 });
+
+test("asphalt profile identity remains compatible without loading the physical norm registry in the parameter editor", () => {
+  const leafPath = "../../src/lib/estimate/contracts/krer2706020AsphaltProfileIdentityV1";
+  const registryPath = "../../src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1";
+  const packPath = "../../data/estimate-norms/professional/roadworks.json";
+  const leaf = require(leafPath);
+  expect(KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID)
+    .toBe(leaf.KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID);
+  try {
+    for (const modulePath of [registryPath, packPath]) {
+      jest.doMock(modulePath, () => { throw new Error("ASPHALT_EDITOR_MUST_NOT_LOAD_PHYSICAL_NORMS"); });
+    }
+    jest.isolateModules(() => {
+      for (const modulePath of [registryPath, packPath]) {
+        expect(() => require(modulePath)).toThrow("ASPHALT_EDITOR_MUST_NOT_LOAD_PHYSICAL_NORMS");
+      }
+    });
+    jest.isolateModules(() => {
+      const schema = require("../../src/lib/estimate/v4/asphalt/asphaltWorkSpecificParameterSchemaV4");
+      const parameter = schema.getAsphaltParameterV4("product_profile_id");
+      expect(parameter.choices.map((item: {value: string}) => item.value))
+        .toEqual([leaf.KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID]);
+      expect(schema.getAsphaltParameterV4("unregistered-parameter")).toBeNull();
+    });
+  } finally {
+    for (const modulePath of [registryPath, packPath]) jest.dontMock(modulePath);
+    jest.resetModules();
+  }
+});

@@ -21,14 +21,12 @@ describe("S27.3 F09 fire-alarm cable-laying variants", () => {
   test("binds six identities to the exact official line boundary", () => {
     expect(VARIANT_KEYS).toEqual([
       "high_load",
-      "large_area",
-      "small_area",
       "standard",
       "technical_room",
       "wet_zone",
     ]);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      FIRE_ALARM_CABLE_LAYING_VARIANTS[key].catalogId)).size).toBe(6);
+      FIRE_ALARM_CABLE_LAYING_VARIANTS[key].catalogId)).size).toBe(4);
     expect(FIRE_ALARM_CABLE_LAYING_SOURCE_METADATA).toMatchObject({
       source_title: "СП КР 21-101:2024 «Пожарная автоматика зданий и сооружений»",
       source_authority:

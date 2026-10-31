@@ -1,0 +1,36 @@
+{
+  "contract": "independent-mbs510-literal-oracle/r1",
+  "sourceSha256": "67ba30f5c89a62af6d06af6ffabb84d96c84f0b16851af0bab761b9830183f44",
+  "equipmentFitSha256": "f503948988703a152df4b297d82ee947594b7c931e9d165f592dac927ef15519",
+  "counts": {
+    "saw-unit": "1",
+    "working-belt": "1",
+    "operator": "1",
+    "table": "1",
+    "stop": "1",
+    "wheel-units": "2",
+    "running-rollers": "4",
+    "scale": "1",
+    "lower-door": "1",
+    "upper-door": "1",
+    "hand-guard": "1",
+    "crane-eye": "1",
+    "drive-motor": "1"
+  },
+  "units": {
+    "operator": "person"
+  },
+  "maxLoadKg": "50",
+  "maxHeightMm": "510",
+  "literalFactoryHeightMm": "515",
+  "unlabelledDimensions": [
+    "500",
+    "400",
+    "515"
+  ],
+  "notDerivedFromProductionRows": true,
+  "paidOwnersAdded": 0,
+  "procurementOwnersAdded": 0,
+  "closedStableNeeds": 0,
+  "full": 0
+}

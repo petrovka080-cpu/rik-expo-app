@@ -1,4 +1,6 @@
-import { Client, type ClientConfig } from "pg";
+import { Client } from "pg";
+import { buildBffPostgresTlsConfig } from "./stagingBffPostgresTls";
+import { applyBffReadonlyRequestIdentity } from "./stagingBffRequestAuth";
 
 import type {
   DirectorFinanceBffOperation,
@@ -176,13 +178,6 @@ export function buildDirectorFinanceRpcReadonlyQueryPlan(
   }
 };
 
-const resolvePgSsl = (connectionString: string): ClientConfig["ssl"] => {
-  const url = new URL(connectionString);
-  const sslmode = url.searchParams.get("sslmode") ?? "require";
-  if (sslmode === "disable") return false;
-  return { rejectUnauthorized: sslmode === "verify-full" };
-};
-
 const pgErrorCode = (error: unknown): string => {
   const code = typeof error === "object" && error !== null && "code" in error
     ? String((error as { code?: unknown }).code ?? "")
@@ -209,15 +204,15 @@ const runDirectorFinanceRpcReadonlyQuery = async (
   try {
     client = new Client({
       application_name: "rik_staging_bff_director_finance_rpc_readonly",
-      connectionString,
+      ...buildBffPostgresTlsConfig(connectionString),
       connectionTimeoutMillis: DEFAULT_CONNECTION_TIMEOUT_MS,
       query_timeout: DEFAULT_QUERY_TIMEOUT_MS,
       statement_timeout: DEFAULT_QUERY_TIMEOUT_MS,
-      ssl: resolvePgSsl(connectionString),
     });
     await client.connect();
     await client.query("begin read only");
     transactionStarted = true;
+    await applyBffReadonlyRequestIdentity(client);
     const result = await client.query<PgQueryRow>(plan.sql, [...plan.values]);
     await client.query("commit");
     transactionStarted = false;

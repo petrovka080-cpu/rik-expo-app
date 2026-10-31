@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   columnBaseEmbeddedItemsPromptDetailsR1,
@@ -61,8 +61,7 @@ describe("column-base embedded items canonical family", () => {
     ]));
   });
 
-  it("round-trips the shared editable parameter screen", () => {
-    const target = COLUMN_BASE_EMBEDDED_ITEMS_TARGETS[4];
+  it.each(COLUMN_BASE_EMBEDDED_ITEMS_TARGETS)("round-trips the shared editable parameter screen: $contextKey", (target) => {
     const input = columnBaseEmbeddedItemsAcceptanceInputR1(target.contextKey);
     const prompt = [target.titleRu, ...columnBaseEmbeddedItemsPromptDetailsR1(input)].join("\n");
     expect(extractConcretePlacementCanonicalParametersR1({ catalogId: target.catalogId, text: prompt })).toEqual(input);

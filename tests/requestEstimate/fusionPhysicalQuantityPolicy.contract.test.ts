@@ -20,8 +20,14 @@ describe('Fusion physical quantities follow installed N and four fixings per ben
     [false, 'fixing-consumed-separate', '20'], [true, 'fixing-consumed-separate', '20'],
     [false, 'bench-consumed', '3'], [false, 'fixing-included', '12'], [true, 'fixing-consumed-separate', '12'],
     [false, 'bench-consumed', '0'], [false, 'fixing-included', '0'], [true, 'fixing-consumed-separate', '0'],
-  ] as const)('rejects non-null %s / %s pin %s, including equal, zero and inactive branch values', async (separate, key, quantity) => {
-    await expect(compile(separate, key, quantity)).rejects.toMatchObject({ code: 'ROW_AMENDMENT_INVALID' });
+  ] as const)('saves explicit %s / %s quantity %s with its automatic baseline and original cost ownership', async (separate, key, quantity) => {
+    const baseline=await compile(separate),result=await compile(separate,key,quantity);
+    const original=baseline.rows.find(row=>row.row_id===prefix+':'+key);
+    const row=result.rows.find(row=>row.row_id===prefix+':'+key);
+    if(!original){expect(row).toBeUndefined();return;}
+    expect(row).toMatchObject({quantity,included_in_estimate:original.included_in_estimate,
+      included_in_procurement:original.included_in_procurement,calculation_trace:{manualQuantityOverride:true,calculatedQuantityBeforeOverride:original.quantity}});
+    expect(result.parameters.bench_count).toBe(3);
   });
 
   test.each([[false, 'bench-consumed', '3'], [false, 'fixing-included', '12'], [true, 'fixing-consumed-separate', '12']] as const)(

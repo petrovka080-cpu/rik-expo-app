@@ -1,3 +1,4 @@
+import {loadConsumerCanonicalReadyArtifacts} from './consumerCanonicalArtifactHydration';
 import {
   CanonicalEstimateApiError,
   ESTIMATE_PLATFORM_API_VERSION,
@@ -134,4 +135,12 @@ describe("procurement release admission", () => {
     await expect(loadConsumerCanonicalProcurementArtifact({ revision, currentCatalogReleaseId: "new-release" })).rejects.toBe(unavailable);
     expect(build).not.toHaveBeenCalled();
   });
+});
+
+test('cold restore skips a presentation-refresh-required cached PDF without regenerating or losing the readable revision',async()=>{
+  jest.clearAllMocks();
+  (getCanonicalEstimateArtifact as jest.Mock).mockRejectedValue(new CanonicalEstimateApiError('refresh',{
+    code:'ARTIFACT_PRESENTATION_REFRESH_REQUIRED',httpStatus:409}));
+  await expect(loadConsumerCanonicalReadyArtifacts({revisionId:REVISION_ID,releaseId:RELEASE_ID})).resolves.toEqual([]);
+  expect(buildCanonicalEstimateArtifact).not.toHaveBeenCalled();
 });

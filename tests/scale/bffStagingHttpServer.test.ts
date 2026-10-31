@@ -344,7 +344,9 @@ describe("staging BFF HTTP server wrapper", () => {
 
   it("accepts verified staging mobile auth only for readonly routes", async () => {
     const readPorts = createReadPorts();
-    const mobileReadonlyAuthVerifier = jest.fn(async (token: string) => token === "mobile-access-token");
+    const mobileReadonlyAuthVerifier = jest.fn(async (token: string) => token === "mobile-access-token"
+      ? { userId: "verified-user", claims: { sub: "verified-user", role: "authenticated" } }
+      : null);
     const server = createBffStagingHttpServer(
       {
         BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED: "true",
@@ -388,6 +390,26 @@ describe("staging BFF HTTP server wrapper", () => {
       expect(output).not.toContain("mobile-access-token");
       expect(output).not.toContain("anon-key");
       expect(output).not.toContain("postgres://");
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("rejects boolean-only mobile verification without a verified principal", async () => {
+    const server = createBffStagingHttpServer(
+      {
+        BFF_READONLY_MOBILE_AUTH_STAGING_ENABLED: "true",
+        STAGING_SUPABASE_URL: "https://staging.example.supabase.co",
+        STAGING_SUPABASE_ANON_KEY: "anon-key",
+      },
+      { mobileReadonlyAuthVerifier: async () => true },
+    );
+    const port = await listen(server);
+    try {
+      const response = await requestJson(port, "/api/staging-bff/read/request-proposal-list", {
+        method: "POST", authorization: "Bearer mobile-access-token", body: { input: { pageSize: 5 } },
+      });
+      expect(response.status).toBe(401);
     } finally {
       await close(server);
     }

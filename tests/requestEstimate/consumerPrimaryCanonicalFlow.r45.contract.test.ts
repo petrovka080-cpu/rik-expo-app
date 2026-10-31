@@ -1,6 +1,6 @@
 import { canonicalWorkSearchQueryFromPrompt } from "../../src/lib/estimate/backendPlatform/canonicalEstimateSearchInput";
 import { composeSelectedWorkProblemText } from "../../src/features/consumerRepair/requestEstimateScreenActions";
-import { buildCanonicalBaselineInputs } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselineInputs} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 
 describe("R4.5: основной consumer-поток сметы", () => {

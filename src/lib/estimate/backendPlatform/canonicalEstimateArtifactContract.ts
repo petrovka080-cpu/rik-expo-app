@@ -1,21 +1,25 @@
+import {canonicalPublicResourceCategoryTitleRuV1} from './canonicalPublicResourcePresentationV1';
 import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
 import { normalizePublicBoqNameRu } from "../publicBoqNaming";
 import { canonicalPublicResourceDisplayPresentationV1 as canonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
-import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu } from './canonicalPublicEstimateLanguageRu';
+import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateFixtureTextRu, canonicalPublicEstimateOperationReferenceRu, canonicalPublicEstimateSelectedSpecificationIsInRowNameRu, canonicalPublicGeneratedResourceSpecificationsRu } from './canonicalPublicEstimateLanguageRu';
 import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1";
 import { assertCanonicalPurchaseSupplyRowV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { assertCanonicalPurchaseSupplyRevisionV1, assertCanonicalPurchaseSupplyReadyV1, canonicalPurchaseSupplyBlocksV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
-import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
+import { canonicalEstimateOperationReference, canonicalEstimateOperationReferences } from "./canonicalEstimateOperationComposition";
 import { canonicalEstimateSha256HexText } from "./canonicalEstimateSha256";
 import { localizeKnownTechnologyVariantSuffixRu } from "./russianTechnologyTitleR542";
+import {canonicalPublicSelectedSpecificationV1} from './canonicalPublicSelectedSpecificationV1';
 import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "./formulaGraph";
 import { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
 export { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
+import {canonicalScopeRequirementDecisionV1,canonicalScopeRequirementHasAdditionalObligationsV1,
+  canonicalScopeRequirementDecisionIsOpenV1} from './canonicalScopeRequirementV1';
 
-export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r11";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r13-construction-public-names";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:19";
+export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r12";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r29-functional-generated-resource-names";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:45";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
@@ -95,6 +99,7 @@ export function selectCanonicalArtifactRows(sourceRows: CanonicalArtifactRow[]) 
 
 export function canonicalArtifactPreliminaryNeeds(
   revision: CanonicalArtifactRevision,
+  options?: {issuancePurpose?: 'STANDARD'|'PRELIMINARY_REVIEW'},
 ): CanonicalArtifactRow[] {
   const amendment = objectValue(revision.amendment_contract);
   const parameterSources = objectValue(amendment.parameterSources);
@@ -102,12 +107,19 @@ export function canonicalArtifactPreliminaryNeeds(
     ? parameterSources.preliminaryNeeds
     : [];
   return needs.flatMap((value): CanonicalArtifactRow[] => {
-    if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+    const report=options?.issuancePurpose==='PRELIMINARY_REVIEW';
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      if(report)throw Object.assign(new Error('Сохранённые данные потребности повреждены.'),{code:'ARTIFACT_SAVED_SNAPSHOT_UNREADABLE'});
+      return [];
+    }
     const need = value as Record<string, unknown>;
     // Validate the raw immutable need before this presentation adapter clears flags/amount.
-    assertCanonicalPurchaseSupplyRowV1(need, revision.amendment_contract);
-    if (!String(need.row_id ?? "").trim() || !String(need.need_sha256 ?? "").trim()) return [];
-    const supplyBlocked = canonicalPurchaseSupplyBlocksV1(objectValue(need.calculation_trace).purchaseSupplyBlocksV1).length > 0;
+    if(!report)assertCanonicalPurchaseSupplyRowV1(need, revision.amendment_contract);
+    if (!String(need.row_id ?? "").trim() || !String(need.need_sha256 ?? "").trim()) {
+      if(report)throw Object.assign(new Error('Не удалось связать потребность с сохранённой версией.'),{code:'ARTIFACT_SAVED_SNAPSHOT_UNREADABLE'});
+      return [];
+    }
+    const supplyBlocked = !report&&canonicalPurchaseSupplyBlocksV1(objectValue(need.calculation_trace).purchaseSupplyBlocksV1).length > 0;
     return [{
       ...need,
       row_id: need.row_id,
@@ -118,7 +130,7 @@ export function canonicalArtifactPreliminaryNeeds(
       ownership_status: "PRELIMINARY_NEED",
       row_sha256: need.need_sha256,
       amount: null,
-      currency_code: supplyBlocked ? need.currency_code ?? null : null,
+      currency_code: need.unit_price == null ? (supplyBlocked ? need.currency_code ?? null : null) : need.currency_code ?? revision.currency_code,
     }];
   });
 }
@@ -140,7 +152,7 @@ export function canonicalArtifactRentalBasis(row: CanonicalArtifactRow, paramete
     stageCount: graph.projectStageCountParameterId ? parameters[String(graph.projectStageCountParameterId)] ?? null : null };
 }
 
-export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, parameters: Record<string, unknown>, options?: { splitSelectedValues?: boolean }) {
+export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, parameters: Record<string, unknown>, options?: { splitSelectedValues?: boolean }): {parameterId:string;value:string;parts:string[];publicParts?:string[]}[] {
   const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
   const ids = Array.isArray(graph.titleSpecificationParameterIds) ? graph.titleSpecificationParameterIds
     : graph.titleSpecificationParameterId ? [graph.titleSpecificationParameterId] : [];
@@ -151,27 +163,45 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
     const label = Object.prototype.hasOwnProperty.call(labels, id) && typeof rawLabel === "string"
       && rawLabel.trim().length > 0 && rawLabel.length <= 100 && /[А-Яа-яЁё]/u.test(rawLabel)
       ? rawLabel.trim() : null;
-    return [{ parameterId: id, value: String(parameters[id]),
+    return [{ parameterId: id, value: canonicalPublicEstimateFixtureTextRu(String(parameters[id])),
       parts: (options?.splitSelectedValues === false ? [String(parameters[id])] : String(parameters[id]).split(/\s*;\s*/u))
         .filter(Boolean).map(part => canonicalPublicEstimateChoiceLabelRu(label ? `${label}: ${part}` : part)) }];
   });
   const selectedParts = selected.flatMap(spec => spec.parts);
   const selectedSpecification = selectedParts.join(", ");
   const selectedValues = new Set(selected.map(spec => canonicalPublicEstimateChoiceLabelRu(spec.value).trim()));
-  const presentation = canonicalArtifactPublicResourcePresentationV1(row);
+  const presentation = canonicalArtifactPublicResourcePresentationV1(row,parameters);
   const namedDetails = canonicalPublicEstimateRowDetailsRu({ rowId: typeof row.row_id === 'string' ? row.row_id : null,
-    titleRu: typeof row.title_ru === 'string' ? row.title_ru : '',
+    titleRu: canonicalArtifactSourceRowTitle(row, parameters),
+    sourceTitleRu: typeof row.title_ru === 'string' ? row.title_ru : '',
     manualTitleOverride: objectValue(row.calculation_trace).manualTitleOverride === true });
   const details = [...new Set([...(presentation ? [presentation.brandAndModelRu, presentation.specificationRu, ...presentation.detailsRu] : []), ...namedDetails]
-    .filter((part): part is string => typeof part === 'string' && !selectedParts.includes(part)
+    .filter((part): part is string => typeof part === 'string')
+    .map(canonicalPublicEstimateFixtureTextRu)
+    .filter(part => !selectedParts.includes(part)
       && part !== selectedSpecification && !selectedValues.has(part.trim())))];
-  return [...selected, ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: details }] : [])];
+  // Suppress only exact product/quantity fields; selected project colour/batch
+  // remains public even when the generated resource name is functional.
+  const generatedSpecifications=presentation!==null?canonicalPublicGeneratedResourceSpecificationsRu({rowId:String(row.row_id??''),titleRu:String(row.title_ru??''),graph,parameters,
+    manualTitleOverride:objectValue(row.calculation_trace).manualTitleOverride===true,compactPreliminaryNeed:row.ownership_status==='PRELIMINARY_NEED'}):null;
+  const specificationInName = canonicalPublicSelectedSpecificationV1({rowId:String(row.row_id??''),titleRu:String(row.title_ru??''),graph,parameters,
+    manualTitleOverride:objectValue(row.calculation_trace).manualTitleOverride===true,compactPreliminaryNeed:row.ownership_status==='PRELIMINARY_NEED'})!==null || canonicalPublicEstimateSelectedSpecificationIsInRowNameRu({
+    rowId: typeof row.row_id === 'string' ? row.row_id : null,
+    titleRu: canonicalArtifactSourceRowTitle(row, parameters),
+    sourceTitleRu: typeof row.title_ru === 'string' ? row.title_ru : '',
+    manualTitleOverride: objectValue(row.calculation_trace).manualTitleOverride === true,
+  });
+  return [...selected.map(spec => generatedSpecifications!==null
+      ?{...spec,publicParts:generatedSpecifications.filter(value=>value.parameterId===spec.parameterId).map(value=>value.value)}
+      :specificationInName?{...spec,publicParts:[]}:spec),
+    ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: details }] : [])];
 }
 
-export function canonicalArtifactPublicResourcePresentationV1(row: Record<string, unknown>) {
+export function canonicalArtifactPublicResourcePresentationV1(row: Record<string, unknown>,parameters?:Readonly<Record<string,unknown>>) {
   const trace = objectValue(row.calculation_trace), graph = objectValue(trace.resourceGraph);
   return canonicalPublicResourcePresentationV1({ rowId: String(row.row_id ?? ''), titleRu: String(row.title_ru ?? '').trim(),
-    descriptor: graph.publicResourcePresentationV1, manualTitleOverride: trace.manualTitleOverride === true });
+    descriptor: graph.publicResourcePresentationV1, manualTitleOverride: trace.manualTitleOverride === true,
+    graph:Object.keys(graph).length?graph:undefined,parameters,compactPreliminaryNeed:row.ownership_status==='PRELIMINARY_NEED' });
 }
 
 export function canonicalArtifactTechnologyChecks(parameters: Record<string, unknown>) {
@@ -191,7 +221,7 @@ export function canonicalArtifactWorkMeasure(rows: readonly CanonicalArtifactRow
   const trace = objectValue(row.calculation_trace);
   const value = trace.calculatedQuantityBeforeOverride ?? row.quantity;
   if (typeof value !== "string" || !isFormulaGraphExactDecimal(value)) return null;
-  const operation = canonicalEstimateOperationReference(objectValue(trace.resourceGraph).operationCompositionV1);
+  const operation = canonicalPublicEstimateOperationReferenceRu(canonicalEstimateOperationReference(objectValue(trace.resourceGraph).operationCompositionV1));
   return { rowId: String(row.row_id), value, unitId: "kg", titleRu: operation?.groupTitleRu ?? null };
 }
 
@@ -213,7 +243,7 @@ function projectProcurementRow(row: CanonicalArtifactRow, parameters: Record<str
   const netQuantity = purchaseBalance?.netQuantity ?? materialQuantity?.netQuantity ?? row.quantity;
   const grossQuantity = purchaseBalance?.grossQuantity ?? materialQuantity?.grossQuantity ?? row.quantity;
   const procurementQuantity = exactQuantity ? exactQuantity.quantityText : purchaseBalance?.procurementQuantity ?? materialQuantity?.procurementQuantity ?? row.quantity;
-  const operation = canonicalEstimateOperationReference(objectValue(calculationTrace.resourceGraph).operationCompositionV1);
+  const operation = canonicalPublicEstimateOperationReferenceRu(canonicalEstimateOperationReference(objectValue(calculationTrace.resourceGraph).operationCompositionV1));
   return {
     rowId: String(row.row_id),
     ordinal: Number(row.ordinal),
@@ -252,6 +282,18 @@ export function buildCanonicalProcurementProjection(input: {
   sourceRows?: CanonicalArtifactRow[];
 }) {
   const supplyRows = [...(input.sourceRows ?? input.procurementRows), ...canonicalArtifactPreliminaryNeeds(input.revision)];
+  // Explicit new scope evidence is a gate on the complete saved composition,
+  // before procurement filtering. Do not silently hide known owners/resources.
+  // Legacy drafts with no opt-in retain their existing export behavior.
+  for (const row of supplyRows) {
+    const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
+    const raw = graph.scopeRequirementDecisionV1;
+    if (!canonicalScopeRequirementHasAdditionalObligationsV1(raw)) continue;
+    const decision = canonicalScopeRequirementDecisionV1(raw);
+    if (!decision || decision.rowId!==row.row_id || canonicalScopeRequirementDecisionIsOpenV1(decision))
+      throw Object.assign(new Error('Проверка полноты сохранённого состава поставки не завершена.'),
+        {code:'PROCUREMENT_SCOPE_OBLIGATION_REQUIRED'});
+  }
   // Readiness applies to the complete saved composition, including needs that
   // deliberately have no procurement flag. Validate before filtering/export.
   assertCanonicalPurchaseSupplyRevisionV1(supplyRows, input.revision.amendment_contract);
@@ -278,14 +320,17 @@ export function buildCanonicalProcurementProjection(input: {
       }
       return [{ rowId: String(member.row_id), ownerRowId: projected.rowId, unitId: projected.unitId,
         consumed: member.quantity, titleRu: canonicalArtifactVisibleRowTitle(member, parameters),
-        operation: canonicalEstimateOperationReference(graph.operationCompositionV1), separatelyPayable: false,
+        operation: canonicalPublicEstimateOperationReferenceRu(canonicalEstimateOperationReference(graph.operationCompositionV1)), separatelyPayable: false,
         rowSha256: nullableText(member.row_sha256) }];
     });
     return { ...projected, ...(consumptionAllocations.length ? { consumptionAllocations } : {}) };
   });
   const workMeasure = canonicalArtifactWorkMeasure(input.sourceRows ?? input.procurementRows);
   const groups = new Map<string, { section: string; category: string; rowIds: string[] }>();
-  const operationGroups = new Map<string, { operation: NonNullable<ReturnType<typeof canonicalEstimateOperationReference>>; rowIds: string[] }>();
+  type OperationGroup = { operation: NonNullable<ReturnType<typeof canonicalEstimateOperationReference>>; rowIds: string[];
+    sharedResources?: { rowId: string; titleRu: string; ownerOperationTitleRu: string; separatelyPayable: false }[] };
+  const operationGroups = new Map<string, OperationGroup>();
+  const presentIds = new Set((input.sourceRows ?? input.procurementRows).map(row => String(row.row_id)));
   for (const row of rows) {
     const key = `${row.section}\u0000${row.category}`;
     const group = groups.get(key) ?? { section: row.section, category: row.category, rowIds: [] };
@@ -296,6 +341,18 @@ export function buildCanonicalProcurementProjection(input: {
       const allocation = operationGroups.get(operationKey) ?? { operation: row.operation, rowIds: [] };
       allocation.rowIds.push(row.rowId);
       operationGroups.set(operationKey, allocation);
+      // References carry no repeated quantity, amount or procurement row.
+      for (const reference of canonicalEstimateOperationReferences(row.operation).slice(1)) {
+        if (reference.whenResourcePresent && !reference.whenResourcePresent.some(id => presentIds.has(id))) continue;
+        const relatedKey = JSON.stringify([reference.groupId, reference.operationId]);
+        const related = operationGroups.get(relatedKey) ?? { operation: reference, rowIds: [] } as OperationGroup;
+        related.sharedResources ??= [];
+        if (!related.sharedResources.some(resource => resource.rowId === row.rowId)) {
+          related.sharedResources.push({ rowId: row.rowId, titleRu: row.titleRu,
+            ownerOperationTitleRu: row.operation.operationTitleRu, separatelyPayable: false });
+        }
+        operationGroups.set(relatedKey, related);
+      }
     }
   }
   const revision = input.revision;
@@ -341,10 +398,15 @@ export function buildCanonicalArtifactMetadata(input: {
   selectedProcurementRowCount: number;
   definitionVersionId?: string | null;
   pageCount?: number | null;
+  issuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
+  reviewAcknowledgmentV1?:import('./contracts').CanonicalProfessionalPdfReviewAcknowledgmentV1;
+  operationResourceAcceptanceV1?:unknown;
   grandTotalStatus?: "COMPLETE" | "PARTIAL_NEEDS_PRICE" | null;
 }) {
   return {
     artifactKind: input.operation,
+    ...(input.issuancePurpose==='PRELIMINARY_REVIEW'?{issuancePurpose:input.issuancePurpose,
+      reviewAcknowledgmentV1:input.reviewAcknowledgmentV1,operationResourceAcceptanceV1:input.operationResourceAcceptanceV1}:{}),
     renderer: input.renderer,
     ...(input.operation === "professional_pdf"
       ? { templateVersion: CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION }
@@ -367,11 +429,16 @@ export function buildCanonicalArtifactMetadata(input: {
     selectedProcurementRowCount: input.operation === "procurement"
       ? input.selectedProcurementRowCount
       : null,
-    includesExcludedDisposition: false,
+    includesExcludedDisposition: input.issuancePurpose==='PRELIMINARY_REVIEW',
     includesParametersAndTotals: true,
   };
 }
 
+/** Purpose is part of artifact identity; old absence means only STANDARD. */
+export function canonicalProfessionalArtifactPurposeMatchesV1(metadata:unknown,expected:unknown='STANDARD'):boolean {
+  const m=objectValue(metadata),actual=Object.hasOwn(m,'issuancePurpose')?m.issuancePurpose:'STANDARD';
+  return (expected==='STANDARD'||expected==='PRELIMINARY_REVIEW')&&actual===expected;
+}
 export function canonicalProfessionalArtifactMetadataIdentityMatches(input: {
   metadata: unknown;
   revision: CanonicalArtifactRevision;
@@ -385,12 +452,24 @@ export function canonicalProfessionalArtifactMetadataIdentityMatches(input: {
   // Version 6 introduced the bound revision/definition/page metadata contract.
   // Later renderer changes must keep validating it for historical documents.
   // Versions 1–5 still use the outer artifact revision/checksum identity guard.
+  const purpose=Object.hasOwn(metadata,'issuancePurpose')?metadata.issuancePurpose:'STANDARD';
+  if(!canonicalProfessionalArtifactPurposeMatchesV1(metadata,purpose)
+    ||purpose==='PRELIMINARY_REVIEW'&&version!==currentVersion)return false;
   if (version < 6) return true;
   const definitionVersionId = nullableText(metadata.definitionVersionId);
   const expectedDefinitionVersionId = nullableText(
     input.revision.definition_version_id ?? input.revision.definitionVersionId,
   );
   const pageCount = Number(metadata.pageCount);
+  if(purpose==='PRELIMINARY_REVIEW'){
+    const ack=objectValue(metadata.reviewAcknowledgmentV1),r=input.revision;
+    if(ack.contractVersion!=='canonical-professional-pdf-review-ack/v1'||ack.issuancePurpose!==purpose
+      ||ack.acknowledgedPreliminaryReview!==true||ack.revisionId!==r.id||ack.releaseId!==r.release_id
+      ||ack.definitionVersionId!==expectedDefinitionVersionId||ack.checksumSha256!==r.checksum_sha256
+      ||typeof ack.actorUserId!=='string'||!ack.actorUserId||!Number.isFinite(Date.parse(String(ack.acknowledgedAt)))
+      ||!Number.isSafeInteger(ack.unknownQuantityCount)||Number(ack.unknownQuantityCount)<0
+      ||!/^[a-f0-9]{64}$/u.test(String(ack.auditSha256)))return false;
+  }
   return metadata.artifactKind === "professional_pdf"
     && nullableText(metadata.revisionId) === nullableText(input.revision.id)
     && definitionVersionId != null
@@ -401,7 +480,7 @@ export function canonicalProfessionalArtifactMetadataIdentityMatches(input: {
 }
 
 export function escapeCanonicalArtifactHtml(value: unknown): string {
-  return String(value ?? "")
+  return canonicalPublicEstimateFixtureTextRu(String(value ?? ""))
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -454,7 +533,7 @@ export function canonicalArtifactVisibleRowTitle(row: Record<string, unknown>, p
 function canonicalArtifactSourceRowTitle(row: Record<string, unknown>, parameters?: Record<string, unknown>): string {
   const sourceNameRu = String(row.title_ru ?? "").trim();
   if (objectValue(row.calculation_trace).manualTitleOverride === true) return sourceNameRu;
-  const presentation = canonicalArtifactPublicResourcePresentationV1(row);
+  const presentation = canonicalArtifactPublicResourcePresentationV1(row,parameters);
   if (presentation) return presentation.nameRu;
   const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
   if (parameters && graph.titleSpecificationMode === "APPEND") {
@@ -493,13 +572,34 @@ export function canonicalArtifactUnit(row: Record<string, unknown>): string {
 }
 
 export function canonicalArtifactSection(row: Record<string, unknown>): string {
-  // An operation section can contain both equipment and its material kits.
-  // Keep the declared material type before interpreting the section label.
-  if (String(row.category ?? "").trim().toLowerCase() === "material") return "Материалы";
-  const identity = `${String(row.section ?? "")} ${String(row.category ?? "")}`.toLowerCase();
-  if (/delivery|transport|logistic|достав|логист/u.test(identity)) return "Доставка";
-  if (/equipment|machine|machinery|mechanism|механ|техник|оборуд/u.test(identity)) return "Механизмы";
-  if (/material|product|waste|материал|издел/u.test(identity)) return "Материалы";
-  if (/service|test|quality|control|document|услуг|испыт|контрол|пнр/u.test(identity)) return "Услуги";
-  return "Работы";
+  const trace=objectValue(row.calculation_trace),graph=objectValue(trace.resourceGraph);
+  return canonicalPublicResourceCategoryTitleRuV1({titleRu:String(row.title_ru??''),graph,
+    category:nullableText(row.category),manualTitleOverride:trace.manualTitleOverride===true})
+    ?? 'Категория не определена';
+}
+/** Current issuance is separate from historical metadata identity. Old bytes
+ * stay stored, but are not evidence of the current renderer's acceptance. */
+export function assertCanonicalProfessionalArtifactCurrentPresentationV1(input:{
+  metadata:unknown;revision:CanonicalArtifactRevision;rendererVersion:string;
+  expectedIssuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
+}):void {
+  const metadata=objectValue(input.metadata);
+  if(!canonicalProfessionalArtifactPurposeMatchesV1(metadata,input.expectedIssuancePurpose) || metadata.templateVersion!==CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION
+    ||metadata.renderer!==input.rendererVersion||metadata.generatorVersion!==input.rendererVersion
+    ||nullableText(metadata.sourceReleaseId)!==nullableText(input.revision.release_id)
+    ||nullableText(metadata.sourceCatalogId)!==nullableText(input.revision.catalog_id)
+    ||nullableText(metadata.sourceRevisionChecksumSha256)!==nullableText(input.revision.checksum_sha256)
+    ||metadata.sourceRowCount!==Number(input.revision.row_count)
+    ||!canonicalProfessionalArtifactMetadataIdentityMatches(input))
+    throw Object.assign(new Error('Сохранённый PDF нужно заново сформировать для этой же версии сметы.'),{
+      code:'ARTIFACT_PRESENTATION_REFRESH_REQUIRED',httpStatus:409});
+}
+
+/** One new SQL lifecycle condition, not a generic database-error whitelist.
+ * Source/passport/supply/authentication failures retain their original guards. */
+export function normalizeCanonicalProfessionalPdfPurposeJobErrorV1(error:unknown):unknown {
+  const e=objectValue(error);
+  if(e.code!=='55000'||e.message!=='ARTIFACT_PURPOSE_CONFLICT')return error;
+  return Object.assign(new Error('Для этой версии уже существует PDF в другом режиме. Откройте сохранённый документ.'),{
+    code:'ARTIFACT_PURPOSE_CONFLICT',httpStatus:409,retryable:false});
 }

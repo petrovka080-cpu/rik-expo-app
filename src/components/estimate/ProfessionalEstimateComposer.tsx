@@ -75,7 +75,7 @@ import {
   queuePendingCanonicalEstimateAdmission,
   queuePendingCanonicalEstimateRecalculation,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateOfflineCache";
-import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
+import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection";
 import { reconcilePendingCanonicalEstimateAdmissions } from "../../lib/estimate/backendPlatform/canonicalEstimateOutboxReconciler";
 import { currentUserId } from "../../lib/supabaseClient";
 import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
@@ -87,6 +87,9 @@ import {
   canonicalEstimateParameterChoiceLabelRu,
   isCanonicalEstimateUserEditableParameter,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
+
+import { CanonicalWorkConditionProfileSelector } from "../../features/requests/components/CanonicalWorkConditionProfileSelector";
+import { canonicalEstimateCatalogPublicTitleRuV1, resolveCanonicalEstimateConditionSearchItemV1 } from "../../lib/estimate/backendPlatform/canonicalEstimateConditionProfilesV1";
 
 type CatalogSuggestion = CanonicalEstimateSearchItem;
 type RevisionBundle = { revision: CanonicalEstimateRevisionView; rows: CanonicalEstimateRevisionRowView[] };
@@ -480,6 +483,13 @@ function useProfessionalEstimateSelection({
         pageSize: 50,
       });
       if (sequence !== catalogRequestSequence.current) return;
+      if (result.searchIndexReleaseId !== catalogSearchPage.searchIndexReleaseId
+        || result.searchIndexSnapshotSha256 !== catalogSearchPage.searchIndexSnapshotSha256
+        || result.resultSetSha256 !== catalogSearchPage.resultSetSha256
+        || result.rankingContractVersion !== catalogSearchPage.rankingContractVersion
+        || result.catalogVisibilityVersion !== catalogSearchPage.catalogVisibilityVersion) {
+        throw new Error("CANONICAL_SEARCH_POLICY_CHANGED_DURING_PAGINATION");
+      }
       setCatalogSuggestions((previous) => [
         ...previous,
         ...result.items.filter((item) => !previous.some((existing) => existing.catalogId === item.catalogId)),
@@ -503,6 +513,11 @@ function useProfessionalEstimateSelection({
         cursor: searchGroupPage.nextCursor,
         pageSize: 50,
       });
+      if (result.searchIndexReleaseId !== searchGroupPage.searchIndexReleaseId
+        || result.searchIndexSnapshotSha256 !== searchGroupPage.searchIndexSnapshotSha256
+        || result.catalogVisibilityVersion !== searchGroupPage.catalogVisibilityVersion) {
+        throw new Error("CANONICAL_GROUP_SEARCH_POLICY_CHANGED_DURING_PAGINATION");
+      }
       setSearchGroupPage((previous) => previous ? {
         ...result,
         items: [
@@ -517,10 +532,13 @@ function useProfessionalEstimateSelection({
     }
   };
 
-  const handleSelectWorkSuggestion = async (suggestion: CatalogSuggestion) => {
+  const handleSelectWorkSuggestion = async (suggestion: CatalogSuggestion, conditionCatalogId?: string) => {
     setCatalogLoading(true);
     setError("");
     try {
+      const selected = resolveCanonicalEstimateConditionSearchItemV1(suggestion, conditionCatalogId);
+      if (!selected) throw new Error("Выберите условия выполнения в карточке работы.");
+      suggestion = selected;
       const selectedFromSearchPage = catalogSearchPage;
       if (!selectedFromSearchPage) throw new Error("SEARCH_RESULT_SET_CONTEXT_MISSING");
       setSelectedSearchIdentity(suggestion);
@@ -1126,16 +1144,22 @@ export default function ProfessionalEstimateComposer(props: ProfessionalEstimate
                     ? "Выберите подходящую работу."
                     : `Распознанный объём: ${catalogSearchPage.parsedQuantity} ${catalogSearchPage.parsedUnit ?? ""}`}
                 </Text>
-                <View style={styles.workSuggestionRows}>{catalogSuggestions.map((suggestion, index) => <Pressable
+                <View style={styles.workSuggestionRows}>{catalogSuggestions.map((suggestion, index) => <CanonicalWorkConditionProfileSelector
                   key={suggestion.catalogId}
-                  testID={`foreman-ai-estimate-work-suggestion-${index + 1}`}
-                  onPress={() => handleSelectWorkSuggestion(suggestion)}
+                  testIDPrefix={`foreman-ai-estimate-work-suggestion-${index + 1}`}
+                  accessibilityLabel={suggestion.canonicalNameRu}
+                  profiles={suggestion.conditionProfiles}
+                  matchedCatalogId={suggestion.matchedConditionCatalogId}
+                  estimateReady={suggestion.selectableMode === "PROFESSIONAL" && suggestion.estimateReady === true
+                    && suggestion.contentAdmission?.allowed === true && suggestion.contentAdmission.contractVersion === "estimate-admission-r3"}
+                  nonselectableReasonRu={suggestion.nonselectableReasonRu}
+                  onSelect={catalogId => handleSelectWorkSuggestion(suggestion, catalogId)}
                   style={styles.workSuggestionButton}
                 >
                   <Text style={styles.workSuggestionName}>{suggestion.canonicalNameRu}</Text>
                   <Text style={styles.workSuggestionMeta}>{suggestion.groupNameRu}</Text>
                   <Text style={styles.workSuggestionMeta}>{suggestion.rankingReasonRu}</Text>
-                </Pressable>)}</View>
+                </CanonicalWorkConditionProfileSelector>)}</View>
                 {catalogSearchPage.nextCursor ? <Pressable
                   accessibilityRole="button"
                   testID="canonical-estimate-search-load-more"
@@ -1160,7 +1184,7 @@ export default function ProfessionalEstimateComposer(props: ProfessionalEstimate
               {history[0] ? <Pressable testID={`canonical-estimate-open-latest-revision-${history[0].revisionId}`} disabled={loading} onPress={() => handleOpenHistoryRevision(history[0])} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Открыть последнюю сохранённую версию</Text></Pressable> : null}
               {selectedCatalog ? <View style={styles.catalogPanel} testID="canonical-estimate-parameter-form">
                 <Text style={styles.panelTitle}>{TEXT.parametersTitle}</Text>
-                <Text style={styles.catalogHint}>{selectedCatalog.titleRu}</Text>
+                <Text style={styles.catalogHint}>{canonicalEstimateCatalogPublicTitleRuV1(selectedCatalog, selectedSearchIdentity)}</Text>
                 <Text style={styles.catalogHint} testID="canonical-estimate-required-parameter-progress">Для первой сметы обязательно осталось {selectedParameterProgress?.remaining ?? 0}. Можно уточнить после результата: {selectedParameterProgress?.refinable ?? 0}. Конфликтов 0.</Text>
                 <Pressable testID="canonical-estimate-refine-parameters" onPress={() => setShowParameterPanel((current) => !current)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>{showParameterPanel ? "Скрыть параметры" : "Уточнить параметры"}</Text></Pressable>
                 {showParameterPanel ? visibleParameters.slice(0, showAllParameters ? undefined : 8).map((parameter) => {

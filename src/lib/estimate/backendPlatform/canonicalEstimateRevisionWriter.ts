@@ -1,4 +1,5 @@
 import { canonicalEstimateParameterChoiceLabelRu } from "./canonicalEstimateParameterSemantics";
+import type {CanonicalSourceProfileProducerV1} from './canonicalSourceProfileSelectionV1';
 
 export const CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION =
   "ONE_CANONICAL_ESTIMATE_R6_REVISION_IDENTITY_V1" as const;
@@ -67,7 +68,7 @@ function publicUnitRu(unitId: unknown): string {
   const unit = String(unitId ?? "").trim();
   const units: Record<string, string> = {
     m2: "м²", m3: "м³", m: "м", linear_m: "пог. м", mm: "мм", cm: "см", km: "км",
-    pcs: "шт.", piece: "шт.", pieces: "шт.", item: "шт.", kg: "кг", t: "т", l: "л",
+    pcs: "шт.", piece: "шт.", pieces: "шт.", item: "шт.", set: "компл.", kg: "кг", t: "т", l: "л",
     man_hour: "чел.-ч", machine_hour: "маш.-ч", person_shift: "чел.-смена",
     service: "усл.", test: "исп.", document: "док.", trip: "рейс", t_km: "т·км",
     m3_m3: "м³/м³", m3_m: "м³/м", percent: "%",
@@ -183,7 +184,23 @@ export function canonicalInheritedConfirmedParameters(
   ));
 }
 
+/** Admission for an actual compile commit, separate from payload serialization. */
+export function assertCanonicalRevisionHasContent(input: {
+  rowCount: number;
+  preliminaryNeeds?: readonly unknown[];
+}): void {
+  // A zero-volume result with neither rows nor unresolved needs cannot form a
+  // saved estimate. Keep partial needs and excluded rows intact; do not invent
+  // a row to bypass the database's immutable row-count contract.
+  if (input.rowCount === 0 && (input.preliminaryNeeds ?? []).length === 0) {
+    throw Object.assign(new Error("В смете нет позиций. Укажите объём работ больше нуля и проверьте выбранный состав."), {
+      code: "EMPTY_ESTIMATE_COMPOSITION",
+    });
+  }
+}
+
 export function buildCanonicalRevisionCommitPayload(input: {
+  operationCompositionEvidenceV1?: import("./canonicalEstimateSavedOperationAcceptanceV1").CanonicalOperationCompositionEvidenceV1;
   selectedMaterialDeliveryV1?: Record<string, unknown>;
   rowCount: number;
   currencyCode: string;
@@ -196,6 +213,10 @@ export function buildCanonicalRevisionCommitPayload(input: {
   effectiveUserParameters: Record<string, unknown>;
   parentRevisionId: string | null;
   derivedParameters?: Record<string, unknown>;
+  sourceProfileProducerV1?: CanonicalSourceProfileProducerV1 & Readonly<{
+    definitionVersionId: string;
+    definitionSha256: string;
+  }>;
   identityContract: Record<string, unknown>;
   preliminaryNeeds?: Record<string, unknown>[];
   purchaseSupplyIndexV1?: import("./canonicalPurchaseSupplyReadinessV1").CanonicalPurchaseSupplyIndexV1;
@@ -218,11 +239,13 @@ export function buildCanonicalRevisionCommitPayload(input: {
     migrationSource: null,
     resolvedParameters: input.parameters,
     parameterSources: {
+      ...(input.operationCompositionEvidenceV1 ? {operationCompositionEvidenceV1:input.operationCompositionEvidenceV1} : {}),
       ...(input.selectedMaterialDeliveryV1?{selectedMaterialDeliveryV1:input.selectedMaterialDeliveryV1}:{}),
       approvedTemplateBaselineId: input.approvedTemplateBaselineId,
       baselineAssumptions: input.baselineAssumptions,
       userParameters: input.effectiveUserParameters,
       ...(input.derivedParameters == null ? {} : { derivedParameters: input.derivedParameters }),
+      ...(input.sourceProfileProducerV1 == null ? {} : {sourceProfileProducerV1: input.sourceProfileProducerV1}),
       parentRevisionId: input.parentRevisionId,
       identityContract: input.identityContract,
       preliminaryNeeds: input.preliminaryNeeds ?? [],

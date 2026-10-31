@@ -17,8 +17,8 @@ import {
   ASPHALT_INSTALL_KRER27_SOURCE_ID,
   ASPHALT_INSTALL_KRER27_SOURCE_METADATA,
   ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,
-  compileAsphaltInstallLargeAreaKrer27ProfileR1,
-} from "../../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1";
+  compileAsphaltInstallKrer27ProfileR1,
+} from "../../../src/lib/estimate/v4/asphaltInstallKrer27ProfileR1";
 import {
   runMasterSingleDefinitionSuccessorR1,
   validateIndependentCompletenessMapReferences,
@@ -39,10 +39,10 @@ function quantity(rows: readonly Json[], rowId: string): string | null {
 }
 
 async function verifyCore(): Promise<Json> {
-  const firstEstimate = await compileAsphaltInstallLargeAreaKrer27ProfileR1({
+  const firstEstimate = await compileAsphaltInstallKrer27ProfileR1({
     ...ASPHALT_INSTALL_KRER27_SHORT_INPUT,
   });
-  const refined = await compileAsphaltInstallLargeAreaKrer27ProfileR1({
+  const refined = await compileAsphaltInstallKrer27ProfileR1({
     ...ASPHALT_INSTALL_KRER27_SHORT_INPUT,
     layer_thickness_mm: 55,
   });
@@ -202,8 +202,8 @@ void runMasterSingleDefinitionSuccessorR1({
     "data/estimate-benchmarks/source-packs/asphalt-install-large-area-krer27-profile-r1.json",
     "src/lib/estimate/backendPlatform/parameterConstraints.ts",
     "src/lib/estimate/backendPlatform/parameterConstraints.test.ts",
-    "src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1.ts",
-    "tests/estimateNorms/asphaltInstallLargeAreaKrer27ProfileR1.contract.test.ts",
+    "src/lib/estimate/v4/asphaltInstallKrer27ProfileR1.ts",
+    "tests/estimateNorms/asphaltInstallKrer27ProfileR1.contract.test.ts",
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.test.ts",
@@ -228,7 +228,7 @@ void runMasterSingleDefinitionSuccessorR1({
   validationScenario: "S2719_ASPHALT_INSTALL_ACCEPTED_BASE_5000_M2_FIRST_ESTIMATE",
   passport: {
     canonicalRuName: "Устройство однослойного асфальтобетонного покрытия на принятом основании",
-    workKey: "paving_roads_landscape_interior_asphalt_install_large_area",
+    workKey: "paving_roads_landscape_interior_asphalt_install_standard",
     physicalResultRu: "На принятом подготовленном основании устроено однослойное покрытие 50 мм из горячей плотной мелкозернистой асфальтобетонной смеси с доставкой, механизированной укладкой, уплотнением, контролем качества и исполнительными записями",
     includedScopeRu: [
       "приёмка и очистка существующего подготовленного основания без необоснованной замены основания",
@@ -249,7 +249,7 @@ void runMasterSingleDefinitionSuccessorR1({
   applicability: {
     country: "KG",
     operationClass: "ASPHALT_SURFACE_COURSE_INSTALLATION",
-    scopeClass: "LARGE_AREA",
+    scopeClass: "MECHANIZED_SINGLE_COURSE",
     constructionState: "ACCEPTED_PREPARED_BASE",
     primaryMeasureParameterId: "area_m2",
     geometryParameters: ["area_m2"],
@@ -266,7 +266,7 @@ void runMasterSingleDefinitionSuccessorR1({
     applicability: {
       technology_class: "HOT_DENSE_FINE_GRAINED_ASPHALT_SINGLE_COURSE",
       operation_class: "ASPHALT_SURFACE_COURSE_INSTALLATION",
-      scope_class: "LARGE_AREA",
+      scope_class: "MECHANIZED_SINGLE_COURSE",
       construction_state: "ACCEPTED_PREPARED_BASE",
       source_id: ASPHALT_INSTALL_KRER27_SOURCE_ID,
       norm_id: ASPHALT_INSTALL_KRER27_NORM_ID,
@@ -276,7 +276,7 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "asphalt-install-large-area-krer-27-06-020-01-021-01-r4-short-public-name",
+    key: "asphalt-install-krer-27-06-020-01-021-01-r4-short-public-name",
     payload: {
       kind: "NORMATIVE_OPERATION_AND_RESOURCE_MAP",
       sourcePackSha256: ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,
@@ -294,8 +294,6 @@ void runMasterSingleDefinitionSuccessorR1({
       "асфальтирование",
       "асфальтирование 5000 м²",
       "асфальтирование площадки 5000 м²",
-      "асфальтирование большой площади",
-      "устройство асфальтового покрытия на большой площади",
       "устройство асфальтобетонного покрытия",
       "укладка асфальта 5000 м²",
       "укладка горячей асфальтобетонной смеси",
@@ -313,7 +311,7 @@ void runMasterSingleDefinitionSuccessorR1({
       "новое основание и подстилающие слои, дренаж, бордюры, разметка, фрезерование и демонтаж",
       "проектные отклонения от предварительного профиля до их выбора пользователем",
     ],
-    extraSearchTermsRu: "асфальтирование асфальт укладка устройство покрытие горячая смесь асфальтоукладчик каток битум доставка 5000 м² большая площадь принятое основание",
+    extraSearchTermsRu: "асфальтирование асфальт укладка устройство покрытие горячая смесь асфальтоукладчик каток битум доставка 5000 м² принятое основание",
     sourceProvenance: {
       sourcePackSha256: ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,
       masterEdition: "S27.19",

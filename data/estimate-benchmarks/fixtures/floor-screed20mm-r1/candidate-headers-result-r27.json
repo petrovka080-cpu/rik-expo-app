@@ -1,0 +1,720 @@
+{
+  "contract": "gox-current-bounded-physical-classification/r13",
+  "status": "PASS_TARGETED_CURRENT_FLOOR_CANDIDATE_HEADERS_READ_ONLY_R27",
+  "completeReadSet": true,
+  "databaseWrites": false,
+  "appJobs": false,
+  "canonicalWrites": false,
+  "publicationAllowed": false,
+  "catalogIdentityAdmitted": false,
+  "globalPhysicalAbsenceProved": false,
+  "commonSnapshotClaim": false,
+  "session": {
+    "db": "rik_r4_runtime_b5_v2",
+    "address": "127.0.0.1",
+    "port": 55432,
+    "snapshot": "537802:537802:",
+    "read_only": "on",
+    "isolation": "repeatable read",
+    "timezone": "UTC"
+  },
+  "headers": {
+    "definition": {
+      "id": "d7fa85c8-5625-5944-9324-ca230164a29b",
+      "status": "prepared",
+      "source_commit": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+      "source_tree": "2ace8684ea59bf6a68da635fc86ba2deea560da7",
+      "source_manifest_sha256": "727be6a2768fe188b5edc2f5f4913b0ba1c80e5faa8da29f15c2eed49d2b6bb7",
+      "activated_at": null
+    },
+    "search": {
+      "id": "4a02da73-a313-54ce-986e-d29df1e54e22",
+      "status": "draft",
+      "source_commit": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+      "source_tree": "2ace8684ea59bf6a68da635fc86ba2deea560da7",
+      "snapshot_sha256": "71f9ff6e5a1b42a185771fd24b90de3deb6a447aad33fed6bf8a87a5814edd1c",
+      "activated_at": null,
+      "sealed_at": null,
+      "definition_release_id": "d7fa85c8-5625-5944-9324-ca230164a29b"
+    }
+  },
+  "sets": {
+    "concreteUnderlayerHeaders": {
+      "rows": [
+        {
+          "total_candidates": 15,
+          "overflow": false,
+          "candidates": [
+            {
+              "aliases": [
+                "плитный фундамент 150 м2 с локальным ремонтом основания",
+                "бетонирование плитного фундамента с локальным ремонтом основания",
+                "фундаментная плита с ремонтом основания полный цикл",
+                "полная смета плиты с ремонтом основания"
+              ],
+              "group_id": "wg:base:concrete_foundation_interior_slab_foundation_pour",
+              "title_ru": "бетонирование плитного фундамента с локальным ремонтом основания",
+              "work_key": "concrete_foundation_interior_slab_foundation_pour_repair",
+              "catalog_id": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_repair",
+              "retired_at": null,
+              "primary_uom": "м²",
+              "subgroup_id": null,
+              "primary_terms": "concrete_foundation_interior_slab_foundation_pour_repair бетонирование плитного фундамента с локальным ремонтом основания устройство плитного фундамента полного цикла с локальным ремонтом основания",
+              "short_scope_ru": "Завершённый монолитный железобетонный плитный фундамент с подготовленным и локально отремонтированным основанием, изоляцией, опалубкой, армированием, бетонированием, уходом, контролем и сдачей. Для основной доставки бетона и вывоза грунта требуется выбрать по одной подтверждённой схеме отдельной оплаты.",
+              "definition_hash": "15fde096a8cc526dca4222094f1e81e50cef5f46e0481b44dd89e9712d32c4d0",
+              "source_identity": "base-work:concrete_foundation_interior_slab_foundation_pour_repair",
+              "canonical_name_ru": "устройство плитного фундамента полного цикла с локальным ремонтом основания",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Завершённый монолитный железобетонный плитный фундамент с подготовленным и локально отремонтированным основанием, изоляцией, опалубкой, армированием, бетонированием, уходом, контролем и сдачей.",
+              "definition_version_id": "d033727c-2f2e-5ebb-8c11-798998d9630c",
+              "normative_classifiers": [
+                "concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+              ],
+              "approved_template_baseline_id": "b9a5a6c1-ff2a-57c2-866a-d70f15580a86"
+            },
+            {
+              "aliases": [
+                "плитный фундамент 500 м2 под ключ",
+                "монолитная фундаментная плита полный цикл",
+                "фундаментная плита с основанием гидроизоляцией и армированием",
+                "полная смета плитного фундамента",
+                "бетонирование плиты фундамента со всеми подготовительными работами"
+              ],
+              "group_id": "wg:base:concrete_foundation_interior_slab_foundation_pour",
+              "title_ru": "бетонирование плитного фундамента в стандартной зоне",
+              "work_key": "concrete_foundation_interior_slab_foundation_pour_standard",
+              "catalog_id": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+              "retired_at": null,
+              "primary_uom": "м²",
+              "subgroup_id": null,
+              "primary_terms": "concrete_foundation_interior_slab_foundation_pour_standard бетонирование плитного фундамента в стандартной зоне устройство монолитного плитного фундамента полного цикла",
+              "short_scope_ru": "Завершённый монолитный железобетонный плитный фундамент с основанием, дренажом, подготовкой, гидроизоляцией, утеплением, опалубкой, армированием, бетонированием, уходом, контролем и сдачей. Для основной доставки бетона и вывоза грунта требуется выбрать по одной подтверждённой схеме отдельной оплаты.",
+              "definition_hash": "73ce830d2c3315af7396e568091a89ac6ca4789763ae48b9a95ad872f4492e74",
+              "source_identity": "base-work:concrete_foundation_interior_slab_foundation_pour_standard",
+              "canonical_name_ru": "устройство монолитного плитного фундамента полного цикла",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Завершённый монолитный железобетонный плитный фундамент с основанием, дренажом, подготовкой, гидроизоляцией, утеплением, опалубкой, армированием, бетонированием, уходом, контролем и сдачей.",
+              "definition_version_id": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+              "normative_classifiers": [
+                "concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+              ],
+              "approved_template_baseline_id": "56b75a05-caf6-5564-897f-0c71e69a5498"
+            },
+            {
+              "aliases": [
+                "монолитная лестница под ключ",
+                "полная смета железобетонной лестницы",
+                "опалубка армирование бетонирование лестницы"
+              ],
+              "group_id": "wg:base:concrete_foundation_interior_stairs_concrete_form",
+              "title_ru": "устройство бетонной лестницы в стандартной зоне",
+              "work_key": "concrete_foundation_interior_stairs_concrete_form_standard",
+              "catalog_id": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+              "retired_at": null,
+              "primary_uom": "м3",
+              "subgroup_id": null,
+              "primary_terms": "concrete_foundation_interior_stairs_concrete_form_standard устройство бетонной лестницы в стандартной зоне полное устройство монолитной бетонной лестницы",
+              "short_scope_ru": "Полная технологическая сборка: опалубка, арматура, бетон, укладка, виброуплотнение, первичная отделка и уход.",
+              "definition_hash": "b18ea15db745635ba790c752bd2c770da5a7681e7d491d637812d0d1a89bc92a",
+              "source_identity": "base-work:concrete_foundation_interior_stairs_concrete_form_standard",
+              "canonical_name_ru": "полное устройство монолитной бетонной лестницы",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Монолитная железобетонная лестница стандартного контекста с опалубкой, армированием, укладкой, отдельным виброуплотнением, первичной отделкой и уходом.",
+              "definition_version_id": "e8b40373-c52e-5f47-a45b-f9b6f2d5e82e",
+              "normative_classifiers": [
+                "stairs_complete_installation_project_composition_v1"
+              ],
+              "approved_template_baseline_id": "5c0c8ff7-a683-5dfc-9eb9-48d890359991"
+            },
+            {
+              "aliases": [
+                "разборка асфальтового покрытия пола большой площади",
+                "демонтаж асфальтобетонного покрытия пола большой площади",
+                "КРЕР 46-04-010-01 большой площади",
+                "large-area asphalt floor covering demolition"
+              ],
+              "group_id": "wg:base:demolition_interior_flooring_dismantle",
+              "title_ru": "разборка напольного покрытия на большой площади",
+              "work_key": "demolition_interior_flooring_dismantle_large_area",
+              "catalog_id": "canonical-work:base:demolition_interior_flooring_dismantle_large_area",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "demolition_interior_flooring_dismantle_large_area разборка напольного покрытия на большой площади Разборка асфальтового или асфальтобетонного покрытия пола — большая площадь",
+              "short_scope_ru": "Разборка подтверждённого покрытия пола из асфальта или асфальтобетона большой площади по площади: труд 23,78 чел.-ч, компрессор 4,71 маш.-ч и пневматические молотки 9,42 маш.-ч на 100 м² без коэффициента классификации.",
+              "definition_hash": "bb0dcfb33754ca3fecaf24034114ab7383c5bfd0a3000c6387ed315c582785b9",
+              "source_identity": "base-work:demolition_interior_flooring_dismantle_large_area",
+              "canonical_name_ru": "Разборка асфальтового или асфальтобетонного покрытия пола — большая площадь",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона большой площади разобрана по КРЕР 46-04-010-01",
+              "definition_version_id": "36afc0ec-82f2-543a-8f59-83406d5cb2b3",
+              "normative_classifiers": [],
+              "approved_template_baseline_id": "97efbdfe-f3ce-5081-8aa3-13cf73ef665e"
+            },
+            {
+              "aliases": [
+                "разборка асфальтового покрытия пола малой площади",
+                "демонтаж асфальтобетонного покрытия пола малой площади",
+                "КРЕР 46-04-010-01 малой площади",
+                "small-area asphalt floor covering demolition"
+              ],
+              "group_id": "wg:base:demolition_interior_flooring_dismantle",
+              "title_ru": "разборка напольного покрытия на малой площади",
+              "work_key": "demolition_interior_flooring_dismantle_small_area",
+              "catalog_id": "canonical-work:base:demolition_interior_flooring_dismantle_small_area",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "demolition_interior_flooring_dismantle_small_area разборка напольного покрытия на малой площади Разборка асфальтового или асфальтобетонного покрытия пола — малая площадь",
+              "short_scope_ru": "Разборка подтверждённого покрытия пола из асфальта или асфальтобетона малой площади по площади: труд 23,78 чел.-ч, компрессор 4,71 маш.-ч и пневматические молотки 9,42 маш.-ч на 100 м² без коэффициента классификации.",
+              "definition_hash": "dff59e6aa7372f2b48efaf6030c800d6e5adce5bb764d9fd2daf8ed377218341",
+              "source_identity": "base-work:demolition_interior_flooring_dismantle_small_area",
+              "canonical_name_ru": "Разборка асфальтового или асфальтобетонного покрытия пола — малая площадь",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона малой площади разобрана по КРЕР 46-04-010-01",
+              "definition_version_id": "45e53c05-01e0-5a0b-8bcf-93d5af6d4fb3",
+              "normative_classifiers": [],
+              "approved_template_baseline_id": "5de61113-6f2a-546c-80f0-6658d7b747f4"
+            },
+            {
+              "aliases": [
+                "разборка асфальтового покрытия пола",
+                "демонтаж асфальтобетонного покрытия пола",
+                "снятие асфальта внутри здания компрессором и отбойными молотками",
+                "КРЕР 46-04-010-01",
+                "asphalt floor covering demolition"
+              ],
+              "group_id": "wg:base:demolition_interior_flooring_dismantle",
+              "title_ru": "разборка напольного покрытия в стандартной зоне",
+              "work_key": "demolition_interior_flooring_dismantle_standard",
+              "catalog_id": "canonical-work:base:demolition_interior_flooring_dismantle_standard",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "demolition_interior_flooring_dismantle_standard разборка напольного покрытия в стандартной зоне Разборка асфальтового или асфальтобетонного покрытия пола",
+              "short_scope_ru": "Разборка подтверждённого покрытия пола из асфальта или асфальтобетона по площади: труд 23,78 чел.-ч, компрессор 4,71 маш.-ч и пневматические молотки 9,42 маш.-ч на 100 м².",
+              "definition_hash": "80c7360073fbbed8e57852a22a0e4ad44df1e59a08bcb725e953929dafef4f4d",
+              "source_identity": "base-work:demolition_interior_flooring_dismantle_standard",
+              "canonical_name_ru": "Разборка асфальтового или асфальтобетонного покрытия пола",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона разобрана по КРЕР 46-04-010-01",
+              "definition_version_id": "ce43ff8e-736e-5d39-883a-9ca34abcb282",
+              "normative_classifiers": [],
+              "approved_template_baseline_id": "7800fb72-fd92-57c9-8e0e-ee5a651f215f"
+            },
+            {
+              "aliases": [
+                "разборка асфальтового покрытия пола влажной зоны",
+                "демонтаж асфальтобетонного покрытия пола влажной зоны",
+                "КРЕР 46-04-010-01 влажной зоны",
+                "wet-zone asphalt floor covering demolition"
+              ],
+              "group_id": "wg:base:demolition_interior_flooring_dismantle",
+              "title_ru": "разборка напольного покрытия во влажной зоне",
+              "work_key": "demolition_interior_flooring_dismantle_wet_zone",
+              "catalog_id": "canonical-work:base:demolition_interior_flooring_dismantle_wet_zone",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "demolition_interior_flooring_dismantle_wet_zone разборка напольного покрытия во влажной зоне Разборка асфальтового или асфальтобетонного покрытия пола — влажная зона",
+              "short_scope_ru": "Разборка подтверждённого покрытия пола из асфальта или асфальтобетона влажной зоны по площади: труд 23,78 чел.-ч, компрессор 4,71 маш.-ч и пневматические молотки 9,42 маш.-ч на 100 м² без коэффициента классификации.",
+              "definition_hash": "13418cfd671d10be092de8dbba1dfe50bcb2eb74f15938c1f97c9717da152bf4",
+              "source_identity": "base-work:demolition_interior_flooring_dismantle_wet_zone",
+              "canonical_name_ru": "Разборка асфальтового или асфальтобетонного покрытия пола — влажная зона",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона влажной зоны разобрана по КРЕР 46-04-010-01",
+              "definition_version_id": "aba9e769-4e63-5ed2-8782-fe8edcf3164f",
+              "normative_classifiers": [],
+              "approved_template_baseline_id": "be99cea8-7599-56fa-84aa-0ea5e61268cc"
+            },
+            {
+              "aliases": [
+                "асфальтобетонное покрытие моста",
+                "асфальтирование моста",
+                "покрытие моста 150 на 32 метра",
+                "гидроизоляция стяжка и асфальт на мосту",
+                "полная смета мостового покрытия",
+                "bridge deck asphalt pavement system"
+              ],
+              "group_id": "wg:expanded:bridge_asphalt",
+              "title_ru": "Мосты, тоннели и инженерные сооружения: устройство асфальтобетонного покрытия моста",
+              "work_key": "bridge_asphalt",
+              "catalog_id": "canonical-work:expanded:bridge_asphalt",
+              "retired_at": null,
+              "primary_uom": "м²",
+              "subgroup_id": null,
+              "primary_terms": "bridge_asphalt Мосты, тоннели и инженерные сооружения: устройство асфальтобетонного покрытия моста устройство полной системы асфальтобетонного покрытия мостового полотна",
+              "short_scope_ru": "Полная система мостового покрытия: подготовка плиты, праймер, гидроизоляция, армированная защитная стяжка, два слоя асфальта, швы, доставка, механизмы, контроль и документы.",
+              "definition_hash": "b144e2172de67ce86bb7ac2b1b8382ad344ed75de0ba7584dd5a9f352aab6d81",
+              "source_identity": "expanded-template:bridge_asphalt_preliminary_boq_expanded_complex_v1",
+              "canonical_name_ru": "устройство полной системы асфальтобетонного покрытия мостового полотна",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "На мостовом полотне 150 × 32 м выполнена полная система подготовки, гидроизоляции, армированной защитной стяжки, двух слоёв асфальтобетона, сопряжений, контроля и исполнительной документации",
+              "definition_version_id": "28fd1bbb-7582-5009-87bb-b153318b9a54",
+              "normative_classifiers": [],
+              "approved_template_baseline_id": "060b640f-ab12-5388-89da-a6c29f8bae75"
+            },
+            {
+              "aliases": [
+                "буронабивная ж/б свая",
+                "буронабивная железобетонная свая",
+                "устройство буронабивных свай",
+                "bored reinforced concrete pile"
+              ],
+              "group_id": "wg:expanded:foundation_pile_field",
+              "title_ru": "Здания и жилые комплексы: устройство свайного поля фундамента",
+              "work_key": "foundation_pile_field",
+              "catalog_id": "canonical-work:expanded:foundation_pile_field",
+              "retired_at": null,
+              "primary_uom": "piece",
+              "subgroup_id": null,
+              "primary_terms": "foundation_pile_field Здания и жилые комплексы: устройство свайного поля фундамента Устройство буронабивной железобетонной сваи",
+              "short_scope_ru": "Бурение скважины, монтаж арматурного каркаса и бетонирование буронабивной сваи; условные обсадка, бентонит и муфты — только по проекту.",
+              "definition_hash": "67ce8a5e4987bb959c4fc716f6e89db029fcabbf81dca336888972aaeb44f657",
+              "source_identity": "expanded-template:foundation_pile_field_preliminary_boq_expanded_complex_v1",
+              "canonical_name_ru": "Устройство буронабивной железобетонной сваи",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Буронабивная железобетонная свая по явно заданным геометрии и проектной комплектации",
+              "definition_version_id": "8c6ac868-557f-5856-8894-632ece8e8502",
+              "normative_classifiers": [],
+              "approved_template_baseline_id": "dd6c4c1d-263c-55d6-bf74-b46c7ca27867"
+            },
+            {
+              "aliases": [
+                "демонтаж цементного или бетонного пола с поправкой толщины — большая площадь",
+                "разборка цементного или бетонного покрытия пола в агрессивной среде — большая площадь",
+                "КРЕР 46-04-011-12 с поправкой 46-04-011-13 — большая площадь",
+                "large_area aggressive-environment cement concrete floor thickness-adjusted demolition"
+              ],
+              "group_id": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+              "title_ru": "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — большая площадь",
+              "work_key": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_large_area",
+              "catalog_id": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_large_area",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_large_area Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — большая площадь Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — большая площадь",
+              "short_scope_ru": "Разборка подтверждённого цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (большая площадь): база 25 мм по КРЕР 46-04-011-12, целые шаги по 5 мм — по 46-04-011-13.",
+              "definition_hash": "cf17ff60b8acedb5384287324636da34d0856ed3cc159fadb2d35355a9da319a",
+              "source_identity": "master-work:demolition_aggressive_environment_cement_or_concrete_floor_25mm_large_area",
+              "canonical_name_ru": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — большая площадь",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (большая площадь) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+              "definition_version_id": "82488f19-b409-5935-8e95-4d58274b3ca3",
+              "normative_classifiers": [
+                "КРЕР 46-04-011-12"
+              ],
+              "approved_template_baseline_id": "7ed31dfc-c7f1-5273-86fc-f3f3841c1a07"
+            },
+            {
+              "aliases": [
+                "демонтаж цементного или бетонного пола с поправкой толщины — малая площадь",
+                "разборка цементного или бетонного покрытия пола в агрессивной среде — малая площадь",
+                "КРЕР 46-04-011-12 с поправкой 46-04-011-13 — малая площадь",
+                "small_area aggressive-environment cement concrete floor thickness-adjusted demolition"
+              ],
+              "group_id": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+              "title_ru": "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — малая площадь",
+              "work_key": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_small_area",
+              "catalog_id": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_small_area",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_small_area Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — малая площадь Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — малая площадь",
+              "short_scope_ru": "Разборка подтверждённого цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (малая площадь): база 25 мм по КРЕР 46-04-011-12, целые шаги по 5 мм — по 46-04-011-13.",
+              "definition_hash": "897286789f02b5bbe39488ea36cd6f6b60de2d4162e8cf9c1011f28bfd3fb3b5",
+              "source_identity": "master-work:demolition_aggressive_environment_cement_or_concrete_floor_25mm_small_area",
+              "canonical_name_ru": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — малая площадь",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (малая площадь) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+              "definition_version_id": "968fdcde-155f-574f-83bc-80522181cf95",
+              "normative_classifiers": [
+                "КРЕР 46-04-011-12"
+              ],
+              "approved_template_baseline_id": "25bf6dea-c26a-5ed0-8a9a-35f757500d91"
+            },
+            {
+              "aliases": [
+                "демонтаж цементного или бетонного пола с поправкой толщины — стандартный вариант",
+                "разборка цементного или бетонного покрытия пола в агрессивной среде — стандартный вариант",
+                "КРЕР 46-04-011-12 с поправкой 46-04-011-13 — стандартный вариант",
+                "standard aggressive-environment cement concrete floor thickness-adjusted demolition"
+              ],
+              "group_id": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+              "title_ru": "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде",
+              "work_key": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_standard",
+              "catalog_id": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_standard",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_standard Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде",
+              "short_scope_ru": "Разборка подтверждённого цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (стандартный вариант): база 25 мм по КРЕР 46-04-011-12, целые шаги по 5 мм — по 46-04-011-13.",
+              "definition_hash": "f0522cbc032ddd28b256382baa36ec10e8b8e22bd875fda154ff5804c6917b7e",
+              "source_identity": "master-work:demolition_aggressive_environment_cement_or_concrete_floor_25mm_standard",
+              "canonical_name_ru": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (стандартный вариант) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+              "definition_version_id": "151ec095-b6e1-5096-83bb-d38021b0eb24",
+              "normative_classifiers": [
+                "КРЕР 46-04-011-12"
+              ],
+              "approved_template_baseline_id": "cc7a34e7-c06c-57fd-8c21-84013629eb9a"
+            },
+            {
+              "aliases": [
+                "демонтаж цементного или бетонного пола с поправкой толщины — влажная зона",
+                "разборка цементного или бетонного покрытия пола в агрессивной среде — влажная зона",
+                "КРЕР 46-04-011-12 с поправкой 46-04-011-13 — влажная зона",
+                "wet_zone aggressive-environment cement concrete floor thickness-adjusted demolition"
+              ],
+              "group_id": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+              "title_ru": "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — влажная зона",
+              "work_key": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_wet_zone",
+              "catalog_id": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_wet_zone",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_wet_zone Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — влажная зона Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — влажная зона",
+              "short_scope_ru": "Разборка подтверждённого цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (влажная зона): база 25 мм по КРЕР 46-04-011-12, целые шаги по 5 мм — по 46-04-011-13.",
+              "definition_hash": "599072deac71c7f2531ac37f8f91b8a2e382499bbd2e1b9fba071ef7ad464952",
+              "source_identity": "master-work:demolition_aggressive_environment_cement_or_concrete_floor_25mm_wet_zone",
+              "canonical_name_ru": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — влажная зона",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (влажная зона) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+              "definition_version_id": "60855796-aa03-5483-8e66-81fc22b12758",
+              "normative_classifiers": [
+                "КРЕР 46-04-011-12"
+              ],
+              "approved_template_baseline_id": "d8f0a4b9-16d9-5fab-87c9-7fd374a172c8"
+            },
+            {
+              "aliases": [
+                "Бетонное основание под полом на кирпичном щебне по46-04-009-02",
+                "Демонтаж бетонного основания на кирпичном щебне"
+              ],
+              "group_id": "demolition_concrete_floor_bases_krer4604009_s2754",
+              "title_ru": "Разборка бетонного основания под полом на кирпичном щебне",
+              "work_key": "demolition_concrete_floor_base_brick_rubble_460400902_standard",
+              "catalog_id": "canonical-work:master:demolition_concrete_floor_base_brick_rubble_460400902_standard",
+              "retired_at": null,
+              "primary_uom": "m3",
+              "subgroup_id": null,
+              "primary_terms": "demolition_concrete_floor_base_brick_rubble_460400902_standard Разборка бетонного основания под полом на кирпичном щебне Разборка бетонного основания под полом на кирпичном щебне",
+              "short_scope_ru": "Только соответствующее бетонное основание под полом, в отдельных местах ручными пневматическими механизмами. Объём1м³ по обследованию/проекту. Это не отдельная сыпучая подушка, не любая цементно-песчаная стяжка, не железобетонная плита и не разборка другим способом. Уборка, сортировка и штабелирование пригодных материалов, спуск через окно в лотках и горизонтальное перемещение суммарно до130м, включая до50м от объекта, включены. Затаривание, иной спуск и внешний вывоз отдельно по фактической применимости. Защитные ограждения прилегающих частей по п.1.20 и обеспыливание по п.1.27 не включены: проектное решение и отдельная норма пока открыты.",
+              "definition_hash": "b6d7f5702360de6e093f5be7f31996575c3c334075cb9dd4aa8178363d825295",
+              "source_identity": "krer46-2015:concrete-floor-base:46-04-009-02",
+              "canonical_name_ru": "Разборка бетонного основания под полом на кирпичном щебне",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Разобрано точное бетонное основание; нормативные труд/механизмы/включённое обращение учтены; проектное завершение ограничено.",
+              "definition_version_id": "e49e50ac-2d63-5035-8e4c-3e283b2810b8",
+              "normative_classifiers": [
+                "46-04-009-02"
+              ],
+              "approved_template_baseline_id": "e8422cca-7005-51e2-86a5-316390123d1e"
+            },
+            {
+              "aliases": [
+                "Бетонное основание под полом на гравии по46-04-009-01",
+                "Демонтаж бетонного основания на гравии"
+              ],
+              "group_id": "demolition_concrete_floor_bases_krer4604009_s2754",
+              "title_ru": "Разборка бетонного основания под полом на гравии",
+              "work_key": "demolition_concrete_floor_base_gravel_460400901_standard",
+              "catalog_id": "canonical-work:master:demolition_concrete_floor_base_gravel_460400901_standard",
+              "retired_at": null,
+              "primary_uom": "m3",
+              "subgroup_id": null,
+              "primary_terms": "demolition_concrete_floor_base_gravel_460400901_standard Разборка бетонного основания под полом на гравии Разборка бетонного основания под полом на гравии",
+              "short_scope_ru": "Только соответствующее бетонное основание под полом, в отдельных местах ручными пневматическими механизмами. Объём1м³ по обследованию/проекту. Это не отдельная сыпучая подушка, не любая цементно-песчаная стяжка, не железобетонная плита и не разборка другим способом. Уборка, сортировка и штабелирование пригодных материалов, спуск через окно в лотках и горизонтальное перемещение суммарно до130м, включая до50м от объекта, включены. Затаривание, иной спуск и внешний вывоз отдельно по фактической применимости. Защитные ограждения прилегающих частей по п.1.20 и обеспыливание по п.1.27 не включены: проектное решение и отдельная норма пока открыты.",
+              "definition_hash": "d120eb253f188cc816f0978a4598c8283cd1b5c554d71819f87773d61dd2dda1",
+              "source_identity": "krer46-2015:concrete-floor-base:46-04-009-01",
+              "canonical_name_ru": "Разборка бетонного основания под полом на гравии",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Разобрано точное бетонное основание; нормативные труд/механизмы/включённое обращение учтены; проектное завершение ограничено.",
+              "definition_version_id": "f3c46dcc-1a0c-5ac3-8aeb-ab0e1b529e5d",
+              "normative_classifiers": [
+                "46-04-009-01"
+              ],
+              "approved_template_baseline_id": "fece6637-2c8d-5175-89d4-e5be6b8b6345"
+            }
+          ]
+        }
+      ],
+      "sha256": "358ca268f32be0ca8ca59105cc9c0a047fff0027dbfe9e046d7350f55e89136f",
+      "rawBytes": 37455
+    },
+    "cementScreedHeaders": {
+      "rows": [
+        {
+          "total_candidates": 9,
+          "overflow": false,
+          "candidates": [
+            {
+              "aliases": [
+                "демонтаж стяжки большой площади",
+                "разборка цементно-песчаной стяжки большого помещения",
+                "large area cement sand screed demolition"
+              ],
+              "group_id": "wg:base:demolition_interior_screed_remove",
+              "title_ru": "демонтаж стяжки пола на большой площади",
+              "work_key": "demolition_interior_screed_remove_large_area",
+              "catalog_id": "canonical-work:base:demolition_interior_screed_remove_large_area",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "demolition_interior_screed_remove_large_area демонтаж стяжки пола на большой площади Демонтаж существующей цементно-песчаной стяжки — большая площадь",
+              "short_scope_ru": "Демонтаж подтверждённой цементно-песчаной стяжки по фактической большой площади без скрытого коэффициента; остальные количества — из ППР и ведомостей.",
+              "definition_hash": "848e03b0cb810f49621f75b75c41d1ec40c7a9be9bf7d2bbccc3f17303842299",
+              "source_identity": "base-work:demolition_interior_screed_remove_large_area",
+              "canonical_name_ru": "Демонтаж существующей цементно-песчаной стяжки — большая площадь",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая большая площадь существующей цементно-песчаной стяжки демонтирована, а защита, оборудование и отходы учтены по прямым проектным данным",
+              "definition_version_id": "cd332fb1-f626-5ff8-91eb-e16f4db586c9",
+              "normative_classifiers": [],
+              "approved_template_baseline_id": "daff36c5-0d93-525f-bde1-5e38094b17aa"
+            },
+            {
+              "aliases": [
+                "демонтаж стяжки малой площади",
+                "разборка цементно-песчаной стяжки малой площади",
+                "small-area cement sand screed demolition"
+              ],
+              "group_id": "wg:base:demolition_interior_screed_remove",
+              "title_ru": "демонтаж стяжки пола на малой площади",
+              "work_key": "demolition_interior_screed_remove_small_area",
+              "catalog_id": "canonical-work:base:demolition_interior_screed_remove_small_area",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "demolition_interior_screed_remove_small_area демонтаж стяжки пола на малой площади Демонтаж существующей цементно-песчаной стяжки — малая площадь",
+              "short_scope_ru": "Демонтаж подтверждённой цементно-песчаной стяжки малой площади по фактической площади без скрытого коэффициента; остальные количества — из ППР и ведомостей.",
+              "definition_hash": "1fea54fc9678e351a331f28e92669723daa677bd542c7334628c61b1fd0683c9",
+              "source_identity": "base-work:demolition_interior_screed_remove_small_area",
+              "canonical_name_ru": "Демонтаж существующей цементно-песчаной стяжки — малая площадь",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая площадь существующей цементно-песчаной стяжки малой площади демонтирована, а защита, оборудование и отходы учтены по прямым проектным данным",
+              "definition_version_id": "0fe73a33-c363-527c-915e-699e3a0c072c",
+              "normative_classifiers": [],
+              "approved_template_baseline_id": "3135e9de-b720-5972-8083-014b4616247f"
+            },
+            {
+              "aliases": [
+                "демонтаж стяжки пола",
+                "разборка цементно-песчаной стяжки",
+                "резка и удаление существующей стяжки",
+                "cement-sand screed demolition"
+              ],
+              "group_id": "wg:base:demolition_interior_screed_remove",
+              "title_ru": "демонтаж стяжки пола в стандартной зоне",
+              "work_key": "demolition_interior_screed_remove_standard",
+              "catalog_id": "canonical-work:base:demolition_interior_screed_remove_standard",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "demolition_interior_screed_remove_standard демонтаж стяжки пола в стандартной зоне Демонтаж существующей цементно-песчаной стяжки",
+              "short_scope_ru": "Демонтаж существующей цементно-песчаной стяжки; известные площадь и толщина сразу дают объём работы, а защита, тара, инструмент, оборудование, масса отходов и вода уточняются по обследованию, ППР и планам пылезащиты и отходов.",
+              "definition_hash": "7e43471292092194fddee2e88e9354cbb3522c4c7d1d5ac6462a35a826cf15d7",
+              "source_identity": "base-work:demolition_interior_screed_remove_standard",
+              "canonical_name_ru": "Демонтаж существующей цементно-песчаной стяжки",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Существующая цементно-песчаная стяжка демонтирована в заданной границе, отходы учтены для передачи",
+              "definition_version_id": "8ed2ca11-16cd-57b2-b841-3ff4ad2953d5",
+              "normative_classifiers": [],
+              "approved_template_baseline_id": "862509f8-45dd-5103-8db6-7a2efa436964"
+            },
+            {
+              "aliases": [
+                "демонтаж стяжки влажной зоны",
+                "разборка цементно-песчаной стяжки влажной зоны",
+                "wet-zone cement sand screed demolition"
+              ],
+              "group_id": "wg:base:demolition_interior_screed_remove",
+              "title_ru": "демонтаж стяжки пола во влажной зоне",
+              "work_key": "demolition_interior_screed_remove_wet_zone",
+              "catalog_id": "canonical-work:base:demolition_interior_screed_remove_wet_zone",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "demolition_interior_screed_remove_wet_zone демонтаж стяжки пола во влажной зоне Демонтаж существующей цементно-песчаной стяжки — влажная зона",
+              "short_scope_ru": "Демонтаж подтверждённой цементно-песчаной стяжки влажной зоны по фактической площади без скрытого коэффициента; остальные количества — из ППР и ведомостей.",
+              "definition_hash": "f97003d938a3fe4df63d052852813a04404717b30415fecef845d37ec658be02",
+              "source_identity": "base-work:demolition_interior_screed_remove_wet_zone",
+              "canonical_name_ru": "Демонтаж существующей цементно-песчаной стяжки — влажная зона",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Подтверждённая площадь существующей цементно-песчаной стяжки влажной зоны демонтирована, а защита, оборудование и отходы учтены по прямым проектным данным",
+              "definition_version_id": "228a206d-f24c-5db7-bc38-1f3a24ef26df",
+              "normative_classifiers": [],
+              "approved_template_baseline_id": "b24dca18-47ce-5709-8a90-ce02162b8624"
+            },
+            {
+              "aliases": [
+                "Укладка керамической плитки до10см на CM11 PLUS",
+                "Малая керамическая плитка, CT17 и шпатель4мм"
+              ],
+              "group_id": "wg:base:tile_stone_interior_ceramic_tile_lay",
+              "title_ru": "Керамическая плитка до 10 см на CM11 PLUS, зуб 4 мм, по впитывающей цементной стяжке внутри помещения",
+              "work_key": "ceramic_tile_up_to_10cm_cm11_ct17_indoor_cement_floor_standard",
+              "catalog_id": "canonical-work:master:ceramic_tile_up_to_10cm_cm11_ct17_indoor_cement_floor_standard",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "ceramic_tile_up_to_10cm_cm11_ct17_indoor_cement_floor_standard Керамическая плитка до 10 см на CM11 PLUS, зуб 4 мм, по впитывающей цементной стяжке внутри помещения Керамическая плитка до 10 см на CM11 PLUS, зуб 4 мм, по впитывающей цементной стяжке внутри помещения",
+              "short_scope_ru": "Керамическая плитка с максимальной стороной до10см, шпатель4мм; внутренний горизонтальный пол по ровной прочной сухой очищенной впитывающей цементной стяжке, без подогрева и системной гидроизоляции. CM11 PLUS global04/2026 затворяется только водой без CC83; грунтовка CT17 Profi global03.24 не разбавляется. Точный артикул плитки и её потребность определяются раскладкой. Точные клей, грунтовка, вода, применение CE40/CS25; не полный принятый состав швов и труда.",
+              "definition_hash": "fd6c93b988309ac68a2001fa27656a8a910727d8e7aae24488fa599d48a9ea38",
+              "source_identity": "ceresit-cm11-global042026:ceramic-up-to10cm-4mm:absorbent-cement-indoor",
+              "canonical_name_ru": "Керамическая плитка до 10 см на CM11 PLUS, зуб 4 мм, по впитывающей цементной стяжке внутри помещения",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Раскрыты плитка по реальному артикулу, CM11, CT17, вода и кандидаты CE40/CS25; труд и полный состав швов остаются открытыми.",
+              "definition_version_id": "9aa2b934-057b-512c-98ef-dd177a145b59",
+              "normative_classifiers": [
+                "CERESIT_CM11_TDS_04_2026",
+                "CT17_PROFI_03_24"
+              ],
+              "approved_template_baseline_id": "860e317c-4268-5292-9238-fd93f93ea1e7"
+            },
+            {
+              "aliases": [
+                "Ручное выравнивание CN69global25кг по готовой цементной стяжке",
+                "Наливной выравнивающий слой CN69 с CT17 в сухом помещении"
+              ],
+              "group_id": "floor_leveling_cn69_global_s2754",
+              "title_ru": "Выравнивание сухого внутреннего пола Ceresit CN69 global 25 кг, слой 2–10 мм, с CT17",
+              "work_key": "cn69_global_25kg_manual_dry_indoor_cement_floor_2_10mm_standard",
+              "catalog_id": "canonical-work:master:cn69_global_25kg_manual_dry_indoor_cement_floor_2_10mm_standard",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "cn69_global_25kg_manual_dry_indoor_cement_floor_2_10mm_standard Выравнивание сухого внутреннего пола Ceresit CN69 global 25 кг, слой 2–10 мм, с CT17 Выравнивание сухого внутреннего пола Ceresit CN69 global 25 кг, слой 2–10 мм, с CT17",
+              "short_scope_ru": "Ручное выравнивание готовой впитывающей цементной стяжки в сухом помещении, средние нагрузки, без подогрева. Только CN69global25кг слоем2–10мм и неразбавленный CT17global03.24. Основание принято отдельно; поступление влаги предотвращено. Нет автоматического допуска любого последующего покрытия. Смесь, грунтовка, вода и инструмент раскрыты; часы и завершение требуют источника.",
+              "definition_hash": "a762cffc9e6d57b27e21bf6d163c68b58dfaf048a60c8753007a9fa86bd8c9ca",
+              "source_identity": "ceresit-cn69-global25kg:tds0420:manual-dry-indoor-cement-2to10mm",
+              "canonical_name_ru": "Выравнивание сухого внутреннего пола Ceresit CN69 global 25 кг, слой 2–10 мм, с CT17",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Раскрыты CN69, CT17, вода и конкретный инструмент; полный труд, контроль и завершение требуют источника.",
+              "definition_version_id": "fdfc25b2-28f4-5ff3-83c2-f5037e9e190c",
+              "normative_classifiers": [
+                "C_CN69_TDS_1_0420",
+                "CT17_PROFI_03_24"
+              ],
+              "approved_template_baseline_id": "c01f3ecb-e205-5e75-a8de-235cbf8ccffd"
+            },
+            {
+              "aliases": [
+                "Бетонное основание под полом на кирпичном щебне по46-04-009-02",
+                "Демонтаж бетонного основания на кирпичном щебне"
+              ],
+              "group_id": "demolition_concrete_floor_bases_krer4604009_s2754",
+              "title_ru": "Разборка бетонного основания под полом на кирпичном щебне",
+              "work_key": "demolition_concrete_floor_base_brick_rubble_460400902_standard",
+              "catalog_id": "canonical-work:master:demolition_concrete_floor_base_brick_rubble_460400902_standard",
+              "retired_at": null,
+              "primary_uom": "m3",
+              "subgroup_id": null,
+              "primary_terms": "demolition_concrete_floor_base_brick_rubble_460400902_standard Разборка бетонного основания под полом на кирпичном щебне Разборка бетонного основания под полом на кирпичном щебне",
+              "short_scope_ru": "Только соответствующее бетонное основание под полом, в отдельных местах ручными пневматическими механизмами. Объём1м³ по обследованию/проекту. Это не отдельная сыпучая подушка, не любая цементно-песчаная стяжка, не железобетонная плита и не разборка другим способом. Уборка, сортировка и штабелирование пригодных материалов, спуск через окно в лотках и горизонтальное перемещение суммарно до130м, включая до50м от объекта, включены. Затаривание, иной спуск и внешний вывоз отдельно по фактической применимости. Защитные ограждения прилегающих частей по п.1.20 и обеспыливание по п.1.27 не включены: проектное решение и отдельная норма пока открыты.",
+              "definition_hash": "b6d7f5702360de6e093f5be7f31996575c3c334075cb9dd4aa8178363d825295",
+              "source_identity": "krer46-2015:concrete-floor-base:46-04-009-02",
+              "canonical_name_ru": "Разборка бетонного основания под полом на кирпичном щебне",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Разобрано точное бетонное основание; нормативные труд/механизмы/включённое обращение учтены; проектное завершение ограничено.",
+              "definition_version_id": "e49e50ac-2d63-5035-8e4c-3e283b2810b8",
+              "normative_classifiers": [
+                "46-04-009-02"
+              ],
+              "approved_template_baseline_id": "e8422cca-7005-51e2-86a5-316390123d1e"
+            },
+            {
+              "aliases": [
+                "Бетонное основание под полом на гравии по46-04-009-01",
+                "Демонтаж бетонного основания на гравии"
+              ],
+              "group_id": "demolition_concrete_floor_bases_krer4604009_s2754",
+              "title_ru": "Разборка бетонного основания под полом на гравии",
+              "work_key": "demolition_concrete_floor_base_gravel_460400901_standard",
+              "catalog_id": "canonical-work:master:demolition_concrete_floor_base_gravel_460400901_standard",
+              "retired_at": null,
+              "primary_uom": "m3",
+              "subgroup_id": null,
+              "primary_terms": "demolition_concrete_floor_base_gravel_460400901_standard Разборка бетонного основания под полом на гравии Разборка бетонного основания под полом на гравии",
+              "short_scope_ru": "Только соответствующее бетонное основание под полом, в отдельных местах ручными пневматическими механизмами. Объём1м³ по обследованию/проекту. Это не отдельная сыпучая подушка, не любая цементно-песчаная стяжка, не железобетонная плита и не разборка другим способом. Уборка, сортировка и штабелирование пригодных материалов, спуск через окно в лотках и горизонтальное перемещение суммарно до130м, включая до50м от объекта, включены. Затаривание, иной спуск и внешний вывоз отдельно по фактической применимости. Защитные ограждения прилегающих частей по п.1.20 и обеспыливание по п.1.27 не включены: проектное решение и отдельная норма пока открыты.",
+              "definition_hash": "d120eb253f188cc816f0978a4598c8283cd1b5c554d71819f87773d61dd2dda1",
+              "source_identity": "krer46-2015:concrete-floor-base:46-04-009-01",
+              "canonical_name_ru": "Разборка бетонного основания под полом на гравии",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Разобрано точное бетонное основание; нормативные труд/механизмы/включённое обращение учтены; проектное завершение ограничено.",
+              "definition_version_id": "f3c46dcc-1a0c-5ac3-8aeb-ab0e1b529e5d",
+              "normative_classifiers": [
+                "46-04-009-01"
+              ],
+              "approved_template_baseline_id": "fece6637-2c8d-5175-89d4-e5be6b8b6345"
+            },
+            {
+              "aliases": [
+                "Ламинат EGGER EL2240 сSilenzioDuo",
+                "Плавающая укладка NatureSenseAqua592958"
+              ],
+              "group_id": "egger_el2240_floating_laminate_s2754",
+              "title_ru": "Плавающая укладка EGGER NatureSense Aqua EL2240, 592958, с Silenzio Duo в сухой комнате",
+              "work_key": "egger_naturesense_aqua_el2240_592958_silenzio_duo_dry_unheated_room_standard",
+              "catalog_id": "canonical-work:master:egger_naturesense_aqua_el2240_592958_silenzio_duo_dry_unheated_room_standard",
+              "retired_at": null,
+              "primary_uom": "m2",
+              "subgroup_id": null,
+              "primary_terms": "egger_naturesense_aqua_el2240_592958_silenzio_duo_dry_unheated_room_standard Плавающая укладка EGGER NatureSense Aqua EL2240, 592958, с Silenzio Duo в сухой комнате Плавающая укладка EGGER NatureSense Aqua EL2240, 592958, с Silenzio Duo в сухой комнате",
+              "short_scope_ru": "Одна сухая внутренняя комната с габаритами не более10×10м, готовая обычная неотапливаемая цементная стяжка без добавок/ускорителей, без приклеивания и фиксации покрытия к основанию. Только EGGER NatureSense Aqua EL2240 Light Avio Ash592958,AquaCLICit!,8/33Classic и подложкаSilenzioDuo1222949 с встроенной пароизоляцией. Чистая площадь покрытия после проектных зазоров, число досок и расход подложки задаются принятой раскладкой; универсального запаса нет. Пороги/плинтусы и герметизация подложки раскрыты, но их узлы и количества пока не приняты. По принятым узлам:AluTape50м,плинтус2,4м,Clipholder30шт;винтыDIN7997иS6PPпо подтверждённойкомплектности.",
+              "definition_hash": "19e09677cfd621db6154e216caca6f063b029edf6679a739f619a85eb8852ae4",
+              "source_identity": "egger:592958:EL2240:AquaCLICit:SilenzioDuo:EFC25_092026:dry-unheated-room",
+              "canonical_name_ru": "Плавающая укладка EGGER NatureSense Aqua EL2240, 592958, с Silenzio Duo в сухой комнате",
+              "publication_state": "ADMITTED_BACKEND",
+              "physical_result_ru": "Три прежние материальные потребности преобразованы в точные ресурсные записи по принятой ведомости. Крепёж по подтверждённому комплекту имеет одного владельца цены. Остаток норм раскрыт.",
+              "definition_version_id": "e9606e89-f95a-5ed1-a290-1ca1e3b81970",
+              "normative_classifiers": [
+                "EFC25_09_2026",
+                "TD_EGGER_Silenzio_Duo_EN_REV02"
+              ],
+              "approved_template_baseline_id": "7d6dfd25-f6b7-5649-8f49-fcff371750ac"
+            }
+          ]
+        }
+      ],
+      "sha256": "049094f739b502ebf4488d5238fb1a3cd950e7d61e95e645320cfbeb1362e813",
+      "rawBytes": 21466
+    },
+    "exactNormativeBindings": {
+      "rows": [],
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rawBytes": 2
+    }
+  },
+  "rawBytes": 58923,
+  "scope": "Targeted candidate headers and exact normative bindings only; semantic equivalence and absence require subsequent bounded body review",
+  "subject": "new-floor-underlayer-and-screed-candidates",
+  "executionContext": {
+    "sourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+    "recordedReleaseSourceCommit": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+    "definitionReleaseId": "d7fa85c8-5625-5944-9324-ca230164a29b",
+    "searchReleaseId": "4a02da73-a313-54ce-986e-d29df1e54e22"
+  },
+  "sourceFreeze": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/new-floor-candidates-current-r27b/actual-source-freeze-r27.json",
+    "sha256": "b907c864eeaae2dafbb432a58e15bf08d4da355ef555d562f052565e9c1931c0",
+    "bytes": 776530
+  },
+  "rootExecutionPin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/new-floor-candidates-current-r27b/root-context-r27.json",
+    "sha256": "94f67f4f2bf5817189fdc69c4846933e01d956b25ed18d8aa3752094d9798f6c",
+    "bytes": 2084
+  },
+  "physicalDecision": null,
+  "catalogId": null,
+  "workKey": null,
+  "groupId": null,
+  "transactionReadOnly": true,
+  "error": null,
+  "transactionRolledBack": true,
+  "connectionClosed": true,
+  "elapsedMs": 816,
+  "rootObservedClientElapsedMs": 816,
+  "allTransactionsRolledBack": true,
+  "allConnectionsClosed": true
+}

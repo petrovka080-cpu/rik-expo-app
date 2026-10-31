@@ -12,7 +12,7 @@ type InputValue = string | number | boolean;
 type Json = Record<string, unknown>;
 
 export const SURFACE_DRAINAGE_CHANNEL_CATALOG_ID =
-  "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area";
+  "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard";
 export const SURFACE_DRAINAGE_CHANNEL_SOURCE_ID =
   "project_surface_drainage_channel_package_v1";
 export const SURFACE_DRAINAGE_CHANNEL_NORM_ID =

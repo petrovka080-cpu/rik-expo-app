@@ -1,0 +1,97 @@
+{
+  "contract": "socket-current-read-witness/a9-r1153",
+  "status": "PREPARED_FOR_ROOT_SOURCE_REVIEW_RECORDED_READ_FACTS_NOT_ADMISSION",
+  "scope": "FIXED_SOCKET_RECORDED_RR_INPUT_ONLY_NOT_PUBLICATION",
+  "parent": {
+    "path": "data/estimate-benchmarks/fixtures/socket-current-full-parent-a9-r1153.json",
+    "sha256": "2b7f4cf590ff0070e4e364bfddf0a5588fd92f224fd735b6ec3f39d047a89f56",
+    "rawRowsSha256": "e9ed3d4c4c69bf656a9c2e1e87f79b4f2371715af5d5541076e13c44405d540f"
+  },
+  "registry": {
+    "path": "data/estimate-benchmarks/fixtures/socket-current-registry-scope-a9-r1153.json",
+    "sha256": "441559c639d0baabefcb77b6b42222b45f2b6cd8552cf7df6dc21e4638c68b32",
+    "contract": "fixed-socket-current-registry-read/r1",
+    "projection": "pg-jsonb-text-utc-microseconds/r1",
+    "scope": {
+      "sourceKey": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+      "artifactSha256": "2393d3d995a30c345481b546237f1383ec43e5e7ff9367f1729c867a5e5a7b43",
+      "locatorKeys": [
+        "exact-complete-surface-2pe-project-resources-r266"
+      ]
+    },
+    "sourceRows": 0,
+    "locatorRows": 0
+  },
+  "commandSha256": "f2686599fa142f737852e2eda31c87164523a6c3786ed583dad4927a05718e49",
+  "sourceFreeze": {
+    "originalPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-30\\files-pasted-by-the-user-gox\\work\\scoped-db-current-inputs-root-a9\\SOURCE_FREEZE.json",
+    "sha256": "d626e00ef788fe2f4a8b80c417f203ef8ea03a57418d6a077e13132045baf550",
+    "meaning": "Recorded ROOT provenance, never a mandatory private runtime file read."
+  },
+  "sourceWitnessPins": [
+    {
+      "path": "scripts/verification/capturePanelSocketCurrentInputsR1.ts",
+      "sha256": "7884e220ee251f19447ca3a91161fad2914c0468b4aa50e935963886f845698d"
+    },
+    {
+      "path": "scripts/verification/ownedControlFiletimeTransportR1.ts",
+      "sha256": "e9df90bca7060d3e5aaa66fa52169adb559caed70afdd263c755aa5a1ec4e568"
+    },
+    {
+      "path": "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts",
+      "sha256": "d472800e1e71753ab0909e5334ef5da27ae02532d84457f9c931dfff00d6e579"
+    },
+    {
+      "path": "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
+      "sha256": "4e7e4e0a5a03d6b34453ed8e5e3ab5a2a3509f6d8a22766c6db14d18fa152031"
+    },
+    {
+      "path": "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
+      "sha256": "9b6322feb70e38191e7fe171d82dadebfe47816890d4c339f890477ebc83a258"
+    }
+  ],
+  "rawArtifacts": {
+    "DB_OWNER_CONTEXT.json": {
+      "sha256": "d74557a2b892ea4ec264123ec3bd62c18bd488e4c44acbe0f0019dffd7aca3f3",
+      "utf8": "{\r\n  \"commandPath\": \"C:\\\\Users\\\\User\\\\Documents\\\\Codex\\\\2026-10-30\\\\files-pasted-by-the-user-gox\\\\work\\\\scoped-db-current-inputs-owned-a9\\\\normal-locked-three\\\\command.json\",\r\n  \"commandSha256\": \"f2686599fa142f737852e2eda31c87164523a6c3786ed583dad4927a05718e49\",\r\n  \"rootThreadId\": \"01a18bb8-bd73-7e13-812b-637d3a45a60b\",\r\n  \"instanceNonce\": \"552b6d9f-4abe-4085-842c-6d3f6e9c8f7a\",\r\n  \"childPid\": 22692,\r\n  \"childStartFiletime\": 134378584123317805,\r\n  \"coordinatorNonce\": null\r\n}\r\n"
+    },
+    "DB_PG_OWNED.json": {
+      "sha256": "393c87b71ff0170caaa9f248b206a7a523494ba55327bae97ac9f0fe7eeb5833",
+      "utf8": "{\r\n  \"context\": {\r\n    \"commandPath\": \"C:\\\\Users\\\\User\\\\Documents\\\\Codex\\\\2026-10-30\\\\files-pasted-by-the-user-gox\\\\work\\\\scoped-db-current-inputs-owned-a9\\\\normal-locked-three\\\\command.json\",\r\n    \"commandSha256\": \"f2686599fa142f737852e2eda31c87164523a6c3786ed583dad4927a05718e49\",\r\n    \"rootThreadId\": \"01a18bb8-bd73-7e13-812b-637d3a45a60b\",\r\n    \"instanceNonce\": \"552b6d9f-4abe-4085-842c-6d3f6e9c8f7a\",\r\n    \"childPid\": 22692,\r\n    \"childStartFiletime\": 134378584123317805,\r\n    \"coordinatorNonce\": null\r\n  },\r\n  \"postgres\": {\r\n    \"pid\": 17668,\r\n    \"startFiletime\": 134378584141114963\r\n  },\r\n  \"dataRoot\": \"C:\\\\dev\\\\rik-expo-app-r4a5-dc4f0ce7\\\\.release-runtime\\\\r568\\\\runtime\\\\postgres-r4\",\r\n  \"port\": 55432\r\n}\r\n"
+    },
+    "DB_PG_CLOSED.json": {
+      "sha256": "ef93c9530b7b630d64ee26a29d43d156a5b6e37d787b79515c66c51a0d3acb1d",
+      "utf8": "{\r\n  \"context\": {\r\n    \"commandPath\": \"C:\\\\Users\\\\User\\\\Documents\\\\Codex\\\\2026-10-30\\\\files-pasted-by-the-user-gox\\\\work\\\\scoped-db-current-inputs-owned-a9\\\\normal-locked-three\\\\command.json\",\r\n    \"commandSha256\": \"f2686599fa142f737852e2eda31c87164523a6c3786ed583dad4927a05718e49\",\r\n    \"rootThreadId\": \"01a18bb8-bd73-7e13-812b-637d3a45a60b\",\r\n    \"instanceNonce\": \"552b6d9f-4abe-4085-842c-6d3f6e9c8f7a\",\r\n    \"childPid\": 22692,\r\n    \"childStartFiletime\": 134378584123317805,\r\n    \"coordinatorNonce\": null\r\n  },\r\n  \"postgres\": {\r\n    \"pid\": 17668,\r\n    \"startFiletime\": 134378584141114963\r\n  },\r\n  \"pgStopExit\": 0,\r\n  \"finalListenerAbsent\": true\r\n}\r\n"
+    },
+    "receipt.json": {
+      "sha256": "69d43716035648e065d8d9cb074465285a795dd2e314bbae19e02ca98966a6cb",
+      "utf8": "{\r\n  \"status\": \"NOT_ACCEPTED\",\r\n  \"commandRole\": \"FINITE_DB_VERIFICATION\",\r\n  \"fixedGroup\": \"NORMAL_LOCKED_THREE\",\r\n  \"context\": {\r\n    \"commandPath\": \"C:\\\\Users\\\\User\\\\Documents\\\\Codex\\\\2026-10-30\\\\files-pasted-by-the-user-gox\\\\work\\\\scoped-db-current-inputs-owned-a9\\\\normal-locked-three\\\\command.json\",\r\n    \"commandSha256\": \"f2686599fa142f737852e2eda31c87164523a6c3786ed583dad4927a05718e49\",\r\n    \"rootThreadId\": \"01a18bb8-bd73-7e13-812b-637d3a45a60b\",\r\n    \"instanceNonce\": \"552b6d9f-4abe-4085-842c-6d3f6e9c8f7a\",\r\n    \"childPid\": 22692,\r\n    \"childStartFiletime\": 134378584123317805,\r\n    \"coordinatorNonce\": null\r\n  },\r\n  \"error\": \"DB_JEST_FAILED\",\r\n  \"closureError\": null,\r\n  \"testsPassed\": false,\r\n  \"postgres\": {\r\n    \"pid\": 17668,\r\n    \"startFiletime\": 134378584141114963\r\n  },\r\n  \"normalPgClosure\": true,\r\n  \"pgStopExit\": 0,\r\n  \"launcherExit\": 1,\r\n  \"remainingOwnedProcesses\": [],\r\n  \"hardExternalKillGracefulClosure\": \"NOT_PROVEN\",\r\n  \"parentMeasuredNotAdopted\": {\r\n    \"pid\": 20076,\r\n    \"startFiletime\": 134378584060611321\r\n  },\r\n  \"peakAggregateRssBytes\": 889655296,\r\n  \"peakAggregatePrivateBytes\": 768552960,\r\n  \"minimumPhysicalFreeBytes\": 6521954304,\r\n  \"minimumCommitHeadroomBytes\": 7920685056,\r\n  \"policy\": {\r\n    \"admissionMiB\": 4096,\r\n    \"osStopMiB\": 3072,\r\n    \"rssMiB\": 1536,\r\n    \"privateMiB\": 1152,\r\n    \"timeoutSeconds\": 262\r\n  }\r\n}\r\n"
+    },
+    "CAPTURE_MANIFEST.json": {
+      "sha256": "4b80728454093c256b410521f2368224426b79e2bd2cad1bda5d7788518431c1",
+      "utf8": "{\n  \"contract\": \"bound-electrical-current-read-witness/r2\",\n  \"filetimeEncoding\": \"DECIMAL_UINT64_STRING\",\n  \"scope\": \"FIXED_PANEL_SOCKET_CURRENT_INPUT_READ_ONLY_NOT_ADMISSION\",\n  \"context\": {\n    \"commandPath\": \"C:\\\\Users\\\\User\\\\Documents\\\\Codex\\\\2026-10-30\\\\files-pasted-by-the-user-gox\\\\work\\\\scoped-db-current-inputs-owned-a9\\\\normal-locked-three\\\\command.json\",\n    \"commandSha256\": \"f2686599fa142f737852e2eda31c87164523a6c3786ed583dad4927a05718e49\",\n    \"rootThreadId\": \"01a18bb8-bd73-7e13-812b-637d3a45a60b\",\n    \"instanceNonce\": \"552b6d9f-4abe-4085-842c-6d3f6e9c8f7a\",\n    \"childPid\": 22692,\n    \"childStartFiletime\": \"134378584123317805\",\n    \"coordinatorNonce\": null\n  },\n  \"postgres\": {\n    \"pid\": 17668,\n    \"startFiletime\": \"134378584141114963\"\n  },\n  \"commandSha256\": \"f2686599fa142f737852e2eda31c87164523a6c3786ed583dad4927a05718e49\",\n  \"sourceFreeze\": \"C:\\\\Users\\\\User\\\\Documents\\\\Codex\\\\2026-10-30\\\\files-pasted-by-the-user-gox\\\\work\\\\scoped-db-current-inputs-root-a9\\\\SOURCE_FREEZE.json\",\n  \"sourceWitnessPins\": [\n    {\n      \"path\": \"C:\\\\dev\\\\rik-expo-app-r4a5-dc4f0ce7\\\\scripts\\\\verification\\\\capturePanelSocketCurrentInputsR1.ts\",\n      \"sha256\": \"7884e220ee251f19447ca3a91161fad2914c0468b4aa50e935963886f845698d\"\n    },\n    {\n      \"path\": \"C:\\\\dev\\\\rik-expo-app-r4a5-dc4f0ce7\\\\scripts\\\\verification\\\\ownedControlFiletimeTransportR1.ts\",\n      \"sha256\": \"e9df90bca7060d3e5aaa66fa52169adb559caed70afdd263c755aa5a1ec4e568\"\n    },\n    {\n      \"path\": \"C:\\\\dev\\\\rik-expo-app-r4a5-dc4f0ce7\\\\scripts\\\\estimate\\\\r4a13\\\\masterScopedNormativeRegistryPreimageR1.ts\",\n      \"sha256\": \"d472800e1e71753ab0909e5334ef5da27ae02532d84457f9c931dfff00d6e579\"\n    },\n    {\n      \"path\": \"C:\\\\dev\\\\rik-expo-app-r4a5-dc4f0ce7\\\\scripts\\\\estimate\\\\r4a13\\\\masterSingleDefinitionRetainParentBindingsR1.ts\",\n      \"sha256\": \"4e7e4e0a5a03d6b34453ed8e5e3ab5a2a3509f6d8a22766c6db14d18fa152031\"\n    },\n    {\n      \"path\": \"C:\\\\dev\\\\rik-expo-app-r4a5-dc4f0ce7\\\\data\\\\estimate-benchmarks\\\\r568-local-developer-canonical-release.json\",\n      \"sha256\": \"9b6322feb70e38191e7fe171d82dadebfe47816890d4c339f890477ebc83a258\"\n    }\n  ],\n  \"pointer\": {\n    \"sha256\": \"9b6322feb70e38191e7fe171d82dadebfe47816890d4c339f890477ebc83a258\",\n    \"definitionReleaseId\": \"01417cef-3091-5012-844d-1bbd9e75cee1\",\n    \"searchReleaseId\": \"485d16ea-60f5-5c6c-b43a-5ea604945208\"\n  },\n  \"transaction\": {\n    \"isolation\": \"repeatable read\",\n    \"readOnly\": true,\n    \"timezone\": \"UTC\",\n    \"rolledBack\": true\n  },\n  \"outputs\": {\n    \"panel\": {\n      \"path\": \"C:\\\\Users\\\\User\\\\Documents\\\\Codex\\\\2026-10-30\\\\files-pasted-by-the-user-gox\\\\work\\\\scoped-db-current-inputs-owned-a9\\\\normal-locked-three\\\\panel-socket-current-inputs\\\\panel-current-full-parent.json\",\n      \"sha256\": \"0b4293d1e7f8c8bddc4f1138d1857c1a75cd6d664d98e45e838bcc7ff3e8b9fa\"\n    },\n    \"socket\": {\n      \"path\": \"C:\\\\Users\\\\User\\\\Documents\\\\Codex\\\\2026-10-30\\\\files-pasted-by-the-user-gox\\\\work\\\\scoped-db-current-inputs-owned-a9\\\\normal-locked-three\\\\panel-socket-current-inputs\\\\socket-current-full-parent.json\",\n      \"sha256\": \"2b7f4cf590ff0070e4e364bfddf0a5588fd92f224fd735b6ec3f39d047a89f56\"\n    },\n    \"socketScope\": {\n      \"path\": \"C:\\\\Users\\\\User\\\\Documents\\\\Codex\\\\2026-10-30\\\\files-pasted-by-the-user-gox\\\\work\\\\scoped-db-current-inputs-owned-a9\\\\normal-locked-three\\\\panel-socket-current-inputs\\\\socket-scoped-current-source-witness.json\",\n      \"sha256\": \"441559c639d0baabefcb77b6b42222b45f2b6cd8552cf7df6dc21e4638c68b32\"\n    }\n  },\n  \"historicalBodyEquivalence\": \"UNREVIEWED_REQUIRES_ROOT_COMPARISON\",\n  \"sourceAdmission\": false,\n  \"projectAuthenticated\": false,\n  \"full\": false\n}\n"
+    }
+  },
+  "retainedHistoricalParent": {
+    "sha256": "aaa9033eaa4a0c416d180b4c086b88cef7e3ed5627ce89c38ed7728402ee36c7",
+    "oldRawPgByteParity": "UNAVAILABLE",
+    "unchangedDefinitionId": "9ba0918b-153e-543a-b335-b41d44e16fc8",
+    "unchangedBaselineId": "47b6fc5a-608b-5aa9-a25d-d920c099ce81",
+    "formulaOrderChangedAndPreserved": true,
+    "baselineQ100": "ASSUMPTION_NOT_CURRENT_SOCKET_QUANTITY_OR_NORM"
+  },
+  "sourceAdmission": false,
+  "projectAuthenticated": false,
+  "publisherAdmitted": false,
+  "normalLockedAdmitted": false,
+  "globalAbsence": false,
+  "full": false,
+  "originalWindowOutcome": {
+    "status": "NOT_ACCEPTED",
+    "testsPassed": false,
+    "error": "DB_JEST_FAILED",
+    "normalPgClosure": true,
+    "meaning": "The genuine read and normal PG closure are separate from failed R145 anchor and do not turn the six DB tests or consumers green."
+  },
+  "currentConsumerExecution": "UNRUN; requires ROOT peer/intake/fresh-context actual two existing socket suites."
+}

@@ -4,7 +4,7 @@ import {incandescentVlControlS2758,verifyIncandescentVlS2758} from '../../../../
 import {buildMasterParameterCalculationConsumers} from '../../../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import type {CanonicalEstimateCatalogItem} from '../backendPlatform/contracts';
 import {buildConsumerCanonicalPrecompileParameterSession,consumerCanonicalPrecompileParameterOverrides} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
-import {buildCanonicalBaselinePlan} from '../../../features/consumerRepair/consumerCanonicalBaselineCompile';
+import {buildCanonicalBaselinePlan} from '../backendPlatform/canonicalConsumerPromptPlanServerR1';
 import {buildCanonicalParameterCards} from '../../estimatePresentation/buildCanonicalParameterCards';
 import {ParameterDisclosurePanel} from '../../../features/consumerRepair/ConsumerRepairProgressiveEstimatePanel';
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';import {estimateDeterministicHash} from '../estimateDeterministicHash';
@@ -16,7 +16,7 @@ function catalog():CanonicalEstimateCatalogItem{
       formulaConsumers:c.formulaConsumers[p.parameter_id],resourceBranchConsumers:c.resourceConsumers[p.parameter_id],guide:{guideKind:g.guide_kind,guideShortRu:g.guide_short_ru,guideValidationPolicy:g.guide_validation_policy,sourceRole:g.source_role,sourceDocument:g.source_document,sourceLocator:g.source_locator,sourceSnapshotHash:g.source_snapshot_hash,guideVersion:g.guide_version,applicability:g.applicability,verifiedAt:g.verified_at}} as CanonicalEstimateCatalogItem['parameterSchema'][number];})};
 }
 function session(parameters:Record<string,unknown>){return buildConsumerCanonicalPrecompileParameterSession({catalog:catalog(),draftId:'lighting-prepublication',parameters:parameters as Record<string,string|number>,userExplicitParameterIds:Object.keys(parameters),missingParameterIds:[]});}
-async function amended(input:Record<string,unknown>,rowId:string,quantity:number|null){const d=incandescentVlDefinitionS2758();return compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,primaryMeasureParameterId:'luminaire_count',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:input,confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:29,hashJson:async v=>estimateDeterministicHash(v),rowOverrides:{[prefix+':'+rowId]:{quantity,provenance:{kind:'manual',reason:'CONTROL_ONLY bypass negative'}}}});}
+async function amended(input:Record<string,unknown>,rowId:string,quantity:number|null,authored=true){const d=incandescentVlDefinitionS2758();return compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,primaryMeasureParameterId:'luminaire_count',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:input,confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:29,hashJson:async v=>estimateDeterministicHash(v),rowOverrides:{[prefix+':'+rowId]:{quantity,...(authored?{provenance:{kind:'manual',reason:'CONTROL_ONLY bypass negative'}}:{})}}});}
 
 it('matches primary column01 rates, project units and finite partial composition',async()=>{expect(await verifyIncandescentVlS2758()).toMatchObject({shape:[73,29,29],own:[22,6,7],hired:[22,6,8],acceptedCompleteTypes:0});});
 it.each([[1,'1.29','0.06','0.00006','0.01'],[11,'14.19','0.66','0.00066','0.11']] as const)('uses four frozen source cells at N%s, independent of project material masses',async(n,labor,truck,gas,grease)=>{
@@ -66,7 +66,32 @@ it.each([[ownLuminaireTruckS2758,'own'],[hiredLuminaireTruckS2758,'hired']] as c
 it.each(['construction_bolts','brackets','steel_clamps','incandescent_luminaires','rubber_insulated_wire'])('cannot bypass missing documented project total/specification for %s with manual quantity',async id=>{
   for(const suffix of ['project_total','project_specification']){const input={...incandescentVlControlS2758(),[id+'_'+suffix]:undefined};const r=await amended(input,id+'-consumed',1);expect(r.rows.some(x=>x.row_id===prefix+':'+id+'-consumed')).toBe(false);expect(r.preliminaryNeeds.some(x=>x.row_id===prefix+':'+id+'-consumed')).toBe(true);}
 });
-it.each([0,1])('rejects manual quantity%s on source-owned access need',async quantity=>{await expect(amended(incandescentVlControlS2758(),'additional-access',quantity)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});});
+it.each([0,1])('retains explicit manual access quantity%s without closing the source-owned need',async quantity=>{
+  const source=incandescentVlDefinitionS2758(),input=incandescentVlControlS2758(),before=JSON.stringify({source,input}),
+    rowId=prefix+':additional-access',parameter='open_scope_qty_additional_access',
+    baseline=await amended(input,'additional-access',null),result=await amended(input,'additional-access',quantity),
+    original=baseline.preliminaryNeeds.find(need=>need.row_id===rowId)!,need=result.preliminaryNeeds.find(need=>need.row_id===rowId)!;
+  expect(original).toMatchObject({row_id:rowId,quantity:null,unit_id:'',need_state:'QUANTITY_REQUIRED'});
+  expect(need).toMatchObject({row_id:rowId,quantity:String(quantity),unit_id:'',unit_price:null,
+    need_state:'QUANTITY_REQUIRED',selected:original.selected,procurement_eligible:false,formula_id:prefix+':formula:additional-access'});
+  expect(need.missing_parameter_ids).toEqual(original.missing_parameter_ids);expect(need.missing_parameter_ids).toContain(parameter);
+  expect(need.calculation_trace).toMatchObject({manualQuantityOverride:true,calculatedQuantityBeforeOverride:null,
+    manualAmendment:{kind:'manual',reason:'CONTROL_ONLY bypass negative'},formulaId:prefix+':formula:additional-access',
+    formulaAstSha256:source.formulas.find(formula=>formula.formula_id===prefix+':formula:additional-access')!.ast_sha256});
+  expect(need.calculation_trace).not.toHaveProperty('effectiveQuantityOutput');expect(need.normative_trace).toEqual([]);
+  expect(result.rows).toEqual(baseline.rows);expect(result.derivedParameters).toEqual(baseline.derivedParameters);
+  expect(result.preliminaryNeeds.map(need=>need.row_id)).toEqual(baseline.preliminaryNeeds.map(need=>need.row_id));
+  expect(result.totals.amount).toBe(baseline.totals.amount);expect(result.parameters[parameter]??null).toBeNull();
+  expect(source.parameters.find(definition=>definition.parameter_id===parameter)).toMatchObject({default_value:null,
+    truth_metadata:{visibility_role:'INTERNAL_ONLY',value_source_role:'UNRESOLVED_APPLICATION_NORM',
+      provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL'}}});
+  const cleared=await amended(input,'additional-access',null),restored=cleared.preliminaryNeeds.find(need=>need.row_id===rowId)!;
+  expect(restored).toMatchObject({quantity:null,missing_parameter_ids:original.missing_parameter_ids,need_state:'QUANTITY_REQUIRED'});
+  expect(restored.calculation_trace).not.toHaveProperty('manualQuantityOverride');
+  expect(JSON.stringify({source,input})).toBe(before);
+  await expect(amended(input,'additional-access',quantity,false)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
+  await expect(compileIncandescentVlS2758({...input,[parameter]:quantity})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
+});
 it.each([['brackets',40,'40'],['solvent_gasoline',0.002,'2'],['construction_bolts',0.01,'0.01']] as const)('propagates explicit physical %s amendment through the one effective consumption owner',async(id,quantity,order)=>{
   const r=await amended(incandescentVlControlS2758(),id+'-consumed',quantity),physical=r.rows.find(x=>x.row_id===prefix+':'+id+'-consumed')!,buy=r.rows.find(x=>x.row_id===prefix+':'+id)!;
   expect(physical.quantity).toBe(String(quantity));expect(buy.quantity).toBe(order);expect(buy.calculation_trace).toMatchObject({purchaseBalance:{consumed:order}});

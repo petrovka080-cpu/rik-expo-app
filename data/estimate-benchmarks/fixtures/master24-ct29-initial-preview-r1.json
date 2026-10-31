@@ -1,0 +1,589 @@
+{
+  "provenance": {
+    "revisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+    "definitionVersionId": "97a5b9be-2bee-564b-8171-799b75f8a214",
+    "source": "actual normal-owner Android geometry acceptance API rows; only preview inputs retained",
+    "rowCount": 16
+  },
+  "rows": [
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:net-mixture",
+      "visibleName": "CT29 en_GL: приблизительная потребность1.8 кг/м²/мм",
+      "quantity": 3038.175,
+      "unit": "kg",
+      "structuredRow": {
+        "quantity": 3038.175,
+        "unitPrice": null,
+        "includedInEstimate": false,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:net-mixture",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "INFORMATIONAL_SCOPE",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "CT29 en_GL: приблизительная потребность1.8 кг/м²/мм",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "CT29 en_GL: приблизительная потребность1.8 кг/м²/мм",
+            "brandAndModelRu": "Ceresit CT29 en_GL",
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": false,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "material"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-minimum-batches",
+      "visibleName": "План последовательных целых замесов25 кг — расчётный минимум",
+      "quantity": 122.0,
+      "unit": "pcs",
+      "structuredRow": {
+        "quantity": 122.0,
+        "unitPrice": null,
+        "includedInEstimate": false,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:25kg-minimum-batches",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "INFORMATIONAL_SCOPE",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "План последовательных целых замесов25 кг — расчётный минимум",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "План последовательных целых замесов25 кг — расчётный минимум",
+            "brandAndModelRu": "Ceresit CT29 en_GL",
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": false,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "material"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-prepared-mixture",
+      "visibleName": "CT29: сухая масса плана целых замесов по 25 кг",
+      "quantity": 3050.0,
+      "unit": "kg",
+      "structuredRow": {
+        "quantity": 3050.0,
+        "unitPrice": null,
+        "includedInEstimate": false,
+        "calculationTrace": "{\"resourceGraph\":{\"purchaseBalanceOwnerRowId\":\"plaster:ct29-existing:cement-lime-indoor:25kg-order\",\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:25kg-prepared-mixture",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "INFORMATIONAL_SCOPE",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "CT29: сухая масса плана целых замесов по 25 кг",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "CT29: сухая масса плана целых замесов по 25 кг",
+            "brandAndModelRu": "Ceresit CT29 en_GL",
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": false,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "material"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-plan-excess",
+      "visibleName": "Превышение плана замесов над net — не норма отходов",
+      "quantity": 11.825,
+      "unit": "kg",
+      "structuredRow": {
+        "quantity": 11.825,
+        "unitPrice": null,
+        "includedInEstimate": false,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:25kg-plan-excess",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "INFORMATIONAL_SCOPE",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Превышение плана замесов над net — не норма отходов",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Превышение плана замесов над net — не норма отходов",
+            "brandAndModelRu": "Ceresit CT29 en_GL",
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": false,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "material"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-order",
+      "visibleName": "Ceresit CT29 en_GL,25 кг: закупаемая сухая масса после выделенного остатка",
+      "quantity": 2975.0,
+      "unit": "kg",
+      "structuredRow": {
+        "quantity": 2975.0,
+        "unitPrice": null,
+        "includedInEstimate": true,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:25kg-order",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "OWN_COST",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Ceresit CT29 en_GL,25 кг: закупаемая сухая масса после выделенного остатка",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Ceresit CT29 en_GL,25 кг: закупаемая сухая масса после выделенного остатка",
+            "brandAndModelRu": "Ceresit CT29 en_GL",
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": true,
+          "includedInProcurement": true,
+          "smartEstimateProjectionV2": {
+            "category": "material"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-ordered-bags",
+      "visibleName": "Целые25 кгмешки CT29 в заказе — без второй цены",
+      "quantity": 119.0,
+      "unit": "pcs",
+      "structuredRow": {
+        "quantity": 119.0,
+        "unitPrice": null,
+        "includedInEstimate": false,
+        "calculationTrace": "{\"resourceGraph\":{\"purchaseBalanceOwnerRowId\":\"plaster:ct29-existing:cement-lime-indoor:25kg-order\",\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:25kg-ordered-bags",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "INFORMATIONAL_SCOPE",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Целые25 кгмешки CT29 в заказе — без второй цены",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Целые25 кгмешки CT29 в заказе — без второй цены",
+            "brandAndModelRu": "Ceresit CT29 en_GL",
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": false,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "material"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-mix-water-min",
+      "visibleName": "Нижняя граница рецепта воды5.7 л/25 кг — справочно",
+      "quantity": 695.4,
+      "unit": "l",
+      "structuredRow": {
+        "quantity": 695.4,
+        "unitPrice": null,
+        "includedInEstimate": false,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:25kg-mix-water-min",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "INFORMATIONAL_SCOPE",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Нижняя граница рецепта воды5.7 л/25 кг — справочно",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Нижняя граница рецепта воды5.7 л/25 кг — справочно",
+            "brandAndModelRu": "Ceresit CT29 en_GL",
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": "Рецепт 5.7–6.2 л на целый мешок 25 кг; верхняя граница — планирование, не факт приготовления."
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": false,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "material"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-mix-water-max",
+      "visibleName": "Верхняя граница рецепта воды6.2 л/25 кг — справочно",
+      "quantity": 756.4,
+      "unit": "l",
+      "structuredRow": {
+        "quantity": 756.4,
+        "unitPrice": null,
+        "includedInEstimate": false,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:25kg-mix-water-max",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "INFORMATIONAL_SCOPE",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Верхняя граница рецепта воды6.2 л/25 кг — справочно",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Верхняя граница рецепта воды6.2 л/25 кг — справочно",
+            "brandAndModelRu": "Ceresit CT29 en_GL",
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": "Рецепт 5.7–6.2 л на целый мешок 25 кг; верхняя граница — планирование, не факт приготовления."
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": false,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "material"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-mix-water-consumed",
+      "visibleName": "Вода чистая холодная: план целых замесов CT29, верхний рецепт6.2 л/25 кг",
+      "quantity": 756.4,
+      "unit": "l",
+      "structuredRow": {
+        "quantity": 756.4,
+        "unitPrice": null,
+        "includedInEstimate": true,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:25kg-mix-water-consumed",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "OWN_COST",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Вода чистая холодная: план целых замесов CT29, верхний рецепт6.2 л/25 кг",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Вода чистая холодная: план целых замесов CT29, верхний рецепт6.2 л/25 кг",
+            "brandAndModelRu": "Ceresit CT29 en_GL",
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": "Рецепт 5.7–6.2 л на целый мешок 25 кг; верхняя граница — планирование, не факт приготовления."
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": true,
+          "includedInProcurement": true,
+          "smartEstimateProjectionV2": {
+            "category": "material"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:labor",
+      "visibleName": "Нормативный труд ручной однослойной штукатурки, разряд 3.6; с предоставлением обычного инвентаря",
+      "quantity": 87.58383375,
+      "unit": "man_hour",
+      "structuredRow": {
+        "quantity": 87.58383375,
+        "unitPrice": null,
+        "includedInEstimate": true,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:application\",\"processRole\":\"COST_SUMMARY\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":0,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Однослойное ручное нанесение и разглаживание\",\"additionalOperations\":[{\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"processOrdinal\":20,\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"},{\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:application\",\"processRole\":\"PROCESS\",\"processOrdinal\":30,\"operationTitleRu\":\"Однослойное ручное нанесение и разглаживание\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}],\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:labor",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "OWN_COST",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Нормативный труд ручной однослойной штукатурки, разряд 3.6; с предоставлением обычного инвентаря",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов.",
+              "Один владелец трудового/накладного обеспечения: строка нормативного труда по выбранному составу; её цена должна содержать опубликованный накладной состав предоставления, износа и ремонта обычного ручного инвентаря/доступа/СИЗ. Отдельная повторная закупка инструмента и оплата труда машинистов не начисляются. Внутриобъектная подача имеет собственные нормативные машино-часы. Внешняя доставка и вывоз фактических отходов не объявляются вычисленными из площади."
+            ],
+            "sourceTitleRu": "Нормативный труд ручной однослойной штукатурки, разряд 3.6; с предоставлением обычного инвентаря",
+            "brandAndModelRu": null,
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": true,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "labor"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:mixer",
+      "visibleName": "Нормативный растворосмеситель 65 л; фактически допустима малая механизация по§4.2",
+      "quantity": 2.81875125,
+      "unit": "machine_hour",
+      "structuredRow": {
+        "quantity": 2.81875125,
+        "unitPrice": null,
+        "includedInEstimate": true,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:mixer",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "OWN_COST",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Нормативный растворосмеситель 65 л; фактически допустима малая механизация по§4.2",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Нормативный растворосмеситель 65 л; фактически допустима малая механизация по§4.2",
+            "brandAndModelRu": null,
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": "Нормативный 65 л растворосмеситель;1.67 маш-ч/100 м². Часы фактической дрели не заявлены."
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": true,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "equipment"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:loader",
+      "visibleName": "Нормативный автопогрузчик 5 т: внутриобъектная подача",
+      "quantity": 0.067515,
+      "unit": "machine_hour",
+      "structuredRow": {
+        "quantity": 0.067515,
+        "unitPrice": null,
+        "includedInEstimate": true,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:handling\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":10,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Внутриобъектная подача CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:loader",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "OWN_COST",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Нормативный автопогрузчик 5 т: внутриобъектная подача",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Нормативный автопогрузчик 5 т: внутриобъектная подача",
+            "brandAndModelRu": null,
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": true,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "equipment"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:hoist",
+      "visibleName": "Нормативный одномачтовый подъёмник 500 кг, 45 м: внутриобъектная подача",
+      "quantity": 0.27006,
+      "unit": "machine_hour",
+      "structuredRow": {
+        "quantity": 0.27006,
+        "unitPrice": null,
+        "includedInEstimate": true,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:handling\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":10,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Внутриобъектная подача CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:hoist",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "OWN_COST",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Нормативный одномачтовый подъёмник 500 кг, 45 м: внутриобъектная подача",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Нормативный одномачтовый подъёмник 500 кг, 45 м: внутриобъектная подача",
+            "brandAndModelRu": null,
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": true,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "equipment"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:machine-operators",
+      "visibleName": "Труд машинистов уже в стоимости нормативных машин — без второй цены",
+      "quantity": 3.15632625,
+      "unit": "man_hour",
+      "structuredRow": {
+        "quantity": 3.15632625,
+        "unitPrice": null,
+        "includedInEstimate": false,
+        "calculationTrace": "{\"resourceGraph\":{\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:handling\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":10,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Внутриобъектная подача CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:machine-operators",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "INFORMATIONAL_SCOPE",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Труд машинистов уже в стоимости нормативных машин — без второй цены",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Труд машинистов уже в стоимости нормативных машин — без второй цены",
+            "brandAndModelRu": null,
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": false,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "labor"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:stage-mixing",
+      "visibleName": "Приготовление и последовательное затворение целых мешков 25 кг",
+      "quantity": 122.0,
+      "unit": "pcs",
+      "structuredRow": {
+        "quantity": 122.0,
+        "unitPrice": null,
+        "includedInEstimate": false,
+        "calculationTrace": "{\"resourceGraph\":{\"includedInResourceOwnerRowId\":\"plaster:ct29-existing:cement-lime-indoor:labor\",\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:mixing\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":20,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Целые последовательные замесы CT29\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:stage-mixing",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Приготовление и последовательное затворение целых мешков 25 кг",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Приготовление и последовательное затворение целых мешков 25 кг",
+            "brandAndModelRu": "Ceresit CT29 en_GL",
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": false,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "work"
+          }
+        }
+      }
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:stage-application",
+      "visibleName": "Ручное нанесение, разглаживание и затирка CT29 до 20 мм за проход",
+      "quantity": 160.75,
+      "unit": "m2",
+      "structuredRow": {
+        "quantity": 160.75,
+        "unitPrice": null,
+        "includedInEstimate": false,
+        "calculationTrace": "{\"resourceGraph\":{\"includedInResourceOwnerRowId\":\"plaster:ct29-existing:cement-lime-indoor:labor\",\"operationCompositionV1\":{\"groupId\":\"plaster:ct29-existing:cement-lime-indoor\",\"operationId\":\"plaster:ct29-existing:cement-lime-indoor:operation:application\",\"processRole\":\"PROCESS\",\"groupTitleRu\":\"CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы\",\"processOrdinal\":30,\"contractVersion\":\"canonical-operation-resource/v1\",\"operationTitleRu\":\"Однослойное ручное нанесение и разглаживание\",\"completionCriterionRu\":\"Ресурс рассчитан существующим ядром по геометрии; фактическое выполнение и контроль подтверждаются отдельно.\"}}}",
+        "sourceParameters": {
+          "rowCode": "plaster:ct29-existing:cement-lime-indoor:stage-application",
+          "canonicalBackendRevisionId": "c8cd2ffd-f583-45fd-8e0b-42f4ec03235c",
+          "canonicalCostTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "canonicalPublicResourcePresentationV1": {
+            "nameRu": "Ручное нанесение, разглаживание и затирка CT29 до 20 мм за проход",
+            "detailsRu": [
+              "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+              "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов."
+            ],
+            "sourceTitleRu": "Ручное нанесение, разглаживание и затирка CT29 до 20 мм за проход",
+            "brandAndModelRu": null,
+            "contractVersion": "canonical-public-resource-presentation/v1",
+            "specificationRu": null
+          },
+          "canonicalManualTitleOverride": false,
+          "includedInEstimate": false,
+          "includedInProcurement": false,
+          "smartEstimateProjectionV2": {
+            "category": "work"
+          }
+        }
+      }
+    }
+  ],
+  "preliminaryNeeds": [
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:curing-water",
+      "quantity": null,
+      "needState": "QUANTITY_REQUIRED"
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:logistics-cleanup",
+      "quantity": null,
+      "needState": "QUANTITY_REQUIRED"
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:scope-tools",
+      "quantity": null,
+      "needState": "CONDITION_REQUIRED",
+      "scopeRequirementDecision": {
+        "kind": "INCLUDED",
+        "rowId": "plaster:ct29-existing:cement-lime-indoor:scope-tools",
+        "status": "INCLUDED",
+        "groupId": "plaster:ct29-existing:cement-lime-indoor",
+        "titleRu": "Обычный ручной инвентарь, доступ до 3.5 м и СИЗ в накладном составе трудового владельца",
+        "reasonRu": "Один владелец трудового/накладного обеспечения: строка нормативного труда по выбранному составу; её цена должна содержать опубликованный накладной состав предоставления, износа и ремонта обычного ручного инвентаря/доступа/СИЗ. Отдельная повторная закупка инструмента и оплата труда машинистов не начисляются. Внутриобъектная подача имеет собственные нормативные машино-часы. Внешняя доставка и вывоз фактических отходов не объявляются вычисленными из площади.",
+        "groupTitleRu": "CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы",
+        "coveringRowIds": [
+          "plaster:ct29-existing:cement-lime-indoor:labor"
+        ],
+        "originalRowIds": [],
+        "contractVersion": "canonical-scope-requirement-decision/v1",
+        "numericNormAccepted": false,
+        "separatePaymentAccepted": false,
+        "missingObjectFactParameterIds": []
+      }
+    }
+  ]
+}

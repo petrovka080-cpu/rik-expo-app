@@ -19,6 +19,21 @@ function fixture(overrides: Record<string, unknown> = {}) {
   return { port: 8081, root: '.', fetchImpl, readFile };
 }
 describe('whole-app startup before first Android/PDF use', () => {
+  it('checks pinned PDF transport for a Web stage without requesting Android or claiming its readiness', async () => {
+    const options = fixture();
+    const receipt = await warmWholeAppDeveloperRuntime({ ...options, target: 'web' });
+    expect(options.fetchImpl.mock.calls.map(call => call[0])).toEqual([origin + '/pdfjs/pdf.mjs', origin + '/pdfjs/pdf.worker.mjs']);
+    expect(receipt.status).toBe('WHOLE_APP_WEB_PDF_TRANSPORT_READY_ANDROID_NOT_CHECKED');
+    expect(receipt.android).toBeNull();
+    expect(receipt.androidTransportReady).toBe(false);
+    expect(receipt.pdfAssets.map((asset: {sha256:string}) => asset.sha256)).toEqual([library, worker].map(bytes => createHash('sha256').update(bytes).digest('hex')));
+  });
+  it('rejects unknown platform scope and still refuses a substituted worker during Web review', async () => {
+    const options = fixture();
+    await expect(warmWholeAppDeveloperRuntime({ ...options, target: 'unknown' })).rejects.toThrow('WHOLE_APP_WARMUP_TARGET_INVALID');
+    expect(options.fetchImpl).not.toHaveBeenCalled();
+    await expect(warmWholeAppDeveloperRuntime({ ...fixture({ [origin + '/pdfjs/pdf.worker.mjs']: streamResponse(Buffer.from('substitute')) }), target: 'web' })).rejects.toThrow('WHOLE_APP_PDF_ASSET_BYTES_MISMATCH');
+  });
   it('warms the exact native manifest URL and verifies both pinned renderer files', async () => {
     const options = fixture();
     const receipt = await warmWholeAppDeveloperRuntime(options);

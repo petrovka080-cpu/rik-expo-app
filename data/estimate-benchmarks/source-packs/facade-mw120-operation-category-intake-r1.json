@@ -1,0 +1,2336 @@
+{
+  "contract": "facade-operation-category-intake/r1",
+  "sourceKind": "INDEPENDENT_SOURCE_METHOD_REVIEW",
+  "generatedFromCurrentRows": false,
+  "categoryKeys": [
+    "material",
+    "mortar-adhesive",
+    "consumables",
+    "fasteners",
+    "tool",
+    "accessories",
+    "machines",
+    "operators",
+    "labour",
+    "services",
+    "logistics-feed",
+    "access-protection",
+    "quality-control",
+    "cleanup-waste"
+  ],
+  "fullTechnicalAcceptance": false,
+  "sourceRosterAccepted": 27,
+  "subworks": [
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:preparation",
+      "titleRu": "Подготовить основание",
+      "sourceOrdinal": 1,
+      "categories": [
+        {
+          "category": "material",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "penetrating-primer"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:penetrating",
+      "titleRu": "Укрепить поверхность проникающей грунтовкой",
+      "sourceOrdinal": 2,
+      "categories": [
+        {
+          "category": "material",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "penetrating-primer"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:openings",
+      "titleRu": "Усилить участки вокруг оконных и дверных проёмов",
+      "sourceOrdinal": 3,
+      "categories": [
+        {
+          "category": "material",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "mesh"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "base-adhesive"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:bonding",
+      "titleRu": "Приклеить минераловатные плиты",
+      "sourceOrdinal": 4,
+      "categories": [
+        {
+          "category": "material",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "insulation",
+            "starter-profile"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "attachment-adhesive"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "water"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "starter-fastener"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:fixing",
+      "titleRu": "Закрепить плиты механическими дюбелями",
+      "sourceOrdinal": 5,
+      "categories": [
+        {
+          "category": "material",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "starter-fastener",
+            "wall-anchor"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "perforator",
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:sealing",
+      "titleRu": "Герметизировать стыки плит с конструкциями здания",
+      "sourceOrdinal": 6,
+      "categories": [
+        {
+          "category": "material",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "foam",
+            "sealing-tape"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:corners",
+      "titleRu": "Армировать наружные и внутренние углы",
+      "sourceOrdinal": 7,
+      "categories": [
+        {
+          "category": "material",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "mesh",
+            "corner-profile"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "base-adhesive"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:reinforcement",
+      "titleRu": "Выполнить армированный базовый слой",
+      "sourceOrdinal": 8,
+      "categories": [
+        {
+          "category": "material",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "mesh"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "base-adhesive"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "water"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:reveals",
+      "titleRu": "Армировать откосы",
+      "sourceOrdinal": 9,
+      "categories": [
+        {
+          "category": "material",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "mesh",
+            "corner-profile"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "base-adhesive"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:priming",
+      "titleRu": "Загрунтовать наружные стены",
+      "sourceOrdinal": 10,
+      "categories": [
+        {
+          "category": "material",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "silicate-primer"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:reveal-priming",
+      "titleRu": "Загрунтовать откосы",
+      "sourceOrdinal": 11,
+      "categories": [
+        {
+          "category": "material",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "silicate-primer"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:finish",
+      "titleRu": "Выполнить защитно-декоративную отделку стен",
+      "sourceOrdinal": 12,
+      "categories": [
+        {
+          "category": "material",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "decorative-render"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "water",
+            "silicate-paint"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:reveal-finish",
+      "titleRu": "Выполнить защитно-декоративную отделку откосов",
+      "sourceOrdinal": 13,
+      "categories": [
+        {
+          "category": "material",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "decorative-render"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "water",
+            "silicate-paint"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    },
+    {
+      "operationId": "facade:bolix-mw120:krer15:r1:operation:flashing",
+      "titleRu": "Установить оконные отливы",
+      "sourceOrdinal": 14,
+      "categories": [
+        {
+          "category": "material",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "zinc-sheet"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "mortar-adhesive",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "consumables",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "fasteners",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "rivet"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "tool",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "accessories",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "machines",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "drill",
+            "sheet-bender",
+            "angle-grinder",
+            "winch",
+            "loader",
+            "flatbed"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "operators",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "operators"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "labour",
+          "status": "SOURCE_SHARED_QUANTITY_PLUS_EXACT_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [
+            "labour"
+          ],
+          "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "services",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "logistics-feed",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "access-protection",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "quality-control",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:quality-control",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        },
+        {
+          "category": "cleanup-waste",
+          "status": "EXACT_APPLICABLE_CATEGORY_RESIDUAL",
+          "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste",
+          "noUniversalPostOrWearNorm": true,
+          "sourceScopeOnly": true,
+          "acceptedSourceResourceKeys": [],
+          "quantityScope": "NO_INTERNAL_QUANTITY_INVENTED",
+          "quantitativeCoverageIsNotPhysicalCompleteness": true
+        }
+      ]
+    }
+  ],
+  "exactNeeds": [
+    {
+      "key": "project-nodes",
+      "kind": "PROJECT_FACT",
+      "titleRu": "Проектные узлы крепления, проёмов, цоколя, деформаций и пожарных ограничений",
+      "missingRu": "Проектная расчётная схема, ветровые зоны, основание и вырыв, пригодность дюбеля10×180мм/стартового крепления, узлы и реальные линейные количества; площадь не проектирует крепёж.",
+      "owner": "PROJECT_DESIGNER",
+      "returnCriterionRu": "Принятый проект с проверкой точных изделий и ведомостью узлов; ввести лишь фактические количества двух видов крепежа, не внутренние нормы.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes"
+    },
+    {
+      "key": "component-bridge",
+      "kind": "INTERNAL_SOURCE",
+      "titleRu": "Применимость точного исходного комплекта к поставляемой системе",
+      "missingRu": "Нужна прямая документальная совместимость исторических BOLIX O/SG/ZW/WM/SZ/MPKA15DM, SSA1363-4SM, типа плиты и действующего системного допуска; современные OP/N/иная сетка не эквивалентны автоматически.",
+      "owner": "APPLICATION_SOURCE_AUTHOR",
+      "returnCriterionRu": "Точный системный паспорт/документ производителя с сопоставлением всех исходных компонентов и области применения; без переноса нового расхода.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge"
+    },
+    {
+      "key": "mixing-dosing",
+      "kind": "INTERNAL_SOURCE",
+      "titleRu": "Полный комплект приготовления смесей и дозирования воды",
+      "missingRu": "КРЕРвода0,1м³/100м² не является рецептом замеса; отсутствует подтверждённый общий режим всех смесей, дозатор, тара, мешалка+насадка, промывка и количественный пост/ресурс.",
+      "owner": "APPLICATION_SOURCE_AUTHOR",
+      "returnCriterionRu": "Точные паспорта смесей и полная совместимая технологическая карта с балансом воды и конечным комплектом, без Nот площади/мешков.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing"
+    },
+    {
+      "key": "cutting-installation-kit",
+      "kind": "INTERNAL_SOURCE",
+      "titleRu": "Полное оснащение разметки, раскроя и нанесения слоёв",
+      "missingRu": "Нужны нож/пила для минваты, ножницы/диски/листогибная оснастка, подходящий10мманкерный бур, измерение, кельмы/тёрки/шпатели/валики/кисти и количественный состав; сверло5мм не подменяет анкерный бур.",
+      "owner": "APPLICATION_SOURCE_AUTHOR",
+      "returnCriterionRu": "Полная карта конкретной системы/метода с совместимостью рабочих частей и конечным набором на известный пост/период; не выводить из машинных часов.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit"
+    },
+    {
+      "key": "access-rigging-protection",
+      "kind": "PROJECT_AND_INTERNAL_SOURCE",
+      "titleRu": "Подъём, готовые леса, строповка, питание и защита",
+      "missingRu": "Источник работает с готовых инвентарных лесов до30м; монтаж/демонтаж/осмотр, ограждения, стропы, связь, электроснабжение, защита погоды/людей/примыканий и СИЗ не имеют здесь полного количественного комплекта.",
+      "owner": "APPLICATION_AND_PROJECT",
+      "returnCriterionRu": "Принятые ППР/готовые леса и самостоятельные доказанные нормы обеспечения/защиты; не повторять источниковые часы доставки.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection"
+    },
+    {
+      "key": "quality-control",
+      "kind": "PROJECT_AND_INTERNAL_SOURCE",
+      "titleRu": "Контроль основания, крепления, слоёв и приёмка",
+      "missingRu": "Нужны методы/частота/инструмент контроля влажности/прочности/вырыва/адгезии/толщины/плоскости/сетки/погодных выдержек; число испытаний не выводится из площади без нормы.",
+      "owner": "APPLICATION_AND_PROJECT",
+      "returnCriterionRu": "Точный системный регламент и принятый план контроля с оборудованием/услугами и количеством.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:quality-control"
+    },
+    {
+      "key": "external-logistics",
+      "kind": "PROJECT_AND_INTERNAL_SOURCE",
+      "titleRu": "Доставка вне нормированной подачи и внешние услуги",
+      "missingRu": "Погрузчик, лебёдка и автомобиль учтены по строкам нормы; внешняя доставка, разгрузочная схема, хранение, услуги лаборатории/аренды сверх полного machinehour требуют своего охвата.",
+      "owner": "APPLICATION_AND_PROJECT",
+      "returnCriterionRu": "Точная граница сметной нормы и маршрут/ведомость услуг; один owner без второго водителя/машиниста.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics"
+    },
+    {
+      "key": "cleanup-waste",
+      "kind": "INTERNAL_SOURCE",
+      "titleRu": "Очистка, промывка и обращение с отходами",
+      "missingRu": "Полная норма тары/воды/труда/пылеулавливания/сбора и удаления остатков минваты, смесей, тары и металлического раскроя отсутствует в таблице.",
+      "owner": "APPLICATION_SOURCE_AUTHOR",
+      "returnCriterionRu": "Применимая норма/технологическая карта с физическим комплектом и количеством отходов/услуг; не универсальный процент отходов.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste"
+    }
+  ],
+  "sourceCrosscheck": {
+    "literalRosterCount": 27,
+    "literalStageCount": 14,
+    "methodTotalsNotPartitioned": true,
+    "noBlankCategoryIsAutomaticallyNotApplicable": true
+  }
+}

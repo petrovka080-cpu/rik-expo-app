@@ -1,0 +1,102 @@
+{
+  "contract": "gox.facade.porcelain.existing-owner.independent/r214",
+  "generatedFromImplementation": false,
+  "origin": "Held R3/R59 primary-readback oracle plus exact current v6 captured identity;source-only composition contract,not a product execution",
+  "reusedIndependentOracle": {
+    "path": "data/estimate-benchmarks/fixtures/facade-porcelain-whole-independent-r59.json",
+    "sha256": "a2d1ecc6357dceb702e4e385fec98088ea160e89bb915ac256ca1d52834984de"
+  },
+  "currentOwner": {
+    "catalogId": "canonical-work:expanded:ventilated_facade",
+    "definitionId": "301c5e16-0784-51ea-a6a0-cb6f889c464d",
+    "definitionSha256": "80779fb8df0eea0ecd2fadb6b50454dabc89807a2c9ff73fb0e204bf8a09d572",
+    "version": 6,
+    "baselineId": "c38ed3f7-db9f-5924-9a97-08529dc969b8",
+    "captureFileSha256": "6906232983df646806484a2d131b8c546ff2dd7739140e3d9ccc7000ae8b5652"
+  },
+  "expectedChildSourceShape": {
+    "parameters": 80,
+    "formulas": 120,
+    "resources": 120,
+    "mapEntries": 120,
+    "sourceBoundRows": 115,
+    "unresolvedDefinitionNeeds": 5
+  },
+  "expectedWholeShape": {
+    "parameters": 132,
+    "formulas": 196,
+    "resources": 196,
+    "mapEntries": 151,
+    "knownNormativeBindings": 119,
+    "unresolvedDefinitionNeeds": 30
+  },
+  "expectedEntryPhases": [
+    "01-existing-before",
+    "02-current-after",
+    "03-same-BOM-area50",
+    "04-own-priced",
+    "05-hired-priced",
+    "06-buy-priced",
+    "07-two-source-links",
+    "08-missing-readback",
+    "09-missing-project-bracket",
+    "10-zero-scope",
+    "11-reject-exact-method",
+    "12-reject-protected-zero-norms",
+    "13-reject-raw-project-echo",
+    "14-reject-height",
+    "15-reject-panel-thickness",
+    "16-reject-fractional-anchor",
+    "17-reject-insulation-thickness",
+    "18-reject-fractional-links",
+    "19-reject-insufficient-layout",
+    "20-reject-weak-base",
+    "21-reject-old-primary",
+    "22-reject-wrong-source-sha"
+  ],
+  "plannedFiniteCounts": {
+    "entries": 22,
+    "results": 10,
+    "strictRejects": 12,
+    "actualCoreAttempts": 13,
+    "preCoreRejects": 9
+  },
+  "sourceUnknownNeedIds": [
+    "facade:current-porcelain:r3:need:preparation-labor",
+    "facade:current-porcelain:r3:need:working-parts",
+    "facade:current-porcelain:r3:need:access-power-protection",
+    "facade:current-porcelain:r3:need:quality-services",
+    "facade:current-porcelain:r3:need:delivery-feed-waste"
+  ],
+  "sourceAlgorithmGaps": [
+    "preparation-labor",
+    "working-parts",
+    "access-power-protection",
+    "quality-services",
+    "delivery-feed-waste"
+  ],
+  "objectFactsRemainSeparate": [
+    "actual22componentBOM",
+    "acceptedPPRaccesspowerworkingLinksandPeriod",
+    "actualBaseAndPullout",
+    "actualPanelLayout",
+    "actualFireAndJunctionBOM",
+    "acceptedTerritorialApplication"
+  ],
+  "samePhysicalPublicOwner": true,
+  "newCatalogIds": 0,
+  "newWorkKeys": 0,
+  "newNormIds": 0,
+  "sourceRegistryCurrentAbsenceNotRead": true,
+  "oldStandaloneREADYRevoked": true,
+  "oldStandaloneSourcePackageIsNotCurrentPhysicalAdmission": true,
+  "actualClosures": 0,
+  "actualObjectApproved": false,
+  "execution": "UNRUN_SOURCE_ONLY",
+  "FULL": false,
+  "normIdentityReuse": {
+    "ordinaryConfigNormId": "ST_KG_V_T_PORCELAIN10_SOURCE_METHOD",
+    "unchangedNativeRowBuilderNormId": "CURRENT_ST_KG_V_T_PORCELAIN10_WHOLE_METHOD",
+    "differentExistingFieldScopesNotAliases": true
+  }
+}

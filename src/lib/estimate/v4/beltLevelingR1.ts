@@ -21,9 +21,7 @@ type Json = Record<string, unknown>;
 export const BELT_LEVELING_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_belt_level_standard", titleRu: "Выравнивание бетона монолитного пояса в стандартной зоне", contextRu: "стандартная зона" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_belt_level_high_load", titleRu: "Выравнивание бетона монолитного пояса в зоне высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_belt_level_large_area", titleRu: "Выравнивание бетона монолитного пояса на большом участке", contextRu: "большой участок" },
   { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_belt_level_repair", titleRu: "Выравнивание бетона монолитного пояса на ремонтном участке", contextRu: "ремонтный участок" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_belt_level_small_area", titleRu: "Выравнивание бетона монолитного пояса на малом участке", contextRu: "малый участок" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_belt_level_technical_room", titleRu: "Выравнивание бетона монолитного пояса в техническом помещении", contextRu: "техническое помещение" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_belt_level_wet_zone", titleRu: "Выравнивание бетона монолитного пояса во влажной зоне", contextRu: "влажная зона" },
 ] as const);

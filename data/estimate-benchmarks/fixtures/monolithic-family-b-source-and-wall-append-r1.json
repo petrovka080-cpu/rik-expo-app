@@ -1,0 +1,100 @@
+{
+  "contract": "gox-build.master212.monolithic-family-b/r1",
+  "catalogAppend": {
+    "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+    "identity": {
+      "namespace": "global",
+      "domain": "concrete_foundation",
+      "sourceIdentity": "master-work:monolithic_reinforced_concrete_wall_standard",
+      "workKey": "monolithic_reinforced_concrete_wall_standard",
+      "titleRu": "Монолитная железобетонная стена",
+      "denominatorEligible": true
+    },
+    "searchPlacement": {
+      "groupMode": "create",
+      "groupId": "wg:master:monolithic-reinforced-concrete-walls",
+      "groupNameRu": "Монолитные железобетонные стены",
+      "domainId": "concrete_foundation",
+      "systemId": "monolithic_concrete_structures",
+      "subsystemId": "wg:master:monolithic-reinforced-concrete-walls",
+      "assemblyId": "wg:master:monolithic-reinforced-concrete-walls",
+      "workFamilyId": "monolithic_reinforced_concrete_wall",
+      "breadcrumb": [
+        "Бетон и железобетон",
+        "Монолитные стены",
+        "Железобетонная стена 300 мм"
+      ],
+      "groupOracleDisposition": {
+        "contract": "gox-build.master212.monolithic-family-b/r1",
+        "disposition": "EXACT_PHYSICAL_WHOLE_WORK_GROUP"
+      },
+      "membershipOrdinal": 0,
+      "independentDisposition": {
+        "contract": "gox-build.master212.monolithic-family-b/r1",
+        "classification": "CANONICAL_VISIBLE",
+        "exactPhysicalIdentity": true,
+        "globalPhysicalAbsenceProved": false,
+        "boundedRootIdentityReview": "C:\\Users\\User\\Documents\\Codex\\2026-10-22\\files-pasted-by-the-user-c-2\\work\\monolithic-family-missing-identity-review.json",
+        "fullTechnicalAcceptance": false
+      },
+      "elementType": "WORK",
+      "operationKind": "NEW_INSTALLATION",
+      "technologyVariant": "KRER06_01_031_04_WHOLE_WOOD_FORMWORK_REINFORCED_WALL_300MM_UPTO3M",
+      "constructionState": "NEW",
+      "normativeClassifiers": [
+        "КРЕР06-01-031-04"
+      ],
+      "applicabilityTags": [
+        "WHOLE_MONOLITHIC_WALL",
+        "EXACT_300MM",
+        "HEIGHT_UPTO3M",
+        "PARTIAL_COMPOSITION"
+      ],
+      "publicationState": "ADMITTED_BACKEND",
+      "catalogOrigin": "GLOBAL",
+      "adjudicationClass": "EFFECTIVE_WORK",
+      "selectable": true
+    },
+    "requireUniqueWorkKey": true
+  },
+  "sources": [
+    {
+      "technology": "plain15",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "sourceKey": "master212_family_b_krer06_01_001_15_r1",
+      "normId": "06-01-001-15",
+      "locatorKey": "master212-family-b-krer06-01-001-15",
+      "artifactSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+      "artifactPath": "data/estimate-benchmarks/source-artifacts/kg-krer06-2015-monolithic-concrete-45c065fb.pdf",
+      "exactLocator": "КРЕР06-2015;06-01-001-15; PDF16,20; полный столбец; измеритель100м³ бетона/железобетона в деле.",
+      "generatedSourceId": "73a74073-527f-587a-853c-156bdb259ff0",
+      "generatedLocatorId": "248cbd4d-5180-5717-9349-5ea3e9bd1e35"
+    },
+    {
+      "technology": "floor03",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_pour_standard",
+      "sourceKey": "master212_family_b_krer06_01_041_03_r1",
+      "normId": "06-01-041-03",
+      "locatorKey": "master212-family-b-krer06-01-041-03",
+      "artifactSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+      "artifactPath": "data/estimate-benchmarks/source-artifacts/kg-krer06-2015-monolithic-concrete-45c065fb.pdf",
+      "exactLocator": "КРЕР06-2015;06-01-041-03; PDF73,74,75; полный столбец; измеритель100м³ бетона/железобетона в деле.",
+      "generatedSourceId": "15483ff5-5458-52f0-90a6-ddcc54283976",
+      "generatedLocatorId": "652d9f5f-9673-5ccd-bcd9-8c9233d662f3"
+    },
+    {
+      "technology": "wall04",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+      "sourceKey": "master212_family_b_krer06_01_031_04_r1",
+      "normId": "06-01-031-04",
+      "locatorKey": "master212-family-b-krer06-01-031-04",
+      "artifactSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+      "artifactPath": "data/estimate-benchmarks/source-artifacts/kg-krer06-2015-monolithic-concrete-45c065fb.pdf",
+      "exactLocator": "КРЕР06-2015;06-01-031-04; PDF62,64; полный столбец; измеритель100м³ бетона/железобетона в деле.",
+      "generatedSourceId": "1769d1d3-d4b5-5db6-8ebd-6cae01e57194",
+      "generatedLocatorId": "ad0cd48c-545e-5c0f-b452-d00d6194f10e"
+    }
+  ],
+  "sourceArtifactIsPinnedOfficialPdfNotChangingPackHash": true,
+  "managedUuidRule": "Existing prepareMasterSingleDefinitionSuccessorR1 uuid(contract:sourceKey:source) and uuid(contract:sourceKey:locatorKey:locator), no replacement helper."
+}

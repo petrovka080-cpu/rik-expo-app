@@ -1,0 +1,1545 @@
+{
+  "contract": "gox-build.manufacturer-door-fan-whole-factory-results/r1",
+  "status": "SOURCE_ONLY_PENDING_ROOT_GATES",
+  "selectorId": "factory_product_calculation_profile",
+  "legacyChoice": "Прежний общий расчёт",
+  "countParameterId": "factory_unit_count",
+  "factoryResultsComplete": true,
+  "fullOnsiteTechnologyAccepted": false,
+  "counts": {
+    "families": 2,
+    "catalogIds": 3,
+    "factoryPhysicalResults": 2,
+    "factoryChoices": 5,
+    "consumerVariants": 9,
+    "newFullOnsiteTechnologies": 0
+  },
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/manufacturer-door-fan-current-parents-r1.json",
+  "parentSnapshotSha256": "c7bc24c24351529dfde759053872f10878bc75500a6b3d8a726eca93ee435d93",
+  "captureNormalization": "Only null bindings/normativeSources/normativeLocators normalized to empty arrays; original raw snapshot is byte-identical.",
+  "masterSha256": "4fd2e79388521707cec6c9a75101061f81eb7a72beb4e16a1e39b991fab63f68",
+  "sources": [
+    {
+      "key": "door-manual",
+      "path": ".release-runtime/r568/master30-factory-kits/sources/torex-steel-door-operation-manual.pdf",
+      "sha256": "e5cad0ac837306823585cdfb1ddbee321dccef4c3bdfa27a999a9b2bd01f6580",
+      "officialUrl": "https://torex.ru/support/1DhP8KBQnh7d_wcy6iZ9OFkwnQwmB-CpH.pdf",
+      "locator": "PDF5 single-leaf assembled frame/leaf/hinges; PDF17 required tools; PDF20 hardware; PDF66 model dependence; PDF67 passport.",
+      "snapshotRetrievedAt": "2026-10-22",
+      "sourceVersion": "current fixed snapshot; no later amendment claim"
+    },
+    {
+      "key": "door-model",
+      "path": ".release-runtime/r568/master30-factory-kits/sources/torex-model-2477479.html",
+      "sha256": "6b6007b77f556c68a1025877fdd10cce43895c921b86c85cf643dce6830f4801",
+      "officialUrl": "https://torex.ru/catalog/product/2477479/",
+      "locator": "Exact product2477479 table: apartment/right/leaf90mm/frame120mm/2hinges/2locks/5+5keys/2anti-removal pins. Street boundary excluded.",
+      "snapshotRetrievedAt": "2026-10-22",
+      "sourceVersion": "current fixed snapshot; no later amendment claim"
+    },
+    {
+      "key": "fan-manual",
+      "path": ".release-runtime/r568/master30-factory-kits/sources/vents-quiet-manual-20492.pdf",
+      "sha256": "ada45cc4e9a23788e56f6983689ae499542a267461b7b3bd9d8799279fd8e595",
+      "officialUrl": "https://ventilation-system.com/download/quiet-manual-20492.pdf",
+      "locator": "V233-1EN-01 PDF5 delivery set; PDF6 100/125 plain/T 220-240V50Hz; PDF7 mounting and IP zones; PDF13 dimensions.",
+      "snapshotRetrievedAt": "2026-10-22",
+      "sourceVersion": "V233-1EN-01, undated PDF"
+    }
+  ],
+  "targets": [
+    {
+      "key": "apartment-door-standard",
+      "catalogId": "canonical-work:base:doors_windows_interior_entry_door_install_standard",
+      "family": "windows_doors",
+      "sourceId": "master30_apartment_door_standard_factory_kit_r1",
+      "definitionVersionId": "0a4fd85e-fd4e-5239-abdf-1bff0fc24d45",
+      "definitionVersion": 3,
+      "definitionSha256": "47aa14946b359028697d430a804636f75572a65fa477ad3607940b539451b2f2",
+      "captureValueSha256": "0dfbf3d8c088657789defc6dd49f8c3ec3a4510a51110728071405c08aa50350",
+      "shape": [
+        1,
+        59,
+        59
+      ],
+      "legacyPrimaryUnit": "piece",
+      "publicTitleRu": "установка входной двери в стандартной зоне",
+      "profileKeys": [
+        "apartment-steel-right-90-120"
+      ]
+    },
+    {
+      "key": "fan-standard",
+      "catalogId": "canonical-work:base:ventilation_interior_fan_install_standard",
+      "family": "hvac",
+      "sourceId": "master30_fan_standard_factory_kit_r1",
+      "definitionVersionId": "764c6be0-ffb6-5def-a4b1-0d5e0fdec24b",
+      "definitionVersion": 3,
+      "definitionSha256": "d1b437b59baf9356b81956a7f68b8d94cb27a84eb379f53209f3b112f593967d",
+      "captureValueSha256": "055fd0b422148e96c7cba028c6bbf1a5a76a99fc8f357ec8886e5636a3dac125",
+      "shape": [
+        1,
+        63,
+        63
+      ],
+      "legacyPrimaryUnit": "set",
+      "publicTitleRu": "монтаж вентилятора в стандартной зоне",
+      "profileKeys": [
+        "axial-100-plain",
+        "axial-100-timer",
+        "axial-125-plain",
+        "axial-125-timer"
+      ]
+    },
+    {
+      "key": "fan-wet",
+      "catalogId": "canonical-work:base:ventilation_interior_fan_install_wet_zone",
+      "family": "hvac",
+      "sourceId": "master30_fan_wet_factory_kit_r1",
+      "definitionVersionId": "4a7a1a84-2a14-59e2-b0b2-7bde7244cad5",
+      "definitionVersion": 3,
+      "definitionSha256": "4b5f989d97f69b4eceb25381b67cd30414b4b5bba14ac8adeb7cd4862343f64f",
+      "captureValueSha256": "30eb7f0d5a024924e6de532d7638acf056f8a15405121ec5e139e1ca184394ce",
+      "shape": [
+        1,
+        63,
+        63
+      ],
+      "legacyPrimaryUnit": "set",
+      "publicTitleRu": "монтаж вентилятора во влажной зоне",
+      "profileKeys": [
+        "axial-100-plain",
+        "axial-100-timer",
+        "axial-125-plain",
+        "axial-125-timer"
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "key": "apartment-steel-right-90-120",
+      "family": "windows_doors",
+      "choiceValue": "Заводской квартирный стальной блок: правый, полотно 90 мм, короб 120 мм, два замка",
+      "prefix": "factory-door:apartment-right-90-120",
+      "ownerTitleRu": "Квартирный стальной дверной блок в сборе, правый, полотно 90 мм, короб 120 мм",
+      "ownerUnitId": "piece",
+      "sourceKeys": [
+        "door-model",
+        "door-manual"
+      ],
+      "manufacturerModelInternal": "TOREX DELTA 100 MP product2477479",
+      "factoryResultComplete": true,
+      "deliveryBomComplete": false,
+      "scopeRu": "Только собранный однопольный правый квартирный дверной блок фиксированной модели: короб, полотно, две петли и два установленных замка. Не полный delivery BOM и не завершённый монтаж. Улица–дом, огнестойкость и техническое помещение исключены.",
+      "ownerRowId": "factory-door:apartment-right-90-120:owner",
+      "ownerFormulaId": "factory-door:apartment-right-90-120:formula:owner",
+      "operationId": "factory-door:apartment-right-90-120:operation:factory-supply",
+      "bom": [
+        {
+          "key": "leaf",
+          "rowId": "factory-door:apartment-right-90-120:leaf",
+          "formulaId": "factory-door:apartment-right-90-120:formula:leaf",
+          "titleRu": "Дверное полотно толщиной 90 мм",
+          "category": "material",
+          "unitId": "piece",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "door-model",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        },
+        {
+          "key": "frame",
+          "rowId": "factory-door:apartment-right-90-120:frame",
+          "formulaId": "factory-door:apartment-right-90-120:formula:frame",
+          "titleRu": "Стальная дверная коробка глубиной 120 мм",
+          "category": "material",
+          "unitId": "piece",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "door-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        },
+        {
+          "key": "hinges",
+          "rowId": "factory-door:apartment-right-90-120:hinges",
+          "formulaId": "factory-door:apartment-right-90-120:formula:hinges",
+          "titleRu": "Дверные петли на опорных подшипниках",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "2",
+          "sourceKey": "door-model",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        },
+        {
+          "key": "cylinder-lock",
+          "rowId": "factory-door:apartment-right-90-120:cylinder-lock",
+          "formulaId": "factory-door:apartment-right-90-120:formula:cylinder-lock",
+          "titleRu": "Установленный цилиндровый замок",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "door-model",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        },
+        {
+          "key": "lever-lock",
+          "rowId": "factory-door:apartment-right-90-120:lever-lock",
+          "formulaId": "factory-door:apartment-right-90-120:formula:lever-lock",
+          "titleRu": "Установленный сувальдный замок",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "door-model",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        },
+        {
+          "key": "cylinder-keys",
+          "rowId": "factory-door:apartment-right-90-120:cylinder-keys",
+          "formulaId": "factory-door:apartment-right-90-120:formula:cylinder-keys",
+          "titleRu": "Ключи цилиндрового замка",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "5",
+          "sourceKey": "door-model",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        },
+        {
+          "key": "lever-keys",
+          "rowId": "factory-door:apartment-right-90-120:lever-keys",
+          "formulaId": "factory-door:apartment-right-90-120:formula:lever-keys",
+          "titleRu": "Ключи сувальдного замка",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "5",
+          "sourceKey": "door-model",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        },
+        {
+          "key": "anti-removal-pins",
+          "rowId": "factory-door:apartment-right-90-120:anti-removal-pins",
+          "formulaId": "factory-door:apartment-right-90-120:formula:anti-removal-pins",
+          "titleRu": "Противосъёмные ригели дверного блока",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "2",
+          "sourceKey": "door-model",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        },
+        {
+          "key": "night-latch",
+          "rowId": "factory-door:apartment-right-90-120:night-latch",
+          "formulaId": "factory-door:apartment-right-90-120:formula:night-latch",
+          "titleRu": "Установленная ночная задвижка",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "door-model",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        },
+        {
+          "key": "peephole",
+          "rowId": "factory-door:apartment-right-90-120:peephole",
+          "formulaId": "factory-door:apartment-right-90-120:formula:peephole",
+          "titleRu": "Установленный дверной глазок",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "door-model",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        },
+        {
+          "key": "eccentric",
+          "rowId": "factory-door:apartment-right-90-120:eccentric",
+          "formulaId": "factory-door:apartment-right-90-120:formula:eccentric",
+          "titleRu": "Установленный эксцентриковый регулятор притвора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "door-model",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-door:apartment-right-90-120:owner",
+          "procurement": false
+        }
+      ],
+      "independentExpected": [
+        {
+          "rowId": "factory-door:apartment-right-90-120:owner",
+          "formulaId": "factory-door:apartment-right-90-120:formula:owner",
+          "category": "material",
+          "unitId": "piece",
+          "multiplier": "1",
+          "costTreatment": "OWN_COST",
+          "procurement": true,
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:leaf",
+          "formulaId": "factory-door:apartment-right-90-120:formula:leaf",
+          "category": "material",
+          "unitId": "piece",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:frame",
+          "formulaId": "factory-door:apartment-right-90-120:formula:frame",
+          "category": "material",
+          "unitId": "piece",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:hinges",
+          "formulaId": "factory-door:apartment-right-90-120:formula:hinges",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "2",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:cylinder-lock",
+          "formulaId": "factory-door:apartment-right-90-120:formula:cylinder-lock",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:lever-lock",
+          "formulaId": "factory-door:apartment-right-90-120:formula:lever-lock",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:cylinder-keys",
+          "formulaId": "factory-door:apartment-right-90-120:formula:cylinder-keys",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "5",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:lever-keys",
+          "formulaId": "factory-door:apartment-right-90-120:formula:lever-keys",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "5",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:anti-removal-pins",
+          "formulaId": "factory-door:apartment-right-90-120:formula:anti-removal-pins",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "2",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:night-latch",
+          "formulaId": "factory-door:apartment-right-90-120:formula:night-latch",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:peephole",
+          "formulaId": "factory-door:apartment-right-90-120:formula:peephole",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-door:apartment-right-90-120:eccentric",
+          "formulaId": "factory-door:apartment-right-90-120:formula:eccentric",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-door:apartment-right-90-120:owner",
+          "requiredOperationIds": [
+            "factory-door:apartment-right-90-120:operation:factory-supply",
+            "factory-door:onsite:operation:installation-labour"
+          ]
+        }
+      ],
+      "useOperationId": "factory-door:onsite:operation:installation-labour"
+    },
+    {
+      "key": "axial-100-plain",
+      "family": "hvac",
+      "choiceValue": "Заводской вытяжной вентилятор Ø100 мм, 220–240 В, 50 Гц, без таймера",
+      "prefix": "factory-fan:axial-100-plain",
+      "ownerTitleRu": "Заводской комплект вытяжного вентилятора Ø100 мм, 220–240 В, 50 Гц, без таймера",
+      "ownerUnitId": "set",
+      "diameterMm": 100,
+      "timer": false,
+      "sourceKeys": [
+        "fan-manual"
+      ],
+      "manufacturerModelInternal": "VENTS Quiet 100",
+      "factoryResultComplete": true,
+      "deliveryBomComplete": true,
+      "scopeRu": "Заводская комплектация осевого вытяжного вентилятора для малых/средних помещений, Ø100 мм, Class II 220–240 В 50 Гц. IP45 только в сборе, +1…+40 °C. Стена/потолок с выходом в шахту или круглый воздуховод нужного диаметра; прямой выброс вверх запрещён. Только plain/T: зоны 1/2/3 при соблюдении IEC 60364-7-701 и национальных требований. Модель12В и pull-cord исключены. Выбор воздухообмена и разрешение конкретного места монтажа не входят.",
+      "ownerRowId": "factory-fan:axial-100-plain:owner",
+      "ownerFormulaId": "factory-fan:axial-100-plain:formula:owner",
+      "operationId": "factory-fan:axial-100-plain:operation:factory-supply",
+      "bom": [
+        {
+          "key": "fixings",
+          "rowId": "factory-fan:axial-100-plain:fixings",
+          "formulaId": "factory-fan:axial-100-plain:formula:fixings",
+          "titleRu": "Заводской крепёж вентилятора: шурупы и дюбели",
+          "category": "material",
+          "unitId": "set",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-100-plain:owner",
+          "procurement": false,
+          "quantityMeaning": "One complete included fastening allocation from the delivery-set line \"Screws and dowels — 4 pcs.\"; not eight independently purchased pieces. Screw sizes and substrate capacity are not inferred."
+        },
+        {
+          "key": "seal",
+          "rowId": "factory-fan:axial-100-plain:seal",
+          "formulaId": "factory-fan:axial-100-plain:formula:seal",
+          "titleRu": "Заводская уплотнительная прокладка вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-100-plain:owner",
+          "procurement": false
+        },
+        {
+          "key": "manual",
+          "rowId": "factory-fan:axial-100-plain:manual",
+          "formulaId": "factory-fan:axial-100-plain:formula:manual",
+          "titleRu": "Руководство из заводской поставки вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-100-plain:owner",
+          "procurement": false
+        },
+        {
+          "key": "box",
+          "rowId": "factory-fan:axial-100-plain:box",
+          "formulaId": "factory-fan:axial-100-plain:formula:box",
+          "titleRu": "Коробка заводской поставки вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-100-plain:owner",
+          "procurement": false
+        }
+      ],
+      "independentExpected": [
+        {
+          "rowId": "factory-fan:axial-100-plain:owner",
+          "formulaId": "factory-fan:axial-100-plain:formula:owner",
+          "category": "material",
+          "unitId": "set",
+          "multiplier": "1",
+          "costTreatment": "OWN_COST",
+          "procurement": true,
+          "requiredOperationIds": [
+            "factory-fan:axial-100-plain:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-100-plain:fixings",
+          "formulaId": "factory-fan:axial-100-plain:formula:fixings",
+          "category": "material",
+          "unitId": "set",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-100-plain:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-100-plain:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-100-plain:seal",
+          "formulaId": "factory-fan:axial-100-plain:formula:seal",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-100-plain:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-100-plain:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-100-plain:manual",
+          "formulaId": "factory-fan:axial-100-plain:formula:manual",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-100-plain:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-100-plain:operation:factory-supply"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-100-plain:box",
+          "formulaId": "factory-fan:axial-100-plain:formula:box",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-100-plain:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-100-plain:operation:factory-supply"
+          ]
+        }
+      ],
+      "useOperationId": "factory-fan:onsite:operation:installation-labour"
+    },
+    {
+      "key": "axial-100-timer",
+      "family": "hvac",
+      "choiceValue": "Заводской вытяжной вентилятор Ø100 мм, 220–240 В, 50 Гц, с таймером",
+      "prefix": "factory-fan:axial-100-timer",
+      "ownerTitleRu": "Заводской комплект вытяжного вентилятора Ø100 мм, 220–240 В, 50 Гц, с таймером",
+      "ownerUnitId": "set",
+      "diameterMm": 100,
+      "timer": true,
+      "sourceKeys": [
+        "fan-manual"
+      ],
+      "manufacturerModelInternal": "VENTS Quiet 100 T",
+      "factoryResultComplete": true,
+      "deliveryBomComplete": true,
+      "scopeRu": "Заводская комплектация осевого вытяжного вентилятора для малых/средних помещений, Ø100 мм, Class II 220–240 В 50 Гц. IP45 только в сборе, +1…+40 °C. Стена/потолок с выходом в шахту или круглый воздуховод нужного диаметра; прямой выброс вверх запрещён. Только plain/T: зоны 1/2/3 при соблюдении IEC 60364-7-701 и национальных требований. Модель12В и pull-cord исключены. Выбор воздухообмена и разрешение конкретного места монтажа не входят.",
+      "ownerRowId": "factory-fan:axial-100-timer:owner",
+      "ownerFormulaId": "factory-fan:axial-100-timer:formula:owner",
+      "operationId": "factory-fan:axial-100-timer:operation:factory-supply",
+      "bom": [
+        {
+          "key": "fixings",
+          "rowId": "factory-fan:axial-100-timer:fixings",
+          "formulaId": "factory-fan:axial-100-timer:formula:fixings",
+          "titleRu": "Заводской крепёж вентилятора: шурупы и дюбели",
+          "category": "material",
+          "unitId": "set",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-100-timer:owner",
+          "procurement": false,
+          "quantityMeaning": "One complete included fastening allocation from the delivery-set line \"Screws and dowels — 4 pcs.\"; not eight independently purchased pieces. Screw sizes and substrate capacity are not inferred."
+        },
+        {
+          "key": "seal",
+          "rowId": "factory-fan:axial-100-timer:seal",
+          "formulaId": "factory-fan:axial-100-timer:formula:seal",
+          "titleRu": "Заводская уплотнительная прокладка вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-100-timer:owner",
+          "procurement": false
+        },
+        {
+          "key": "manual",
+          "rowId": "factory-fan:axial-100-timer:manual",
+          "formulaId": "factory-fan:axial-100-timer:formula:manual",
+          "titleRu": "Руководство из заводской поставки вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-100-timer:owner",
+          "procurement": false
+        },
+        {
+          "key": "box",
+          "rowId": "factory-fan:axial-100-timer:box",
+          "formulaId": "factory-fan:axial-100-timer:formula:box",
+          "titleRu": "Коробка заводской поставки вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-100-timer:owner",
+          "procurement": false
+        },
+        {
+          "key": "setting-screwdriver",
+          "rowId": "factory-fan:axial-100-timer:setting-screwdriver",
+          "formulaId": "factory-fan:axial-100-timer:formula:setting-screwdriver",
+          "titleRu": "Пластиковая отвёртка заводской поставки для настройки таймера",
+          "category": "equipment",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-100-timer:owner",
+          "procurement": false
+        }
+      ],
+      "independentExpected": [
+        {
+          "rowId": "factory-fan:axial-100-timer:owner",
+          "formulaId": "factory-fan:axial-100-timer:formula:owner",
+          "category": "material",
+          "unitId": "set",
+          "multiplier": "1",
+          "costTreatment": "OWN_COST",
+          "procurement": true,
+          "requiredOperationIds": [
+            "factory-fan:axial-100-timer:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-100-timer:fixings",
+          "formulaId": "factory-fan:axial-100-timer:formula:fixings",
+          "category": "material",
+          "unitId": "set",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-100-timer:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-100-timer:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-100-timer:seal",
+          "formulaId": "factory-fan:axial-100-timer:formula:seal",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-100-timer:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-100-timer:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-100-timer:manual",
+          "formulaId": "factory-fan:axial-100-timer:formula:manual",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-100-timer:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-100-timer:operation:factory-supply"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-100-timer:box",
+          "formulaId": "factory-fan:axial-100-timer:formula:box",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-100-timer:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-100-timer:operation:factory-supply"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-100-timer:setting-screwdriver",
+          "formulaId": "factory-fan:axial-100-timer:formula:setting-screwdriver",
+          "category": "equipment",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-100-timer:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-100-timer:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        }
+      ],
+      "useOperationId": "factory-fan:onsite:operation:installation-labour"
+    },
+    {
+      "key": "axial-125-plain",
+      "family": "hvac",
+      "choiceValue": "Заводской вытяжной вентилятор Ø125 мм, 220–240 В, 50 Гц, без таймера",
+      "prefix": "factory-fan:axial-125-plain",
+      "ownerTitleRu": "Заводской комплект вытяжного вентилятора Ø125 мм, 220–240 В, 50 Гц, без таймера",
+      "ownerUnitId": "set",
+      "diameterMm": 125,
+      "timer": false,
+      "sourceKeys": [
+        "fan-manual"
+      ],
+      "manufacturerModelInternal": "VENTS Quiet 125",
+      "factoryResultComplete": true,
+      "deliveryBomComplete": true,
+      "scopeRu": "Заводская комплектация осевого вытяжного вентилятора для малых/средних помещений, Ø125 мм, Class II 220–240 В 50 Гц. IP45 только в сборе, +1…+40 °C. Стена/потолок с выходом в шахту или круглый воздуховод нужного диаметра; прямой выброс вверх запрещён. Только plain/T: зоны 1/2/3 при соблюдении IEC 60364-7-701 и национальных требований. Модель12В и pull-cord исключены. Выбор воздухообмена и разрешение конкретного места монтажа не входят.",
+      "ownerRowId": "factory-fan:axial-125-plain:owner",
+      "ownerFormulaId": "factory-fan:axial-125-plain:formula:owner",
+      "operationId": "factory-fan:axial-125-plain:operation:factory-supply",
+      "bom": [
+        {
+          "key": "fixings",
+          "rowId": "factory-fan:axial-125-plain:fixings",
+          "formulaId": "factory-fan:axial-125-plain:formula:fixings",
+          "titleRu": "Заводской крепёж вентилятора: шурупы и дюбели",
+          "category": "material",
+          "unitId": "set",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-125-plain:owner",
+          "procurement": false,
+          "quantityMeaning": "One complete included fastening allocation from the delivery-set line \"Screws and dowels — 4 pcs.\"; not eight independently purchased pieces. Screw sizes and substrate capacity are not inferred."
+        },
+        {
+          "key": "seal",
+          "rowId": "factory-fan:axial-125-plain:seal",
+          "formulaId": "factory-fan:axial-125-plain:formula:seal",
+          "titleRu": "Заводская уплотнительная прокладка вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-125-plain:owner",
+          "procurement": false
+        },
+        {
+          "key": "manual",
+          "rowId": "factory-fan:axial-125-plain:manual",
+          "formulaId": "factory-fan:axial-125-plain:formula:manual",
+          "titleRu": "Руководство из заводской поставки вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-125-plain:owner",
+          "procurement": false
+        },
+        {
+          "key": "box",
+          "rowId": "factory-fan:axial-125-plain:box",
+          "formulaId": "factory-fan:axial-125-plain:formula:box",
+          "titleRu": "Коробка заводской поставки вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-125-plain:owner",
+          "procurement": false
+        }
+      ],
+      "independentExpected": [
+        {
+          "rowId": "factory-fan:axial-125-plain:owner",
+          "formulaId": "factory-fan:axial-125-plain:formula:owner",
+          "category": "material",
+          "unitId": "set",
+          "multiplier": "1",
+          "costTreatment": "OWN_COST",
+          "procurement": true,
+          "requiredOperationIds": [
+            "factory-fan:axial-125-plain:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-125-plain:fixings",
+          "formulaId": "factory-fan:axial-125-plain:formula:fixings",
+          "category": "material",
+          "unitId": "set",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-125-plain:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-125-plain:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-125-plain:seal",
+          "formulaId": "factory-fan:axial-125-plain:formula:seal",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-125-plain:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-125-plain:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-125-plain:manual",
+          "formulaId": "factory-fan:axial-125-plain:formula:manual",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-125-plain:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-125-plain:operation:factory-supply"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-125-plain:box",
+          "formulaId": "factory-fan:axial-125-plain:formula:box",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-125-plain:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-125-plain:operation:factory-supply"
+          ]
+        }
+      ],
+      "useOperationId": "factory-fan:onsite:operation:installation-labour"
+    },
+    {
+      "key": "axial-125-timer",
+      "family": "hvac",
+      "choiceValue": "Заводской вытяжной вентилятор Ø125 мм, 220–240 В, 50 Гц, с таймером",
+      "prefix": "factory-fan:axial-125-timer",
+      "ownerTitleRu": "Заводской комплект вытяжного вентилятора Ø125 мм, 220–240 В, 50 Гц, с таймером",
+      "ownerUnitId": "set",
+      "diameterMm": 125,
+      "timer": true,
+      "sourceKeys": [
+        "fan-manual"
+      ],
+      "manufacturerModelInternal": "VENTS Quiet 125 T",
+      "factoryResultComplete": true,
+      "deliveryBomComplete": true,
+      "scopeRu": "Заводская комплектация осевого вытяжного вентилятора для малых/средних помещений, Ø125 мм, Class II 220–240 В 50 Гц. IP45 только в сборе, +1…+40 °C. Стена/потолок с выходом в шахту или круглый воздуховод нужного диаметра; прямой выброс вверх запрещён. Только plain/T: зоны 1/2/3 при соблюдении IEC 60364-7-701 и национальных требований. Модель12В и pull-cord исключены. Выбор воздухообмена и разрешение конкретного места монтажа не входят.",
+      "ownerRowId": "factory-fan:axial-125-timer:owner",
+      "ownerFormulaId": "factory-fan:axial-125-timer:formula:owner",
+      "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+      "bom": [
+        {
+          "key": "fixings",
+          "rowId": "factory-fan:axial-125-timer:fixings",
+          "formulaId": "factory-fan:axial-125-timer:formula:fixings",
+          "titleRu": "Заводской крепёж вентилятора: шурупы и дюбели",
+          "category": "material",
+          "unitId": "set",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-125-timer:owner",
+          "procurement": false,
+          "quantityMeaning": "One complete included fastening allocation from the delivery-set line \"Screws and dowels — 4 pcs.\"; not eight independently purchased pieces. Screw sizes and substrate capacity are not inferred."
+        },
+        {
+          "key": "seal",
+          "rowId": "factory-fan:axial-125-timer:seal",
+          "formulaId": "factory-fan:axial-125-timer:formula:seal",
+          "titleRu": "Заводская уплотнительная прокладка вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-125-timer:owner",
+          "procurement": false
+        },
+        {
+          "key": "manual",
+          "rowId": "factory-fan:axial-125-timer:manual",
+          "formulaId": "factory-fan:axial-125-timer:formula:manual",
+          "titleRu": "Руководство из заводской поставки вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-125-timer:owner",
+          "procurement": false
+        },
+        {
+          "key": "box",
+          "rowId": "factory-fan:axial-125-timer:box",
+          "formulaId": "factory-fan:axial-125-timer:formula:box",
+          "titleRu": "Коробка заводской поставки вентилятора",
+          "category": "material",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-125-timer:owner",
+          "procurement": false
+        },
+        {
+          "key": "setting-screwdriver",
+          "rowId": "factory-fan:axial-125-timer:setting-screwdriver",
+          "formulaId": "factory-fan:axial-125-timer:formula:setting-screwdriver",
+          "titleRu": "Пластиковая отвёртка заводской поставки для настройки таймера",
+          "category": "equipment",
+          "unitId": "item",
+          "countPerFactoryUnit": "1",
+          "sourceKey": "fan-manual",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "paidOwnerRowId": "factory-fan:axial-125-timer:owner",
+          "procurement": false
+        }
+      ],
+      "independentExpected": [
+        {
+          "rowId": "factory-fan:axial-125-timer:owner",
+          "formulaId": "factory-fan:axial-125-timer:formula:owner",
+          "category": "material",
+          "unitId": "set",
+          "multiplier": "1",
+          "costTreatment": "OWN_COST",
+          "procurement": true,
+          "requiredOperationIds": [
+            "factory-fan:axial-125-timer:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:fixings",
+          "formulaId": "factory-fan:axial-125-timer:formula:fixings",
+          "category": "material",
+          "unitId": "set",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-125-timer:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-125-timer:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:seal",
+          "formulaId": "factory-fan:axial-125-timer:formula:seal",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-125-timer:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-125-timer:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:manual",
+          "formulaId": "factory-fan:axial-125-timer:formula:manual",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-125-timer:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-125-timer:operation:factory-supply"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:box",
+          "formulaId": "factory-fan:axial-125-timer:formula:box",
+          "category": "material",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-125-timer:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-125-timer:operation:factory-supply"
+          ]
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:setting-screwdriver",
+          "formulaId": "factory-fan:axial-125-timer:formula:setting-screwdriver",
+          "category": "equipment",
+          "unitId": "item",
+          "multiplier": "1",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "procurement": false,
+          "parentRowId": "factory-fan:axial-125-timer:owner",
+          "requiredOperationIds": [
+            "factory-fan:axial-125-timer:operation:factory-supply",
+            "factory-fan:onsite:operation:installation-labour"
+          ]
+        }
+      ],
+      "useOperationId": "factory-fan:onsite:operation:installation-labour"
+    }
+  ],
+  "needs": {
+    "windows_doors": [
+      {
+        "key": "site-fittings",
+        "rowId": "factory-door:onsite:site-fittings",
+        "formulaId": "factory-door:onsite:formula:site-fittings",
+        "parameterId": "factory_door_onsite_site_fittings_quantity",
+        "titleRu": "Фурнитура и модельные крепления вне доказанного заводского блока",
+        "category": "material",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:site-fittings"
+      },
+      {
+        "key": "opening-preparation",
+        "rowId": "factory-door:onsite:opening-preparation",
+        "formulaId": "factory-door:onsite:formula:opening-preparation",
+        "parameterId": "factory_door_onsite_opening_preparation_quantity",
+        "titleRu": "Подготовка и восстановление дверного проёма",
+        "category": "work",
+        "unitId": "man_hour",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:opening-preparation"
+      },
+      {
+        "key": "site-anchors",
+        "rowId": "factory-door:onsite:site-anchors",
+        "formulaId": "factory-door:onsite:formula:site-anchors",
+        "parameterId": "factory_door_onsite_site_anchors_quantity",
+        "titleRu": "Крепление дверного блока к фактическому основанию",
+        "category": "material",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:site-anchors"
+      },
+      {
+        "key": "foam-sealant",
+        "rowId": "factory-door:onsite:foam-sealant",
+        "formulaId": "factory-door:onsite:formula:foam-sealant",
+        "parameterId": "factory_door_onsite_foam_sealant_quantity",
+        "titleRu": "Монтажная пена и герметизация дверного примыкания",
+        "category": "material",
+        "unitId": "l",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:foam-sealant"
+      },
+      {
+        "key": "reveals-trims",
+        "rowId": "factory-door:onsite:reveals-trims",
+        "formulaId": "factory-door:onsite:formula:reveals-trims",
+        "parameterId": "factory_door_onsite_reveals_trims_quantity",
+        "titleRu": "Доборы, откосы и отделка примыканий двери",
+        "category": "material",
+        "unitId": "m2",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:reveals-trims"
+      },
+      {
+        "key": "installation-labour",
+        "rowId": "factory-door:onsite:installation-labour",
+        "formulaId": "factory-door:onsite:formula:installation-labour",
+        "parameterId": "factory_door_onsite_installation_labour_quantity",
+        "titleRu": "Труд установки и регулировки дверного блока на объекте",
+        "category": "work",
+        "unitId": "man_hour",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:installation-labour"
+      },
+      {
+        "key": "perforator",
+        "rowId": "factory-door:onsite:perforator",
+        "formulaId": "factory-door:onsite:formula:perforator",
+        "parameterId": "factory_door_onsite_perforator_quantity",
+        "titleRu": "Перфоратор для монтажа дверного блока",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:perforator"
+      },
+      {
+        "key": "drill-bit",
+        "rowId": "factory-door:onsite:drill-bit",
+        "formulaId": "factory-door:onsite:formula:drill-bit",
+        "parameterId": "factory_door_onsite_drill_bit_quantity",
+        "titleRu": "Бур по фактическому диаметру крепления дверного блока",
+        "category": "material",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:drill-bit"
+      },
+      {
+        "key": "powered-screwdriver",
+        "rowId": "factory-door:onsite:powered-screwdriver",
+        "formulaId": "factory-door:onsite:formula:powered-screwdriver",
+        "parameterId": "factory_door_onsite_powered_screwdriver_quantity",
+        "titleRu": "Шуруповёрт для монтажа дверного блока",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:powered-screwdriver"
+      },
+      {
+        "key": "marking-pencil",
+        "rowId": "factory-door:onsite:marking-pencil",
+        "formulaId": "factory-door:onsite:formula:marking-pencil",
+        "parameterId": "factory_door_onsite_marking_pencil_quantity",
+        "titleRu": "Карандаш для разметки дверного проёма",
+        "category": "material",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:marking-pencil"
+      },
+      {
+        "key": "screwdrivers",
+        "rowId": "factory-door:onsite:screwdrivers",
+        "formulaId": "factory-door:onsite:formula:screwdrivers",
+        "parameterId": "factory_door_onsite_screwdrivers_quantity",
+        "titleRu": "Отвёртки для монтажа и регулировки дверного блока",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:screwdrivers"
+      },
+      {
+        "key": "hammer",
+        "rowId": "factory-door:onsite:hammer",
+        "formulaId": "factory-door:onsite:formula:hammer",
+        "parameterId": "factory_door_onsite_hammer_quantity",
+        "titleRu": "Молоток для монтажа дверного блока",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:hammer"
+      },
+      {
+        "key": "level",
+        "rowId": "factory-door:onsite:level",
+        "formulaId": "factory-door:onsite:formula:level",
+        "parameterId": "factory_door_onsite_level_quantity",
+        "titleRu": "Уровень для установки дверного блока",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:level"
+      },
+      {
+        "key": "nail-puller",
+        "rowId": "factory-door:onsite:nail-puller",
+        "formulaId": "factory-door:onsite:formula:nail-puller",
+        "parameterId": "factory_door_onsite_nail_puller_quantity",
+        "titleRu": "Гвоздодёр при применимом демонтаже существующего дверного блока",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:nail-puller"
+      },
+      {
+        "key": "measuring-tape",
+        "rowId": "factory-door:onsite:measuring-tape",
+        "formulaId": "factory-door:onsite:formula:measuring-tape",
+        "parameterId": "factory_door_onsite_measuring_tape_quantity",
+        "titleRu": "Рулетка для обмера дверного проёма",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:measuring-tape"
+      },
+      {
+        "key": "knife",
+        "rowId": "factory-door:onsite:knife",
+        "formulaId": "factory-door:onsite:formula:knife",
+        "parameterId": "factory_door_onsite_knife_quantity",
+        "titleRu": "Нож для монтажа дверного блока",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:knife"
+      },
+      {
+        "key": "sprayer",
+        "rowId": "factory-door:onsite:sprayer",
+        "formulaId": "factory-door:onsite:formula:sprayer",
+        "parameterId": "factory_door_onsite_sprayer_quantity",
+        "titleRu": "Распылитель для подготовки дверного примыкания",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:sprayer"
+      },
+      {
+        "key": "access",
+        "rowId": "factory-door:onsite:access",
+        "formulaId": "factory-door:onsite:formula:access",
+        "parameterId": "factory_door_onsite_access_quantity",
+        "titleRu": "Безопасный доступ к месту установки дверного блока",
+        "category": "equipment",
+        "unitId": "set",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:access"
+      },
+      {
+        "key": "ppe",
+        "rowId": "factory-door:onsite:ppe",
+        "formulaId": "factory-door:onsite:formula:ppe",
+        "parameterId": "factory_door_onsite_ppe_quantity",
+        "titleRu": "Средства защиты для монтажа двери",
+        "category": "equipment",
+        "unitId": "set",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:ppe"
+      },
+      {
+        "key": "delivery-handling",
+        "rowId": "factory-door:onsite:delivery-handling",
+        "formulaId": "factory-door:onsite:formula:delivery-handling",
+        "parameterId": "factory_door_onsite_delivery_handling_quantity",
+        "titleRu": "Доставка, разгрузка и подача дверного блока",
+        "category": "service",
+        "unitId": "trip",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:delivery-handling"
+      },
+      {
+        "key": "packaging-protection",
+        "rowId": "factory-door:onsite:packaging-protection",
+        "formulaId": "factory-door:onsite:formula:packaging-protection",
+        "parameterId": "factory_door_onsite_packaging_protection_quantity",
+        "titleRu": "Упаковка и защита дверного блока при доставке и монтаже",
+        "category": "material",
+        "unitId": "kg",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:packaging-protection"
+      },
+      {
+        "key": "cleanup-waste",
+        "rowId": "factory-door:onsite:cleanup-waste",
+        "formulaId": "factory-door:onsite:formula:cleanup-waste",
+        "parameterId": "factory_door_onsite_cleanup_waste_quantity",
+        "titleRu": "Сбор, погрузка, транспорт и передача отходов монтажа двери",
+        "category": "service",
+        "unitId": "kg",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-door:onsite:operation:cleanup-waste"
+      }
+    ],
+    "hvac": [
+      {
+        "key": "site-fixings",
+        "rowId": "factory-fan:onsite:site-fixings",
+        "formulaId": "factory-fan:onsite:formula:site-fixings",
+        "parameterId": "factory_fan_onsite_site_fixings_quantity",
+        "titleRu": "Крепление вентилятора к основанию сверх доказанной поставки",
+        "category": "material",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:site-fixings"
+      },
+      {
+        "key": "duct-interface",
+        "rowId": "factory-fan:onsite:duct-interface",
+        "formulaId": "factory-fan:onsite:formula:duct-interface",
+        "parameterId": "factory_fan_onsite_duct_interface_quantity",
+        "titleRu": "Воздуховод и примыкание выбранного вентилятора",
+        "category": "material",
+        "unitId": "m",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:duct-interface"
+      },
+      {
+        "key": "electrical-cable",
+        "rowId": "factory-fan:onsite:electrical-cable",
+        "formulaId": "factory-fan:onsite:formula:electrical-cable",
+        "parameterId": "factory_fan_onsite_electrical_cable_quantity",
+        "titleRu": "Кабель и материалы электрического подключения вентилятора",
+        "category": "material",
+        "unitId": "m",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:electrical-cable"
+      },
+      {
+        "key": "isolator",
+        "rowId": "factory-fan:onsite:isolator",
+        "formulaId": "factory-fan:onsite:formula:isolator",
+        "parameterId": "factory_fan_onsite_isolator_quantity",
+        "titleRu": "Устройство полного отключения питания вентилятора",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:isolator"
+      },
+      {
+        "key": "installation-labour",
+        "rowId": "factory-fan:onsite:installation-labour",
+        "formulaId": "factory-fan:onsite:formula:installation-labour",
+        "parameterId": "factory_fan_onsite_installation_labour_quantity",
+        "titleRu": "Квалифицированный труд монтажа и электрического подключения вентилятора",
+        "category": "work",
+        "unitId": "man_hour",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:installation-labour"
+      },
+      {
+        "key": "drill",
+        "rowId": "factory-fan:onsite:drill",
+        "formulaId": "factory-fan:onsite:formula:drill",
+        "parameterId": "factory_fan_onsite_drill_quantity",
+        "titleRu": "Дрель для крепёжных отверстий вентилятора",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:drill"
+      },
+      {
+        "key": "drill-bit",
+        "rowId": "factory-fan:onsite:drill-bit",
+        "formulaId": "factory-fan:onsite:formula:drill-bit",
+        "parameterId": "factory_fan_onsite_drill_bit_quantity",
+        "titleRu": "Сверло по фактическому основанию вентилятора",
+        "category": "material",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:drill-bit"
+      },
+      {
+        "key": "marking-pencil",
+        "rowId": "factory-fan:onsite:marking-pencil",
+        "formulaId": "factory-fan:onsite:formula:marking-pencil",
+        "parameterId": "factory_fan_onsite_marking_pencil_quantity",
+        "titleRu": "Карандаш для разметки крепления вентилятора",
+        "category": "material",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:marking-pencil"
+      },
+      {
+        "key": "screwdriver",
+        "rowId": "factory-fan:onsite:screwdriver",
+        "formulaId": "factory-fan:onsite:formula:screwdriver",
+        "parameterId": "factory_fan_onsite_screwdriver_quantity",
+        "titleRu": "Отвёртка для монтажного крепежа вентилятора",
+        "category": "equipment",
+        "unitId": "item",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:screwdriver"
+      },
+      {
+        "key": "electrical-tools",
+        "rowId": "factory-fan:onsite:electrical-tools",
+        "formulaId": "factory-fan:onsite:formula:electrical-tools",
+        "parameterId": "factory_fan_onsite_electrical_tools_quantity",
+        "titleRu": "Инструмент квалифицированного электрического подключения вентилятора",
+        "category": "equipment",
+        "unitId": "set",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:electrical-tools"
+      },
+      {
+        "key": "access",
+        "rowId": "factory-fan:onsite:access",
+        "formulaId": "factory-fan:onsite:formula:access",
+        "parameterId": "factory_fan_onsite_access_quantity",
+        "titleRu": "Безопасный доступ к месту установки вентилятора",
+        "category": "equipment",
+        "unitId": "set",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:access"
+      },
+      {
+        "key": "ppe",
+        "rowId": "factory-fan:onsite:ppe",
+        "formulaId": "factory-fan:onsite:formula:ppe",
+        "parameterId": "factory_fan_onsite_ppe_quantity",
+        "titleRu": "Средства защиты для монтажа вентилятора",
+        "category": "equipment",
+        "unitId": "set",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:ppe"
+      },
+      {
+        "key": "delivery-handling",
+        "rowId": "factory-fan:onsite:delivery-handling",
+        "formulaId": "factory-fan:onsite:formula:delivery-handling",
+        "parameterId": "factory_fan_onsite_delivery_handling_quantity",
+        "titleRu": "Доставка, разгрузка и подача вентилятора",
+        "category": "service",
+        "unitId": "trip",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:delivery-handling"
+      },
+      {
+        "key": "cleanup-waste",
+        "rowId": "factory-fan:onsite:cleanup-waste",
+        "formulaId": "factory-fan:onsite:formula:cleanup-waste",
+        "parameterId": "factory_fan_onsite_cleanup_waste_quantity",
+        "titleRu": "Сбор, погрузка, транспорт и передача упаковки и отходов монтажа вентилятора",
+        "category": "service",
+        "unitId": "kg",
+        "reasonRu": "Заводской состав не устанавливает достаточные количество, условия или состав этой отдельной операции на объекте. Потребность физически видима; норму не вводит клиент.",
+        "costTreatment": "OWN_COST",
+        "operationId": "factory-fan:onsite:operation:cleanup-waste"
+      }
+    ]
+  },
+  "excludedTargets": [
+    {
+      "catalogId": "canonical-work:base:doors_windows_interior_entry_door_install_technical_room",
+      "definitionVersionId": "bb2ef4ca-fe7e-5848-9895-fd195971630b",
+      "reasonRu": "Модель имеет назначение «в квартиру»; техническое помещение и огнестойкость не доказаны. Target не публикуется."
+    }
+  ],
+  "ordinaryFutureProcess": [
+    "Routine site inspection is an execution obligation, not an invented quantity norm.",
+    "Actual electrical-zone, substrate and structural/fire applicability stay project requirements."
+  ],
+  "procurementScope": "One payable/purchasable factory owner; included parts are not separately bought or priced. No stock credit, delivery/MOQ, onsite labour, supplier price or ownership inferred.",
+  "sourceBoundaries": [
+    "Door assembled result only; not full delivery BOM. Unsupported fitting/turner, reveal, packaging and site fixing stay unknown.",
+    "Fan full printed delivery set: seal1 mandatory; screwdriver1 onlytimer; combined screw/dowel line retained as one included allocation with literal4pcs meaning, never8paidpieces.",
+    "Fan current manual only: old Quiet DC1918 excluded; back valve not claimed.",
+    "Legacy numeric rates are not transferred into exact branches.",
+    "Exact requires integer factory_unit_count via existing conditional primary selector; old q100 cannot silently order100factoryunits."
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "status": "PASS_READ_ONLY_FRESH_EXACT87_OLD82_UNCHANGED_NEW5_API_DOC4_BOUND_R108",
+  "databaseWrites": false,
+  "publication": false,
+  "rootAdmissionCreated": false,
+  "error": null,
+  "completeReadSet": true,
+  "sourceFreeze": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-postapply-r104/actual-source-freeze-r104.json",
+    "sha256": "dd6b50a8c80f61cca492daf9f4086606186739a0bcbb3cc1e695340dda7902be",
+    "bytes": 744768
+  },
+  "currentAtReadPair": {
+    "definitionReleaseId": "563858d8-a6b3-5522-affd-956d00e94647",
+    "searchReleaseId": "bcdc1239-b9b0-5c8b-98e8-f40c478942fa"
+  },
+  "protectedRevisionCount": 87,
+  "reference82": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-independent-readback-r105/saved82-independent-after-r105.json",
+    "sha256": "c1eec6c8f80b64da4a72a0992658f854c45aafb4a70998ee79e6c7ed6f35d389",
+    "bytes": 59705
+  },
+  "sourceApi": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-api-acceptance-b-r106/ordinary-api-result-r106.json",
+    "sha256": "3f01210d3054b1823198eb3073bb22066bc5bbd428fb1e4a2c101d3664fd0d8f",
+    "bytes": 1400222
+  },
+  "completedDocuments": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-api-acceptance-b-r106/artifact-result-r106.json",
+    "sha256": "b6224653cc8ffd962cee695440913833b5c9cb56a59ce6a57c3085d6088f78aa",
+    "bytes": 11167
+  },
+  "globalDatabaseRevisionCountClaimed": false,
+  "currentApkOrProductSourceChanged": false,
+  "session": {
+    "db": "rik_r4_runtime_b5_v2",
+    "host": "127.0.0.1",
+    "port": 55432,
+    "read_only": "on",
+    "isolation": "repeatable read",
+    "snapshot": "538209:538209:"
+  },
+  "allTransactionsRolledBack": true,
+  "old82FullColumnsExact": true,
+  "newFivePublicHeadersExact": true,
+  "fourCompletedArtifactHeadersExact": true,
+  "pageSizes": [
+    32,
+    32,
+    23
+  ],
+  "completeWireBytes": 53489,
+  "all87FullColumnsSha256": "c6939c3aca85288b1d7aa7916d7904b3857ce2e4f99bf7bac54f478c51553009",
+  "freshPreimagesFile": "C:\\Users\\User\\Documents\\Codex\\2026-10-19\\files-pasted-by-the-user-astra\\work\\stream-c-other-work-types-sol61\\work\\stream-c-facade-ct190\\owned-protected87-after-screed-docs-r108\\fresh-protected87-full-column-preimages.json",
+  "newFiveIds": [
+    "238f8ede-b8db-4528-b71a-d0c7e5ff3353",
+    "2fad855f-ce75-457d-ab35-ad9118be79b4",
+    "59325371-1759-4768-acd9-1cf2c02dcf82",
+    "7ac684c6-fc15-46ad-8130-79d22a1580a6",
+    "9dd2cd0f-6f1a-47ca-9bb6-150e4a6a3913"
+  ],
+  "artifactIds": [
+    "2f7cd8de-8464-4a78-8197-1dab02dfecbc",
+    "8fc08926-8e18-4b58-9212-1add2e7f208c",
+    "9c2f393b-4478-471f-9fb8-efc1f485eab7",
+    "cfd5d672-a182-4924-87a6-8764c540e867"
+  ],
+  "allConnectionsClosed": true
+}

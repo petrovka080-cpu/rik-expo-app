@@ -8,6 +8,10 @@ export type SecurityTotpVerifyParams = {
 
 export const SECURITY_TOTP_FRIENDLY_NAME = "Основное устройство";
 
+export function listSecurityTotpFactors() {
+  return supabase.auth.mfa.listFactors();
+}
+
 export function enrollSecurityTotpFactor() {
   return supabase.auth.mfa.enroll({
     factorType: "totp",

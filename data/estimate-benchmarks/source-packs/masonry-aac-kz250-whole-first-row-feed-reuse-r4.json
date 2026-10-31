@@ -1,0 +1,61 @@
+{
+  "contract": "masonry-aac-kz250-whole-first-row-feed-reuse/r4",
+  "sourceId": "masonry_aac_kz250_existing_whole_first_row_feed_reuse_r4",
+  "status": "LINKED_FAMILY_SOURCE_ADAPTATION_RUNTIME_UNRUN_NOT_WHOLE_ACCEPTANCE",
+  "targetDefinitionId": "79c63634-3fa6-513a-87ed-f2e3c7807835",
+  "targetDefinitionSha256": "bfbe5869280540c0c009825d091504faa7d6813ff2e63b2c34a3434e8b524f0d",
+  "existingFactory": "buildMasonryCeramic250EffectiveLiftSuccessorR4(masonryM50CycleCapturedRepresentativeR2())",
+  "maker": {
+    "path": "data/estimate-benchmarks/source-artifacts/masonry-family-whole-cycle-r2/METEL-YAR1-original.pdf",
+    "sha256": "9f86c3fffc6471afcd249960e89e0cd4433ac4187098f04a21efd15fe0a4ad62",
+    "edition": "Undated manufacturer original; printed normative edition not inferred from metadata",
+    "locator": "PDF1 purpose construction mortar for masons; YAR1 last table column; use2-6; PDF2 inspection",
+    "scope": "Construction mortar, not an M50-only material scope. Capacity0.25m3,payload500kg,tare45kg; three chosen boxes within maker maximum5; eye section minimum17mm.",
+    "loadingVariant": "Direct dump-truck loading, gentle trowel cleaning; full upper assembly, crane curve and actual site execution remain separate."
+  },
+  "ownMethod": {
+    "path": "data/estimate-benchmarks/source-artifacts/masonry-family-whole-cycle-r2/TNKSN-KZ-8.07-06-2019-official.pdf",
+    "sha256": "f5db7d0913d2d5f57634fb587a37fbccb61f9dda1787046fe13c30b096fe5b10",
+    "country": "Kazakhstan",
+    "edition": "2019; order206-NQ11Dec2019",
+    "locator": "PDF14 first row; PDF35-36 table2 three-box garland and reverse release; PDF38 manual remix; PDF39 table3; PDF41 table8 tools",
+    "firstRowMortarKind": "READY_CEMENT_SAND_OF_ACTUAL_DESIGN_GRADE",
+    "firstRowMortarGrade": null,
+    "firstRowRateM3PerWallM3": "0.017",
+    "dryGlueM150IsNotFirstRowMortarGrade": true,
+    "mixerTruckGridVibrationIsNotDirectDumpLoading": true
+  },
+  "adaptation": {
+    "classification": "REUSE_WITH_PROVEN_ADAPTATION_OF_EXISTING_WHOLE_PHYSICAL_COMPONENT",
+    "wholePhysicalRosterRows": 9,
+    "wholeProcessRows": 8,
+    "actualReturnWasteRows": 2,
+    "sourcePhysicalRowAndOperationIdsPreserved": true,
+    "originalM50NoAacBoundaryPreservedInFrozenSource": true,
+    "newBoundaryProof": "Manufacturer purpose admits construction mortar; own AAC source specifies ready cement-sand first-course bed and the same three-box/manual-remix topology. Only this compatible physical interface is adapted, with own material/design grade and actual object documents. The old source financial parent is never transferred.",
+    "solePaidMortarOwner": "masonry:aac:kz250-m150:whole-cycle:r4:first_row_mortar",
+    "soleEffectiveMortarParameter": "aackz4_effective_first_row_m3",
+    "quantityAfterSavedManualAmendment": "Accepted effective-resource output; all eight process quantities and three mass/balance checks use it",
+    "sourceRosterIsNotPurchasedInventory": true,
+    "crewHeadcountIsNotLabourHours": true,
+    "ownMainLayingLabour": "3.8889*ownWallV includes first-row levelling/manual spreading, glue preparation, sawing and laying once; not new riggers/helper/crane-operator hours"
+  },
+  "preservedNeeds": [
+    "masonry:aac:kz250-m150:whole-cycle:r4:whole_material_handling",
+    "masonry:aac:kz250-m150:whole-cycle:r4:whole_access",
+    "masonry:aac:kz250-m150:whole-cycle:r4:whole_cutting_ppe_control",
+    "masonry:aac:kz250-m150:whole-cycle:r4:whole_residue_external_supply"
+  ],
+  "missingDeveloperNorms": "Compatible wet first-row receipt/feed rigging/helper/crane hours and complete technical provision. Do not borrow KG brick5.21/.4, dry-glue handling hours or mixer-truck/grid/vibration rates. Actual object documents cannot manufacture these norms.",
+  "objectDocuments": "Actual mortar batch/design grade, complete upper-handler passport, available crane curve, route, crew, protection, inspection, supplier vehicle/driver/cleaning and actual measured returns remain protected confirmed imports, never ordinary user questions or source defaults.",
+  "ordinaryGeometryInputs": 4,
+  "ordinaryTechnicalQuestions": 0,
+  "newQuantityNorms": 0,
+  "newPaidOwners": 0,
+  "newProcurementOwners": 0,
+  "closedParentNeeds": 0,
+  "newPublicCards": 0,
+  "kgComplianceClaim": false,
+  "full": 0,
+  "runtime": "UNRUN"
+}

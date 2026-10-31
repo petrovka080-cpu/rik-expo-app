@@ -1,0 +1,1571 @@
+{
+  "definition": {
+    "id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+    "release_id": "65ee326a-7cfc-54ea-bdfe-b5de969b0ec4",
+    "catalog_id": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+    "definition_version": 9,
+    "passport": {
+      "titleRu": "уплотнение асфальтового покрытия в стандартной зоне",
+      "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+      "epsilonRows": 0,
+      "genericRows": 0,
+      "paddingRows": 0,
+      "resourceRows": 10,
+      "materialFirst": true,
+      "formulaGraphId": "roadworks-wave-a:paving_roads_landscape_interior_asphalt_compact_standard:formula-graph:v4.3",
+      "physicalResultRu": "уплотнение асфальтового покрытия в стандартной зоне",
+      "parameterSchemaId": "paving_roads_landscape_interior_asphalt_compact_standard:parameter-schema:v4.3",
+      "publicEnglishWords": 0,
+      "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+      "sourceCatalogRecords": [
+        {
+          "aliasOf": null,
+          "catalogId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+          "classification": "EXECUTABLE"
+        }
+      ],
+      "calculationStrategyId": "roadworks-wave-a:paving_roads_landscape_interior_asphalt_compact_standard:calculation-profile:v4.3",
+      "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+      "normativeCompositionId": "roadworks-wave-a:paving_roads_landscape_interior_asphalt_compact_standard:normative-composition:v4.3",
+      "professionalPassportId": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+      "sourceOwnershipContract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3"
+    },
+    "applicability": {
+      "domain": "Дорожные и асфальтобетонные работы",
+      "baselineScope": "Полный применимый состав с явными инженерными допущениями и проверяемой трассировкой",
+      "operationKind": "NEW_INSTALLATION",
+      "excludedScopeRu": [
+        "Поиск поставщика асфальтобетона без выполнения строительной работы",
+        "Аренда отдельного механизма без технологического результата",
+        "Работы другой технологии без явного выбора пользователя"
+      ],
+      "includedScopeRu": [
+        "уплотнение асфальтового покрытия в стандартной зоне",
+        "асфальт",
+        "асфальтобетон",
+        "асфальтовые работы",
+        "уплотнение асфальтового покрытия в стандартной зоне"
+      ]
+    },
+    "definition_sha256": "1d4d2a4dd4171c59ff8a6eb34d4d595303ba9c4a08f1b877591a0027df09b417",
+    "source_metadata": {
+      "contract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+      "sourceTree": "d066add452445744406da920bc73ade402ad5a2bfb506e9358f5a197da48f2e1",
+      "epsilonRows": 0,
+      "genericRows": 0,
+      "paddingRows": 0,
+      "masterSha256": "e74148e27e060bf0a36eb02ce7e4e93f4d09746975025113f19d7f5ee1950007",
+      "sourceIdentity": "BASE_WORK_CATALOG_10000:base-10000:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+      "catalogRecordIds": [
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+      ],
+      "activationAllowed": false,
+      "r6SourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+      "productionEligible": false,
+      "publicEnglishWords": 0,
+      "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+      "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+      "noHiddenRuntimeAssumptions": true,
+      "r6CurrentTargetDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+      "r6AdoptedContentDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+      "sourceOwnershipTransitionCount": 1,
+      "sourceOwnershipPredecessorDefinitionId": "6031f2c4-d6c1-59c0-82b0-7bb5ce2b1577"
+    },
+    "created_at": "2026-09-20T01:17:43.211889+00:00",
+    "content_status": "CANDIDATE_READY",
+    "content_gate_status": "GREEN"
+  },
+  "baseline": {
+    "id": "33703e84-bd0f-51e3-bf27-e9a5728289c2",
+    "baseline_key": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3:8ca40515950dc0e1:canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+    "catalog_id": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+    "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+    "source_definition_version_id": "6031f2c4-d6c1-59c0-82b0-7bb5ce2b1577",
+    "parameter_schema_sha256": "65cf9455f3f1a7e906ddba44cd7b19887fa16d1cabc5d59ce1cbe93ff7fa8036",
+    "input_values": {
+      "area_m2": 120,
+      "acceptance_lot_m2": 1000,
+      "work_journal_count": 1,
+      "execution_documentation_count": 1,
+      "labor_productivity_m2_per_man_hour": 100,
+      "machine_roller_productivity_m2_per_machine_hour": 100,
+      "machine_finish_roller_productivity_m2_per_machine_hour": 100,
+      "machine_breakdown_roller_productivity_m2_per_machine_hour": 100
+    },
+    "input_classification": {
+      "area_m2": "VALIDATION_FIXTURE",
+      "acceptance_lot_m2": "VALIDATION_FIXTURE",
+      "work_journal_count": "DERIVED",
+      "execution_documentation_count": "DERIVED",
+      "labor_productivity_m2_per_man_hour": "VALIDATION_FIXTURE",
+      "machine_roller_productivity_m2_per_machine_hour": "VALIDATION_FIXTURE",
+      "machine_finish_roller_productivity_m2_per_machine_hour": "VALIDATION_FIXTURE",
+      "machine_breakdown_roller_productivity_m2_per_machine_hour": "VALIDATION_FIXTURE"
+    },
+    "uom_by_parameter": {
+      "area_m2": "m2",
+      "acceptance_lot_m2": "m2",
+      "work_journal_count": "document",
+      "execution_documentation_count": "document",
+      "labor_productivity_m2_per_man_hour": "m2_man_hour",
+      "machine_roller_productivity_m2_per_machine_hour": "m2_machine_hour",
+      "machine_finish_roller_productivity_m2_per_machine_hour": "m2_machine_hour",
+      "machine_breakdown_roller_productivity_m2_per_machine_hour": "m2_machine_hour"
+    },
+    "formula_consumer_ids": {
+      "area_m2": [
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:1",
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:2",
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:3",
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:4",
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:5",
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:6",
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:7",
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:8"
+      ],
+      "acceptance_lot_m2": [
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:7"
+      ],
+      "work_journal_count": [
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:9"
+      ],
+      "execution_documentation_count": [
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:10"
+      ],
+      "labor_productivity_m2_per_man_hour": [
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:8"
+      ],
+      "machine_roller_productivity_m2_per_machine_hour": [
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:5"
+      ],
+      "machine_finish_roller_productivity_m2_per_machine_hour": [
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:6"
+      ],
+      "machine_breakdown_roller_productivity_m2_per_machine_hour": [
+        "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:4"
+      ]
+    },
+    "resource_consumer_row_ids": {
+      "area_m2": [
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:1",
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:2",
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:3",
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:4",
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:5",
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:6",
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:7",
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:8"
+      ],
+      "acceptance_lot_m2": [
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:7"
+      ],
+      "work_journal_count": [
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:9"
+      ],
+      "execution_documentation_count": [
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:10"
+      ],
+      "labor_productivity_m2_per_man_hour": [
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:8"
+      ],
+      "machine_roller_productivity_m2_per_machine_hour": [
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:5"
+      ],
+      "machine_finish_roller_productivity_m2_per_machine_hour": [
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:6"
+      ],
+      "machine_breakdown_roller_productivity_m2_per_machine_hour": [
+        "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:4"
+      ]
+    },
+    "normative_source_ids": {
+      "area_m2": [
+        "kg_krer_27_roadworks_2015",
+        "project_quantity_inputs_v3"
+      ],
+      "acceptance_lot_m2": [
+        "project_quantity_inputs_v3"
+      ],
+      "work_journal_count": [
+        "kg_krer_27_roadworks_2015",
+        "project_quantity_inputs_v3"
+      ],
+      "execution_documentation_count": [
+        "kg_krer_27_roadworks_2015",
+        "project_quantity_inputs_v3"
+      ],
+      "labor_productivity_m2_per_man_hour": [
+        "project_quantity_inputs_v3"
+      ],
+      "machine_roller_productivity_m2_per_machine_hour": [
+        "selected_equipment_passport_v1"
+      ],
+      "machine_finish_roller_productivity_m2_per_machine_hour": [
+        "selected_equipment_passport_v1"
+      ],
+      "machine_breakdown_roller_productivity_m2_per_machine_hour": [
+        "selected_equipment_passport_v1"
+      ]
+    },
+    "guide_provenance_ru": {
+      "area_m2": "Площадь работ",
+      "acceptance_lot_m2": "Площадь приёмочной партии",
+      "work_journal_count": "Количество журналов производства и операционного контроля",
+      "execution_documentation_count": "Количество комплектов исполнительной документации",
+      "labor_productivity_m2_per_man_hour": "Нормативная производительность труда рабочих",
+      "machine_roller_productivity_m2_per_machine_hour": "Производительность механизма «дорожный каток» по ППР или технологической карте",
+      "machine_finish_roller_productivity_m2_per_machine_hour": "Производительность механизма «каток окончательного уплотнения» по ППР или технологической карте",
+      "machine_breakdown_roller_productivity_m2_per_machine_hour": "Производительность механизма «каток предварительного уплотнения» по ППР или технологической карте"
+    },
+    "proposal_source_refs": [
+      {
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "sourceTree": "d066add452445744406da920bc73ade402ad5a2bfb506e9358f5a197da48f2e1",
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5"
+      },
+      {
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "currentTargetDefinitionId": "248cea32-b7b4-5d20-89c2-3a0d20b20c16",
+        "adoptedContentDefinitionId": "4529a9b7-10d3-575f-820c-e1d6a3e1af5d"
+      },
+      {
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "currentTargetDefinitionId": "90887ac2-5a35-50ea-9d60-e6f8002a0095",
+        "adoptedContentDefinitionId": "90887ac2-5a35-50ea-9d60-e6f8002a0095"
+      },
+      {
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "currentTargetDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "adoptedContentDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8"
+      }
+    ],
+    "validation_scenario_refs": [
+      {
+        "scenario": "R555_ASPHALT_FULL_APPLICABLE_DEFAULT",
+        "zeroRows": 0,
+        "genericRows": 0,
+        "expectedRows": 10
+      },
+      {
+        "scenario": "R6_NO_HIDDEN_RUNTIME_ASSUMPTIONS",
+        "acceptanceEvidenceSha256": "2ac91c5033fdb34d10fd0089582395ebeb53f8a84eb8c63674f1cdc9331bf4ab"
+      },
+      {
+        "scenario": "R6_NO_HIDDEN_RUNTIME_ASSUMPTIONS",
+        "acceptanceEvidenceSha256": "a171b316f4cf972106f717b0122270aa0edc4f4bd8ecbc44087cfd21e12cc4b9"
+      },
+      {
+        "scenario": "R6_NO_HIDDEN_RUNTIME_ASSUMPTIONS",
+        "acceptanceEvidenceSha256": "a5eb6fe31dabbdb1f90e15387e70b75ce56aa75b54e87fe60adcd9d25d48395f"
+      },
+      {
+        "scenario": "R6_NO_HIDDEN_RUNTIME_ASSUMPTIONS",
+        "acceptanceEvidenceSha256": "192e5e01759aa30e0a4822f27bc14ff488ad40663fd0931d94d506bbf154e49a"
+      },
+      {
+        "scenario": "R6_NO_HIDDEN_RUNTIME_ASSUMPTIONS",
+        "acceptanceEvidenceSha256": "0486e95df264d8a00928638920ec70fd9d3bb79c055b7962db9dfed5b5eb860d"
+      }
+    ],
+    "acceptance_evidence_sha256": "0486e95df264d8a00928638920ec70fd9d3bb79c055b7962db9dfed5b5eb860d",
+    "accepted_release_id": "65ee326a-7cfc-54ea-bdfe-b5de969b0ec4",
+    "accepted_at": "2026-09-20T01:17:46.31579+00:00",
+    "supersedes_baseline_id": "4bec4dca-1a91-5b27-9093-5ae6851d6e32",
+    "contract_version": "APPROVED_TEMPLATE_BASELINE_R54_V1"
+  },
+  "parameters": [
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "parameter_id": "area_m2",
+      "ordinal": 0,
+      "value_type": "decimal",
+      "unit_id": "m2",
+      "title_ru": "Площадь работ",
+      "required": true,
+      "default_value": null,
+      "constraints_json": {
+        "min": 0.001
+      },
+      "truth_metadata": {
+        "guide": {
+          "guide_kind": "MEASUREMENT_RULE",
+          "source_role": "USER_MEASURED",
+          "verified_at": "2026-09-19",
+          "applicability": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+          "guide_version": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "guide_short_ru": "Площадь работ",
+          "source_snapshot_hash": "0bcb0139bf45ac1032e3c17d232e2c49b164cffa8b228c8405bbe2112854d66d",
+          "guide_validation_policy": "INFORMATION_ONLY"
+        },
+        "contract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+        "provenance": {
+          "baselineOwner": "approved-template-baseline:r54",
+          "sourceCatalogId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+          "sourceReleaseId": "fe1357b1-d031-5011-8016-f03cb77916ab",
+          "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+          "sourceParameterSchemaId": "ade4628981d4722ad49847addd16ff2667aa2def70960fb382d3ba90b044db39",
+          "sourceDefinitionVersionId": "4529a9b7-10d3-575f-820c-e1d6a3e1af5d",
+          "approvedTemplateBaselineId": "563ab0fd-5e9b-5ef7-a35d-56930b7d1ce2",
+          "r6CurrentTargetDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "r6AdoptedContentDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "asphaltSourceOwnershipContract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "asphaltSourceOwnershipPredecessorDefinitionId": "6031f2c4-d6c1-59c0-82b0-7bb5ce2b1577"
+        },
+        "visibility_role": "USER_INPUT",
+        "formula_consumers": [
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:1",
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:2",
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:3",
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:4",
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:5",
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:6",
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:7",
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:8"
+        ],
+        "value_source_role": "USER_MEASURED",
+        "semantic_parameter_key": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard:area_m2",
+        "resource_branch_consumers": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:1",
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:2",
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:3",
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:4",
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:5",
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:6",
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:7",
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:8"
+        ],
+        "source_confirmation_required": false,
+        "preliminary_compilation_allowed": true
+      },
+      "approved_template_baseline_id": "33703e84-bd0f-51e3-bf27-e9a5728289c2"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "parameter_id": "labor_productivity_m2_per_man_hour",
+      "ordinal": 1,
+      "value_type": "decimal",
+      "unit_id": "m2_man_hour",
+      "title_ru": "Нормативная производительность труда рабочих",
+      "required": true,
+      "default_value": null,
+      "constraints_json": {
+        "min": 0.001
+      },
+      "truth_metadata": {
+        "guide": {
+          "guide_kind": "PROJECT_DEFINED",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "verified_at": "2026-09-19",
+          "applicability": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+          "guide_version": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "guide_short_ru": "Нормативная производительность труда рабочих",
+          "source_snapshot_hash": "f54e709db27e27df225f8553a06d6080b0e9ad5fb5e64425c5d327dec247a9c3",
+          "guide_validation_policy": "PROVENANCE_REQUIRED"
+        },
+        "contract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+        "provenance": {
+          "baselineOwner": "approved-template-baseline:r54",
+          "sourceCatalogId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+          "sourceReleaseId": "fe1357b1-d031-5011-8016-f03cb77916ab",
+          "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+          "sourceParameterSchemaId": "ade4628981d4722ad49847addd16ff2667aa2def70960fb382d3ba90b044db39",
+          "sourceDefinitionVersionId": "4529a9b7-10d3-575f-820c-e1d6a3e1af5d",
+          "approvedTemplateBaselineId": "563ab0fd-5e9b-5ef7-a35d-56930b7d1ce2",
+          "r6CurrentTargetDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "r6AdoptedContentDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "asphaltSourceOwnershipContract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "asphaltSourceOwnershipPredecessorDefinitionId": "6031f2c4-d6c1-59c0-82b0-7bb5ce2b1577"
+        },
+        "visibility_role": "USER_INPUT",
+        "formula_consumers": [
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:8"
+        ],
+        "value_source_role": "PROJECT_DOCUMENTATION",
+        "semantic_parameter_key": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard:labor_productivity_m2_per_man_hour",
+        "resource_branch_consumers": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:8"
+        ],
+        "source_confirmation_required": true,
+        "preliminary_compilation_allowed": true
+      },
+      "approved_template_baseline_id": "33703e84-bd0f-51e3-bf27-e9a5728289c2"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "parameter_id": "work_journal_count",
+      "ordinal": 2,
+      "value_type": "integer",
+      "unit_id": "document",
+      "title_ru": "Количество журналов производства и операционного контроля",
+      "required": true,
+      "default_value": null,
+      "constraints_json": {
+        "min": 0.001
+      },
+      "truth_metadata": {
+        "guide": {
+          "guide_kind": "DERIVED_VALUE_RULE",
+          "source_role": "BACKEND_DERIVED",
+          "verified_at": "2026-09-19",
+          "applicability": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+          "guide_version": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "guide_short_ru": "Количество журналов производства и операционного контроля",
+          "source_snapshot_hash": "442ca64bacdb2270019973f8567c33105c5e645c2698f47806002526576a6340",
+          "guide_validation_policy": "INFORMATION_ONLY"
+        },
+        "contract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+        "provenance": {
+          "baselineOwner": "approved-template-baseline:r54",
+          "sourceCatalogId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+          "sourceReleaseId": "fe1357b1-d031-5011-8016-f03cb77916ab",
+          "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+          "sourceParameterSchemaId": "ade4628981d4722ad49847addd16ff2667aa2def70960fb382d3ba90b044db39",
+          "sourceDefinitionVersionId": "4529a9b7-10d3-575f-820c-e1d6a3e1af5d",
+          "approvedTemplateBaselineId": "563ab0fd-5e9b-5ef7-a35d-56930b7d1ce2",
+          "r6CurrentTargetDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "r6AdoptedContentDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "asphaltSourceOwnershipContract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "asphaltSourceOwnershipPredecessorDefinitionId": "6031f2c4-d6c1-59c0-82b0-7bb5ce2b1577"
+        },
+        "visibility_role": "USER_DERIVED_READONLY",
+        "formula_consumers": [
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:9"
+        ],
+        "value_source_role": "BACKEND_DERIVED",
+        "semantic_parameter_key": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard:work_journal_count",
+        "resource_branch_consumers": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:9"
+        ],
+        "source_confirmation_required": false,
+        "preliminary_compilation_allowed": false
+      },
+      "approved_template_baseline_id": "33703e84-bd0f-51e3-bf27-e9a5728289c2"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "parameter_id": "execution_documentation_count",
+      "ordinal": 3,
+      "value_type": "integer",
+      "unit_id": "document",
+      "title_ru": "Количество комплектов исполнительной документации",
+      "required": true,
+      "default_value": null,
+      "constraints_json": {
+        "min": 0.001
+      },
+      "truth_metadata": {
+        "guide": {
+          "guide_kind": "DERIVED_VALUE_RULE",
+          "source_role": "BACKEND_DERIVED",
+          "verified_at": "2026-09-19",
+          "applicability": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+          "guide_version": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "guide_short_ru": "Количество комплектов исполнительной документации",
+          "source_snapshot_hash": "43f4ab7d87350fc3203fea908cf91bf6fa619cb679671f5ec714ef2493ff5529",
+          "guide_validation_policy": "INFORMATION_ONLY"
+        },
+        "contract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+        "provenance": {
+          "baselineOwner": "approved-template-baseline:r54",
+          "sourceCatalogId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+          "sourceReleaseId": "fe1357b1-d031-5011-8016-f03cb77916ab",
+          "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+          "sourceParameterSchemaId": "ade4628981d4722ad49847addd16ff2667aa2def70960fb382d3ba90b044db39",
+          "sourceDefinitionVersionId": "4529a9b7-10d3-575f-820c-e1d6a3e1af5d",
+          "approvedTemplateBaselineId": "563ab0fd-5e9b-5ef7-a35d-56930b7d1ce2",
+          "r6CurrentTargetDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "r6AdoptedContentDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "asphaltSourceOwnershipContract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "asphaltSourceOwnershipPredecessorDefinitionId": "6031f2c4-d6c1-59c0-82b0-7bb5ce2b1577"
+        },
+        "visibility_role": "USER_DERIVED_READONLY",
+        "formula_consumers": [
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:10"
+        ],
+        "value_source_role": "BACKEND_DERIVED",
+        "semantic_parameter_key": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard:execution_documentation_count",
+        "resource_branch_consumers": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:10"
+        ],
+        "source_confirmation_required": false,
+        "preliminary_compilation_allowed": false
+      },
+      "approved_template_baseline_id": "33703e84-bd0f-51e3-bf27-e9a5728289c2"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "parameter_id": "acceptance_lot_m2",
+      "ordinal": 4,
+      "value_type": "decimal",
+      "unit_id": "m2",
+      "title_ru": "Площадь приёмочной партии",
+      "required": true,
+      "default_value": null,
+      "constraints_json": {
+        "min": 0.001
+      },
+      "truth_metadata": {
+        "guide": {
+          "guide_kind": "PROJECT_DEFINED",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "verified_at": "2026-09-19",
+          "applicability": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+          "guide_version": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "guide_short_ru": "Площадь приёмочной партии",
+          "source_snapshot_hash": "4387823b26632a1bd3ddf0a71e9882c40f942f6d1f7b5a44aa84b72150be577e",
+          "guide_validation_policy": "PROVENANCE_REQUIRED"
+        },
+        "contract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+        "provenance": {
+          "baselineOwner": "approved-template-baseline:r54",
+          "sourceCatalogId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+          "sourceReleaseId": "fe1357b1-d031-5011-8016-f03cb77916ab",
+          "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+          "sourceParameterSchemaId": "ade4628981d4722ad49847addd16ff2667aa2def70960fb382d3ba90b044db39",
+          "sourceDefinitionVersionId": "4529a9b7-10d3-575f-820c-e1d6a3e1af5d",
+          "approvedTemplateBaselineId": "563ab0fd-5e9b-5ef7-a35d-56930b7d1ce2",
+          "r6CurrentTargetDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "r6AdoptedContentDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "asphaltSourceOwnershipContract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "asphaltSourceOwnershipPredecessorDefinitionId": "6031f2c4-d6c1-59c0-82b0-7bb5ce2b1577"
+        },
+        "visibility_role": "USER_INPUT",
+        "formula_consumers": [
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:7"
+        ],
+        "value_source_role": "PROJECT_DOCUMENTATION",
+        "semantic_parameter_key": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard:acceptance_lot_m2",
+        "resource_branch_consumers": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:7"
+        ],
+        "source_confirmation_required": true,
+        "preliminary_compilation_allowed": true
+      },
+      "approved_template_baseline_id": "33703e84-bd0f-51e3-bf27-e9a5728289c2"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "parameter_id": "machine_breakdown_roller_productivity_m2_per_machine_hour",
+      "ordinal": 5,
+      "value_type": "decimal",
+      "unit_id": "m2_machine_hour",
+      "title_ru": "Производительность механизма «каток предварительного уплотнения» по ППР или технологической карте",
+      "required": true,
+      "default_value": null,
+      "constraints_json": {
+        "min": 0.001
+      },
+      "truth_metadata": {
+        "guide": {
+          "guide_kind": "MANUFACTURER_RANGE",
+          "source_role": "SELECTED_EQUIPMENT_PASSPORT",
+          "verified_at": "2026-09-19",
+          "applicability": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+          "guide_version": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "guide_short_ru": "Производительность механизма «каток предварительного уплотнения» по ППР или технологической карте",
+          "source_snapshot_hash": "2ced6817e8e2ce16c5d380e3c79f28896367f609865e119eeb4b8b41cbc5a6a0",
+          "guide_validation_policy": "PROVENANCE_REQUIRED"
+        },
+        "contract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+        "provenance": {
+          "baselineOwner": "approved-template-baseline:r54",
+          "sourceCatalogId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+          "sourceReleaseId": "fe1357b1-d031-5011-8016-f03cb77916ab",
+          "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+          "sourceParameterSchemaId": "ade4628981d4722ad49847addd16ff2667aa2def70960fb382d3ba90b044db39",
+          "sourceDefinitionVersionId": "4529a9b7-10d3-575f-820c-e1d6a3e1af5d",
+          "approvedTemplateBaselineId": "563ab0fd-5e9b-5ef7-a35d-56930b7d1ce2",
+          "r6CurrentTargetDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "r6AdoptedContentDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "asphaltSourceOwnershipContract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "asphaltSourceOwnershipPredecessorDefinitionId": "6031f2c4-d6c1-59c0-82b0-7bb5ce2b1577"
+        },
+        "visibility_role": "USER_INPUT",
+        "formula_consumers": [
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:4"
+        ],
+        "value_source_role": "SELECTED_EQUIPMENT_PASSPORT",
+        "semantic_parameter_key": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard:machine_breakdown_roller_productivity_m2_per_machine_hour",
+        "resource_branch_consumers": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:4"
+        ],
+        "source_confirmation_required": true,
+        "preliminary_compilation_allowed": true
+      },
+      "approved_template_baseline_id": "33703e84-bd0f-51e3-bf27-e9a5728289c2"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "parameter_id": "machine_roller_productivity_m2_per_machine_hour",
+      "ordinal": 6,
+      "value_type": "decimal",
+      "unit_id": "m2_machine_hour",
+      "title_ru": "Производительность механизма «дорожный каток» по ППР или технологической карте",
+      "required": true,
+      "default_value": null,
+      "constraints_json": {
+        "min": 0.001
+      },
+      "truth_metadata": {
+        "guide": {
+          "guide_kind": "MANUFACTURER_RANGE",
+          "source_role": "SELECTED_EQUIPMENT_PASSPORT",
+          "verified_at": "2026-09-19",
+          "applicability": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+          "guide_version": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "guide_short_ru": "Производительность механизма «дорожный каток» по ППР или технологической карте",
+          "source_snapshot_hash": "05bff7ad9c596a3468847823581b90f035826e8ca6885a32d9f3db143122caa9",
+          "guide_validation_policy": "PROVENANCE_REQUIRED"
+        },
+        "contract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+        "provenance": {
+          "baselineOwner": "approved-template-baseline:r54",
+          "sourceCatalogId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+          "sourceReleaseId": "fe1357b1-d031-5011-8016-f03cb77916ab",
+          "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+          "sourceParameterSchemaId": "ade4628981d4722ad49847addd16ff2667aa2def70960fb382d3ba90b044db39",
+          "sourceDefinitionVersionId": "4529a9b7-10d3-575f-820c-e1d6a3e1af5d",
+          "approvedTemplateBaselineId": "563ab0fd-5e9b-5ef7-a35d-56930b7d1ce2",
+          "r6CurrentTargetDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "r6AdoptedContentDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "asphaltSourceOwnershipContract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "asphaltSourceOwnershipPredecessorDefinitionId": "6031f2c4-d6c1-59c0-82b0-7bb5ce2b1577"
+        },
+        "visibility_role": "USER_INPUT",
+        "formula_consumers": [
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:5"
+        ],
+        "value_source_role": "SELECTED_EQUIPMENT_PASSPORT",
+        "semantic_parameter_key": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard:machine_roller_productivity_m2_per_machine_hour",
+        "resource_branch_consumers": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:5"
+        ],
+        "source_confirmation_required": true,
+        "preliminary_compilation_allowed": true
+      },
+      "approved_template_baseline_id": "33703e84-bd0f-51e3-bf27-e9a5728289c2"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "parameter_id": "machine_finish_roller_productivity_m2_per_machine_hour",
+      "ordinal": 7,
+      "value_type": "decimal",
+      "unit_id": "m2_machine_hour",
+      "title_ru": "Производительность механизма «каток окончательного уплотнения» по ППР или технологической карте",
+      "required": true,
+      "default_value": null,
+      "constraints_json": {
+        "min": 0.001
+      },
+      "truth_metadata": {
+        "guide": {
+          "guide_kind": "MANUFACTURER_RANGE",
+          "source_role": "SELECTED_EQUIPMENT_PASSPORT",
+          "verified_at": "2026-09-19",
+          "applicability": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+          "guide_version": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "guide_short_ru": "Производительность механизма «каток окончательного уплотнения» по ППР или технологической карте",
+          "source_snapshot_hash": "ffdcef5f39182405e129f9f973d81f0d0de3cd1df15eeec56e2104e76b984c69",
+          "guide_validation_policy": "PROVENANCE_REQUIRED"
+        },
+        "contract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+        "provenance": {
+          "baselineOwner": "approved-template-baseline:r54",
+          "sourceCatalogId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+          "sourceReleaseId": "fe1357b1-d031-5011-8016-f03cb77916ab",
+          "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+          "sourceParameterSchemaId": "ade4628981d4722ad49847addd16ff2667aa2def70960fb382d3ba90b044db39",
+          "sourceDefinitionVersionId": "4529a9b7-10d3-575f-820c-e1d6a3e1af5d",
+          "approvedTemplateBaselineId": "563ab0fd-5e9b-5ef7-a35d-56930b7d1ce2",
+          "r6CurrentTargetDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "r6AdoptedContentDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+          "asphaltSourceOwnershipContract": "rik-expo-app.r4-a13-6.asphalt-source-ownership-successor.v3",
+          "asphaltSourceOwnershipPredecessorDefinitionId": "6031f2c4-d6c1-59c0-82b0-7bb5ce2b1577"
+        },
+        "visibility_role": "USER_INPUT",
+        "formula_consumers": [
+          "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:6"
+        ],
+        "value_source_role": "SELECTED_EQUIPMENT_PASSPORT",
+        "semantic_parameter_key": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard:machine_finish_roller_productivity_m2_per_machine_hour",
+        "resource_branch_consumers": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:6"
+        ],
+        "source_confirmation_required": true,
+        "preliminary_compilation_allowed": true
+      },
+      "approved_template_baseline_id": "33703e84-bd0f-51e3-bf27-e9a5728289c2"
+    }
+  ],
+  "formulas": [
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:1",
+      "output_unit_id": "m2",
+      "expression_source": "area_m2",
+      "ast": {
+        "id": "area_m2",
+        "kind": "parameter"
+      },
+      "input_parameter_ids": [
+        "area_m2"
+      ],
+      "ast_sha256": "ca02fe8e37afc21cd5ae24b166a194a6810408f463d25b3ffa280c6ebf375f68"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:10",
+      "output_unit_id": "pcs",
+      "expression_source": "execution_documentation_count",
+      "ast": {
+        "id": "execution_documentation_count",
+        "kind": "parameter"
+      },
+      "input_parameter_ids": [
+        "execution_documentation_count"
+      ],
+      "ast_sha256": "e6ecd04d9c76ebdf8e97d2405a6e88a1d8a59f1a70e4bc97c289de0720c5369f"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:2",
+      "output_unit_id": "m2",
+      "expression_source": "area_m2",
+      "ast": {
+        "id": "area_m2",
+        "kind": "parameter"
+      },
+      "input_parameter_ids": [
+        "area_m2"
+      ],
+      "ast_sha256": "ca02fe8e37afc21cd5ae24b166a194a6810408f463d25b3ffa280c6ebf375f68"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:3",
+      "output_unit_id": "m2",
+      "expression_source": "area_m2",
+      "ast": {
+        "id": "area_m2",
+        "kind": "parameter"
+      },
+      "input_parameter_ids": [
+        "area_m2"
+      ],
+      "ast_sha256": "ca02fe8e37afc21cd5ae24b166a194a6810408f463d25b3ffa280c6ebf375f68"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:4",
+      "output_unit_id": "machine_hour",
+      "expression_source": "area_m2/machine_breakdown_roller_productivity_m2_per_machine_hour",
+      "ast": {
+        "kind": "binary",
+        "left": {
+          "id": "area_m2",
+          "kind": "parameter"
+        },
+        "right": {
+          "id": "machine_breakdown_roller_productivity_m2_per_machine_hour",
+          "kind": "parameter"
+        },
+        "operator": "/"
+      },
+      "input_parameter_ids": [
+        "area_m2",
+        "machine_breakdown_roller_productivity_m2_per_machine_hour"
+      ],
+      "ast_sha256": "6725e8e2ccae059ac9aea4a512cafbdc2af81de323e6b6573b1baa8c3fe3deea"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:5",
+      "output_unit_id": "machine_hour",
+      "expression_source": "area_m2/machine_roller_productivity_m2_per_machine_hour",
+      "ast": {
+        "kind": "binary",
+        "left": {
+          "id": "area_m2",
+          "kind": "parameter"
+        },
+        "right": {
+          "id": "machine_roller_productivity_m2_per_machine_hour",
+          "kind": "parameter"
+        },
+        "operator": "/"
+      },
+      "input_parameter_ids": [
+        "area_m2",
+        "machine_roller_productivity_m2_per_machine_hour"
+      ],
+      "ast_sha256": "19e2d54cbf14fc58954787053e28078911f4de1fb430f1eb8603ea38b0efec89"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:6",
+      "output_unit_id": "machine_hour",
+      "expression_source": "area_m2/machine_finish_roller_productivity_m2_per_machine_hour",
+      "ast": {
+        "kind": "binary",
+        "left": {
+          "id": "area_m2",
+          "kind": "parameter"
+        },
+        "right": {
+          "id": "machine_finish_roller_productivity_m2_per_machine_hour",
+          "kind": "parameter"
+        },
+        "operator": "/"
+      },
+      "input_parameter_ids": [
+        "area_m2",
+        "machine_finish_roller_productivity_m2_per_machine_hour"
+      ],
+      "ast_sha256": "345ff7f7de627843c99bf2f2359473aa9e6b456b88d94da565dd33fefdb3aba5"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:7",
+      "output_unit_id": "pcs",
+      "expression_source": "ceil(area_m2/acceptance_lot_m2)",
+      "ast": {
+        "kind": "call",
+        "function": "ceil",
+        "arguments": [
+          {
+            "kind": "binary",
+            "left": {
+              "id": "area_m2",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "acceptance_lot_m2",
+              "kind": "parameter"
+            },
+            "operator": "/"
+          }
+        ]
+      },
+      "input_parameter_ids": [
+        "acceptance_lot_m2",
+        "area_m2"
+      ],
+      "ast_sha256": "33a09f52fee9a7cc596166f2d2204fa9e7c2c00fb69a1be7a1bad6743722bb1a"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:8",
+      "output_unit_id": "man_hour",
+      "expression_source": "area_m2/labor_productivity_m2_per_man_hour",
+      "ast": {
+        "kind": "binary",
+        "left": {
+          "id": "area_m2",
+          "kind": "parameter"
+        },
+        "right": {
+          "id": "labor_productivity_m2_per_man_hour",
+          "kind": "parameter"
+        },
+        "operator": "/"
+      },
+      "input_parameter_ids": [
+        "area_m2",
+        "labor_productivity_m2_per_man_hour"
+      ],
+      "ast_sha256": "91fd70849992577284cbc58cc6d3dcbaa16c633d600c7ec1fa211f85b14120e3"
+    },
+    {
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:9",
+      "output_unit_id": "pcs",
+      "expression_source": "work_journal_count",
+      "ast": {
+        "id": "work_journal_count",
+        "kind": "parameter"
+      },
+      "input_parameter_ids": [
+        "work_journal_count"
+      ],
+      "ast_sha256": "a2818519dbc5214d465d721a0f7ad751d521d7f419155104bbb21fc48298677f"
+    }
+  ],
+  "resources": [
+    {
+      "id": "eb7f66f7-0d78-558b-b924-59bd9dde9ec4",
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "row_id": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:1",
+      "ordinal": 0,
+      "section": "Работы и труд",
+      "category": "Работы и труд",
+      "title_ru": "Предварительное уплотнение уложенной асфальтобетонной смеси",
+      "row_type": "service",
+      "unit_id": "m2",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:1",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "resource_graph": {
+        "wasteRu": "Дополнительный универсальный процент отходов не начисляется",
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "deliveryRu": "Не применяется",
+        "packagingRu": "Не применяется",
+        "sourceRowId": "paving_roads_landscape_interior_asphalt_compact_standard:breakdown_compaction",
+        "applicabilityRu": "MANDATORY_FOR_SELECTED_PROFESSIONAL_BLUEPRINT",
+        "sourceFormulaId": "area_m2",
+        "sourceExpression": "area_m2",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "primaryMeasureParameterId": "area_m2",
+        "visibleDerivedAssumptions": []
+      },
+      "semantic_owner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard:row:1",
+      "cost_owner_id": "r555-asphalt-cost:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:1",
+      "procurement_eligible": false,
+      "source_metadata": {
+        "epsilon": false,
+        "generic": false,
+        "padding": false,
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "normativeTrace": [
+          {
+            "role": "Проверяемый источник применимости или состава строки",
+            "sourceId": "kg_krer_27_roadworks_2015"
+          }
+        ],
+        "sourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "targetCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "calculationTrace": "area_m2; work=paving_roads_landscape_interior_asphalt_compact_standard",
+        "normativeSourceIds": [
+          "kg_krer_27_roadworks_2015"
+        ],
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+        "sourceDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "sourceParameterIds": [
+          "area_m2"
+        ],
+        "sourceSemanticOwner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "sourceCatalogRecordId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+        "procurementClassification": "NON_PROCUREMENT",
+        "sourceOwnerCatalogRecords": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+        ],
+        "visibleDerivedAssumptions": []
+      },
+      "row_sha256": "5634446d8801563787cc612549f40d4584ba34c0c154c9824171a03f0d567f4d",
+      "created_at": "2026-09-20T01:17:43.211889+00:00"
+    },
+    {
+      "id": "1af03f65-f6f7-5004-89c7-1517e28dfdf3",
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "row_id": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:2",
+      "ordinal": 1,
+      "section": "Работы и труд",
+      "category": "Работы и труд",
+      "title_ru": "Основное уплотнение слоя по утверждённой схеме проходов",
+      "row_type": "service",
+      "unit_id": "m2",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:2",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "resource_graph": {
+        "wasteRu": "Дополнительный универсальный процент отходов не начисляется",
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "deliveryRu": "Не применяется",
+        "packagingRu": "Не применяется",
+        "sourceRowId": "paving_roads_landscape_interior_asphalt_compact_standard:intermediate_compaction",
+        "applicabilityRu": "MANDATORY_FOR_SELECTED_PROFESSIONAL_BLUEPRINT",
+        "sourceFormulaId": "area_m2",
+        "sourceExpression": "area_m2",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "primaryMeasureParameterId": "area_m2",
+        "visibleDerivedAssumptions": []
+      },
+      "semantic_owner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard:row:2",
+      "cost_owner_id": "r555-asphalt-cost:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:2",
+      "procurement_eligible": false,
+      "source_metadata": {
+        "epsilon": false,
+        "generic": false,
+        "padding": false,
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "normativeTrace": [
+          {
+            "role": "Проверяемый источник применимости или состава строки",
+            "sourceId": "kg_krer_27_roadworks_2015"
+          }
+        ],
+        "sourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "targetCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "calculationTrace": "area_m2; work=paving_roads_landscape_interior_asphalt_compact_standard",
+        "normativeSourceIds": [
+          "kg_krer_27_roadworks_2015"
+        ],
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+        "sourceDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "sourceParameterIds": [
+          "area_m2"
+        ],
+        "sourceSemanticOwner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "sourceCatalogRecordId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+        "procurementClassification": "NON_PROCUREMENT",
+        "sourceOwnerCatalogRecords": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+        ],
+        "visibleDerivedAssumptions": []
+      },
+      "row_sha256": "0ecb1b231560dc1c6b1351ac8b9fa174fabe33cb6618fa46a575a67efbd821ba",
+      "created_at": "2026-09-20T01:17:43.211889+00:00"
+    },
+    {
+      "id": "d630fa7d-e8ff-5257-b1b8-5a09b853946a",
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "row_id": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:3",
+      "ordinal": 2,
+      "section": "Работы и труд",
+      "category": "Работы и труд",
+      "title_ru": "Окончательное уплотнение и устранение следов проходов катков",
+      "row_type": "service",
+      "unit_id": "m2",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:3",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "resource_graph": {
+        "wasteRu": "Дополнительный универсальный процент отходов не начисляется",
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "deliveryRu": "Не применяется",
+        "packagingRu": "Не применяется",
+        "sourceRowId": "paving_roads_landscape_interior_asphalt_compact_standard:finish_compaction",
+        "applicabilityRu": "MANDATORY_FOR_SELECTED_PROFESSIONAL_BLUEPRINT",
+        "sourceFormulaId": "area_m2",
+        "sourceExpression": "area_m2",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "primaryMeasureParameterId": "area_m2",
+        "visibleDerivedAssumptions": []
+      },
+      "semantic_owner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard:row:3",
+      "cost_owner_id": "r555-asphalt-cost:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:3",
+      "procurement_eligible": false,
+      "source_metadata": {
+        "epsilon": false,
+        "generic": false,
+        "padding": false,
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "normativeTrace": [
+          {
+            "role": "Проверяемый источник применимости или состава строки",
+            "sourceId": "kg_krer_27_roadworks_2015"
+          }
+        ],
+        "sourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "targetCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "calculationTrace": "area_m2; work=paving_roads_landscape_interior_asphalt_compact_standard",
+        "normativeSourceIds": [
+          "kg_krer_27_roadworks_2015"
+        ],
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+        "sourceDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "sourceParameterIds": [
+          "area_m2"
+        ],
+        "sourceSemanticOwner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "sourceCatalogRecordId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+        "procurementClassification": "NON_PROCUREMENT",
+        "sourceOwnerCatalogRecords": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+        ],
+        "visibleDerivedAssumptions": []
+      },
+      "row_sha256": "b01bced34b2d36bca82c68295b89734f4b39f9ea1636cc698d22b79f39351a7f",
+      "created_at": "2026-09-20T01:17:43.211889+00:00"
+    },
+    {
+      "id": "6f2ca196-8bbe-570e-aec1-6d97dbb3ec90",
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "row_id": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:4",
+      "ordinal": 3,
+      "section": "Механизмы и оборудование",
+      "category": "Механизмы",
+      "title_ru": "Каток предварительного уплотнения",
+      "row_type": "equipment",
+      "unit_id": "machine_hour",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:4",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "resource_graph": {
+        "wasteRu": "Дополнительный универсальный процент отходов не начисляется",
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "deliveryRu": "Не применяется",
+        "packagingRu": "Не применяется",
+        "sourceRowId": "paving_roads_landscape_interior_asphalt_compact_standard:breakdown_roller",
+        "applicabilityRu": "MANDATORY_FOR_SELECTED_PROFESSIONAL_BLUEPRINT",
+        "sourceFormulaId": "area_m2/machine_breakdown_roller_productivity_m2_per_machine_hour",
+        "sourceExpression": "area_m2/machine_breakdown_roller_productivity_m2_per_machine_hour",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "primaryMeasureParameterId": "area_m2",
+        "visibleDerivedAssumptions": []
+      },
+      "semantic_owner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard:row:4",
+      "cost_owner_id": "r555-asphalt-cost:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:4",
+      "procurement_eligible": false,
+      "source_metadata": {
+        "epsilon": false,
+        "generic": false,
+        "padding": false,
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "normativeTrace": [
+          {
+            "role": "Проверяемый источник применимости или состава строки",
+            "sourceId": "kg_krer_27_roadworks_2015"
+          }
+        ],
+        "sourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "targetCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "calculationTrace": "area_m2/machine_breakdown_roller_productivity_m2_per_machine_hour; work=paving_roads_landscape_interior_asphalt_compact_standard",
+        "normativeSourceIds": [
+          "kg_krer_27_roadworks_2015"
+        ],
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+        "sourceDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "sourceParameterIds": [
+          "area_m2",
+          "machine_breakdown_roller_productivity_m2_per_machine_hour"
+        ],
+        "sourceSemanticOwner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "sourceCatalogRecordId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+        "procurementClassification": "NON_PROCUREMENT",
+        "sourceOwnerCatalogRecords": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+        ],
+        "visibleDerivedAssumptions": []
+      },
+      "row_sha256": "a48404a30e5f7d3960817b593958618a3e10a529396f9c98bd87bd705e6779fe",
+      "created_at": "2026-09-20T01:17:43.211889+00:00"
+    },
+    {
+      "id": "a2b79e16-225d-59ce-94a4-6ad090550959",
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "row_id": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:5",
+      "ordinal": 4,
+      "section": "Механизмы и оборудование",
+      "category": "Механизмы",
+      "title_ru": "Каток основного уплотнения",
+      "row_type": "equipment",
+      "unit_id": "machine_hour",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:5",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "resource_graph": {
+        "wasteRu": "Дополнительный универсальный процент отходов не начисляется",
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "deliveryRu": "Не применяется",
+        "packagingRu": "Не применяется",
+        "sourceRowId": "paving_roads_landscape_interior_asphalt_compact_standard:roller",
+        "applicabilityRu": "MANDATORY_FOR_SELECTED_PROFESSIONAL_BLUEPRINT",
+        "sourceFormulaId": "area_m2/machine_roller_productivity_m2_per_machine_hour",
+        "sourceExpression": "area_m2/machine_roller_productivity_m2_per_machine_hour",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "primaryMeasureParameterId": "area_m2",
+        "visibleDerivedAssumptions": []
+      },
+      "semantic_owner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard:row:5",
+      "cost_owner_id": "r555-asphalt-cost:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:5",
+      "procurement_eligible": false,
+      "source_metadata": {
+        "epsilon": false,
+        "generic": false,
+        "padding": false,
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "normativeTrace": [
+          {
+            "role": "Проверяемый источник применимости или состава строки",
+            "sourceId": "kg_krer_27_roadworks_2015"
+          }
+        ],
+        "sourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "targetCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "calculationTrace": "area_m2/machine_roller_productivity_m2_per_machine_hour; work=paving_roads_landscape_interior_asphalt_compact_standard",
+        "normativeSourceIds": [
+          "kg_krer_27_roadworks_2015"
+        ],
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+        "sourceDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "sourceParameterIds": [
+          "area_m2",
+          "machine_roller_productivity_m2_per_machine_hour"
+        ],
+        "sourceSemanticOwner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "sourceCatalogRecordId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+        "procurementClassification": "NON_PROCUREMENT",
+        "sourceOwnerCatalogRecords": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+        ],
+        "visibleDerivedAssumptions": []
+      },
+      "row_sha256": "2bdb65ca189e42da9b48b44e65e6e09d89c618729886c872e238b02c0c9adaed",
+      "created_at": "2026-09-20T01:17:43.211889+00:00"
+    },
+    {
+      "id": "76d2682b-fe33-5c50-9af1-5d5e3f4d483f",
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "row_id": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:6",
+      "ordinal": 5,
+      "section": "Механизмы и оборудование",
+      "category": "Механизмы",
+      "title_ru": "Каток окончательного уплотнения",
+      "row_type": "equipment",
+      "unit_id": "machine_hour",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:6",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "resource_graph": {
+        "wasteRu": "Дополнительный универсальный процент отходов не начисляется",
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "deliveryRu": "Не применяется",
+        "packagingRu": "Не применяется",
+        "sourceRowId": "paving_roads_landscape_interior_asphalt_compact_standard:finish_roller",
+        "applicabilityRu": "MANDATORY_FOR_SELECTED_PROFESSIONAL_BLUEPRINT",
+        "sourceFormulaId": "area_m2/machine_finish_roller_productivity_m2_per_machine_hour",
+        "sourceExpression": "area_m2/machine_finish_roller_productivity_m2_per_machine_hour",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "primaryMeasureParameterId": "area_m2",
+        "visibleDerivedAssumptions": []
+      },
+      "semantic_owner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard:row:6",
+      "cost_owner_id": "r555-asphalt-cost:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:6",
+      "procurement_eligible": false,
+      "source_metadata": {
+        "epsilon": false,
+        "generic": false,
+        "padding": false,
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "normativeTrace": [
+          {
+            "role": "Проверяемый источник применимости или состава строки",
+            "sourceId": "kg_krer_27_roadworks_2015"
+          }
+        ],
+        "sourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "targetCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "calculationTrace": "area_m2/machine_finish_roller_productivity_m2_per_machine_hour; work=paving_roads_landscape_interior_asphalt_compact_standard",
+        "normativeSourceIds": [
+          "kg_krer_27_roadworks_2015"
+        ],
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+        "sourceDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "sourceParameterIds": [
+          "area_m2",
+          "machine_finish_roller_productivity_m2_per_machine_hour"
+        ],
+        "sourceSemanticOwner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "sourceCatalogRecordId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+        "procurementClassification": "NON_PROCUREMENT",
+        "sourceOwnerCatalogRecords": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+        ],
+        "visibleDerivedAssumptions": []
+      },
+      "row_sha256": "863f28b23eb440e202f9eadc4532c313bc784eb752c9bbc55e17e67aa3ef97ad",
+      "created_at": "2026-09-20T01:17:43.211889+00:00"
+    },
+    {
+      "id": "f1ce6ef3-770a-52e2-a75c-6fa036358929",
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "row_id": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:7",
+      "ordinal": 6,
+      "section": "Испытания и контроль качества",
+      "category": "Испытания и контроль качества",
+      "title_ru": "Контроль схемы проходов, плотности и качества уплотнения слоя",
+      "row_type": "service",
+      "unit_id": "pcs",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:7",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "resource_graph": {
+        "wasteRu": "Дополнительный универсальный процент отходов не начисляется",
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "deliveryRu": "Не применяется",
+        "packagingRu": "Не применяется",
+        "sourceRowId": "paving_roads_landscape_interior_asphalt_compact_standard:acceptance",
+        "applicabilityRu": "MANDATORY_FOR_SELECTED_PROFESSIONAL_BLUEPRINT",
+        "sourceFormulaId": "ceil(area_m2/acceptance_lot_m2)",
+        "sourceExpression": "ceil(area_m2/acceptance_lot_m2)",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "primaryMeasureParameterId": "area_m2",
+        "visibleDerivedAssumptions": []
+      },
+      "semantic_owner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard:row:7",
+      "cost_owner_id": "r555-asphalt-cost:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:7",
+      "procurement_eligible": false,
+      "source_metadata": {
+        "epsilon": false,
+        "generic": false,
+        "padding": false,
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "normativeTrace": [
+          {
+            "role": "Проверяемый источник применимости или состава строки",
+            "sourceId": "kg_krer_27_roadworks_2015"
+          }
+        ],
+        "sourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "targetCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "calculationTrace": "ceil(area_m2/acceptance_lot_m2); work=paving_roads_landscape_interior_asphalt_compact_standard",
+        "normativeSourceIds": [
+          "kg_krer_27_roadworks_2015"
+        ],
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+        "sourceDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "sourceParameterIds": [
+          "area_m2",
+          "acceptance_lot_m2"
+        ],
+        "sourceSemanticOwner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "sourceCatalogRecordId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+        "procurementClassification": "NON_PROCUREMENT",
+        "sourceOwnerCatalogRecords": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+        ],
+        "visibleDerivedAssumptions": []
+      },
+      "row_sha256": "ba59323bae0a915ddc6673087a6b47cf4ae771cc243930e1543c18e1f59c5408",
+      "created_at": "2026-09-20T01:17:43.211889+00:00"
+    },
+    {
+      "id": "f50ddf9f-d481-5340-8fce-9a9c7376dac2",
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "row_id": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:8",
+      "ordinal": 7,
+      "section": "Работы и труд",
+      "category": "Труд",
+      "title_ru": "Труд машинистов катков и дорожных рабочих при уплотнении слоя",
+      "row_type": "labor",
+      "unit_id": "man_hour",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:8",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "resource_graph": {
+        "wasteRu": "Дополнительный универсальный процент отходов не начисляется",
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "deliveryRu": "Не применяется",
+        "packagingRu": "Не применяется",
+        "sourceRowId": "paving_roads_landscape_interior_asphalt_compact_standard:crew_labor",
+        "applicabilityRu": "MANDATORY_FOR_SELECTED_PROFESSIONAL_BLUEPRINT",
+        "sourceFormulaId": "area_m2/labor_productivity_m2_per_man_hour",
+        "sourceExpression": "area_m2/labor_productivity_m2_per_man_hour",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "primaryMeasureParameterId": "area_m2",
+        "visibleDerivedAssumptions": []
+      },
+      "semantic_owner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard:row:8",
+      "cost_owner_id": "r555-asphalt-cost:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:8",
+      "procurement_eligible": false,
+      "source_metadata": {
+        "epsilon": false,
+        "generic": false,
+        "padding": false,
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "normativeTrace": [
+          {
+            "role": "Проверяемый источник применимости или состава строки",
+            "sourceId": "kg_krer_27_roadworks_2015"
+          }
+        ],
+        "sourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "targetCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "calculationTrace": "area_m2/labor_productivity_m2_per_man_hour; work=paving_roads_landscape_interior_asphalt_compact_standard",
+        "normativeSourceIds": [
+          "kg_krer_27_roadworks_2015"
+        ],
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+        "sourceDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "sourceParameterIds": [
+          "area_m2",
+          "labor_productivity_m2_per_man_hour"
+        ],
+        "sourceSemanticOwner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "sourceCatalogRecordId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+        "procurementClassification": "NON_PROCUREMENT",
+        "sourceOwnerCatalogRecords": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+        ],
+        "visibleDerivedAssumptions": []
+      },
+      "row_sha256": "f368f9ef57d669918c9d0e30c472ae6479ae67e7c99369373f92ea1c59465ac8",
+      "created_at": "2026-09-20T01:17:43.211889+00:00"
+    },
+    {
+      "id": "706b22aa-e37a-58db-b4d6-b462a0d60e95",
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "row_id": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:9",
+      "ordinal": 8,
+      "section": "Исполнительная документация",
+      "category": "Исполнительная документация",
+      "title_ru": "Журнал производства работ и операционного контроля",
+      "row_type": "service",
+      "unit_id": "pcs",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:9",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "resource_graph": {
+        "wasteRu": "Дополнительный универсальный процент отходов не начисляется",
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "deliveryRu": "Не применяется",
+        "packagingRu": "Не применяется",
+        "sourceRowId": "paving_roads_landscape_interior_asphalt_compact_standard:work_and_quality_journal",
+        "applicabilityRu": "MANDATORY_FOR_SELECTED_PROFESSIONAL_BLUEPRINT",
+        "sourceFormulaId": "work_journal_count",
+        "sourceExpression": "work_journal_count",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "primaryMeasureParameterId": "area_m2",
+        "visibleDerivedAssumptions": []
+      },
+      "semantic_owner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard:row:9",
+      "cost_owner_id": "r555-asphalt-cost:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:9",
+      "procurement_eligible": false,
+      "source_metadata": {
+        "epsilon": false,
+        "generic": false,
+        "padding": false,
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "normativeTrace": [
+          {
+            "role": "Проверяемый источник применимости или состава строки",
+            "sourceId": "kg_krer_27_roadworks_2015"
+          }
+        ],
+        "sourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "targetCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "calculationTrace": "work_journal_count; work=paving_roads_landscape_interior_asphalt_compact_standard",
+        "normativeSourceIds": [
+          "kg_krer_27_roadworks_2015"
+        ],
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+        "sourceDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "sourceParameterIds": [
+          "work_journal_count"
+        ],
+        "sourceSemanticOwner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "sourceCatalogRecordId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+        "procurementClassification": "NON_PROCUREMENT",
+        "sourceOwnerCatalogRecords": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+        ],
+        "visibleDerivedAssumptions": []
+      },
+      "row_sha256": "08748cee8deed34f9597499bd8a4dfba8a3e3c0c13b2b25be6ab9859b8374b14",
+      "created_at": "2026-09-20T01:17:43.211889+00:00"
+    },
+    {
+      "id": "636f548f-8f15-5dc1-a29c-225f177e9db0",
+      "definition_version_id": "6d2cd12d-ce10-58b9-97f7-686a1c6dbde3",
+      "row_id": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:r555:10",
+      "ordinal": 9,
+      "section": "Исполнительная документация",
+      "category": "Исполнительная документация",
+      "title_ru": "Исполнительная схема, акты и комплект сдачи выбранной операции",
+      "row_type": "service",
+      "unit_id": "pcs",
+      "formula_id": "r555:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:formula:10",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "resource_graph": {
+        "wasteRu": "Дополнительный универсальный процент отходов не начисляется",
+        "contract": "r555.single-canonical-asphalt-r63-m44-a19.v1",
+        "deliveryRu": "Не применяется",
+        "packagingRu": "Не применяется",
+        "sourceRowId": "paving_roads_landscape_interior_asphalt_compact_standard:execution_documentation",
+        "applicabilityRu": "MANDATORY_FOR_SELECTED_PROFESSIONAL_BLUEPRINT",
+        "sourceFormulaId": "execution_documentation_count",
+        "sourceExpression": "execution_documentation_count",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "primaryMeasureParameterId": "area_m2",
+        "visibleDerivedAssumptions": []
+      },
+      "semantic_owner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard:row:10",
+      "cost_owner_id": "r555-asphalt-cost:work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1:10",
+      "procurement_eligible": false,
+      "source_metadata": {
+        "epsilon": false,
+        "generic": false,
+        "padding": false,
+        "contract": "rik-expo-app.r4-a13-6.real-ui-canonical-calculation-full-acceptance.v1",
+        "normativeTrace": [
+          {
+            "role": "Проверяемый источник применимости или состава строки",
+            "sourceId": "kg_krer_27_roadworks_2015"
+          }
+        ],
+        "sourceCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "targetCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard",
+        "calculationTrace": "execution_documentation_count; work=paving_roads_landscape_interior_asphalt_compact_standard",
+        "normativeSourceIds": [
+          "kg_krer_27_roadworks_2015"
+        ],
+        "sourceCorpusSha256": "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5",
+        "sourceDefinitionId": "9ca6403d-d561-5d37-ac01-737da6e95bc8",
+        "sourceParameterIds": [
+          "execution_documentation_count"
+        ],
+        "sourceSemanticOwner": "professional-estimate-passport:v4:paving_roads_landscape_interior_asphalt_compact_standard",
+        "canonicalTechnologyId": "paving_roads_landscape_interior_asphalt_compact_standard",
+        "sourceCatalogRecordId": "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1",
+        "procurementClassification": "NON_PROCUREMENT",
+        "sourceOwnerCatalogRecords": [
+          "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_compact_standard_professional_expanded_v1"
+        ],
+        "visibleDerivedAssumptions": []
+      },
+      "row_sha256": "abf0c3643f416f8dd635bed3b9979f2ce369d7b746b92a6a37eb19dbf1954d90",
+      "created_at": "2026-09-20T01:17:43.211889+00:00"
+    }
+  ],
+  "bindings": [],
+  "normativeSources": [
+    {
+      "id": "e94a1025-1100-5968-a089-36d965d65c10",
+      "source_key": "kg_krer_27_roadworks_2015",
+      "title_ru": "КРЕР №27 «Автомобильные дороги»",
+      "authority": "Министерство строительства Кыргызской Республики",
+      "official_url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+      "artifact_sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+      "effective_from": "2015-01-01",
+      "effective_to": null,
+      "metadata": {
+        "contract": "rik-expo-app.s26.bridge-asphalt-tds-successor.v2",
+        "verifiedAt": "2026-09-11",
+        "useRestriction": "APPLICABILITY_ONLY_EXACT_VARIANT_REQUIRED_FOR_NUMERIC_RATE"
+      },
+      "created_at": "2026-09-11T03:40:34.678795+00:00"
+    }
+  ],
+  "normativeLocators": []
+}

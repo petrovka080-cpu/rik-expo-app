@@ -1,5 +1,11 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
 import {
   computeReleaseFingerprintPayloads,
+  computeReleaseFingerprintPayload,
+  computeFrontendReleaseFingerprintPayloads,
   computeReleaseFingerprints,
 } from "../../scripts/release/computeReleaseFingerprints";
 
@@ -44,4 +50,212 @@ describe("release pipeline source tree hash", () => {
       ),
     ).toBe(false);
   });
+});
+
+/** A tiny independent Git fixture, never a product checkout or live runtime. */
+function withFingerprintFixture<T>(run: (root: string) => T): T {
+  const parent = path.resolve(os.tmpdir()), prefix = path.join(parent, "release-fingerprint-fixture-");
+  const root = fs.mkdtempSync(prefix);
+  // A commit hook exports Git repository selectors. They must never redirect
+  // this independent fixture or the production reader's internal Git children.
+  // Copy the entire environment and restore its original object in finally;
+  // never mutate inherited keys or print their values.
+  const inheritedEnvironment = process.env, fixtureEnvironment = { ...inheritedEnvironment };
+  for (const key of Object.keys(fixtureEnvironment)) if (/^GIT_/iu.test(key)) delete fixtureEnvironment[key];
+  const git = (args: string[]) => {
+    const result = spawnSync("git", args, { cwd: root, encoding: "utf8", windowsHide: true, env: fixtureEnvironment });
+    if (result.status !== 0) throw new Error(result.stderr || "TEST_ONLY_GIT_FIXTURE_FAILED");
+  };
+  const files: Record<string, string | Buffer> = {
+    "app/index.tsx": "export default 'fixture';\n",
+    "src/alpha.ts": "export const value = 'AAAA';\n",
+    "src/кириллица.ts": "export const привет = 'мир 🌍';\n",
+    "src/deleted.ts": "removed after indexing\n",
+    "assets/empty.bin": Buffer.alloc(0),
+    "assets/binary.dat": Buffer.alloc(64 * 1024 * 2 + 17, 0xab),
+    "migrations/one.sql": "select 1;\n",
+    "supabase/migrations/two.sql": "select 2;\n",
+    "package.json": "{}\n",
+    "android/app/src/Main.java": "// native-only fixture\n",
+    "scripts/only-proof.ts": "// proof-only fixture\n",
+    "tests/only-proof.test.ts": "// proof-only fixture\n",
+    "src/dist/generated.js": "excluded generated output\n",
+    "src/.cache/generated.js": "excluded generated cache\n",
+    "assets/coverage/generated.bin": "excluded coverage\n",
+    "src/node_modules/generated.js": "excluded dependency\n",
+    ".release-runtime/generated.js": "excluded runtime\n",
+    "artifacts/generated.json": "excluded proof artifact\n",
+  };
+  let cwd: jest.SpyInstance | undefined;
+  // Patch the actual builtin module object, not an interop namespace copy.
+  // Native child_process defaults do not use Jest's cloned global process.env.
+  const nativeChildProcess = jest.requireActual<typeof import("node:child_process")>("node:child_process");
+  const realSpawnSync = nativeChildProcess.spawnSync;
+  let fixtureSpawn: jest.SpyInstance | undefined;
+  try {
+    process.env = fixtureEnvironment;
+    fixtureSpawn = jest.spyOn(nativeChildProcess, "spawnSync").mockImplementation((command, args, options) =>
+      realSpawnSync(command, args, { ...options, env: fixtureEnvironment }));
+    git(["init", "--quiet"]);
+    for (const [relative, value] of Object.entries(files)) {
+      const target = path.join(root, relative);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, value);
+    }
+    git(["add", "--all", "--force"]);
+    fs.unlinkSync(path.join(root, "src/deleted.ts"));
+    fs.writeFileSync(path.join(root, "src/untracked.ts"), "// untracked canonical source\n");
+    cwd = jest.spyOn(process, "cwd").mockReturnValue(root);
+    return run(root);
+  } finally {
+    fixtureSpawn?.mockRestore();
+    process.env = inheritedEnvironment;
+    cwd?.mockRestore();
+    jest.restoreAllMocks();
+    // Deletion is limited to the exact directory created by this fixture.
+    const resolved = path.resolve(root);
+    if (path.dirname(resolved) !== parent || !resolved.startsWith(prefix)) throw new Error("TEST_ONLY_FIXTURE_CLEANUP_OUTSIDE_ROOT");
+    fs.rmSync(resolved, { recursive: true, force: true });
+  }
+}
+
+it("keeps complete legacy product/JS payload bytes for UTF8, binary, empty, tracked, untracked, deleted and excluded fixture paths", () => {
+  withFingerprintFixture(() => {
+    const product = computeReleaseFingerprintPayload("productSourceHash"), js = computeReleaseFingerprintPayload("jsBundleFingerprint");
+    const frontend = computeFrontendReleaseFingerprintPayloads();
+    expect(frontend).toEqual({ productSourceHash: product, jsBundleFingerprint: js });
+    expect(Object.keys(frontend)).toEqual(["productSourceHash", "jsBundleFingerprint"]);
+    // Preserve the legacy inclusion of nested generated-looking tracked paths.
+    expect(product.files.map(file => file.path)).toEqual([
+      "app/index.tsx", "assets/binary.dat", "assets/coverage/generated.bin", "assets/empty.bin", "migrations/one.sql", "package.json",
+      "src/.cache/generated.js", "src/alpha.ts", "src/dist/generated.js", "src/node_modules/generated.js",
+      "src/untracked.ts", "src/кириллица.ts", "supabase/migrations/two.sql",
+    ]);
+    expect(js.files.map(file => file.path)).toEqual([
+      "app/index.tsx", "assets/binary.dat", "assets/coverage/generated.bin", "assets/empty.bin",
+      "src/.cache/generated.js", "src/alpha.ts", "src/dist/generated.js", "src/node_modules/generated.js", "src/untracked.ts", "src/кириллица.ts",
+    ]);
+    expect(product.files.find(file => file.path === "assets/empty.bin")).toMatchObject({ bytes: 0 });
+    expect(product.files.find(file => file.path === "assets/binary.dat")).toMatchObject({ bytes: 64 * 1024 * 2 + 17 });
+  });
+});
+
+it("reads every overlapping path only once per fresh scan using one bounded buffer, and never reads native/proof-only files", () => {
+  withFingerprintFixture(root => {
+    const opened = jest.spyOn(fs, "openSync"), reads = jest.spyOn(fs, "readSync"), buffered = jest.spyOn(fs, "readFileSync");
+    const first = computeFrontendReleaseFingerprintPayloads();
+    const paths = () => opened.mock.calls.map(call => call[0]).filter((value): value is string => typeof value === "string" && value.startsWith(root + path.sep));
+    const firstPaths = paths();
+    expect(new Set(firstPaths).size).toBe(firstPaths.length);
+    expect(firstPaths.filter(value => value === path.join(root, "src/deleted.ts"))).toHaveLength(1);
+    expect(firstPaths.some(value => value.includes("only-proof") || value.endsWith("Main.java"))).toBe(false);
+    const calls: readonly unknown[][] = reads.mock.calls;
+    expect(calls.length).toBeGreaterThan(first.productSourceHash.files.length);
+    expect(calls.every(call => { const length = call[3]; return typeof length === "number" && length <= 64 * 1024; })).toBe(true);
+    expect(new Set(calls.map(call => call[1])).size).toBe(1);
+    expect(buffered).not.toHaveBeenCalled();
+    const second = computeFrontendReleaseFingerprintPayloads();
+    expect(second).toEqual(first);
+    expect(paths()).toHaveLength(firstPaths.length * 2);
+    for (const file of firstPaths) expect(paths().filter(value => value === file)).toHaveLength(2);
+  });
+});
+
+it("rereads changed same-size same-mtime bytes and deletion across independent pre/post scans", () => {
+  withFingerprintFixture(root => {
+    const target = path.join(root, "src/alpha.ts");
+    fs.writeFileSync(target, "AAAA");
+    const original = fs.statSync(target), first = computeFrontendReleaseFingerprintPayloads();
+    fs.writeFileSync(target, "BBBB");
+    fs.utimesSync(target, original.atime, original.mtime);
+    const changed = computeFrontendReleaseFingerprintPayloads();
+    expect(changed.productSourceHash.hash).not.toBe(first.productSourceHash.hash);
+    expect(changed.jsBundleFingerprint.hash).not.toBe(first.jsBundleFingerprint.hash);
+    expect(changed.productSourceHash.files.find(file => file.path === "src/alpha.ts")?.bytes).toBe(4);
+    expect(changed.productSourceHash).toEqual(computeReleaseFingerprintPayload("productSourceHash"));
+    fs.unlinkSync(target);
+    const deleted = computeFrontendReleaseFingerprintPayloads();
+    expect(deleted.productSourceHash.hash).not.toBe(changed.productSourceHash.hash);
+    expect(deleted.productSourceHash.files.some(file => file.path === "src/alpha.ts")).toBe(false);
+    expect(deleted.jsBundleFingerprint).toEqual(computeReleaseFingerprintPayload("jsBundleFingerprint"));
+  });
+});
+
+it("propagates a read error, closes its descriptor and leaves no successful cache across another scan", () => {
+  withFingerprintFixture(() => {
+    const failure = Object.assign(new Error("TEST_ONLY_READ_FAILURE"), { code: "EIO" });
+    const reads = jest.spyOn(fs, "readSync").mockImplementationOnce(() => { throw failure; });
+    const closed = jest.spyOn(fs, "closeSync");
+    expect(() => computeFrontendReleaseFingerprintPayloads()).toThrow(failure);
+    expect(closed).toHaveBeenCalledTimes(1);
+    reads.mockRestore(); closed.mockRestore();
+    expect(computeFrontendReleaseFingerprintPayloads().productSourceHash).toEqual(computeReleaseFingerprintPayload("productSourceHash"));
+  });
+});
+
+it("prints exactly the existing three-field ordered JSON identity through the real CLI module", () => {
+  withFingerprintFixture(() => {
+    const product = computeReleaseFingerprintPayload("productSourceHash"), js = computeReleaseFingerprintPayload("jsBundleFingerprint");
+    let output = "";
+    jest.spyOn(process.stdout, "write").mockImplementation(chunk => { output += String(chunk); return true; });
+    jest.isolateModules(() => { require("../../scripts/dev/printLocalDeveloperBuildIdentity"); });
+    expect(output).toBe(JSON.stringify({ sourceTreeHash: product.hash, productSourceHash: product.hash, jsBundleFingerprint: js.hash }));
+  });
+});
+
+it("retains full native/proof/candidate APIs unchanged beside the narrow frontend scan", () => {
+  withFingerprintFixture(() => {
+    const before = computeReleaseFingerprintPayloads(), fingerprints = computeReleaseFingerprints();
+    computeFrontendReleaseFingerprintPayloads();
+    expect(computeReleaseFingerprintPayloads()).toEqual(before);
+    expect(computeReleaseFingerprints()).toEqual(fingerprints);
+    expect(before.nativeBuildHash.files.map(file => file.path)).toContain("android/app/src/Main.java");
+    expect(before.proofHarnessHash.files.map(file => file.path)).toContain("scripts/only-proof.ts");
+    expect(before.proofHarnessHash.files.map(file => file.path)).toContain("tests/only-proof.test.ts");
+  });
+});
+it("isolates poisoned inherited Git routing for fixture setup, scanners and CLI, restoring it even after callback failure", () => {
+  const parent = path.resolve(os.tmpdir()), prefix = path.join(parent, "release-fingerprint-poison-");
+  const sentinel = fs.mkdtempSync(prefix), configPath = path.join(sentinel, "config"), indexPath = path.join(sentinel, "index");
+  const config = Buffer.from("[core]\n\tbare = true\n"), index = Buffer.from("TEST_ONLY_FOREIGN_INDEX_MUST_NOT_CHANGE");
+  fs.writeFileSync(configPath, config); fs.writeFileSync(indexPath, index);
+  const original = process.env, poisoned = { ...original,
+    GIT_DIR: path.join(sentinel, "foreign.git"), GIT_WORK_TREE: path.join(sentinel, "foreign-worktree"),
+    GIT_INDEX_FILE: indexPath, GIT_COMMON_DIR: path.join(sentinel, "foreign-common"),
+    GIT_OBJECT_DIRECTORY: path.join(sentinel, "foreign-objects"), GIT_ALTERNATE_OBJECT_DIRECTORIES: path.join(sentinel, "foreign-alternates"),
+    GIT_CONFIG: configPath, GIT_CONFIG_GLOBAL: configPath, GIT_CONFIG_COUNT: "1", GIT_CONFIG_KEY_0: "core.bare", GIT_CONFIG_VALUE_0: "true" };
+  const expected: NodeJS.ProcessEnv = { ...poisoned };
+  const restored = () => {
+    // Compare booleans only: a regression must never log inherited env values.
+    expect(process.env === poisoned).toBe(true);
+    expect(Object.keys(process.env).sort().join("\0") === Object.keys(expected).sort().join("\0")).toBe(true);
+    for (const key of Object.keys(expected)) expect(process.env[key] === expected[key]).toBe(true);
+    expect(fs.readFileSync(configPath).equals(config)).toBe(true);
+    expect(fs.readFileSync(indexPath).equals(index)).toBe(true);
+    expect(fs.readdirSync(sentinel).sort()).toEqual(["config", "index"]);
+  };
+  try {
+    process.env = poisoned;
+    withFingerprintFixture(root => {
+      expect(Object.keys(process.env).some(key => /^GIT_/iu.test(key))).toBe(false);
+      const identity = spawnSync("git", ["rev-parse", "--show-toplevel"], { cwd: root, encoding: "utf8", windowsHide: true });
+      expect(identity.status).toBe(0); expect(path.resolve(identity.stdout.trim())).toBe(root);
+      const payload = computeFrontendReleaseFingerprintPayloads();
+      expect(payload.productSourceHash.files.some(file => file.path === "src/untracked.ts")).toBe(true);
+      let output = "";
+      jest.spyOn(process.stdout, "write").mockImplementation(chunk => { output += String(chunk); return true; });
+      jest.isolateModules(() => { require("../../scripts/dev/printLocalDeveloperBuildIdentity"); });
+      expect(output).toBe(JSON.stringify({ sourceTreeHash: payload.productSourceHash.hash,
+        productSourceHash: payload.productSourceHash.hash, jsBundleFingerprint: payload.jsBundleFingerprint.hash }));
+    });
+    restored();
+    expect(() => withFingerprintFixture(() => { throw new Error("TEST_ONLY_POISON_CALLBACK_FAILURE"); }))
+      .toThrow("TEST_ONLY_POISON_CALLBACK_FAILURE");
+    restored();
+  } finally {
+    process.env = original;
+    const resolved = path.resolve(sentinel);
+    if (path.dirname(resolved) !== parent || !resolved.startsWith(prefix)) throw new Error("TEST_ONLY_POISON_CLEANUP_OUTSIDE_ROOT");
+    fs.rmSync(resolved, { recursive: true, force: true });
+  }
 });

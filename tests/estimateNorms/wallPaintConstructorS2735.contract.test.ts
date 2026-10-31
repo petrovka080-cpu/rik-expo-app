@@ -142,3 +142,30 @@ describe('wall paint constructor reuses ready operations with explicit material 
     await expect(compile({area_m2:50,substrate_product_profile:'ACRYLIC_POLYMER'})).rejects.toThrow();
   });
 });
+
+import {canonicalEstimateOperationReferences as referenceOperationRefs} from '../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
+import {buildWallPaintReferenceProjectSystemS2735,CT54_REFERENCE_INDEPENDENT_COMPOSITION_S2735} from '../../src/lib/estimate/v4/wallPaintConstructorS2735';
+import {auditCanonicalEstimateOperationResourcesV1} from '../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
+describe('explicit CT54 PROJECT_SYSTEM reference composition, not full norms',()=>{
+  const input=()=>({requireIndependentComposition:true,independentComposition:CT54_REFERENCE_INDEPENDENT_COMPOSITION_S2735,
+    resources:buildWallPaintReferenceProjectSystemS2735().resources.map(row=>({rowId:row.row_id,unitId:row.unit_id,
+      nameRu:String((row.resource_graph.publicResourcePresentationV1 as {nameRu:string}).nameRu),
+      resourceKind:String((row.resource_graph.publicResourcePresentationV1 as {resourceKind:string}).resourceKind),
+      operation:row.resource_graph.operationCompositionV1,publicNameVerified:true,quantityKnown:false}))});
+  test('independent full roster permits quantity-only preliminary output and preserves one shared resource ID',()=>{
+    const source=input(),result=auditCanonicalEstimateOperationResourcesV1(source);
+    expect(result.issues.map(issue=>issue.code)).toEqual(['RESOURCE_QUANTITY_UNRESOLVED']);
+    expect(result.pdfAllowed).toBe(true);expect(result.definitionAdmissionAllowed).toBe(true);expect(result.completeClaimAllowed).toBe(false);
+    const cloth=source.resources.find(row=>row.rowId==='reference:wall-paint:ct54:work-clothing')!;
+    expect(referenceOperationRefs(cloth.operation)).toHaveLength(7);
+    expect(source.resources.filter(row=>row.rowId===cloth.rowId)).toHaveLength(1);
+    expect(CT54_REFERENCE_INDEPENDENT_COMPOSITION_S2735.operationRequirements).toHaveLength(7);
+  });
+  test('omitted wash water and a resource masquerading as an operation cannot satisfy the reviewed method',()=>{
+    const source=input(),water='reference:wall-paint:ct54:water';
+    const missing=auditCanonicalEstimateOperationResourcesV1({...source,resources:source.resources.filter(row=>row.rowId!==water)});
+    expect(missing.pdfAllowed).toBe(false);expect(missing.definitionAdmissionAllowed).toBe(false);
+    const fake={...source,resources:source.resources.map((row,index)=>index===0?{...row,operation:{...referenceOperationRefs(row.operation)[0],operationId:'paint-can'}}:row)};
+    expect(auditCanonicalEstimateOperationResourcesV1(fake).pdfAllowed).toBe(false);
+  });
+});

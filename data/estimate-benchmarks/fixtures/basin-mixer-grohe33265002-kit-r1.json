@@ -1,0 +1,47 @@
+{
+  "contract": "basin-mixer-grohe33265002-kit/r1",
+  "synthetic": true,
+  "notActualSiteOrSupplierOffer": true,
+  "facts": {
+    "grohe33265002_install_count": "3",
+    "grohe33265002_product_scope": "GROHE Eurosmart 33265002, EAN 4005176861543, комплект с гибкой подводкой, FastFixation и донным клапаном 1¼",
+    "grohe33265002_site_scope": "Раковина уже установлена; отверстие и опорная поверхность подходят; готовые выводы и существующий сифон совместимы со штатной подводкой и клапаном; переделки и дополнительные переходники не нужны",
+    "grohe33265002_supply_reference": "TEST_ONLY exact model33265002 EAN4005176861543 complete supplier scope, not real offer",
+    "grohe33265002_usable_stock_item": "0",
+    "grohe33265002_required_reserve_item": "0"
+  },
+  "independentExpected": [
+    {
+      "count": "3",
+      "stock": "0",
+      "reserve": "0",
+      "consumed": "3",
+      "order": "3",
+      "remaining": "0"
+    },
+    {
+      "count": "3",
+      "stock": "1",
+      "reserve": "1",
+      "consumed": "3",
+      "order": "3",
+      "remaining": "1"
+    },
+    {
+      "count": "3",
+      "stock": "5",
+      "reserve": "0",
+      "consumed": "3",
+      "order": "0",
+      "remaining": "2"
+    },
+    {
+      "count": "0",
+      "stock": "0",
+      "reserve": "0",
+      "consumed": "0",
+      "order": "0",
+      "remaining": "0"
+    }
+  ]
+}

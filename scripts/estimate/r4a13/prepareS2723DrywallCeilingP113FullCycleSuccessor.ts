@@ -231,8 +231,8 @@ void runMasterSingleDefinitionSuccessorR1({
   benchmarkOrdinal: 10,
   validationScenario: "S27_23_DRYWALL_CEILING_P113_FULL_CYCLE_500_M2",
   passport: {
-    canonicalRuName: "полное устройство подвесного потолка КНАУФ П 113 большой площади",
-    workKey: "drywall_ceiling_interior_drywall_ceiling_install_large_area",
+    canonicalRuName: "полное устройство подвесного потолка КНАУФ П 113",
+    workKey: "drywall_ceiling_interior_drywall_ceiling_install_standard",
     physicalResultRu:
       "Смонтированный и подготовленный под последующую декоративную отделку плоский подвесной потолок П 113: каркас, однослойная обшивка ГСП, заделанные стыки и крепёж, отшлифованная и загрунтованная поверхность.",
     includedScopeRu: [
@@ -296,7 +296,7 @@ void runMasterSingleDefinitionSuccessorR1({
   },
   search: {
     primaryUom: "м²",
-    canonicalNameRu: "полное устройство подвесного потолка КНАУФ П 113 большой площади",
+    canonicalNameRu: "полное устройство подвесного потолка КНАУФ П 113",
     aliases: [
       "потолок ГКЛ 500 м2 полный цикл",
       "монтаж потолка КНАУФ П113 с каркасом обшивкой и швами",

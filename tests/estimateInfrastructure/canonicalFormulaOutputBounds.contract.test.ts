@@ -1,7 +1,7 @@
 import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { compileFormulaGraph } from "../../src/lib/estimate/backendPlatform/formulaGraph";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
-import { parseCanonicalFormulaOutputBoundsV1, validateCanonicalFormulaOutputBoundsV1 } from "../../src/lib/estimate/backendPlatform/canonicalFormulaOutputBounds";
+import { parseCanonicalFormulaOutputBoundsV1, validateCanonicalFormulaOutputBoundsV1,canonicalFormulaOutputBoundsPublicReasonRu } from "../../src/lib/estimate/backendPlatform/canonicalFormulaOutputBounds";
 
 const bounds = {
   schemaVersion: "canonical_formula_output_bounds_v1", unitId: "mm",
@@ -39,6 +39,17 @@ function fixture(policy: unknown = bounds): CanonicalEstimateCompileCoreInput {
 const manual = { quantity: "999", provenance: { kind: "manual", reason: "test-owned correction" } };
 
 describe("authoritative formula output bounds", () => {
+  it('retains the authored public reason separately from private row diagnostics without weakening the bound',async()=>{
+    const input=fixture();input.submittedParameters.element_height_mm=167.5;
+    const error=await compileCanonicalEstimateCore(input).catch(value=>value);
+    expect(error).toMatchObject({code:'FORMULA_OUTPUT_BOUNDS_FAILED',publicReasonRu:bounds.reasonRu});
+    const reason=canonicalFormulaOutputBoundsPublicReasonRu(error.code,error.publicReasonRu);
+    expect(reason).toBe(bounds.reasonRu);expect(reason).not.toContain('test:clearance');
+    expect(error.message).toContain('test:clearance');
+    expect(canonicalFormulaOutputBoundsPublicReasonRu('COMPILER_FAILED','SQL private diagnostics')).toBeNull();
+    for(const value of [null,undefined,'','  ','x'.repeat(2001),'bad\u0000text'])
+      expect(canonicalFormulaOutputBoundsPublicReasonRu('FORMULA_OUTPUT_BOUNDS_FAILED',value)).toBeNull();
+  });
   it("checks the common evaluator's output and records the passing constraint, not an applied manual quantity", async () => {
     const result = await compileCanonicalEstimateCore({ ...fixture(), operation: "recalculate", rowOverrides: { "test:clearance": manual } });
     expect(result.rows[0]).toMatchObject({ quantity: "999", included_in_estimate: false, included_in_procurement: false });

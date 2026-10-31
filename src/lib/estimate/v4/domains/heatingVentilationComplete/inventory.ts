@@ -7,10 +7,10 @@ import {
 
 export const HVAC_COMPLETE_DOMAIN_ID = "heating_ventilation" as const;
 export const HVAC_COMPLETE_DOMAIN_VERSION = "1.0.0" as const;
-export const HVAC_BASE_HEATING_RECORD_COUNT = 550 as const;
-export const HVAC_BASE_VENTILATION_RECORD_COUNT = 300 as const;
-export const HVAC_COMPLETE_RECORD_COUNT = 920 as const;
-export const HVAC_COMPLETE_TECHNOLOGY_COUNT = 920 as const;
+export const HVAC_BASE_HEATING_RECORD_COUNT = 294 as const;
+export const HVAC_BASE_VENTILATION_RECORD_COUNT = 108 as const;
+export const HVAC_COMPLETE_RECORD_COUNT = 472 as const;
+export const HVAC_COMPLETE_TECHNOLOGY_COUNT = 472 as const;
 export const HVAC_COMPLETE_ALIAS_COUNT = 0 as const;
 export const HVAC_REVIEWED_EXCLUSION_COUNT = 200 as const;
 
@@ -250,8 +250,8 @@ const heatingCount = HVAC_DOMAIN_INVENTORY.filter((row) => row.source_domain_id 
 const ventilationCount = HVAC_DOMAIN_INVENTORY.filter((row) => row.source_domain_id === "ventilation").length;
 const expandedCount = HVAC_DOMAIN_INVENTORY.length - heatingCount - ventilationCount;
 if (
-  globalInventory.catalog_total !== 11_610 ||
-  globalInventory.arithmetic.domain_denominator_sum !== 11_610 ||
+  globalInventory.catalog_total !== 7_602 ||
+  globalInventory.arithmetic.domain_denominator_sum !== 7_602 ||
   globalInventory.arithmetic.duplicate_catalog_id !== 0 ||
   globalInventory.arithmetic.silent_exclusion !== 0 ||
   heatingCount !== HVAC_BASE_HEATING_RECORD_COUNT ||

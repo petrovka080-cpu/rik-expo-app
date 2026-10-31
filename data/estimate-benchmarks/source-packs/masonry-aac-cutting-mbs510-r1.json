@@ -1,0 +1,512 @@
+{
+  "contract": "gox-build.masonry-aac-mbs510-physical-unit/r1",
+  "prefix": "masonry:aac:cut:mbs510:r1",
+  "titleRu": "Резка газобетона на одном ленточном станке",
+  "catalogId": "canonical-work:base:masonry_interior_gas_block_lay_standard",
+  "currentDefinitionId": "ed7c9ce8-4a27-5c14-ba5f-61d7d13d16db",
+  "currentDefinitionSha256": "9eb7e3f2ba6c3e228b4d6b779c5600bde3e4d8068b8fd39181002e2e17955c04",
+  "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+  "normId": "LISSMAC-MBS510-08-2025:AEROC-TOOLS-03-2016",
+  "locatorKey": "aac-mbs510-physical-unit-p16-38-fit-aeroc-p74-r1",
+  "selectorId": "aac_cut_method_r1",
+  "selectorValue": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+  "noPostValue": "Режущий узел по этому источнику не выбран",
+  "parentSelector": "m33_masonry_source_system",
+  "parentSelectedValues": [
+    "Газобетонная стена 400 мм; блоки 2 категории, 900 кг/м³, В3,5; исходный монтажный клей по КРЕР-2015",
+    "Газобетонная стена 500 мм; блоки 2 категории, 900 кг/м³, В3,5; исходный монтажный клей по КРЕР-2015"
+  ],
+  "geometryIds": [
+    "m33_masonry_wall_length_m",
+    "m33_masonry_wall_height_m",
+    "m33_masonry_openings_area_m2",
+    "m33_masonry_nonmasonry_insert_volume_m3"
+  ],
+  "source": {
+    "path": "data/estimate-benchmarks/source-artifacts/masonry-aac-cutting-mbs510-r1/lissmac-mbs-08-2025-en.pdf",
+    "sha256": "67ba30f5c89a62af6d06af6ffabb84d96c84f0b16851af0bab761b9830183f44",
+    "url": "https://www.lissmac.com/med-locked/9332-ba-mbs-stand-08-2025en.pdf",
+    "edition": "08-2025",
+    "locator": "PDF3 edition;9§1.1;11–18;20–21;23–30;35–38",
+    "author": "LISSMAC Maschinenbau GmbH",
+    "jurisdiction": "Manufacturer equipment instruction only; not replacement of KG KРЕР08-2015 or whole AAC norm"
+  },
+  "equipmentFitSource": {
+    "path": "data/estimate-benchmarks/source-artifacts/masonry-aac-cutting-mbs510-r1/aeroc-manual-2016-official.pdf",
+    "sha256": "f503948988703a152df4b297d82ee947594b7c931e9d165f592dac927ef15519",
+    "url": "https://bauroc.is/uploads/sites/14/2016/09/bauroc_manual_25052016.pdf",
+    "edition": "tools page03/2016; mixed page-specific editions",
+    "locator": "PDF74§11.1 only equipment-fit"
+  },
+  "full": 0,
+  "closedNeeds": 0,
+  "roster": [
+    {
+      "key": "saw-unit",
+      "titleRu": "Ленточный станок для сухой резки газобетона, высота до510мм",
+      "quantity": "1",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF16§2.1,17§2.3,18§3.2",
+      "internalPartId": "MBS510 230V 1.5kW; complete functional assembly, not commercial package assertion",
+      "componentOfSaw": false,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "working-belt",
+      "titleRu": "Рабочее твердосплавное полотно3750×27мм",
+      "quantity": "1",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF37 item16",
+      "internalPartId": "799598",
+      "componentOfSaw": false,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "operator",
+      "titleRu": "Оператор ленточного станка",
+      "quantity": "1",
+      "unitId": "person",
+      "category": "service",
+      "locator": "PDF12§1.4.4.8;26§5.1",
+      "internalPartId": "one authorized operator; no labour hours",
+      "componentOfSaw": false,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "table",
+      "titleRu": "Подвижный стол станка",
+      "quantity": "1",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF36 item55.1",
+      "internalPartId": "690007",
+      "componentOfSaw": true,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "stop",
+      "titleRu": "Боковой упор станка",
+      "quantity": "1",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF37 item46",
+      "internalPartId": "680025",
+      "componentOfSaw": true,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "wheel-units",
+      "titleRu": "Односторонние колёсные узлы станка",
+      "quantity": "2",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF35 item42",
+      "internalPartId": "1006827",
+      "componentOfSaw": true,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "running-rollers",
+      "titleRu": "Ходовые ролики станка",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF36 item70",
+      "internalPartId": "680524",
+      "componentOfSaw": true,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "scale",
+      "titleRu": "Измерительная шкала станка",
+      "quantity": "1",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF36 item50.5",
+      "internalPartId": "scale aluminium pipe",
+      "componentOfSaw": true,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "lower-door",
+      "titleRu": "Нижняя защитная дверца станка",
+      "quantity": "1",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF37 item1",
+      "internalPartId": "690813",
+      "componentOfSaw": true,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "upper-door",
+      "titleRu": "Верхняя защитная дверца станка",
+      "quantity": "1",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF37 item6",
+      "internalPartId": "690005",
+      "componentOfSaw": true,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "hand-guard",
+      "titleRu": "Защитный кожух рабочей зоны станка",
+      "quantity": "1",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF35 item28.8",
+      "internalPartId": "1005586",
+      "componentOfSaw": true,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "crane-eye",
+      "titleRu": "Подъёмная проушина станка",
+      "quantity": "1",
+      "unitId": "piece",
+      "category": "equipment",
+      "locator": "PDF38 item72",
+      "internalPartId": "603322",
+      "componentOfSaw": true,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    },
+    {
+      "key": "drive-motor",
+      "titleRu": "Привод станка230В,1,5кВт",
+      "quantity": "1",
+      "unitId": "piece",
+      "category": "tool",
+      "locator": "PDF37 item39; PDF17§2.3 selected230V variant only",
+      "internalPartId": "400006",
+      "componentOfSaw": true,
+      "notReplacementConsumption": true,
+      "notCommercialIncludedQuantity": true
+    }
+  ],
+  "projectFacts": [
+    {
+      "key": "machine-passport",
+      "titleRu": "Паспорт и состояние точного станка и рабочего полотна"
+    },
+    {
+      "key": "cut-plan",
+      "titleRu": "Карта раскроя с ориентацией, опиранием заготовок и массой"
+    },
+    {
+      "key": "workplace",
+      "titleRu": "Принятое место резки с несущей площадкой, освещением и границами зоны"
+    },
+    {
+      "key": "electrical",
+      "titleRu": "Фактическое электропитание230В, защита и подключение"
+    },
+    {
+      "key": "operator-record",
+      "titleRu": "Назначение и квалификация оператора"
+    },
+    {
+      "key": "supply-record",
+      "titleRu": "Фактическая ведомость наличия и границы поставки станка и полотна"
+    }
+  ],
+  "internalGaps": [
+    {
+      "key": "workpiece-axis-authority",
+      "titleRu": "Допуск формы и ориентации заготовки в рабочей зоне станка",
+      "unitId": "piece",
+      "categoryKey": "control",
+      "locator": "LISSMAC PDF17§2.3 unlabelled500/400/515",
+      "missing": "Manufacturer drawing or written clarification assigning axes/orientation to literal500/400/515 and proving chosen workpiece fits. A project cut-plan reference does not supply missing manufacturer geometry.",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact manufacturer dimensioned work-envelope drawing for MBS510 model/version or signed clarification; then independent numerical fit oracle.",
+      "gapKind": "INTERNAL_MANUFACTURER_GEOMETRY_SOURCE_REQUIRED"
+    },
+    {
+      "key": "measuring",
+      "titleRu": "Разметочный и проверочный инструмент для раскроя",
+      "unitId": "piece",
+      "categoryKey": "control",
+      "locator": "PDF20§3.4;26§5.2",
+      "missing": "Exact operation-specific list/count and deployment for marking, dimension and guide-gap checks; integrated scale is not all external measurement",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact operation-specific list/count and deployment for marking, dimension and guide-gap checks; integrated scale is not all external measurement",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "electrical-kit",
+      "titleRu": "Кабель подключения, соединения и устройство защитного отключения",
+      "unitId": "piece",
+      "categoryKey": "fasteners",
+      "locator": "PDF11§1.4.3.6;18§3.1",
+      "missing": "Complete compatible electrical connection BOM and measured route; no cable length from wall area",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Complete compatible electrical connection BOM and measured route; no cable length from wall area",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "dust-extraction",
+      "titleRu": "Пылеудаление: совместимый пылесос, патрубок, шланг и сборник",
+      "unitId": "piece",
+      "categoryKey": "machines_and_operators",
+      "locator": "PDF14§1.5.3",
+      "missing": "Exact manufacturer-approved interior dust extraction kit/BOM and applicable performance; source only says extraction can be fitted",
+      "condition": "indoor",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact manufacturer-approved interior dust extraction kit/BOM and applicable performance; source only says extraction can be fitted",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "lifting-kit",
+      "titleRu": "Стропы и соединительные элементы для подъёма станка",
+      "unitId": "piece",
+      "categoryKey": "rigging",
+      "locator": "PDF24§4.2",
+      "missing": "Exact compatible sling/shackle configuration and quantities for the173kg machine and actual lifting plan; crane eye is not whole rigging",
+      "condition": "crane",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact compatible sling/shackle configuration and quantities for the173kg machine and actual lifting plan; crane eye is not whole rigging",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "lifting-operation",
+      "titleRu": "Перевозка и крановый подъём станка",
+      "unitId": "machine_hour",
+      "categoryKey": "delivery_feed",
+      "locator": "PDF11§1.4.1;24§4.2",
+      "missing": "Internal accepted transport/lift duration or exact full service inclusion; do not reuse wall crane hours as machine-delivery time",
+      "condition": "crane",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Internal accepted transport/lift duration or exact full service inclusion; do not reuse wall crane hours as machine-delivery time",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "eye-protection",
+      "titleRu": "Защита глаз оператора",
+      "unitId": "piece",
+      "categoryKey": "access_protection",
+      "locator": "PDF4symbols;17§2.4",
+      "missing": "Exact issue/reuse/replacement basis; one operator does not create a consumable issue norm",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact issue/reuse/replacement basis; one operator does not create a consumable issue norm",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "hearing-protection",
+      "titleRu": "Защита слуха оператора",
+      "unitId": "piece",
+      "categoryKey": "access_protection",
+      "locator": "PDF4symbols;17§2.4",
+      "missing": "Exact issue/reuse/replacement basis and attenuation for actual exposure",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact issue/reuse/replacement basis and attenuation for actual exposure",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "hand-protection",
+      "titleRu": "Защитные перчатки для смены полотна",
+      "unitId": "piece",
+      "categoryKey": "access_protection",
+      "locator": "PDF27§5.3",
+      "missing": "Exact compatible glove issue/reuse/replacement basis",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact compatible glove issue/reuse/replacement basis",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "workzone-protection",
+      "titleRu": "Ограждение и обозначение зоны резки",
+      "unitId": "piece",
+      "categoryKey": "access_protection",
+      "locator": "PDF11§1.4.3;26§5.1",
+      "missing": "Exact method/site-specific physical protection roster and quantities",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact method/site-specific physical protection roster and quantities",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "cleaning-tools",
+      "titleRu": "Щётка и скребок для остановленного станка",
+      "unitId": "piece",
+      "categoryKey": "tools",
+      "locator": "PDF26§5.2;28§6",
+      "missing": "Whole selected cleaning-tool roster and count, source names tools but does not give deployment quantity",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Whole selected cleaning-tool roster and count, source names tools but does not give deployment quantity",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "grease",
+      "titleRu": "Термостойкая многоцелевая смазка и средство нанесения",
+      "unitId": "kg",
+      "categoryKey": "consumables",
+      "locator": "PDF18§3.1;30§8.2",
+      "missing": "Exact compatible lubricant quantity/application kit per accepted maintenance schedule; no kg from machine hours",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact compatible lubricant quantity/application kit per accepted maintenance schedule; no kg from machine hours",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "spray-oil",
+      "titleRu": "Масло-спрей для автоматического натяжителя",
+      "unitId": "kg",
+      "categoryKey": "consumables",
+      "locator": "PDF30§8.2",
+      "missing": "Exact compatible product/application quantity; no guessed can per saw",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact compatible product/application quantity; no guessed can per saw",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "waste",
+      "titleRu": "Сборники обрезков, пыли, упаковки и изношенных полотен",
+      "unitId": "piece",
+      "categoryKey": "cleaning_waste",
+      "locator": "PDF15§1.7–1.9;28§5.5",
+      "missing": "Exact collection/segregation capacity, physical containers and hauling inclusion; no universal waste percentage",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Exact collection/segregation capacity, physical containers and hauling inclusion; no universal waste percentage",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    },
+    {
+      "key": "maintenance-service",
+      "titleRu": "Осмотр, обслуживание и допуск режущего узла",
+      "unitId": "man_hour",
+      "categoryKey": "services",
+      "locator": "PDF10§1.2.10;29§8.1",
+      "missing": "Accepted internal service duration and full operation boundary; inspection frequency is not labour-hour quantity",
+      "condition": "always",
+      "quantity": null,
+      "quantityEditable": false,
+      "returnCondition": "Accepted internal service duration and full operation boundary; inspection frequency is not labour-hour quantity",
+      "gapKind": "INTERNAL_SOURCE_QUANTITY_REQUIRED"
+    }
+  ],
+  "conditionFacts": [
+    {
+      "key": "location",
+      "titleRu": "Размещение режущего узла",
+      "values": [
+        "На открытой площадке",
+        "Внутри помещения"
+      ],
+      "trigger": "Внутри помещения",
+      "condition": "indoor"
+    },
+    {
+      "key": "transport",
+      "titleRu": "Принятый способ перемещения станка",
+      "values": [
+        "Поставка на готовое место и короткое перемещение встроенными колёсами",
+        "Крановый подъём станка по ППР"
+      ],
+      "trigger": "Крановый подъём станка по ППР",
+      "condition": "crane"
+    }
+  ],
+  "wholeOrganization": {
+    "deployedPhysicalUnits": "1",
+    "notCountFromVolume": true,
+    "parallelUnitsNotAdmitted": true,
+    "operatorHeadcount": "1",
+    "operatorHours": null,
+    "powerVariant": "230V 1.5kW 12.5A",
+    "maxTableLoadKg": "50",
+    "maxCutHeightLissmacMm": "515",
+    "maxCutHeightAerocMm": "510",
+    "boundedCutHeightMm": "510",
+    "cutLengthMm": "700",
+    "literalUnlabelledWorkpieceDimensionsMm": [
+      "500",
+      "400",
+      "515"
+    ],
+    "dimensionAxisNotInferred": true,
+    "freehandForbidden": true,
+    "mustLieFlatAgainstStop": true,
+    "usedBeltNotSpareConsumption": true,
+    "commercialBladeInclusionUnknown": true
+  },
+  "sourceUseRestrictions": [
+    "Current manufacturer guide supplies equipment/physical-component facts only.",
+    "AEROC2016 tool compatibility does not change AEROC2015 block category, wet volume mass900kg/m3, B3.5, adhesive/water/labour/machine rates.",
+    "One functional unit selected as a concrete method; not one saw/m3, not project adequacy, not F or throughput.",
+    "Installed-component table is not a commercial delivery specification or order BOM.",
+    "All additional quantities remain informational; existing KG cost/procurement owners retained."
+  ],
+  "categoryKeys": [
+    "materials",
+    "consumables",
+    "fasteners",
+    "tools",
+    "rigging",
+    "machines_and_operators",
+    "labor",
+    "services",
+    "delivery_feed",
+    "access_protection",
+    "control",
+    "cleaning_waste"
+  ],
+  "rejectedReuse": [
+    {
+      "source": "1012/12.TK2012 table7",
+      "decision": "INCOMPATIBLE",
+      "why": "Combined AAC and brick-cladding crew/tool table; no independent AAC kit counts"
+    },
+    {
+      "source": "bauroc current25kg/6–6.5L",
+      "decision": "INCOMPATIBLE",
+      "why": "No exact bridge to AEROC2015 adhesive/water norm"
+    },
+    {
+      "source": "29-02ТК2007",
+      "decision": "INCOMPATIBLE",
+      "why": "119mm ordinary-mortar partition and excluded hoist feed, not400/500adhesive wall"
+    },
+    {
+      "source": "SIBIT whole guide",
+      "decision": "METHOD_ONLY",
+      "why": "No independent complete quantitative physical post"
+    }
+  ]
+}

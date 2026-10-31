@@ -1,0 +1,946 @@
+{
+  "contract": "gox-build.facade-bolix-mw120-krer15/r1",
+  "sourceId": "kg_krer15_2015_bolix_mw120_08003_r1",
+  "catalogId": "canonical-work:base:insulation_interior_facade_install_standard",
+  "currentDefinitionId": "55fd4875-3f69-5abe-8c41-9af42c921fc3",
+  "currentDefinitionVersion": 7,
+  "currentDefinitionSha256": "db485339184a52de7469f405512685cc2c4ca494f351f74989e06b66a1b51d88",
+  "normId": "15-01-080-03",
+  "prefix": "facade:bolix-mw120:krer15:r1",
+  "sourceProfileSelectorId": "m35_facade_source_system",
+  "legacyChoiceRu": "Прежняя проектная система и отдельная ветвь клея KZ",
+  "exactChoiceRu": "Точная система минваты120мм по КРЕР15-2015,080-03",
+  "projectBasisValue": "KG:КРЕР15-2015:ПРЯМО_ПРИНЯТА_ПРОЕКТОМ",
+  "sourceFactValue": "ТОЧНАЯ_ИСХОДНАЯ_СИСТЕМА_08003_ПРИНЯТА_ПРОЕКТОМ",
+  "machineFulfillmentChoices": {
+    "own": "Собственная полная эксплуатация",
+    "hired": "Услуга полной эксплуатации"
+  },
+  "source": {
+    "jurisdiction": "KG",
+    "edition": "КРЕР15-2015; утверждено28.03.2016№2-нпа, введено01.01.2016",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+    "collectionUrl": "https://minstroy.gov.kg/ru/kyzmat/431/show",
+    "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KRER15-2015-official.pdf",
+    "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+    "exactPages": [
+      120,
+      121
+    ],
+    "measurePages": [
+      12,
+      13,
+      17
+    ],
+    "currentPresenceCheckedUtc": "2026-10-22",
+    "currentPresenceIsNotNoAmendmentProof": true
+  },
+  "materialIdentitySource": {
+    "officialUrl": "https://minstroy.gov.kg/index.php/ru/state_program/download-pdf/kniga01_compressed-18768f9f830b689f4.99664411.pdf",
+    "sha256": "4c06ea5b428048cbf33872ded079306f21c2c7f5c798c99a03ec5c6249f9e837",
+    "purpose": "Только разрешение буквальных кодов/наименований; цены не импортировать.",
+    "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KG-material-resource-book01-official.pdf"
+  },
+  "scope": {
+    "thicknessM": "0.12",
+    "heightMaxM": "30",
+    "architectureDetailMaxPercent": "30",
+    "normalNewConstructionOnly": true,
+    "altitudeExclusiveMaxM": "1500",
+    "curvedFacadeAllowed": false,
+    "readyInventoryScaffoldRequired": true,
+    "sourcePricesImported": false,
+    "rule": "§2.48: площадь обработанных стен минус проёмы по наружному обводу коробок; при двух коробках по наружной. Откосы отдельно не прибавлять."
+  },
+  "rows": [
+    {
+      "key": "labour",
+      "titleRu": "Рабочие строительные, средний разряд 3,4",
+      "category": "labor",
+      "unitId": "man_hour",
+      "ratePer100M2": "370.51",
+      "resourceCode": "000-1003-4",
+      "printedUnit": "man_hour",
+      "printedRate": "370.51",
+      "conversion": "1",
+      "operation": "all",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "operators",
+      "titleRu": "Машинисты — учтены в полной эксплуатации машин",
+      "category": "labor",
+      "unitId": "man_hour",
+      "ratePer100M2": "19.33",
+      "resourceCode": null,
+      "printedUnit": "man_hour",
+      "printedRate": "19.33",
+      "conversion": "1",
+      "operation": "handling",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "winch",
+      "titleRu": "Лебёдка электрическая, тяговое усилие 122,62 кН",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M2": "6.86",
+      "resourceCode": "03-0164",
+      "printedUnit": "machine_hour",
+      "printedRate": "6.86",
+      "conversion": "1",
+      "operation": "handling",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "loader",
+      "titleRu": "Погрузчик одноковшовый на пневмоколёсном ходу",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M2": "12.47",
+      "resourceCode": "15-0260",
+      "printedUnit": "machine_hour",
+      "printedRate": "12.47",
+      "conversion": "1",
+      "operation": "handling",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "drill",
+      "titleRu": "Дрель электрическая",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.08",
+      "resourceCode": "33-0241",
+      "printedUnit": "machine_hour",
+      "printedRate": "0.08",
+      "conversion": "1",
+      "operation": "flashing",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "sheet-bender",
+      "titleRu": "Станок листогибочный вальцовый",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.2",
+      "resourceCode": "33-0362",
+      "printedUnit": "machine_hour",
+      "printedRate": "0.2",
+      "conversion": "1",
+      "operation": "flashing",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "angle-grinder",
+      "titleRu": "Машина шлифовальная угловая",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.23",
+      "resourceCode": "33-0367",
+      "printedUnit": "machine_hour",
+      "printedRate": "0.23",
+      "conversion": "1",
+      "operation": "flashing",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "perforator",
+      "titleRu": "Перфоратор электрический",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M2": "21.24",
+      "resourceCode": "33-0462",
+      "printedUnit": "machine_hour",
+      "printedRate": "21.24",
+      "conversion": "1",
+      "operation": "fixing",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "flatbed",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до 15 т",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M2": "12.47",
+      "resourceCode": "40-0004",
+      "printedUnit": "machine_hour",
+      "printedRate": "12.47",
+      "conversion": "1",
+      "operation": "handling",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "water",
+      "titleRu": "Вода по ресурсной норме",
+      "category": "material",
+      "unitId": "m3",
+      "ratePer100M2": "0.1",
+      "resourceCode": "01-0601-0001",
+      "printedUnit": "m3",
+      "printedRate": "0.1",
+      "conversion": "1",
+      "operation": "mixing",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "foam",
+      "titleRu": "Пена монтажная для герметизации стыков, баллон 0,85 л",
+      "category": "material",
+      "unitId": "piece",
+      "ratePer100M2": "1.96",
+      "resourceCode": "01-1311-0002",
+      "printedUnit": "piece",
+      "printedRate": "1.96",
+      "conversion": "1",
+      "operation": "sealing",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "penetrating-primer",
+      "titleRu": "Грунтовка полимерная для укрепления основания",
+      "category": "material",
+      "unitId": "kg",
+      "ratePer100M2": "12.71",
+      "resourceCode": "01-1711-0002",
+      "printedUnit": "kg",
+      "printedRate": "12.71",
+      "conversion": "1",
+      "operation": "preparation",
+      "internalIdentity": "BOLIX O; не OP/N",
+      "sourcePage": 120
+    },
+    {
+      "key": "silicate-primer",
+      "titleRu": "Грунтовка полимерная под отделочный слой",
+      "category": "material",
+      "unitId": "kg",
+      "ratePer100M2": "25.42",
+      "resourceCode": "01-1711-0003",
+      "printedUnit": "kg",
+      "printedRate": "25.42",
+      "conversion": "1",
+      "operation": "priming",
+      "internalIdentity": "BOLIX SG",
+      "sourcePage": 120
+    },
+    {
+      "key": "starter-fastener",
+      "titleRu": "Дюбель стальной для пристрелки",
+      "category": "material",
+      "unitId": "piece",
+      "ratePer100M2": "8.9",
+      "resourceCode": "01-1903-0003",
+      "printedUnit": "10_piece",
+      "printedRate": "0.89",
+      "conversion": "10",
+      "operation": "fixing",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "wall-anchor",
+      "titleRu": "Дюбель распорный с металлическим стержнем 10×180 мм",
+      "category": "material",
+      "unitId": "piece",
+      "ratePer100M2": "1200",
+      "resourceCode": "01-1911-0003",
+      "printedUnit": "10_piece",
+      "printedRate": "120",
+      "conversion": "10",
+      "operation": "fixing",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "rivet",
+      "titleRu": "Заклепки",
+      "category": "material",
+      "unitId": "kg",
+      "ratePer100M2": "0.006",
+      "resourceCode": "01-2101-0001",
+      "printedUnit": "kg",
+      "printedRate": "0.006",
+      "conversion": "1",
+      "operation": "flashing",
+      "internalIdentity": "СТД-985",
+      "sourcePage": 120
+    },
+    {
+      "key": "attachment-adhesive",
+      "titleRu": "Клей для приклеивания минераловатных плит",
+      "category": "material",
+      "unitId": "kg",
+      "ratePer100M2": "600",
+      "resourceCode": "01-3506-0031",
+      "printedUnit": "kg",
+      "printedRate": "600",
+      "conversion": "1",
+      "operation": "bonding",
+      "internalIdentity": "BOLIX ZW",
+      "sourcePage": 120
+    },
+    {
+      "key": "base-adhesive",
+      "titleRu": "Клей полимерцементный для армированного слоя",
+      "category": "material",
+      "unitId": "kg",
+      "ratePer100M2": "831.95",
+      "resourceCode": "01-3506-0038",
+      "printedUnit": "kg",
+      "printedRate": "831.95",
+      "conversion": "1",
+      "operation": "reinforcement",
+      "internalIdentity": "BOLIX WM",
+      "sourcePage": 120
+    },
+    {
+      "key": "silicate-paint",
+      "titleRu": "Краска силикатная для наружной отделки",
+      "category": "material",
+      "unitId": "l",
+      "ratePer100M2": "44.92",
+      "resourceCode": "01-3813-0004",
+      "printedUnit": "l",
+      "printedRate": "44.92",
+      "conversion": "1",
+      "operation": "finish",
+      "internalIdentity": "BOLIX SZ",
+      "sourcePage": 120
+    },
+    {
+      "key": "sealing-tape",
+      "titleRu": "Лента бутиловая уплотнительная предварительно сжатая",
+      "category": "material",
+      "unitId": "m",
+      "ratePer100M2": "44.92",
+      "resourceCode": "01-4103-0004",
+      "printedUnit": "10_m",
+      "printedRate": "4.492",
+      "conversion": "10",
+      "operation": "sealing",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "diamond-bit",
+      "titleRu": "Сверло кольцевое алмазное 5 мм",
+      "category": "material",
+      "unitId": "piece",
+      "ratePer100M2": "0.36",
+      "resourceCode": "01-6107-0001",
+      "printedUnit": "piece",
+      "printedRate": "0.36",
+      "conversion": "1",
+      "operation": "whole-method",
+      "internalIdentity": null,
+      "sourcePage": 120
+    },
+    {
+      "key": "mesh",
+      "titleRu": "Сетка фасадная армирующая из стекловолокна",
+      "category": "material",
+      "unitId": "m2",
+      "ratePer100M2": "134.75",
+      "resourceCode": "01-7805-0001",
+      "printedUnit": "m2",
+      "printedRate": "134.75",
+      "conversion": "1",
+      "operation": "reinforcement",
+      "internalIdentity": "SSA1363-4SM; буквальное наименование в книге01",
+      "sourcePage": 121
+    },
+    {
+      "key": "decorative-render",
+      "titleRu": "Штукатурка фасадная декоративная минеральная 1,5 мм",
+      "category": "material",
+      "unitId": "kg",
+      "ratePer100M2": "400",
+      "resourceCode": "03-0618-0040",
+      "printedUnit": "kg",
+      "printedRate": "400",
+      "conversion": "1",
+      "operation": "finish",
+      "internalIdentity": "BOLIX MPKA15DM",
+      "sourcePage": 121
+    },
+    {
+      "key": "starter-profile",
+      "titleRu": "Профиль цокольный алюминиевый 120 мм, длина 2500 мм",
+      "category": "material",
+      "unitId": "m",
+      "ratePer100M2": "5.26",
+      "resourceCode": "07-0405-0003",
+      "printedUnit": "m",
+      "printedRate": "5.26",
+      "conversion": "1",
+      "operation": "starter",
+      "internalIdentity": null,
+      "sourcePage": 121
+    },
+    {
+      "key": "zinc-sheet",
+      "titleRu": "Сталь листовая оцинкованная толщиной 0,55 мм",
+      "category": "material",
+      "unitId": "kg",
+      "ratePer100M2": "4",
+      "resourceCode": "10-0208-0002",
+      "printedUnit": "t",
+      "printedRate": "0.004",
+      "conversion": "1000",
+      "operation": "flashing",
+      "internalIdentity": null,
+      "sourcePage": 121
+    },
+    {
+      "key": "corner-profile",
+      "titleRu": "Уголок ПВХ со стеклосеткой",
+      "category": "material",
+      "unitId": "m",
+      "ratePer100M2": "6",
+      "resourceCode": "12-0111-0001",
+      "printedUnit": "m",
+      "printedRate": "6",
+      "conversion": "1",
+      "operation": "corners",
+      "internalIdentity": null,
+      "sourcePage": 121
+    },
+    {
+      "key": "insulation",
+      "titleRu": "Плиты теплоизоляционные минераловатные толщиной 120 мм",
+      "category": "material",
+      "unitId": "m3",
+      "ratePer100M2": "13.44",
+      "resourceCode": "01-3622-0022",
+      "printedUnit": "m3",
+      "printedRate": "13.44",
+      "conversion": "1",
+      "operation": "bonding",
+      "internalIdentity": null,
+      "sourcePage": 121
+    }
+  ],
+  "operations": [
+    {
+      "key": "preparation",
+      "titleRu": "Подготовить основание",
+      "sourceOrdinal": 1
+    },
+    {
+      "key": "penetrating",
+      "titleRu": "Укрепить поверхность проникающей грунтовкой",
+      "sourceOrdinal": 2
+    },
+    {
+      "key": "openings",
+      "titleRu": "Усилить участки вокруг оконных и дверных проёмов",
+      "sourceOrdinal": 3
+    },
+    {
+      "key": "bonding",
+      "titleRu": "Приклеить минераловатные плиты",
+      "sourceOrdinal": 4
+    },
+    {
+      "key": "fixing",
+      "titleRu": "Закрепить плиты механическими дюбелями",
+      "sourceOrdinal": 5
+    },
+    {
+      "key": "sealing",
+      "titleRu": "Герметизировать стыки плит с конструкциями здания",
+      "sourceOrdinal": 6
+    },
+    {
+      "key": "corners",
+      "titleRu": "Армировать наружные и внутренние углы",
+      "sourceOrdinal": 7
+    },
+    {
+      "key": "reinforcement",
+      "titleRu": "Выполнить армированный базовый слой",
+      "sourceOrdinal": 8
+    },
+    {
+      "key": "reveals",
+      "titleRu": "Армировать откосы",
+      "sourceOrdinal": 9
+    },
+    {
+      "key": "priming",
+      "titleRu": "Загрунтовать наружные стены",
+      "sourceOrdinal": 10
+    },
+    {
+      "key": "reveal-priming",
+      "titleRu": "Загрунтовать откосы",
+      "sourceOrdinal": 11
+    },
+    {
+      "key": "finish",
+      "titleRu": "Выполнить защитно-декоративную отделку стен",
+      "sourceOrdinal": 12
+    },
+    {
+      "key": "reveal-finish",
+      "titleRu": "Выполнить защитно-декоративную отделку откосов",
+      "sourceOrdinal": 13
+    },
+    {
+      "key": "flashing",
+      "titleRu": "Установить оконные отливы",
+      "sourceOrdinal": 14
+    }
+  ],
+  "residual": [
+    {
+      "key": "project-nodes",
+      "kind": "PROJECT_FACT",
+      "titleRu": "Проектные узлы крепления, проёмов, цоколя, деформаций и пожарных ограничений",
+      "missingRu": "Проектная расчётная схема, ветровые зоны, основание и вырыв, пригодность дюбеля10×180мм/стартового крепления, узлы и реальные линейные количества; площадь не проектирует крепёж.",
+      "owner": "PROJECT_DESIGNER",
+      "returnCriterionRu": "Принятый проект с проверкой точных изделий и ведомостью узлов; ввести лишь фактические количества двух видов крепежа, не внутренние нормы.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:project-nodes"
+    },
+    {
+      "key": "component-bridge",
+      "kind": "INTERNAL_SOURCE",
+      "titleRu": "Применимость точного исходного комплекта к поставляемой системе",
+      "missingRu": "Нужна прямая документальная совместимость исторических BOLIX O/SG/ZW/WM/SZ/MPKA15DM, SSA1363-4SM, типа плиты и действующего системного допуска; современные OP/N/иная сетка не эквивалентны автоматически.",
+      "owner": "APPLICATION_SOURCE_AUTHOR",
+      "returnCriterionRu": "Точный системный паспорт/документ производителя с сопоставлением всех исходных компонентов и области применения; без переноса нового расхода.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:component-bridge"
+    },
+    {
+      "key": "mixing-dosing",
+      "kind": "INTERNAL_SOURCE",
+      "titleRu": "Полный комплект приготовления смесей и дозирования воды",
+      "missingRu": "КРЕРвода0,1м³/100м² не является рецептом замеса; отсутствует подтверждённый общий режим всех смесей, дозатор, тара, мешалка+насадка, промывка и количественный пост/ресурс.",
+      "owner": "APPLICATION_SOURCE_AUTHOR",
+      "returnCriterionRu": "Точные паспорта смесей и полная совместимая технологическая карта с балансом воды и конечным комплектом, без Nот площади/мешков.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:mixing-dosing"
+    },
+    {
+      "key": "cutting-installation-kit",
+      "kind": "INTERNAL_SOURCE",
+      "titleRu": "Полное оснащение разметки, раскроя и нанесения слоёв",
+      "missingRu": "Нужны нож/пила для минваты, ножницы/диски/листогибная оснастка, подходящий10мманкерный бур, измерение, кельмы/тёрки/шпатели/валики/кисти и количественный состав; сверло5мм не подменяет анкерный бур.",
+      "owner": "APPLICATION_SOURCE_AUTHOR",
+      "returnCriterionRu": "Полная карта конкретной системы/метода с совместимостью рабочих частей и конечным набором на известный пост/период; не выводить из машинных часов.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:cutting-installation-kit"
+    },
+    {
+      "key": "access-rigging-protection",
+      "kind": "PROJECT_AND_INTERNAL_SOURCE",
+      "titleRu": "Подъём, готовые леса, строповка, питание и защита",
+      "missingRu": "Источник работает с готовых инвентарных лесов до30м; монтаж/демонтаж/осмотр, ограждения, стропы, связь, электроснабжение, защита погоды/людей/примыканий и СИЗ не имеют здесь полного количественного комплекта.",
+      "owner": "APPLICATION_AND_PROJECT",
+      "returnCriterionRu": "Принятые ППР/готовые леса и самостоятельные доказанные нормы обеспечения/защиты; не повторять источниковые часы доставки.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:access-rigging-protection"
+    },
+    {
+      "key": "quality-control",
+      "kind": "PROJECT_AND_INTERNAL_SOURCE",
+      "titleRu": "Контроль основания, крепления, слоёв и приёмка",
+      "missingRu": "Нужны методы/частота/инструмент контроля влажности/прочности/вырыва/адгезии/толщины/плоскости/сетки/погодных выдержек; число испытаний не выводится из площади без нормы.",
+      "owner": "APPLICATION_AND_PROJECT",
+      "returnCriterionRu": "Точный системный регламент и принятый план контроля с оборудованием/услугами и количеством.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:quality-control"
+    },
+    {
+      "key": "external-logistics",
+      "kind": "PROJECT_AND_INTERNAL_SOURCE",
+      "titleRu": "Доставка вне нормированной подачи и внешние услуги",
+      "missingRu": "Погрузчик, лебёдка и автомобиль учтены по строкам нормы; внешняя доставка, разгрузочная схема, хранение, услуги лаборатории/аренды сверх полного machinehour требуют своего охвата.",
+      "owner": "APPLICATION_AND_PROJECT",
+      "returnCriterionRu": "Точная граница сметной нормы и маршрут/ведомость услуг; один owner без второго водителя/машиниста.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:external-logistics"
+    },
+    {
+      "key": "cleanup-waste",
+      "kind": "INTERNAL_SOURCE",
+      "titleRu": "Очистка, промывка и обращение с отходами",
+      "missingRu": "Полная норма тары/воды/труда/пылеулавливания/сбора и удаления остатков минваты, смесей, тары и металлического раскроя отсутствует в таблице.",
+      "owner": "APPLICATION_SOURCE_AUTHOR",
+      "returnCriterionRu": "Применимая норма/технологическая карта с физическим комплектом и количеством отходов/услуг; не универсальный процент отходов.",
+      "needId": "facade:bolix-mw120:krer15:r1:need:cleanup-waste"
+    }
+  ],
+  "reuseMatrix": [
+    {
+      "candidate": "current CT190 KZ attachment/base materials",
+      "decision": "INCOMPATIBLE",
+      "reason": "Другая система/источник/количества; сохранена лишь в прежнем выборе."
+    },
+    {
+      "candidate": "current project MW120 +200mm dowel",
+      "decision": "INCOMPATIBLE",
+      "reason": "Новый источник180мм и полный декоративный цикл; количество/цена200мм не переносится."
+    },
+    {
+      "candidate": "CT54 ready cement painting / MASTER29 protection2600",
+      "decision": "INCOMPATIBLE",
+      "reason": "Другой слой/основание; укрытие не полный фасад, CT54 не BOLIXSZ."
+    },
+    {
+      "candidate": "automaticConstructionOwnerR1 + effectivePurchaseBalanceR1",
+      "decision": "REUSE_EXACT",
+      "reason": "Тот же движок расчёта и допуск заказа в базовой единице; без новой нормы."
+    },
+    {
+      "candidate": "retained successor factory + finite primary selection",
+      "decision": "REUSE_WITH_PROVEN_ADAPTATION",
+      "reason": "Новая закрытая ветвь старой карточки; immutable old math и namespace, exact continuation blocker сохранён."
+    },
+    {
+      "candidate": "Rockwool vent facade fixrock5/m²",
+      "decision": "INCOMPATIBLE",
+      "reason": "Вентфасад неETICS, ветровой анкерный проект не площадь."
+    }
+  ],
+  "newFULL": 0,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "sharedResourceConsumers": [
+    {
+      "resourceKey": "water",
+      "operationKeys": [
+        "bonding",
+        "reinforcement",
+        "finish",
+        "reveal-finish"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "penetrating-primer",
+      "operationKeys": [
+        "preparation",
+        "penetrating"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "attachment-adhesive",
+      "operationKeys": [
+        "bonding"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "insulation",
+      "operationKeys": [
+        "bonding"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "starter-profile",
+      "operationKeys": [
+        "bonding"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "starter-fastener",
+      "operationKeys": [
+        "bonding",
+        "fixing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "mesh",
+      "operationKeys": [
+        "openings",
+        "corners",
+        "reinforcement",
+        "reveals"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "base-adhesive",
+      "operationKeys": [
+        "openings",
+        "corners",
+        "reinforcement",
+        "reveals"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "wall-anchor",
+      "operationKeys": [
+        "fixing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "perforator",
+      "operationKeys": [
+        "fixing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "foam",
+      "operationKeys": [
+        "sealing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "sealing-tape",
+      "operationKeys": [
+        "sealing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "corner-profile",
+      "operationKeys": [
+        "corners",
+        "reveals"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "silicate-primer",
+      "operationKeys": [
+        "priming",
+        "reveal-priming"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "decorative-render",
+      "operationKeys": [
+        "finish",
+        "reveal-finish"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "silicate-paint",
+      "operationKeys": [
+        "finish",
+        "reveal-finish"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "zinc-sheet",
+      "operationKeys": [
+        "flashing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "rivet",
+      "operationKeys": [
+        "flashing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "diamond-bit",
+      "operationKeys": [],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_ONLY;EXACT_USE_AND_COMPATIBILITY_NOT_PUBLISHED"
+    },
+    {
+      "resourceKey": "drill",
+      "operationKeys": [
+        "flashing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "sheet-bender",
+      "operationKeys": [
+        "flashing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "angle-grinder",
+      "operationKeys": [
+        "flashing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "winch",
+      "operationKeys": [
+        "preparation",
+        "penetrating",
+        "openings",
+        "bonding",
+        "fixing",
+        "sealing",
+        "corners",
+        "reinforcement",
+        "reveals",
+        "priming",
+        "reveal-priming",
+        "finish",
+        "reveal-finish",
+        "flashing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "loader",
+      "operationKeys": [
+        "preparation",
+        "penetrating",
+        "openings",
+        "bonding",
+        "fixing",
+        "sealing",
+        "corners",
+        "reinforcement",
+        "reveals",
+        "priming",
+        "reveal-priming",
+        "finish",
+        "reveal-finish",
+        "flashing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "flatbed",
+      "operationKeys": [
+        "preparation",
+        "penetrating",
+        "openings",
+        "bonding",
+        "fixing",
+        "sealing",
+        "corners",
+        "reinforcement",
+        "reveals",
+        "priming",
+        "reveal-priming",
+        "finish",
+        "reveal-finish",
+        "flashing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "labour",
+      "operationKeys": [
+        "preparation",
+        "penetrating",
+        "openings",
+        "bonding",
+        "fixing",
+        "sealing",
+        "corners",
+        "reinforcement",
+        "reveals",
+        "priming",
+        "reveal-priming",
+        "finish",
+        "reveal-finish",
+        "flashing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    },
+    {
+      "resourceKey": "operators",
+      "operationKeys": [
+        "preparation",
+        "penetrating",
+        "openings",
+        "bonding",
+        "fixing",
+        "sealing",
+        "corners",
+        "reinforcement",
+        "reveals",
+        "priming",
+        "reveal-priming",
+        "finish",
+        "reveal-finish",
+        "flashing"
+      ],
+      "quantityScope": "WHOLE_METHOD_TOTAL_REPEATED_WITH_ONE_OWNER",
+      "splitOrAdditionalQuantityAllowed": false,
+      "mappingBasis": "SOURCE_WHOLE_METHOD_AND_FUNCTIONAL_CONSUMPTION;NOT_PER_STAGE_PRODUCTIVITY_NORM"
+    }
+  ],
+  "knownMaterialIdentityCorrections": {
+    "mesh": "01-7805-0001 / SSA1363-4SM; not01-7505-0001(staples)",
+    "shootDowel": "01-1903-0003",
+    "rivet": "СТД-985, not dimension9×5",
+    "primer": "BOLIX O, notOP/N",
+    "wallDowel": "10×180mm, not legacy200mm"
+  }
+}

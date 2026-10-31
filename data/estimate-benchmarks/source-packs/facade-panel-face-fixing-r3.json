@@ -1,0 +1,132 @@
+{
+  "contract": "gox.facade.panel-face-fixing.whole-bounded-subprocess.r3",
+  "newFULL": 0,
+  "readyQueueEntry": false,
+  "noPublicCatalogCreated": true,
+  "quantityScope": "Per-panel fixed-point norm plus independently captured approved point schedule. No geometric structural design from area.",
+  "protectedNeeds": [
+    {
+      "key": "whole-fixing-labour",
+      "titleRu": "Труд полного поста монтажа лицевых плит",
+      "category": "labor",
+      "unitId": "man_hour",
+      "missing": "No exact compatible whole labour norm for the selected material/fixing method; do not borrow porcelain or metal siding hours."
+    },
+    {
+      "key": "whole-tool-stock",
+      "titleRu": "Комплект сверления, центрирования и клёпки",
+      "category": "equipment",
+      "unitId": "set",
+      "missing": "Exact compatible full workstation quantities including centering and rivet nosepieces, not quantities inferred from illustrations."
+    },
+    {
+      "key": "drilling-cutting-wear",
+      "titleRu": "Рабочие части сверления и раскроя",
+      "category": "material",
+      "unitId": "piece",
+      "missing": "Complete compatible drill/cutter/working-parts consumption; 4.1mm centering tool is not a stock quantity."
+    },
+    {
+      "key": "handling-access-power-PPE",
+      "titleRu": "Подача плит, безопасный доступ, питание и СИЗ",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "Whole rated process matched to actual panel mass/format/height and approved PPR; no generic area norm."
+    },
+    {
+      "key": "base-subsystem-fire-nodes",
+      "titleRu": "Основание, подсистема, утепление и узлы",
+      "category": "material",
+      "unitId": null,
+      "missing": "Enclosing owner must provide the exact compatible complete support/anchor/insulation/fire/joint/node schedule; not closed by face rivet count."
+    },
+    {
+      "key": "quality-control-service",
+      "titleRu": "Контроль проектного положения и подвижности креплений",
+      "category": "service",
+      "unitId": null,
+      "missing": "Inspection methods and all required tools/service quantities; no invented inspection sampling norm."
+    },
+    {
+      "key": "delivery-protection-waste",
+      "titleRu": "Доставка, защита, очистка и отходы",
+      "category": "service",
+      "unitId": null,
+      "missing": "Complete receipt/store/route/protection/cleaning/waste process and quantities, no arbitrary waste percentage."
+    }
+  ],
+  "operations": [
+    {
+      "key": "verify-layout",
+      "titleRu": "Приёмка схемы креплений и основания"
+    },
+    {
+      "key": "handle-cut",
+      "titleRu": "Подача, раскрой и подготовка плит"
+    },
+    {
+      "key": "drill-center",
+      "titleRu": "Сверление и центрирование отверстий"
+    },
+    {
+      "key": "rivet",
+      "titleRu": "Установка фиксированных и подвижных креплений"
+    },
+    {
+      "key": "inspect-clean",
+      "titleRu": "Контроль, очистка и возврат оснастки"
+    }
+  ],
+  "profiles": [
+    {
+      "key": "fibre-cement-uni8",
+      "titleRu": "Фиброцементная плита8мм на согласованной металлической подсистеме с лицевыми заклёпками",
+      "source": {
+        "path": "data/estimate-benchmarks/source-artifacts/facade-panel-face-fixing-r3/EQUITONE-metal-frame-design-NZ.pdf",
+        "sha256": "768ee059986eae1a39a1cb1d6bc6686c4ad7a408885ad55ca23416dd8e38b1d9",
+        "pdfPagesActuallyReviewed": [
+          8
+        ],
+        "internalFixingIdentity": "4x18K15, aluminium;supportBMT1.15–2.75mm;11mmpanelholes;4.1mmcentering bit",
+        "territory": "NZ/ANZ",
+        "originalCapturedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\EQUITONE-metal-frame-design-NZ.pdf"
+      },
+      "fixedPointsPerPanel": "2",
+      "panelThicknessMm": "8",
+      "prefix": "facade:panel-face-fixing:r3:fibre-cement-uni8",
+      "sourceStockQuantityUnknown": true,
+      "wholeFacadeOwnerRequired": true,
+      "exclusions": [
+        "No substitutions of fixed-point count, fastener, panel or frame material by resemblance.",
+        "Fixed point quantity does not prove total number, positions, edge distances, structural spacing, fire or local regulatory admission.",
+        "Original panel/point schedule must remain immutable; source quantity is not an editable manual application norm."
+      ]
+    },
+    {
+      "key": "hpl-rivet8-aluminium",
+      "titleRu": "Плита наружного компактного ламината8мм на алюминиевой подсистеме с лицевыми заклёпками",
+      "source": {
+        "path": "data/estimate-benchmarks/source-artifacts/facade-panel-face-fixing-r3/FUNDERMAX-HPL-exterior-current.pdf",
+        "sha256": "ca7e72d5335e4963c85a327a0b6a2f6cfb5bdf29842cfc1e6f43e89d4dfead22",
+        "pdfPagesActuallyReviewed": [
+          35,
+          36,
+          37
+        ],
+        "internalFixingIdentity": "SFSAP16-5 metal-substructure rivet;one fixedpoint;5.1mmfixedpointhole;selectedflat8mmpanel;0.3mmrivetinggauge",
+        "territory": "NorthAmericaJuly2026",
+        "originalCapturedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\FUNDERMAX-HPL-exterior-current.pdf"
+      },
+      "fixedPointsPerPanel": "1",
+      "panelThicknessMm": "8",
+      "prefix": "facade:panel-face-fixing:r3:hpl-rivet8-aluminium",
+      "sourceStockQuantityUnknown": true,
+      "wholeFacadeOwnerRequired": true,
+      "exclusions": [
+        "No substitutions of fixed-point count, fastener, panel or frame material by resemblance.",
+        "Fixed point quantity does not prove total number, positions, edge distances, structural spacing, fire or local regulatory admission.",
+        "Original panel/point schedule must remain immutable; source quantity is not an editable manual application norm."
+      ]
+    }
+  ]
+}

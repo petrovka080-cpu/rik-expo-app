@@ -45,12 +45,8 @@ import {
   INDUSTRIAL_STEEL_PIPE_BUTT_WELD_CATALOG_ID,
   INDUSTRIAL_STEEL_PIPE_BUTT_WELD_PARAMETERS,
 } from "../../lib/estimate/v4/industrialSteelPipeButtWeldR1";
-import {
-  buildCanonicalBaselinePlan,
-  extractUserQuantity,
-  extractPromptOwnedProfessionalParameters,
-  R4_A13_BULKHEAD_FRAME_CATALOG_ID,
-} from "./consumerCanonicalBaselineCompile";
+import {extractUserQuantity, extractPromptOwnedProfessionalParameters, R4_A13_BULKHEAD_FRAME_CATALOG_ID} from "./consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 
 function pumpCatalog(): CanonicalEstimateCatalogItem {
   return {
@@ -411,6 +407,30 @@ describe("consumer canonical W12 preliminary handoff", () => {
       { ...field, provenance: { consumer_input_role_v1: "APPLICATION_TECHNICAL" } },
     ]) expect(extractPromptOwnedProfessionalParameters([guarded], "толщиной 5 мм"))
       .toEqual({});
+  });
+
+  it("binds explicit geometry to the active successor instead of its literally hidden predecessor", () => {
+    const hidden = { kind: "literal", value: false };
+    const schema = [
+      { ...geometryParameter("thickness_mm", 0), visibleWhen: hidden },
+      { ...geometryParameter("area_m2", 1), visibleWhen: hidden },
+      geometryParameter("asphalt_level_r566_layer_thickness_mm", 2),
+      geometryParameter("asphalt_level_r566_area_m2", 3),
+    ];
+    expect(extractPromptOwnedProfessionalParameters(schema,
+      "Выравнивающий слой асфальтобетона, площадь 1000 м², общая толщина 30 мм"))
+      .toEqual({ asphalt_level_r566_layer_thickness_mm: "30", asphalt_level_r566_area_m2: "1000" });
+    expect(extractPromptOwnedProfessionalParameters(schema.slice(0, 2), "площадь 1000 м², толщина 30 мм"))
+      .toEqual({});
+  });
+
+  it("keeps conditional or visible geometry ambiguity unresolved", () => {
+    const active = geometryParameter("asphalt_level_r566_layer_thickness_mm", 0);
+    for (const visibleWhen of [undefined, { kind: "literal", value: true },
+      { kind: "parameter_equals", parameterId: "method", value: "OTHER" }]) {
+      const other = { ...geometryParameter("legacy_thickness_mm", 1), visibleWhen };
+      expect(extractPromptOwnedProfessionalParameters([active, other], "толщина 30 мм")).toEqual({});
+    }
   });
 
   it("leaves thickness unresolved for multiple targets or different layer values", () => {
@@ -1540,6 +1560,29 @@ describe("consumer canonical R6 asphalt admission handoff", () => {
       area_m2: "6400",
     });
     expect(plan.primaryMeasureParameterId).toBe("area_m2");
+  });
+
+  it.each([
+    ["Асфальтобетонное покрытие моста: длина 150 м, ширина 32 м", {}, 4800],
+    ["Асфальтобетонное покрытие моста: длина 150 м, ширина 32 м", { bridge_width_m: 30 }, 4500],
+    ["Асфальтобетонное покрытие моста", { bridge_length_m: 150, bridge_width_m: 32 }, 4800],
+  ])("derives bridge area from final measurements despite an example baseline: %s %j", (prompt, overrides, area) => {
+    const catalog = bridgeAsphaltCatalog();
+    catalog.parameterSchema.find(parameter => parameter.parameterId === "area_m2")!.defaultValue = 5000;
+    const plan = buildCanonicalBaselinePlan({ catalog, prompt, parameterOverrides: Object.freeze(overrides) });
+
+    expect(Number(plan.parameters.area_m2)).toBe(area);
+    expect(plan.primaryMeasureParameterId).toBe("area_m2");
+  });
+
+  it.each([
+    ["Асфальтобетонное покрытие моста: длина 150 м, ширина 32 м", { area_m2: 5000, bridge_width_m: 30 }],
+    ["Асфальтобетонное покрытие моста: площадь 5000 м², длина 150 м, ширина 32 м", { bridge_width_m: 30 }],
+  ])("preserves independently explicit bridge area instead of replacing it with a rectangle: %s", (prompt, overrides) => {
+    const plan = buildCanonicalBaselinePlan({ catalog: bridgeAsphaltCatalog(), prompt, parameterOverrides: overrides });
+
+    expect(Number(plan.parameters.area_m2)).toBe(5000);
+    expect(Number(plan.parameters.bridge_width_m)).toBe(30);
   });
 
   it.each([

@@ -1,0 +1,422 @@
+{
+  "contract": "gox.facade.glass-vacuum-whole-device.r5",
+  "status": "ACTIVE_SOURCE_COMPONENT_NOT_PUBLISHED_OR_COMPLETE",
+  "existingFamilyOwnerAnchor": "canonical-work:expanded:curtain_wall_system",
+  "publicCatalogIdsCreated": 0,
+  "newFULL": 0,
+  "scope": {
+    "internalExactDevice": "MRT411LDC3 standard four G3370 pads; operating #35068 Rev9.5/3-25, serial20230854+; software10.0 exact source fit required",
+    "publicResultRu": "Обеспечение целого комплектного вакуумного захвата в составе монтажа стеклянного фасада",
+    "sourceJurisdiction": "US original manufacturer source; exact operating edition and device conditions",
+    "countryAdoptionRequiredForTechnicalSourceReadiness": false,
+    "localRegulatoryLocalizationSeparatelyEvaluated": true,
+    "remoteControl": "EXCLUDED_FROM_THIS_EXACT_COMPONENT",
+    "deviceCountRole": "ACTUAL_ASSIGNED_WHOLE_DEVICES_FROM_APPROVED_PPR_NOT_AREA_OR_PRODUCTION_NORM",
+    "glassOrCompositeLoad": "Exact glass passports and qualified load assessment; unitized/curtainwall assemblies require load manufacturer strength evidence; no automatic module admission",
+    "serviceVersionBoundary": "Do not merge software10.6+ service instructions into software10.0 component without exact accepted revision fit"
+  },
+  "sources": [
+    {
+      "key": "WPG-MRT4-DC3RC-operating-9-5",
+      "url": "https://www.wpg.com/media/documents/MRT4-DC3RC.pdf",
+      "sha256": "dd40d3e0bb7e0f2aa5973e180aae02363e069ba36bdbd756b44e940f2acc1506",
+      "relevantPdfPages": [
+        1,
+        5,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        18,
+        20,
+        21,
+        22,
+        23,
+        24,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        44
+      ],
+      "visuallyInspectedPdfPages": [
+        5,
+        12,
+        31,
+        44
+      ],
+      "path": "data/estimate-benchmarks/source-artifacts/facade-glass-vacuum-whole-r5/WPG-MRT4-DC3RC-current-instructions.pdf"
+    },
+    {
+      "key": "WPG-secondary-restraint-bulletin-2019-01",
+      "url": "https://www.wpg.com/media/wp//2019/09/ServiceBulletin2019-01.pdf",
+      "sha256": "48e19d8a25f9d062202e2d2bd49fff3ac6f27b98af1185b76e9a616abd8d9068",
+      "relevantPdfPages": [
+        1
+      ],
+      "visuallyInspectedPdfPages": [],
+      "path": "data/estimate-benchmarks/source-artifacts/facade-glass-vacuum-whole-r5/WPG-secondary-restraint-bulletin2019.pdf"
+    }
+  ],
+  "components": [
+    {
+      "key": "lifter",
+      "titleRu": "Комплектный вакуумный поворотно-наклонный захват для стекла, до 320 кг",
+      "perDeviceCount": 1,
+      "unitId": "piece",
+      "pdfPages": [
+        5,
+        8,
+        10
+      ],
+      "scopeRu": "Комплектное действующее устройство по принятому ППР; не отдельная закупка нового оборудования. Рама, насос, резервуары, шланги, замки, управление и сигнализация внутри целого устройства.",
+      "quantityRole": "WHOLE_DEVICE_INVENTORY_COMPONENT_NOT_CONSUMPTION"
+    },
+    {
+      "key": "pads",
+      "titleRu": "Штатная вакуумная подушка для стекла, диаметр 280 мм",
+      "perDeviceCount": 4,
+      "unitId": "piece",
+      "pdfPages": [
+        5,
+        44
+      ],
+      "scopeRu": "Установленный stock четырёх точных штатных подушек; не расход за подъём и не запас на замену.",
+      "quantityRole": "WHOLE_DEVICE_INVENTORY_COMPONENT_NOT_CONSUMPTION"
+    },
+    {
+      "key": "pad-covers",
+      "titleRu": "Защитный чехол вакуумной подушки",
+      "perDeviceCount": 4,
+      "unitId": "piece",
+      "pdfPages": [
+        29,
+        44
+      ],
+      "scopeRu": "Четыре штатных чехла для хранения и защиты подушек.",
+      "quantityRole": "WHOLE_DEVICE_INVENTORY_COMPONENT_NOT_CONSUMPTION"
+    },
+    {
+      "key": "pad-screens",
+      "titleRu": "Штатный фильтрующий экран вакуумной подушки",
+      "perDeviceCount": 4,
+      "unitId": "piece",
+      "pdfPages": [
+        35,
+        44
+      ],
+      "scopeRu": "Четыре штатных установленных экрана точного типа; замена по состоянию отдельно неизвестна.",
+      "quantityRole": "WHOLE_DEVICE_INVENTORY_COMPONENT_NOT_CONSUMPTION"
+    },
+    {
+      "key": "air-filters",
+      "titleRu": "Установленный воздушный фильтр вакуумной системы",
+      "perDeviceCount": 2,
+      "unitId": "piece",
+      "pdfPages": [
+        18
+      ],
+      "scopeRu": "Два фильтра в действующей системе; работа и запас для обслуживания не выведены из их наличия.",
+      "quantityRole": "WHOLE_DEVICE_INVENTORY_COMPONENT_NOT_CONSUMPTION"
+    },
+    {
+      "key": "battery-12v",
+      "titleRu": "Штатный аккумулятор 12 В, 9 А·ч",
+      "perDeviceCount": 1,
+      "unitId": "piece",
+      "pdfPages": [
+        5,
+        37,
+        44
+      ],
+      "scopeRu": "Установленный аккумулятор; расход электроэнергии, ресурс и запас на замену отдельно неизвестны.",
+      "quantityRole": "WHOLE_DEVICE_INVENTORY_COMPONENT_NOT_CONSUMPTION"
+    },
+    {
+      "key": "buzzer-battery-9v",
+      "titleRu": "Штатная батарея звуковой сигнализации 9 В",
+      "perDeviceCount": 1,
+      "unitId": "piece",
+      "pdfPages": [
+        11,
+        21,
+        38
+      ],
+      "scopeRu": "Одна действующая батарея в штатном держателе; частота замены не установлена.",
+      "quantityRole": "WHOLE_DEVICE_INVENTORY_COMPONENT_NOT_CONSUMPTION"
+    },
+    {
+      "key": "charger",
+      "titleRu": "Совместимое зарядное устройство аккумулятора 12 В",
+      "perDeviceCount": 1,
+      "unitId": "piece",
+      "pdfPages": [
+        8,
+        37,
+        44
+      ],
+      "scopeRu": "Одно фактическое зарядное устройство под принятую сеть. Взаимоисключающие исполнения 100/120 В и 240 В не суммируются.",
+      "quantityRole": "WHOLE_DEVICE_INVENTORY_COMPONENT_NOT_CONSUMPTION"
+    }
+  ],
+  "needs": [
+    {
+      "key": "device-period-owner",
+      "titleRu": "Обеспечение комплектного вакуумного захвата на весь период работ",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "Не подтверждены применимая норма периода обеспечения и единый финансовый владелец. Число физических устройств не заменяет аренду, амортизацию или стоимость периода.",
+      "pdfPages": [
+        5,
+        17,
+        23,
+        29
+      ],
+      "parentWholeNeedKeyToReviewForReuse": "glass-handling-post",
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "REUSE_WITH_PROVEN_ADAPTATION_REVIEW_REQUIRED"
+    },
+    {
+      "key": "primary-rigging",
+      "titleRu": "Совместимое первичное присоединение захвата к подъёмному крюку",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "Не подтверждены целый совместимый комплект крюка/защёлки/оснастки, его количество и обеспечение по фактическому ППР с массой устройства и рабочим вылетом.",
+      "pdfPages": [
+        10
+      ],
+      "parentWholeNeedKeyToReviewForReuse": "primary-rigging",
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "REUSE_WITH_PROVEN_ADAPTATION_REVIEW_REQUIRED"
+    },
+    {
+      "key": "crane-operation",
+      "titleRu": "Подъёмный механизм с оператором для перемещения захвата и груза",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "Не подтверждены механизм, вылет, операционное время и оператор. Предельная грузоподъёмность захвата не является нормой машино-часов и не подтверждает кран.",
+      "pdfPages": [
+        10,
+        23,
+        24
+      ],
+      "parentWholeNeedKeyToReviewForReuse": "crane-operation",
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "REUSE_WITH_PROVEN_ADAPTATION_REVIEW_REQUIRED"
+    },
+    {
+      "key": "whole-labour",
+      "titleRu": "Труд звена перемещения и установки стеклянного элемента",
+      "category": "work",
+      "unitId": "hour",
+      "missing": "Не подтверждены состав звена и норма труда полного цикла; источник не устанавливает универсальное число работников или часы на площадь.",
+      "pdfPages": [
+        17,
+        20,
+        23,
+        24,
+        28
+      ],
+      "parentWholeNeedKeyToReviewForReuse": "whole-labour",
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "REUSE_WITH_PROVEN_ADAPTATION_REVIEW_REQUIRED"
+    },
+    {
+      "key": "access-PPE",
+      "titleRu": "Доступ, ограждение опасной зоны и защита звена",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "Не подтверждено достаточное обеспечение доступа, защиты и ограждения для фактического метода, высоты и организации.",
+      "pdfPages": [
+        7,
+        17,
+        23,
+        24
+      ],
+      "parentWholeNeedKeyToReviewForReuse": "access-PPE",
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "REUSE_WITH_PROVEN_ADAPTATION_REVIEW_REQUIRED"
+    },
+    {
+      "key": "power",
+      "titleRu": "Безопасная сеть и электроэнергия для заряда аккумулятора",
+      "category": "material",
+      "unitId": "kwh",
+      "missing": "Не подтверждён расход электроэнергии. Номинальные 12 В/5,5 А и время заряда до 8 часов не задают потребление на объект. Нужны применимая сеть, защитное отключение и пригодный зарядник.",
+      "pdfPages": [
+        5,
+        37
+      ],
+      "parentWholeNeedKeyToReviewForReuse": "power",
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "REUSE_WITH_PROVEN_ADAPTATION_REVIEW_REQUIRED"
+    },
+    {
+      "key": "mild-pad-cleaner",
+      "titleRu": "Совместимое мягкое средство очистки вакуумных подушек",
+      "category": "material",
+      "unitId": null,
+      "missing": "Не подтверждены применимая химия и расход мягкого средства. Растворители, нефтепродукты и кондиционеры резины не допускаются этим методом.",
+      "pdfPages": [
+        36
+      ],
+      "parentWholeNeedKeyToReviewForReuse": null,
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "NEW_EXACT_DEVICE_NEED_WITHIN_SAME_FACADE_FAMILY"
+    },
+    {
+      "key": "pad-cleaning-water",
+      "titleRu": "Вода для очистки вакуумных подушек и контактной поверхности",
+      "category": "material",
+      "unitId": "l",
+      "missing": "Не подтверждён расход воды полного цикла очистки без попадания жидкости в вакуумную систему.",
+      "pdfPages": [
+        20,
+        32,
+        36
+      ],
+      "parentWholeNeedKeyToReviewForReuse": null,
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "NEW_EXACT_DEVICE_NEED_WITHIN_SAME_FACADE_FAMILY"
+    },
+    {
+      "key": "lint-free-cloth",
+      "titleRu": "Чистая безворсовая ветошь или совместимая губка для подушек",
+      "category": "material",
+      "unitId": null,
+      "missing": "Источник требует чистое средство протирки, но не задаёт расход на элемент, площадь или смену.",
+      "pdfPages": [
+        36
+      ],
+      "parentWholeNeedKeyToReviewForReuse": null,
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "NEW_EXACT_DEVICE_NEED_WITHIN_SAME_FACADE_FAMILY"
+    },
+    {
+      "key": "wear-and-spares",
+      "titleRu": "Износ и применимый запас подушек, фильтров и батарей",
+      "category": "material",
+      "unitId": null,
+      "missing": "Нет применимой нормы износа и запаса. Срок 16000 циклов исключает изнашиваемые детали; период замены подушек до 2 лет не является коэффициентом списания на объект.",
+      "pdfPages": [
+        5,
+        35,
+        38,
+        44
+      ],
+      "parentWholeNeedKeyToReviewForReuse": "working-parts",
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "REUSE_WITH_PROVEN_ADAPTATION_REVIEW_REQUIRED"
+    },
+    {
+      "key": "quality-services",
+      "titleRu": "Контроль, проверки и документирование вакуумного захвата",
+      "category": "service",
+      "unitId": null,
+      "missing": "Частоты и критерии испытаний известны, но не нормы труда/услуги/тестового груза на конкретный объект; не превращать 5 минут испытания в норму всего цикла.",
+      "pdfPages": [
+        18,
+        31,
+        32,
+        33,
+        34
+      ],
+      "parentWholeNeedKeyToReviewForReuse": "quality-services",
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "REUSE_WITH_PROVEN_ADAPTATION_REVIEW_REQUIRED"
+    },
+    {
+      "key": "delivery-store-feed",
+      "titleRu": "Доставка, безопасное хранение и перемещение комплекта захвата",
+      "category": "service",
+      "unitId": null,
+      "missing": "Не подтверждены транспорт, расстояния, период хранения и обеспечение контейнера/опоры полного цикла.",
+      "pdfPages": [
+        10,
+        29,
+        30
+      ],
+      "parentWholeNeedKeyToReviewForReuse": "delivery-store-feed",
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "REUSE_WITH_PROVEN_ADAPTATION_REVIEW_REQUIRED"
+    },
+    {
+      "key": "exact-version-service",
+      "titleRu": "Применимое обслуживание точной версии вакуумной системы",
+      "category": "service",
+      "unitId": null,
+      "missing": "Доступное сервисное руководство Rev2.0/9-25 относится к software10.6+, а выбранный operating manual фиксирует10.0. Без принятого соответствия серийного номера/ПО и правильного сервисного документа норму обслуживания не переносить.",
+      "pdfPages": [
+        1,
+        5,
+        18,
+        35,
+        44
+      ],
+      "parentWholeNeedKeyToReviewForReuse": null,
+      "applicability": "EXACT_WHOLE_DEVICE_ACTIVE",
+      "reuseStatus": "NEW_EXACT_DEVICE_NEED_WITHIN_SAME_FACADE_FAMILY"
+    },
+    {
+      "key": "aux-control",
+      "titleRu": "Дополнительное совместимое управление крупным стеклянным элементом",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "Если штатная рукоятка недоступна при наклоне, требуется подтверждённый дополнительный ручной захват/средство и достаточное количество; источник не задаёт универсальный комплект.",
+      "pdfPages": [
+        27
+      ],
+      "parentWholeNeedKeyToReviewForReuse": null,
+      "applicability": "AUX_CONTROL_ONLY",
+      "reuseStatus": "NEW_EXACT_DEVICE_NEED_WITHIN_SAME_FACADE_FAMILY"
+    }
+  ],
+  "verifiedScopeFacts": {
+    "nominalLoadCapacityKg": "320",
+    "perPadNominalKg": "80",
+    "lifterMassKg": "57",
+    "operatingElevationMaxM": "1828",
+    "operatingTemperatureC": [
+      "0",
+      "40"
+    ],
+    "nominalCapacityNotActualLiftingApproval": true,
+    "battery9AhNotRuntimeOrEnergyNorm": true,
+    "padWearExcludedFrom16000Cycles": true,
+    "craneAndRiggingMustIncludeLifterWeight": true,
+    "directSecondaryStrapsOnVacuumLifterNotAdmitted": true,
+    "approvedPadConfigurationRequired": true,
+    "rainOrUnsuitableMoistureNotAdmitted": true
+  },
+  "exclusions": [
+    "Не универсальный вакуумный захват для любого стекла, модуля или криволинейной поверхности.",
+    "Нет самостоятельной покупки устройства и повторной оплаты его штатных компонентов.",
+    "Нет автоматической нормы труда, смен, производительности, кВт·ч, воды, химии или износа.",
+    "Нет произвольных страховочных строп на раме вакуумного устройства.",
+    "Номинальные пределы не заменяют расчёт крана, квалифицированную оценку нагрузки и фактический ППР.",
+    "Software10.6+ service manual и более ранние серийные номера не включены в выбранную исходную версию."
+  ],
+  "completeness": {
+    "sourceDerivedFunctionalAssembly": true,
+    "allApplicableNeedsClosed": false,
+    "baseUnresolvedNeedCount": 13,
+    "auxControlAdditionalNeedCount": 1,
+    "standaloneAdmission": false,
+    "newFULL": 0
+  },
+  "actualProductExecution": "UNRUN",
+  "internationalScope": "Technical source development proceeds in its verified original scope; country localization is separate and does not close technical unknowns"
+}

@@ -14,7 +14,7 @@ type Json = Record<string, unknown>;
 type CostTreatment = "OWN_COST" | "INCLUDED_IN_RESOURCE_ROWS" | "INFORMATIONAL_SCOPE" | "CONTROL_OR_DOCUMENT";
 
 export const ASPHALT_COMPACTION_PROFILE_CATALOG_ID =
-  "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_large_area";
+  "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard";
 export const ASPHALT_COMPACTION_PROFILE_SOURCE_ID =
   "asphalt_compaction_preliminary_profile_r2";
 export const ASPHALT_COMPACTION_PROFILE_NORM_ID =

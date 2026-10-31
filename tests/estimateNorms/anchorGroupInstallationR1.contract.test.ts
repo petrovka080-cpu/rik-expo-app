@@ -9,7 +9,7 @@ import {
 } from "../../src/lib/estimate/v4/anchorGroupInstallationR1";
 
 describe("anchor-group installation family", () => {
-  test("compiles all six contexts through the canonical core from approved project quantities", async () => {
+  test("compiles all four contexts through the canonical core from approved project quantities", async () => {
     const results = [];
     for (const target of ANCHOR_GROUP_INSTALLATION_TARGETS) {
       const fixture = anchorGroupInstallationAcceptanceInputR1(target.contextKey);
@@ -44,8 +44,6 @@ describe("anchor-group installation family", () => {
     expect(results).toEqual([
       { contextKey: "standard", rows: 18, procurementRows: 12 },
       { contextKey: "high_load", rows: 23, procurementRows: 17 },
-      { contextKey: "large_area", rows: 21, procurementRows: 15 },
-      { contextKey: "small_area", rows: 18, procurementRows: 12 },
       { contextKey: "technical_room", rows: 22, procurementRows: 16 },
       { contextKey: "wet_zone", rows: 21, procurementRows: 15 },
     ]);

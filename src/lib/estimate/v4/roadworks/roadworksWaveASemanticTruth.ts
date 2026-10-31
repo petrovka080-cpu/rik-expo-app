@@ -79,8 +79,8 @@ function scopeForOperation(operation: string | null): AsphaltScopePresetId | nul
 
 function overlayFor(item: RoadworksWaveAInventoryItem): AsphaltVariantOverlayId | null {
   if (item.scopeProfile === "standard") return "ROAD_STANDARD";
-  if (item.scopeProfile === "small_area") return "ROAD_SMALL_AREA";
-  if (item.scopeProfile === "large_area") return "ROAD_LARGE_AREA";
+
+
   if (item.scopeProfile === "wet_zone") return "ROAD_WET_EXPOSURE";
   if (item.scopeProfile === "technical_room") return "INDUSTRIAL_FLOOR";
   return null;
@@ -1306,7 +1306,7 @@ export function auditAsphalt35ScaledCloneIntegrityV5() {
   const cloneGroups = [...signatures.entries()]
     .filter(([, workKeys]) => workKeys.length > 1)
     .map(([signature, workKeys]) => ({ signature, workKeys: Object.freeze(workKeys) }));
-  const historicalPairWorkKey = "paving_roads_landscape_interior_asphalt_install_large_area";
+  const historicalPairWorkKey = "paving_roads_landscape_interior_asphalt_install_standard";
   const historicalPairItem = RoadworksWaveAInventory.find((item) => item.workId === historicalPairWorkKey)!;
   const historical900 = compileRoadworksWaveAWork(
     historicalPairWorkKey,

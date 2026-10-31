@@ -4,10 +4,10 @@ import { buildGlobalCatalogInventoryV1, type GlobalCatalogInventoryRowV1 } from 
 
 export const ELECTRICAL_COMPLETE_DOMAIN_ID = "electrical_complete" as const;
 export const ELECTRICAL_COMPLETE_DOMAIN_VERSION = "2.0.0" as const;
-export const ELECTRICAL_COMPLETE_RECORD_COUNT = 605 as const;
-export const ELECTRICAL_COMPLETE_TECHNOLOGY_COUNT = 605 as const;
+export const ELECTRICAL_COMPLETE_RECORD_COUNT = 445 as const;
+export const ELECTRICAL_COMPLETE_TECHNOLOGY_COUNT = 445 as const;
 export const ELECTRICAL_COMPLETE_ALIAS_COUNT = 0 as const;
-export const ELECTRICAL_REVIEWED_EXCLUSION_COUNT = 405 as const;
+export const ELECTRICAL_REVIEWED_EXCLUSION_COUNT = 309 as const;
 
 export const ELECTRICAL_BASE_OWNED_SYSTEMS = Object.freeze([
   "BREAKER", "CABLE_CHANNEL", "LED_STRIP", "LIGHTING", "PANEL",

@@ -404,7 +404,7 @@ async function main(): Promise<void> {
         { contextKey: "high_load", reason: "maximal winter/pump branch with 11 rows" },
         { contextKey: "repair", reason: "minimal direct-chute/water-curing branch with 7 rows" },
       ],
-      repeatedEquivalentUiContextsSkipped: ["large_area", "small_area", "technical_room", "wet_zone"],
+      repeatedEquivalentUiContextsSkipped: ["technical_room", "wet_zone"],
     },
     results,
     diagnostics: {

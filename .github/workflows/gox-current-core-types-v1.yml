@@ -1,0 +1,50 @@
+name: GOX exact current core types
+run-name: GOX current core types ${{ github.sha }}
+on:
+  push:
+    branches: ['codex/gox-types-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: gox-current-core-types
+  cancel-in-progress: false
+jobs:
+  full-affected-types:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    env:
+      EXPO_NO_TELEMETRY: '1'
+      EXPO_NO_DOTENV: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.13'}
+      - name: Restore exact reviewed source bytes
+        shell: pwsh
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
+        run: python scripts/verification/gox-current-types-v1/bootstrap_source.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$env:GOX_TYPES_OUTPUT_ROOT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.6
+          cache: npm
+      - run: npm ci
+      - run: python -m pip install psutil==7.1.0
+      - name: Full current affected program with memory guard
+        shell: pwsh
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
+        run: python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$env:GOX_TYPES_OUTPUT_ROOT"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gox-current-types-${{ github.run_id }}
+          path: ${{ runner.temp }}/gox-types-${{ github.run_id }}
+          if-no-files-found: error
+          retention-days: 7

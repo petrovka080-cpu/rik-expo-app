@@ -911,7 +911,7 @@ async function main(): Promise<void> {
     && residual.candidate?.search_release_id === PARENT_SEARCH_RELEASE_ID
     && residual.current_residual?.legacy_pack_source_id_count === 8,
   "STOP_STRIP_REINFORCEMENT_RESIDUAL_DRIFT");
-  invariant(TARGETS.length === 7 && new Set(TARGETS.map((target) => target.catalogId)).size === 7,
+  invariant(Number(TARGETS.length) === 7 && new Set(TARGETS.map((target) => target.catalogId)).size === 7,
     "STOP_STRIP_REINFORCEMENT_TARGET_SET");
   for (const path of SOURCE_PATHS) {
     invariant(existsSync(resolve(path)), `STOP_STRIP_REINFORCEMENT_SOURCE_MISSING:${path}`);

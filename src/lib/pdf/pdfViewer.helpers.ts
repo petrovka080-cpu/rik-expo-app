@@ -1,11 +1,12 @@
 /**
  * PDF Viewer helper types and utility functions — mechanical extraction (C-REAL-2).
  * Extracted verbatim from app/pdf-viewer.tsx lines 73-207.
- * No logic changed.
+ * Web downloads materialize remote PDFs as local blobs to retain the viewer.
  */
 
 import { Platform } from "react-native";
 import { registerTimeout } from "../lifecycle/timerRegistry";
+import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
 import * as FileSystemModule from "expo-file-system/legacy";
 import {
   assertValidLocalPdfFile,
@@ -85,13 +86,36 @@ export async function validateEmbeddedPreviewResolution(
 export async function downloadPdfAsset(asset: DocumentAsset) {
   if (Platform.OS === "web") {
     if (typeof document === "undefined") return;
+    let downloadUri = asset.uri;
+    let ownedObjectUrl: string | null = null;
+    // Browsers ignore `download` for cross-origin URLs and navigate the current
+    // tab. Download a local blob instead; session-owned blob URLs stay borrowed.
+    if (getUriScheme(asset.uri) !== "blob") {
+      const response = await fetchWithRequestTimeout(asset.uri, { headers: { Accept: "application/pdf" } }, {
+        requestClass: "heavy_report_or_pdf_or_storage", screen: "request", surface: "pdf_viewer",
+        owner: "pdf_viewer", operation: "download_pdf", sourceKind: "fetch:pdf_download",
+      });
+      if (!response.ok) throw new Error(`PDF download failed (${response.status}).`);
+      const blob = await response.blob();
+      const prefix = new Uint8Array(await blob.slice(0, 5).arrayBuffer());
+      if (String.fromCharCode(...prefix) !== "%PDF-") throw new Error("PDF download returned an invalid document.");
+      ownedObjectUrl = URL.createObjectURL(blob);
+      downloadUri = ownedObjectUrl;
+    }
     const link = document.createElement("a");
-    link.href = asset.uri;
+    link.href = downloadUri;
     link.download = asset.fileName || `${asset.title || "document"}.pdf`;
     link.rel = "noopener";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      document.body.appendChild(link);
+      link.click();
+    } finally {
+      link.remove();
+      if (ownedObjectUrl) {
+        const url = ownedObjectUrl;
+        registerTimeout("pdf-viewer:web-download-url-revoke", () => URL.revokeObjectURL(url), 60_000);
+      }
+    }
     return;
   }
   await sharePdfDocument(asset);

@@ -122,3 +122,54 @@ describe("automatic owner uses existing numeric peer contract", () => {
     })).toThrow("AUTOMATIC_NUMERIC_PEER_CONSTRAINT_INVALID:left.greaterThanParameter=right");
   });
 });
+
+
+test("default automatic owner keeps one physical row without opting into operation composition", () => {
+  const input = {...config, ordinary:[left]}, before = JSON.stringify(input);
+  const owner = buildAutomaticConstructionOwnerR1(input);
+  expect(owner.resources).toHaveLength(1);
+  expect(owner.formulas).toHaveLength(1);
+  expect(owner.formulas[0]).toMatchObject({formula_id:"test:formula", expression_source:"left", output_unit_id:"mm", input_parameter_ids:["left"]});
+  expect(owner.resources[0]).toMatchObject({row_id:"test:row", formula_id:"test:formula", unit_id:"mm", cost_owner_id:"test:row", procurement_eligible:false});
+  expect(owner.resources[0]!.resource_graph).toMatchObject({costTreatment:"OWN_COST", costOwner:"resource", semanticOwnerId:"test-owner:test:row"});
+  expect(Object.hasOwn(owner.resources[0]!.resource_graph, "operationCompositionV1")).toBe(false);
+  expect(owner.runtimeInput).toEqual({});
+  expect(owner.runtimeClassification).toEqual({});
+  expect(owner.runtimeSourceIds).toEqual({});
+  expect(JSON.stringify(input)).toBe(before);
+});
+
+test("the old public owner API retains the exact shared definition functions", () => {
+  const oldApi = require("./automaticConstructionOwnerR1");
+  const definitions = require("./automaticConstructionDefinitionR1");
+  expect(Object.keys(oldApi).sort()).toEqual([
+    "buildAutomaticConstructionOwnerR1", "compileAutomaticConstructionOwnerR1", "unresolvedApplicationNormTruthR1",
+  ]);
+  expect(oldApi.buildAutomaticConstructionOwnerR1).toBe(definitions.buildAutomaticConstructionOwnerR1);
+  expect(oldApi.unresolvedApplicationNormTruthR1).toBe(definitions.unresolvedApplicationNormTruthR1);
+  expect(oldApi.buildAutomaticConstructionOwnerR1({...config, ordinary:[left]}))
+    .toEqual(definitions.buildAutomaticConstructionOwnerR1({...config, ordinary:[left]}));
+});
+
+test("roof definition validation loads with the canonical compiler runtime blocked", () => {
+  jest.resetModules();
+  jest.doMock("../backendPlatform/canonicalEstimateCompileCore", () => {throw new Error("COMPILER_MUST_STAY_ON_SERVER");});
+  try {
+    jest.isolateModules(() => {
+      expect(() => require("../backendPlatform/canonicalEstimateCompileCore")).toThrow("COMPILER_MUST_STAY_ON_SERVER");
+    });
+    jest.isolateModules(() => {
+      const definitions = require("./automaticConstructionDefinitionR1");
+      const roof = require("./sourcePinnedRoofNormOwnerR1");
+      const pack = require("../../../../data/estimate-benchmarks/source-packs/roof-valley-torch-two-companion-s27-67.json");
+      const model = roof.sourcePinnedRoofNormOwnerR1(pack);
+      expect(model.resources).toHaveLength(pack.rates.length);
+      expect(model.resources.every((row: {row_sha256:string}) => /^eh_[a-f0-9]{16}$/u.test(row.row_sha256))).toBe(true);
+      expect(model.runtimeInput).toEqual({});
+      expect(definitions.buildAutomaticConstructionOwnerR1({...config, ordinary:[left]}).resources).toHaveLength(1);
+    });
+  } finally {
+    jest.dontMock("../backendPlatform/canonicalEstimateCompileCore");
+    jest.resetModules();
+  }
+});

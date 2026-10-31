@@ -133,7 +133,7 @@ describe("buildCanonicalParameterCards R3 truth presenter", () => {
     expect(cards[0]?.structuredGroup?.fields.length).toBeGreaterThan(1);
   });
 
-  it("показывает точный нормативный диапазон только вместе с нормативным источником", () => {
+  it("показывает допустимый диапазон измеряемого поля с его документом как ограничение ввода", () => {
     const withoutSource = buildCanonicalParameterCards({
       session: session([parameter("depth_mm", {
         unit: "mm",
@@ -160,7 +160,7 @@ describe("buildCanonicalParameterCards R3 truth presenter", () => {
 
     expect(withoutSource?.guideKind).toBe("MEASUREMENT_RULE");
     expect(withoutSource?.guideShortRu).not.toContain("20–40");
-    expect(withSource?.guideKind).toBe("NORMATIVE_RANGE");
+    expect(withSource?.guideKind).toBe("VALIDATION_RANGE");
     expect(withSource?.guideShortRu).toContain("20–40");
     expect(withSource?.guideDetailsRu?.join(" ")).toContain("Точный документ");
     expect(withSource?.guideDetailsRu?.join(" ")).toContain("п. 4.2");
@@ -208,4 +208,22 @@ describe("buildCanonicalParameterCards R3 truth presenter", () => {
 
     expect(cards.map((card) => card.key)).toEqual(["strip_width_m"]);
   });
+});
+
+describe("COMMON object guidance retains source ownership",()=>{
+ it.each(["fixture-floor","fixture-wall","fixture-network"])("COMMON metadata guidance works without a catalog exception for %s",catalogId=>{
+  const numeric=parameter("fixture_input_a",{label:"Фактическая фасовка",description:"Объём упаковки из принятой спецификации.",unit:"l",inputOwnership:"USER_INPUT",consumerInputRole:"OBJECT_FACT"}),
+   reference=parameter("fixture_input_b",{label:"Согласованное условие",description:"Условие и документ фактического объёма.",valueType:"string",inputOwnership:"USER_INPUT",consumerInputRole:"OBJECT_FACT"}),
+   technical=parameter("fixture_developer_norm",{label:"Техническая норма приложения",inputOwnership:"APPLICATION",consumerInputRole:"APPLICATION_TECHNICAL",
+    sourceProvenance:{guideKind:"NO_NUMERIC_NORM",sourceRole:"UNRESOLVED_APPLICATION_NORM"}});
+  const input={...session([numeric,reference,technical]),workPassportId:catalogId},before=JSON.stringify(input);
+  const cards=buildCanonicalParameterCards({session:input,revision:null});
+  expect(cards.find(card=>card.key===numeric.parameterId)).toMatchObject({value:null,unitRu:"л",editable:true,guideKind:"MEASUREMENT_RULE"});
+  expect(cards.find(card=>card.key===numeric.parameterId)?.guideShortRu).toContain("фактическое значение");
+  expect(cards.find(card=>card.key===reference.parameterId)?.guideShortRu).toContain("согласованное обозначение");
+  expect(cards.find(card=>card.key===reference.parameterId)?.unitRu).toBe("");
+  expect(cards.find(card=>card.key===reference.parameterId)?.guideKind).toBe("PROJECT_DEFINED");
+  expect(cards.some(card=>card.key===technical.parameterId)).toBe(false);
+  expect(JSON.stringify(input)).toBe(before);
+ });
 });

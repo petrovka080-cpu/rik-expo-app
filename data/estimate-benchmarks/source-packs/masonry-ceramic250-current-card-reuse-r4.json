@@ -1,0 +1,151 @@
+{
+  "contract": "gox-build.masonry-ceramic250-current-card-whole-reuse/r4",
+  "sourceId": "source:masonry:ceramic250:ordinary-current-card-whole-reuse:r4",
+  "locatorKey": "masonry-ceramic250-current-card-whole-reuse-r4",
+  "status": "AUTHORED_ORDINARY_CONFIG_RUNTIME_UNRUN_NOT_WHOLE_ACCEPTANCE",
+  "parent": {
+    "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+    "definitionId": "9e2b5498-7b4d-5f82-ace7-6c6b822b4ef8",
+    "definitionVersion": 9,
+    "definitionSha256": "f72f853aaffcab2b21cf172e7a3371dbe80a378a8f74b2b427d255c775166c6b",
+    "capturePath": "data/estimate-benchmarks/fixtures/masonry-family-brick-current-parent-r2.json",
+    "rawCaptureSha256": "e064b8a70990ec491cdff679722d36de171311c5cf49bc012058cf97533bb6cb",
+    "capturedParentSha256": "065d4192d02b88da3b1e5ed4c0e27dd51893ce85a3fc4030b90ff349d287188b",
+    "capturedSourceMetadataSha256": "8b3953ac84fa1c5b5be92eb904207b9df6fe43bed87a2299c24d5409d7cf8725",
+    "previousSuccessorSha256": "65b16f43dc9d0cb1a66fa8bf2d9031f70bee3bbc519113314152b91f6374ed2a",
+    "fullFreshUtcPgReadback": "ROOT_OWNED_UNRUN_NO_AUTOMATIC_REBIND"
+  },
+  "sourceScope": {
+    "normCountry": "Kyrgyzstan",
+    "normEdition": "2015",
+    "norm": "08-02-001-07",
+    "material": "ceramic250x120x65/M100; ready cement-limeM50",
+    "wallThicknessM": "0.25",
+    "storeyMaxM": "4",
+    "foreignPhysicalSources": "Saved VPTI1985/TU2013/exact maker three-box instructions; independent bounds retained",
+    "countryConformityClaim": false
+  },
+  "inputs": [
+    {
+      "path": "src/lib/estimate/v4/masonryCeramic250OrdinaryCurrentCardR4.ts",
+      "sha256": "37217dd581414ef2ef8381c9d04172561d89d357c3a5c1ce914dfdc2806a3ca0"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryCeramic250NormObjectBoundaryR4.ts",
+      "sha256": "bc5ffe925afa08f9484e73e4b7ec151cc5835fce22c29f07269935b0a883fcdd"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryCeramic250WholeSourceKitCountsR4.ts",
+      "sha256": "b3336acb78ec264027b40ac505c0c25f69e8c868458b8256aeeed053dd33e176"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasonryCeramic250CurrentCardR4.ts",
+      "sha256": "c6510eff17439d22ed0b47ecfd80e51447bd5bd6d08ea0cde2b8d0d23b3631e8"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryCeramic250SharedWholeReuseR4.ts",
+      "sha256": "dd8f19cf5c50a5cf0b1fa4a59a5270e2a25f370867e29b71cfe20bd35cd7b33f"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryM50EffectiveLiftCorrectionR4.ts",
+      "sha256": "4d5682b020b571f5927e7087daeae93c64ca837320e94b409b9e67066d9e5431"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryCeramic250WholeFamilyCompositionR2.ts",
+      "sha256": "a75ed7497eea65c125e16e2814e818b5516a76c66f059c103c827ab4f590f7bc"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryReadyM50WholeSupplyCycleR2.ts",
+      "sha256": "80f44a7cb88a927f7aaefdf159c57f3c72232619c27bba2b90cb3a4aa0dd8a21"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-m50-effective-lift-correction-r4.json",
+      "sha256": "201104e104dffb92db68793e21c2cee2587656a5fde5c5c3b24068f84f2af259"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-ceramic250-whole-family-composition-r2.json",
+      "sha256": "fe2fd80b24a454875e88218e1cec0c193b7f56e01f0cfd1293456a0aec2be3b3"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-ready-m50-whole-supply-cycle-r2.json",
+      "sha256": "205cfd61fd08a24586cd6a0058a4e513c12fc250832bdea1b342745085f4a773"
+    },
+    {
+      "path": "data/estimate-benchmarks/fixtures/masonry-family-brick-current-parent-r2.json",
+      "sha256": "e064b8a70990ec491cdff679722d36de171311c5cf49bc012058cf97533bb6cb"
+    },
+    {
+      "path": "data/estimate-benchmarks/fixtures/masonry-family-brick-current-passport-r2.json",
+      "sha256": "4cb0264cf17156f257679bf3bc5aede4214b4d7d2974ac7def04f45cec0aaec6"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-wall-krer08-systems-r1.json",
+      "sha256": "ba962e15d0a317a4b0e484004ed9557e4dbc3ded1fff11223e7697f8a76bb8bc"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-wall-krer08-systems-r1/KRER08-2015-official.pdf",
+      "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-r2/kg-guide2015.pdf",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-r2/vpti1985.html",
+      "sha256": "5f0b4f1b17db92c254380e6f9886f2dd16b2ff92ba58ed36b882bf161e45d217"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-r2/kg-safety2018.pdf",
+      "sha256": "a143d151e3bd6f36a24e789686f95d4445b3f6d0ae8c5bb66f5a433021be9529"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-whole-cycle-r2/METEL-YAR1-original.pdf",
+      "sha256": "9f86c3fffc6471afcd249960e89e0cd4433ac4187098f04a21efd15fe0a4ad62"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-r2/panel-tu2013.pdf",
+      "sha256": "63d78c98d0e7b55e148e812633d28e396f4b8a08473eb4cf0374857762a97ed1"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-whole-cycle-r2/TNKSN-KZ-8.07-06-2019-official.pdf",
+      "sha256": "f5db7d0913d2d5f57634fb587a37fbccb61f9dda1787046fe13c30b096fe5b10"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryCeramic250RelatedConsumerGatesR4.ts",
+      "sha256": "75dc19669f66d162234875d60beb6d0fd9f993e59b053e81fbe633fd1dc74af4"
+    }
+  ],
+  "ordinaryGeometry": [
+    "m33_masonry_wall_length_m",
+    "m33_masonry_wall_height_m",
+    "m33_masonry_openings_area_m2",
+    "m33_masonry_nonmasonry_insert_volume_m3",
+    "m33_masonry_storey_height_m"
+  ],
+  "primary": {
+    "id": "masonry_brick_r4_net_volume_m3",
+    "unitId": "m3",
+    "expression": "(length*height-openings)*0.25-other-material-inserts",
+    "producer": "Exact existing preliminary source formula; internal application-owned, no customer value"
+  },
+  "runtimeProfileKeys": [
+    "m33_masonry_source_system",
+    "m50c2_method",
+    "mcf2_whole_front"
+  ],
+  "paidOwnerPreservation": {
+    "labour": "masonry:wall:krer08-02-001-07:labour",
+    "mortar": "masonry:wall:krer08-02-001-07:mortar",
+    "parentPaidFormulasUnchanged": true,
+    "effectiveMortarSafetyReused": true,
+    "newPaidOwners": 0,
+    "newProcurementOwners": 0
+  },
+  "sourceOwnerConsumerMap": "brick-ordinary-current-card-r4/EXISTING_SOURCE_OWNER_CONSUMER_MAP_R4.json",
+  "priorActualBrick4": "brick-existing-reuse-r4/BRICK_FRAGMENT_RESULT_R4.json",
+  "technicalQuestionnaire": false,
+  "baselineFixturesNotRuntime": true,
+  "genericAppendOnly": true,
+  "newPublicCards": 0,
+  "full": 0
+}

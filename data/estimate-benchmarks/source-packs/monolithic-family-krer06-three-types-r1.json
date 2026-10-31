@@ -1,0 +1,2204 @@
+{
+  "contract": "gox-build.monolithic-family-krer06/r1",
+  "sourceId": "gox-monolithic-family-krer06-10702-10903-11101-r1",
+  "selectorId": "mono_family_source_method_r1",
+  "legacyChoiceRu": "Сохранённый прежний расчёт",
+  "newChoiceRu": "Исходная система КРЕР06-2015, индустриальная опалубка",
+  "projectBasisValue": "KG: КРЕР06-2015 принят проектом",
+  "sourceFitValue": "Точная исходная система, B15 и заполнитель40мм, принята проектом",
+  "machineFulfillmentChoices": {
+    "own": "Собственная полная эксплуатация",
+    "hired": "Услуга полной эксплуатации"
+  },
+  "source": {
+    "path": "data/estimate-benchmarks/source-artifacts/kg-krer06-2015-monolithic-concrete-45c065fb.pdf",
+    "sha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+    "edition": "КРЕР06-2015",
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/422/show",
+    "jurisdiction": "KG"
+  },
+  "materialIdentitySource": {
+    "path": "data/estimate-benchmarks/source-artifacts/kg-resource-materials-book01-4c06ea5b.pdf",
+    "sha256": "4c06ea5b428048cbf33872ded079306f21c2c7f5c798c99a03ec5c6249f9e837",
+    "role": "Resource identity and units only; not consumption/retail packaging/current price"
+  },
+  "categoryKeys": [
+    "materials",
+    "consumables",
+    "fasteners",
+    "tools",
+    "rigging",
+    "machines_and_operators",
+    "labor",
+    "services",
+    "delivery_feed",
+    "access_protection",
+    "control",
+    "cleaning_waste"
+  ],
+  "masterPath": "C:/Users/User/Downloads/GOX_BUILD_MASTER_TZ_2_12_2026-10-22.txt",
+  "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+  "residual": [
+    {
+      "key": "setting-out-preparation",
+      "titleRu": "Основание и геодезическая разбивка",
+      "kind": "PROJECT_FACT_AND_INTERNAL_METHOD",
+      "missingRu": "Принятая поверхность опирания, оси, отметки, подготовка и допуски; собственная норма геодезической подработы и физический комплект.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Принятая поверхность опирания, оси, отметки, подготовка и допуски; собственная норма геодезической подработы и физический комплект."
+    },
+    {
+      "key": "reinforcement-bom-fabrication",
+      "titleRu": "Арматура, закладные и соединения",
+      "kind": "PROJECT_BOM_AND_INTERNAL_FABRICATION",
+      "missingRu": "Полная ведомость класса/диаметров/длин/количества/массы, соединений и закладных, раскрой, отходы и баланс поставки; одна суммарная масса и ссылка КЖ не закрывают комплект.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Полная ведомость класса/диаметров/длин/количества/массы, соединений и закладных, раскрой, отходы и баланс поставки; одна суммарная масса и ссылка КЖ не закрывают комплект."
+    },
+    {
+      "key": "formwork-shoring-kit",
+      "titleRu": "Полный комплект опалубки и опор",
+      "kind": "PROJECT_DESIGN_AND_PHYSICAL_BOM",
+      "missingRu": "Расчёт нагрузки/устойчивости, щиты, балки, стойки, связи, анкеры и крепления, площадки, распалубка, полный начальный и возвратный баланс; расход палубы/древесины и П не равны поставке.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Расчёт нагрузки/устойчивости, щиты, балки, стойки, связи, анкеры и крепления, площадки, распалубка, полный начальный и возвратный баланс; расход палубы/древесины и П не равны поставке."
+    },
+    {
+      "key": "tools-working-parts",
+      "titleRu": "Инструмент и рабочие части",
+      "kind": "INTERNAL_QUANTITATIVE_METHOD",
+      "missingRu": "Полный совместимый физический комплект резки, сварки, уплотнения и ручного инструмента с рабочими частями, организацией и обоснованными количествами; машино-часы не задают число постов.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Полный совместимый физический комплект резки, сварки, уплотнения и ручного инструмента с рабочими частями, организацией и обоснованными количествами; машино-часы не задают число постов."
+    },
+    {
+      "key": "rigging",
+      "titleRu": "Строповка и грузозахват",
+      "kind": "PROJECT_LOAD_AND_INTERNAL_METHOD",
+      "missingRu": "Совместимые бадья, стропы, траверсы, захваты, канаты и оснастка с ведомостью и проверкой нагрузки; источник не задаёт универсальный комплект.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Совместимые бадья, стропы, траверсы, захваты, канаты и оснастка с ведомостью и проверкой нагрузки; источник не задаёт универсальный комплект."
+    },
+    {
+      "key": "energy-water-provision",
+      "titleRu": "Питание и водоснабжение",
+      "kind": "INTERNAL_METHOD_AND_PROJECT_CONNECTION",
+      "missingRu": "Совместимые питание, защита, кабели и подвод воды; конкретная организация и источниковые количества, без кВт×всех машино-часов как выдуманного расхода.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Совместимые питание, защита, кабели и подвод воды; конкретная организация и источниковые количества, без кВт×всех машино-часов как выдуманного расхода."
+    },
+    {
+      "key": "external-delivery-feed",
+      "titleRu": "Доставка и дополнительная подача",
+      "kind": "PROJECT_ROUTE_AND_INTERNAL_METHOD",
+      "missingRu": "Внешняя доставка, согласованная схема подачи и дополнительные перемещения вне исходных машино-часов, транспортная единица и количественная норма без двойной оплаты. §1.39: автобетоносмеситель дополнительно при его применении по ПОС, по времени ведущей машины; §1.40: автобетононасос дополнительно при предусмотренном ПОС/ППР применении. Перечисленные крановые часы не закрывают эти две услуги; часы не выдумываются.",
+      "returnConditionRu": "Применимая схема ПОС/ППР и собственная точная количественная норма дополнительных доставки/подачи/насоса/автобетоносмесителя без двойной оплаты."
+    },
+    {
+      "key": "access-protection",
+      "titleRu": "Доступ и защита",
+      "kind": "PROJECT_DESIGN_AND_INTERNAL_METHOD",
+      "missingRu": "Совместимые рабочие площадки, ограждение края, доступ, защита от падения и СИЗ с организацией и количественной нормой; объём не определяет число комплектов.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Совместимые рабочие площадки, ограждение края, доступ, защита от падения и СИЗ с организацией и количественной нормой; объём не определяет число комплектов."
+    },
+    {
+      "key": "quality-acceptance",
+      "titleRu": "Контроль и приёмка",
+      "kind": "PROJECT_QUALITY_PLAN_AND_INTERNAL_METHOD",
+      "missingRu": "Операционный контроль, испытания/пробы, исполнительные документы, приборы и труд по собственной норме; число протоколов не принимается произвольно.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Операционный контроль, испытания/пробы, исполнительные документы, приборы и труд по собственной норме; число протоколов не принимается произвольно."
+    },
+    {
+      "key": "curing-physical-method",
+      "titleRu": "Полное обеспечение ухода",
+      "kind": "SOURCE_PARTIAL_AND_INTERNAL_METHOD",
+      "missingRu": "Исходный труд, вода и указанный укрывной материал сохраняются; полный температурно-влажностный режим, распределение воды и дополнительное оборудование/укрытие требуют совместимой нормы без двойного труда.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Исходный труд, вода и указанный укрывной материал сохраняются; полный температурно-влажностный режим, распределение воды и дополнительное оборудование/укрытие требуют совместимой нормы без двойного труда."
+    },
+    {
+      "key": "junctions-finish",
+      "titleRu": "Узлы сопряжения и поверхность",
+      "kind": "PROJECT_DETAIL_AND_INTERNAL_METHOD",
+      "missingRu": "Опирание, рабочие швы/закладные, сопряжения и требуемая отделка по проекту, со своей применимой количественной нормой вне включённого исходного цикла.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Опирание, рабочие швы/закладные, сопряжения и требуемая отделка по проекту, со своей применимой количественной нормой вне включённого исходного цикла."
+    },
+    {
+      "key": "cleaning-waste",
+      "titleRu": "Очистка и отходы",
+      "kind": "INTERNAL_METHOD_AND_PROJECT_DISPOSAL",
+      "missingRu": "Очистка опалубки/оборудования, количественный состав расходников, сбор/вывоз и обращение с отходами по совместимой внутренней норме и действительной схеме объекта.",
+      "returnConditionRu": "Точная применимая первичная норма/цельная ведомость с организацией, совместимыми ресурсами и независимыми проверками: Очистка опалубки/оборудования, количественный состав расходников, сбор/вывоз и обращение с отходами по совместимой внутренней норме и действительной схеме объекта."
+    }
+  ],
+  "profiles": [
+    {
+      "key": "column-107-02",
+      "kind": "column",
+      "norm": "KRER06-01-107-02",
+      "scopeRu": "Прямолинейная железобетонная колонна в исходной индустриальной опалубке; высота больше4м и не более6м, периметр сечения не более2м. Более точная ветвь до4м не подменяется нормой02. Обычная отметка работ до15м, без дополнительных коэффициентов.",
+      "literalSourceBounds": {
+        "heightUpper_m": 6,
+        "sectionPerimeterUpper_m": 2
+      },
+      "independentRoutingBounds": {
+        "heightLowerExclusive_m": 4,
+        "heightUpperInclusive_m": 6,
+        "sectionPerimeterUpperInclusive_m": 2
+      },
+      "operations": [
+        "Устройство и разборка инвентарных элементов опалубки",
+        "Раскрой и крепление щитов из бакелизированной фанеры",
+        "Установка арматуры",
+        "Укладка бетона",
+        "Укрытие конструкций матами Дорнит",
+        "Уход за бетоном"
+      ],
+      "sourceBasis": {
+        "quantity": "100",
+        "unit": "m3",
+        "meaningRu": "Железобетон в деле; не площадь, не число комплектов и не проектный расход стали"
+      },
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_column_standard",
+      "titleRu": "Монолитная железобетонная колонна",
+      "prefix": "monolithic-family:krer06:r1:column-107-02",
+      "normId": "06-01-107-02",
+      "sourcePages": [
+        131,
+        132
+      ],
+      "rows": [
+        {
+          "key": "workers",
+          "sourceCode": "000-1003-2",
+          "titleRu": "Рабочие-строители, целый исходный цикл",
+          "category": "labor",
+          "sourceUnit": "man_hour",
+          "unitId": "man_hour",
+          "literalRate": "1823.00",
+          "ratePer100M3": "1823.00",
+          "quantityRole": "WHOLE_SOURCE_LABOUR_NOT_SPLIT_INTO_GUESSED_OPERATIONS"
+        },
+        {
+          "key": "operators",
+          "sourceCode": null,
+          "titleRu": "Затраты труда машинистов",
+          "category": "labor",
+          "sourceUnit": "man_hour",
+          "unitId": "man_hour",
+          "literalRate": "125.78",
+          "ratePer100M3": "125.78",
+          "quantityRole": "INFO_INCLUDED_MACHINE_PRICE_NO_SECOND_PAY_OWNER"
+        },
+        {
+          "key": "tower-crane8t",
+          "sourceCode": "02-0005",
+          "titleRu": "Кран башенный8т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "122.3",
+          "ratePer100M3": "122.3",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "OPERATOR"
+        },
+        {
+          "key": "truck-crane10t",
+          "sourceCode": "02-0075",
+          "titleRu": "Кран автомобильный10т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "2.58",
+          "ratePer100M3": "2.58",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "OPERATOR"
+        },
+        {
+          "key": "forklift5t",
+          "sourceCode": "03-0020",
+          "titleRu": "Автопогрузчик5т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "0.9",
+          "ratePer100M3": "0.9",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "OPERATOR"
+        },
+        {
+          "key": "arc-welder",
+          "sourceCode": "04-0444",
+          "titleRu": "Установка ручной дуговой сварки постоянного тока",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "12.69",
+          "ratePer100M3": "12.69",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+        },
+        {
+          "key": "vibrator",
+          "sourceCode": "11-0180",
+          "titleRu": "Вибратор глубинный",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "93.3",
+          "ratePer100M3": "93.3",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+        },
+        {
+          "key": "chain-saw",
+          "sourceCode": "33-0503",
+          "titleRu": "Пила цепная электрическая",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "0.7",
+          "ratePer100M3": "0.7",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+        },
+        {
+          "key": "flatbed8t",
+          "sourceCode": "40-0002",
+          "titleRu": "Автомобиль бортовой до8т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "3.81",
+          "ratePer100M3": "3.81",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "DRIVER"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "titleRu": "Вода",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.25",
+          "ratePer100M3": "0.25",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "titleRu": "Гвозди строительные",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.027",
+          "ratePer100M3": "27.000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "dornit",
+          "sourceCode": "01-1207-0001",
+          "titleRu": "Полотно иглопробивное для укрытия бетона",
+          "category": "material",
+          "sourceUnit": "10m2",
+          "unitId": "m2",
+          "literalRate": "32.6",
+          "ratePer100M3": "326.0",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "oil",
+          "sourceCode": "01-4504-0001",
+          "titleRu": "Масла антраценовые",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.21",
+          "ratePer100M3": "210.00",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "electrodes",
+          "sourceCode": "01-5005-0024",
+          "titleRu": "Электроды4мм Э42",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.0125",
+          "ratePer100M3": "12.5000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "deck",
+          "sourceCode": "01-6002-0001",
+          "titleRu": "Палуба из бакелизированной фанеры",
+          "category": "material",
+          "sourceUnit": "m2",
+          "unitId": "m2",
+          "literalRate": "33.33",
+          "ratePer100M3": "33.33",
+          "quantityRole": "CONSUMPTION_COST_ONLY_INITIAL_FORM_KIT_SEPARATE"
+        },
+        {
+          "key": "unedged44II",
+          "sourceCode": "01-6304-0077",
+          "titleRu": "Доски хвойные необрезные4–6.5м44мм и более IIсорт",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.16",
+          "ratePer100M3": "0.16",
+          "quantityRole": "CONSUMPTION_COST_ONLY_INITIAL_FORM_KIT_SEPARATE"
+        },
+        {
+          "key": "rebar",
+          "sourceCode": "03-0102-0001",
+          "titleRu": "Арматура по проектной массе",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "25.1",
+          "ratePer100M3": "25100.0",
+          "quantityRole": "NORMATIVE_COST_ONLY_DESIGN_AND_DIAMETER_BOM_REQUIRED_FOR_SUPPLY"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0060",
+          "titleRu": "Бетон тяжёлый B15, заполнитель40мм",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "101.5",
+          "ratePer100M3": "101.5",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE_EXACT_PROJECT_MIX_FIT"
+        },
+        {
+          "key": "wire",
+          "sourceCode": "10-0105-0036",
+          "titleRu": "Проволока светлая1.1мм",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.038",
+          "ratePer100M3": "38.000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "formMetal",
+          "sourceCode": null,
+          "titleRu": "Металлическая опалубка — амортизация",
+          "category": "material",
+          "sourceUnit": "set",
+          "unitId": "set",
+          "literalRate": "П",
+          "ratePer100M3": null,
+          "quantityRole": "PROJECT_AMORTIZATION_P_NOT_INITIAL_PURCHASE",
+          "rawSourceCodeScanCandidate": "01-6003-0027*",
+          "rawSourceCodeReadStatus": "DISPUTED_SCAN_NOT_UNAMBIGUOUS",
+          "book01IdentityCandidate": "01-6003-0021*",
+          "identityReconciliation": "UNRESOLVED_NOT_A_PROVEN_CODE_CORRECTION"
+        },
+        {
+          "key": "formMovable",
+          "sourceCode": "01-6003-0043*",
+          "titleRu": "Переставная опалубка — амортизация",
+          "category": "material",
+          "sourceUnit": "set",
+          "unitId": "set",
+          "literalRate": "П",
+          "ratePer100M3": null,
+          "quantityRole": "PROJECT_AMORTIZATION_P_NOT_INITIAL_PURCHASE"
+        }
+      ],
+      "wholeSourceCycle": true,
+      "physicalProvisionComplete": false
+    },
+    {
+      "key": "beam-109-03",
+      "kind": "beam",
+      "norm": "KRER06-01-109-03",
+      "scopeRu": "Прямолинейная балка под перекрытие в исходной индустриальной опалубке; высота от опорной площадки не более6м, высота балки больше800мм. Не покрывает балки высотой до500/800мм, криволинейные, наклонные либо высоту опорной площадки больше6м. Обычная отметка работ до15м, без дополнительных коэффициентов.",
+      "literalSourceBounds": {
+        "heightFromSupportUpper_m": 6,
+        "beamDepthLowerExclusive_mm": 800
+      },
+      "independentRoutingBounds": {
+        "heightFromSupportUpperInclusive_m": 6,
+        "beamDepthLowerExclusive_mm": 800,
+        "straightHorizontalOnly": true
+      },
+      "operations": [
+        "Устройство и разборка инвентарных элементов опалубки",
+        "Раскрой и крепление щитов из бакелизированной фанеры",
+        "Установка арматуры",
+        "Укладка бетона",
+        "Уход за бетоном"
+      ],
+      "sourceBasis": {
+        "quantity": "100",
+        "unit": "m3",
+        "meaningRu": "Железобетон в деле; не площадь, не число комплектов и не проектный расход стали"
+      },
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+      "titleRu": "Монолитная железобетонная балка",
+      "prefix": "monolithic-family:krer06:r1:beam-109-03",
+      "normId": "06-01-109-03",
+      "sourcePages": [
+        136,
+        137
+      ],
+      "rows": [
+        {
+          "key": "workers",
+          "sourceCode": "000-1003-1",
+          "titleRu": "Рабочие-строители, целый исходный цикл",
+          "category": "labor",
+          "sourceUnit": "man_hour",
+          "unitId": "man_hour",
+          "literalRate": "1160.40",
+          "ratePer100M3": "1160.40",
+          "quantityRole": "WHOLE_SOURCE_LABOUR_NOT_SPLIT_INTO_GUESSED_OPERATIONS"
+        },
+        {
+          "key": "operators",
+          "sourceCode": null,
+          "titleRu": "Затраты труда машинистов",
+          "category": "labor",
+          "sourceUnit": "man_hour",
+          "unitId": "man_hour",
+          "literalRate": "61.44",
+          "ratePer100M3": "61.44",
+          "quantityRole": "INFO_INCLUDED_MACHINE_PRICE_NO_SECOND_PAY_OWNER"
+        },
+        {
+          "key": "tower-crane8t",
+          "sourceCode": "02-0005",
+          "titleRu": "Кран башенный8т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "56",
+          "ratePer100M3": "56",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "OPERATOR"
+        },
+        {
+          "key": "truck-crane10t",
+          "sourceCode": "02-0075",
+          "titleRu": "Кран автомобильный10т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "2.9",
+          "ratePer100M3": "2.9",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "OPERATOR"
+        },
+        {
+          "key": "forklift5t",
+          "sourceCode": "03-0020",
+          "titleRu": "Автопогрузчик5т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "2.54",
+          "ratePer100M3": "2.54",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "OPERATOR"
+        },
+        {
+          "key": "arc-welder",
+          "sourceCode": "04-0444",
+          "titleRu": "Установка ручной дуговой сварки постоянного тока",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "17.25",
+          "ratePer100M3": "17.25",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+        },
+        {
+          "key": "vibrator",
+          "sourceCode": "11-0180",
+          "titleRu": "Вибратор глубинный",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "77.2",
+          "ratePer100M3": "77.2",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+        },
+        {
+          "key": "chain-saw",
+          "sourceCode": "33-0503",
+          "titleRu": "Пила цепная электрическая",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "0.68",
+          "ratePer100M3": "0.68",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+        },
+        {
+          "key": "flatbed8t",
+          "sourceCode": "40-0002",
+          "titleRu": "Автомобиль бортовой до8т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "4.35",
+          "ratePer100M3": "4.35",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "DRIVER"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "titleRu": "Вода",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.157",
+          "ratePer100M3": "0.157",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "titleRu": "Гвозди строительные",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.0043",
+          "ratePer100M3": "4.3000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "oil",
+          "sourceCode": "01-4504-0001",
+          "titleRu": "Масла антраценовые",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.073",
+          "ratePer100M3": "73.000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "electrodes",
+          "sourceCode": "01-5005-0024",
+          "titleRu": "Электроды4мм Э42",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.017",
+          "ratePer100M3": "17.000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "deck",
+          "sourceCode": "01-6002-0001",
+          "titleRu": "Палуба из бакелизированной фанеры",
+          "category": "material",
+          "sourceUnit": "m2",
+          "unitId": "m2",
+          "literalRate": "14.56",
+          "ratePer100M3": "14.56",
+          "quantityRole": "CONSUMPTION_COST_ONLY_INITIAL_FORM_KIT_SEPARATE"
+        },
+        {
+          "key": "bars",
+          "sourceCode": "01-6302-0094",
+          "titleRu": "Брусья хвойные обрезные4–6.5м75–150мм40–75мм IIIсорт",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.81",
+          "ratePer100M3": "0.81",
+          "quantityRole": "CONSUMPTION_COST_ONLY_INITIAL_FORM_KIT_SEPARATE"
+        },
+        {
+          "key": "boards25III",
+          "sourceCode": "01-6305-0090",
+          "titleRu": "Доски хвойные обрезные4–6.5м75–150мм25мм IIIсорт",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.07",
+          "ratePer100M3": "0.07",
+          "quantityRole": "CONSUMPTION_COST_ONLY_INITIAL_FORM_KIT_SEPARATE"
+        },
+        {
+          "key": "boards44III",
+          "sourceCode": "01-6305-0098",
+          "titleRu": "Доски хвойные обрезные4–6.5м75–150мм44мм и более IIIсорт",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.66",
+          "ratePer100M3": "0.66",
+          "quantityRole": "CONSUMPTION_COST_ONLY_INITIAL_FORM_KIT_SEPARATE"
+        },
+        {
+          "key": "rebar",
+          "sourceCode": "03-0102-0001",
+          "titleRu": "Арматура по проектной массе",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "31",
+          "ratePer100M3": "31000",
+          "quantityRole": "NORMATIVE_COST_ONLY_DESIGN_AND_DIAMETER_BOM_REQUIRED_FOR_SUPPLY"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0060",
+          "titleRu": "Бетон тяжёлый B15, заполнитель40мм",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "100",
+          "ratePer100M3": "100",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE_EXACT_PROJECT_MIX_FIT"
+        },
+        {
+          "key": "wire",
+          "sourceCode": "10-0105-0036",
+          "titleRu": "Проволока светлая1.1мм",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.047",
+          "ratePer100M3": "47.000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "formMetal",
+          "sourceCode": null,
+          "titleRu": "Металлическая опалубка — амортизация",
+          "category": "material",
+          "sourceUnit": "set",
+          "unitId": "set",
+          "literalRate": "П",
+          "ratePer100M3": null,
+          "quantityRole": "PROJECT_AMORTIZATION_P_NOT_INITIAL_PURCHASE",
+          "rawSourceCodeScanCandidate": "01-6003-0027*",
+          "rawSourceCodeReadStatus": "DISPUTED_SCAN_NOT_UNAMBIGUOUS",
+          "book01IdentityCandidate": "01-6003-0021*",
+          "identityReconciliation": "UNRESOLVED_NOT_A_PROVEN_CODE_CORRECTION"
+        },
+        {
+          "key": "formMovable",
+          "sourceCode": "01-6003-0043*",
+          "titleRu": "Переставная опалубка — амортизация",
+          "category": "material",
+          "sourceUnit": "set",
+          "unitId": "set",
+          "literalRate": "П",
+          "ratePer100M3": null,
+          "quantityRole": "PROJECT_AMORTIZATION_P_NOT_INITIAL_PURCHASE"
+        }
+      ],
+      "wholeSourceCycle": true,
+      "physicalProvisionComplete": false
+    },
+    {
+      "key": "stair-111-01",
+      "kind": "stair",
+      "norm": "KRER06-01-111-01",
+      "scopeRu": "Только прямоугольный монолитный лестничный марш в исходной индустриальной опалубке. Не площадка, не криволинейный марш, не иной метод уплотнения. Обычная отметка работ до15м, без дополнительных коэффициентов.",
+      "literalSourceBounds": {
+        "flightShape": "RECTANGULAR"
+      },
+      "independentRoutingBounds": {
+        "rectangularFlightOnly": true,
+        "landingIncluded": false,
+        "curvedIncluded": false
+      },
+      "operations": [
+        "Устройство и разборка инвентарных элементов опалубки",
+        "Раскрой и крепление щитов из бакелизированной фанеры",
+        "Установка арматуры",
+        "Укладка бетона",
+        "Уход за бетоном"
+      ],
+      "sourceBasis": {
+        "quantity": "100",
+        "unit": "m3",
+        "meaningRu": "Железобетон в деле; не площадь, не число комплектов и не проектный расход стали"
+      },
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard",
+      "titleRu": "Монолитный железобетонный лестничный марш",
+      "prefix": "monolithic-family:krer06:r1:stair-111-01",
+      "normId": "06-01-111-01",
+      "sourcePages": [
+        143,
+        144
+      ],
+      "rows": [
+        {
+          "key": "workers",
+          "sourceCode": "000-1003-1",
+          "titleRu": "Рабочие-строители, целый исходный цикл",
+          "category": "labor",
+          "sourceUnit": "man_hour",
+          "unitId": "man_hour",
+          "literalRate": "2412.60",
+          "ratePer100M3": "2412.60",
+          "quantityRole": "WHOLE_SOURCE_LABOUR_NOT_SPLIT_INTO_GUESSED_OPERATIONS"
+        },
+        {
+          "key": "operators",
+          "sourceCode": null,
+          "titleRu": "Затраты труда машинистов",
+          "category": "labor",
+          "sourceUnit": "man_hour",
+          "unitId": "man_hour",
+          "literalRate": "56.59",
+          "ratePer100M3": "56.59",
+          "quantityRole": "INFO_INCLUDED_MACHINE_PRICE_NO_SECOND_PAY_OWNER"
+        },
+        {
+          "key": "tower-crane8t",
+          "sourceCode": "02-0005",
+          "titleRu": "Кран башенный8т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "51.7",
+          "ratePer100M3": "51.7",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "OPERATOR"
+        },
+        {
+          "key": "truck-crane10t",
+          "sourceCode": "02-0075",
+          "titleRu": "Кран автомобильный10т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "2.35",
+          "ratePer100M3": "2.35",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "OPERATOR"
+        },
+        {
+          "key": "forklift5t",
+          "sourceCode": "03-0020",
+          "titleRu": "Автопогрузчик5т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "2.54",
+          "ratePer100M3": "2.54",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "OPERATOR"
+        },
+        {
+          "key": "arc-welder",
+          "sourceCode": "04-0444",
+          "titleRu": "Установка ручной дуговой сварки постоянного тока",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "3.2",
+          "ratePer100M3": "3.2",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+        },
+        {
+          "key": "vibrator",
+          "sourceCode": "11-0183",
+          "titleRu": "Вибратор поверхностный",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "79",
+          "ratePer100M3": "79",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+        },
+        {
+          "key": "chain-saw",
+          "sourceCode": "33-0503",
+          "titleRu": "Пила цепная электрическая",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "1.21",
+          "ratePer100M3": "1.21",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+        },
+        {
+          "key": "flatbed8t",
+          "sourceCode": "40-0002",
+          "titleRu": "Автомобиль бортовой до8т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "1.51",
+          "ratePer100M3": "1.51",
+          "quantityRole": "SOURCE_FULL_OPERATION_HOURS_NOT_MACHINE_COUNT_OR_PHYSICAL_KIT",
+          "operator": "DRIVER"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "titleRu": "Вода",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.3066",
+          "ratePer100M3": "0.3066",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "titleRu": "Гвозди строительные",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.015",
+          "ratePer100M3": "15.000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "oil",
+          "sourceCode": "01-4504-0001",
+          "titleRu": "Масла антраценовые",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.173",
+          "ratePer100M3": "173.000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "electrodes",
+          "sourceCode": "01-5005-0024",
+          "titleRu": "Электроды4мм Э42",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.013",
+          "ratePer100M3": "13.000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "deck",
+          "sourceCode": "01-6002-0001",
+          "titleRu": "Палуба из бакелизированной фанеры",
+          "category": "material",
+          "sourceUnit": "m2",
+          "unitId": "m2",
+          "literalRate": "29.2",
+          "ratePer100M3": "29.2",
+          "quantityRole": "CONSUMPTION_COST_ONLY_INITIAL_FORM_KIT_SEPARATE"
+        },
+        {
+          "key": "bars",
+          "sourceCode": "01-6302-0094",
+          "titleRu": "Брусья хвойные обрезные4–6.5м75–150мм40–75мм IIIсорт",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.82",
+          "ratePer100M3": "0.82",
+          "quantityRole": "CONSUMPTION_COST_ONLY_INITIAL_FORM_KIT_SEPARATE"
+        },
+        {
+          "key": "boards25III",
+          "sourceCode": "01-6305-0090",
+          "titleRu": "Доски хвойные обрезные4–6.5м75–150мм25мм IIIсорт",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.26",
+          "ratePer100M3": "0.26",
+          "quantityRole": "CONSUMPTION_COST_ONLY_INITIAL_FORM_KIT_SEPARATE"
+        },
+        {
+          "key": "boards44III",
+          "sourceCode": "01-6305-0098",
+          "titleRu": "Доски хвойные обрезные4–6.5м75–150мм44мм и более IIIсорт",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "1.02",
+          "ratePer100M3": "1.02",
+          "quantityRole": "CONSUMPTION_COST_ONLY_INITIAL_FORM_KIT_SEPARATE"
+        },
+        {
+          "key": "matting",
+          "sourceCode": "01-7231-0001",
+          "titleRu": "Рогожа",
+          "category": "material",
+          "sourceUnit": "m2",
+          "unitId": "m2",
+          "literalRate": "42.9",
+          "ratePer100M3": "42.9",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "rebar",
+          "sourceCode": "03-0102-0001",
+          "titleRu": "Арматура по проектной массе",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "14.7",
+          "ratePer100M3": "14700.0",
+          "quantityRole": "NORMATIVE_COST_ONLY_DESIGN_AND_DIAMETER_BOM_REQUIRED_FOR_SUPPLY"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0060",
+          "titleRu": "Бетон тяжёлый B15, заполнитель40мм",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "101.5",
+          "ratePer100M3": "101.5",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE_EXACT_PROJECT_MIX_FIT"
+        },
+        {
+          "key": "wire",
+          "sourceCode": "10-0105-0036",
+          "titleRu": "Проволока светлая1.1мм",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.0236",
+          "ratePer100M3": "23.6000",
+          "quantityRole": "CONSUMPTION_BASE_UNIT_SUPPLY_CANDIDATE"
+        },
+        {
+          "key": "formMetal",
+          "sourceCode": null,
+          "titleRu": "Металлическая опалубка — амортизация",
+          "category": "material",
+          "sourceUnit": "set",
+          "unitId": "set",
+          "literalRate": "П",
+          "ratePer100M3": null,
+          "quantityRole": "PROJECT_AMORTIZATION_P_NOT_INITIAL_PURCHASE",
+          "rawSourceCodeScanCandidate": "01-6003-0027*",
+          "rawSourceCodeReadStatus": "DISPUTED_SCAN_NOT_UNAMBIGUOUS",
+          "book01IdentityCandidate": "01-6003-0021*",
+          "identityReconciliation": "UNRESOLVED_NOT_A_PROVEN_CODE_CORRECTION"
+        },
+        {
+          "key": "formMovable",
+          "sourceCode": "01-6003-0043*",
+          "titleRu": "Переставная опалубка — амортизация",
+          "category": "material",
+          "sourceUnit": "set",
+          "unitId": "set",
+          "literalRate": "П",
+          "ratePer100M3": null,
+          "quantityRole": "PROJECT_AMORTIZATION_P_NOT_INITIAL_PURCHASE"
+        }
+      ],
+      "wholeSourceCycle": true,
+      "physicalProvisionComplete": false
+    }
+  ],
+  "fullTechnicalAcceptance": false,
+  "newFULL": 0,
+  "sourcePrices2015Imported": false,
+  "globalCurrentComplianceClaim": false,
+  "excludedFamilyBranches": [
+    {
+      "kind": "column",
+      "norm": "06-01-107-01",
+      "scope": "up to4m perimeterup to2m",
+      "state": "NOT_ADMITTED_IN_CURRENT_SELECTED02_SCOPE",
+      "returnCondition": "Complete separate literal column and category/adaptation proof; do not route automatically into107-02"
+    },
+    {
+      "kind": "column",
+      "norm": "06-01-107-03",
+      "scope": "up to6m perimeterup to4m",
+      "state": "SEPARATE_BRANCH_SOURCE_REQUIRED",
+      "returnCondition": "Resolve each disputed cell from primary and prove its own organization/kit"
+    },
+    {
+      "kind": "beam",
+      "norms": [
+        "06-01-109-01",
+        "06-01-109-02"
+      ],
+      "scope": "beam depthup to500/800mm andsupport heightup to6m",
+      "state": "SEPARATE_BRANCH_SOURCE_REQUIRED_NOT_COVERED_BY03",
+      "returnCondition": "Read whole respective column with unambiguous cells and complete provision; no high-beam rate transfer"
+    },
+    {
+      "kind": "beam",
+      "norms": [
+        "06-01-109-04..13",
+        "06-01-034",
+        "06-01-037"
+      ],
+      "scope": "higher,curved,sloped beams andmetal-form rigels",
+      "state": "NOT_ADMITTED_SEPARATE_METHOD_SCOPE",
+      "returnCondition": "Read full exact applicable primary column and independently prove full supply/organization"
+    },
+    {
+      "kind": "stair",
+      "norm": "06-01-111-02",
+      "scope": "curved flight",
+      "state": "SEPARATE_BRANCH_SOURCE_REQUIRED",
+      "returnCondition": "Own geometry and full exact column; no first-column nail/shape transfer"
+    },
+    {
+      "kind": "stair",
+      "scope": "landings/other form systems",
+      "state": "NOT_INCLUDED",
+      "returnCondition": "Own compatible source system, not Doka rectangular flight"
+    }
+  ],
+  "leafNeeds": [
+    {
+      "key": "measuring-tape",
+      "titleRu": "Рулетка измерительная",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "setting-out-preparation",
+      "operation": "setting-out",
+      "categoryKey": "control",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Рулетка измерительная: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF11§2.2/2.3; actual geometry/control design",
+      "applicabilityCondition": "ACTUAL_PROJECT_GEOMETRY_AND_INTERNAL_MEASURING_PROVISION",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "level-instrument",
+      "titleRu": "Прибор контроля отметок и вертикальности",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "setting-out-preparation",
+      "operation": "setting-out",
+      "categoryKey": "control",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Прибор контроля отметок и вертикальности: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF11§2.2/2.3; actual geometry/control design",
+      "applicabilityCondition": "ACTUAL_PROJECT_GEOMETRY_AND_INTERNAL_MEASURING_PROVISION",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "inventory-prop",
+      "titleRu": "Инвентарная стойка опалубки",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "formwork-shoring-kit",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Инвентарная стойка опалубки: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "107/109/111 composition item01;PDF10§1.35; exact structural form design",
+      "applicabilityCondition": "PROJECT_APPLICABILITY_AND_DESIGNED_FORM_BOM_NOT_UNIVERSAL_LIST",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "formwork-transom",
+      "titleRu": "Прогон опалубки",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "formwork-shoring-kit",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Прогон опалубки: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "107/109/111 composition item01;PDF10§1.35; exact structural form design",
+      "applicabilityCondition": "PROJECT_APPLICABILITY_AND_DESIGNED_FORM_BOM_NOT_UNIVERSAL_LIST",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "formwork-beam",
+      "titleRu": "Балка опалубочная",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "formwork-shoring-kit",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Балка опалубочная: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "107/109/111 composition item01;PDF10§1.35; exact structural form design",
+      "applicabilityCondition": "PROJECT_APPLICABILITY_AND_DESIGNED_FORM_BOM_NOT_UNIVERSAL_LIST",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "formwork-brace",
+      "titleRu": "Связь или подкос опалубки",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "formwork-shoring-kit",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Связь или подкос опалубки: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "107/109/111 composition item01;PDF10§1.35; exact structural form design",
+      "applicabilityCondition": "PROJECT_APPLICABILITY_AND_DESIGNED_FORM_BOM_NOT_UNIVERSAL_LIST",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "formwork-tie",
+      "titleRu": "Стяжка опалубки",
+      "category": "material",
+      "unitId": "piece",
+      "parentNeedKey": "formwork-shoring-kit",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Стяжка опалубки: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "107/109/111 composition item01;PDF10§1.35; exact structural form design",
+      "applicabilityCondition": "PROJECT_APPLICABILITY_AND_DESIGNED_FORM_BOM_NOT_UNIVERSAL_LIST",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false,
+      "executableProjectCondition": {
+        "parameterKey": "formwork_ties_apply",
+        "applicableValue": "Применяется по проекту",
+        "unknownState": "CONDITION_REQUIRED",
+        "applicableMissingQuantityState": "QUANTITY_REQUIRED",
+        "notApplicableState": "INACTIVE"
+      }
+    },
+    {
+      "key": "formwork-anchor",
+      "titleRu": "Анкер опалубки",
+      "category": "material",
+      "unitId": "piece",
+      "parentNeedKey": "formwork-shoring-kit",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Анкер опалубки: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "107/109/111 composition item01;PDF10§1.35; exact structural form design",
+      "applicabilityCondition": "PROJECT_APPLICABILITY_AND_DESIGNED_FORM_BOM_NOT_UNIVERSAL_LIST",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false,
+      "executableProjectCondition": {
+        "parameterKey": "formwork_anchors_apply",
+        "applicableValue": "Применяется по проекту",
+        "unknownState": "CONDITION_REQUIRED",
+        "applicableMissingQuantityState": "QUANTITY_REQUIRED",
+        "notApplicableState": "INACTIVE"
+      }
+    },
+    {
+      "key": "formwork-connector",
+      "titleRu": "Соединительный замок опалубки",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "formwork-shoring-kit",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Соединительный замок опалубки: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "107/109/111 composition item01;PDF10§1.35; exact structural form design",
+      "applicabilityCondition": "PROJECT_APPLICABILITY_AND_DESIGNED_FORM_BOM_NOT_UNIVERSAL_LIST",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "work-platform",
+      "titleRu": "Рабочая площадка опалубки",
+      "category": "equipment",
+      "unitId": "m2",
+      "parentNeedKey": "formwork-shoring-kit",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Рабочая площадка опалубки: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "107/109/111 composition item01;PDF10§1.35; exact structural form design",
+      "applicabilityCondition": "PROJECT_APPLICABILITY_AND_DESIGNED_FORM_BOM_NOT_UNIVERSAL_LIST",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вm2; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "project-bar-schedule",
+      "titleRu": "Арматурные стержни по спецификации",
+      "category": "material",
+      "unitId": "kg",
+      "parentNeedKey": "reinforcement-bom-fabrication",
+      "operation": "reinforcement",
+      "categoryKey": "materials",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Арматурные стержни по спецификации: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF6§1.2/1.3/1.5;PDF10§1.36; actual structural schedule",
+      "applicabilityCondition": "REAL_PROJECT_BAR_DIAMETER_CLASS_LENGTH_COUNT_MASS_JOINTS_AND_SUPPLY_BALANCE",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вkg; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "project-embed",
+      "titleRu": "Закладная деталь по проекту",
+      "category": "material",
+      "unitId": "kg",
+      "parentNeedKey": "reinforcement-bom-fabrication",
+      "operation": "reinforcement",
+      "categoryKey": "materials",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Закладная деталь по проекту: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF6§1.2/1.3/1.5;PDF10§1.36; actual structural schedule",
+      "applicabilityCondition": "REAL_PROJECT_BAR_DIAMETER_CLASS_LENGTH_COUNT_MASS_JOINTS_AND_SUPPLY_BALANCE",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вkg; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false,
+      "executableProjectCondition": {
+        "parameterKey": "project_embeds_apply",
+        "applicableValue": "Применяется по проекту",
+        "unknownState": "CONDITION_REQUIRED",
+        "applicableMissingQuantityState": "QUANTITY_REQUIRED",
+        "notApplicableState": "INACTIVE"
+      }
+    },
+    {
+      "key": "project-bar-spacer",
+      "titleRu": "Фиксатор защитного слоя арматуры",
+      "category": "material",
+      "unitId": "piece",
+      "parentNeedKey": "reinforcement-bom-fabrication",
+      "operation": "reinforcement",
+      "categoryKey": "materials",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Фиксатор защитного слоя арматуры: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF6§1.2/1.3/1.5;PDF10§1.36; actual structural schedule",
+      "applicabilityCondition": "REAL_PROJECT_BAR_DIAMETER_CLASS_LENGTH_COUNT_MASS_JOINTS_AND_SUPPLY_BALANCE",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "project-bar-joint",
+      "titleRu": "Соединение арматуры по проекту",
+      "category": "material",
+      "unitId": "piece",
+      "parentNeedKey": "reinforcement-bom-fabrication",
+      "operation": "reinforcement",
+      "categoryKey": "materials",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Соединение арматуры по проекту: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF6§1.2/1.3/1.5;PDF10§1.36; actual structural schedule",
+      "applicabilityCondition": "REAL_PROJECT_BAR_DIAMETER_CLASS_LENGTH_COUNT_MASS_JOINTS_AND_SUPPLY_BALANCE",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false,
+      "executableProjectCondition": {
+        "parameterKey": "project_bar_joints_apply",
+        "applicableValue": "Применяется по проекту",
+        "unknownState": "CONDITION_REQUIRED",
+        "applicableMissingQuantityState": "QUANTITY_REQUIRED",
+        "notApplicableState": "INACTIVE"
+      }
+    },
+    {
+      "key": "chain-saw-chain",
+      "titleRu": "Режущая цепь электрической пилы",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "tools-working-parts",
+      "operation": "formwork",
+      "categoryKey": "tools",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Режущая цепь электрической пилы: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source33-0503 plus whole form/placement/strip cycle; exact selected physical tool method still required",
+      "applicabilityCondition": "INTERNAL_PHYSICAL_TOOL_ORGANIZATION_AND_COMPATIBLE_WORKING_PARTS",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "chain-saw-bar",
+      "titleRu": "Направляющая шина электрической пилы",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "tools-working-parts",
+      "operation": "formwork",
+      "categoryKey": "tools",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Направляющая шина электрической пилы: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source33-0503 plus whole form/placement/strip cycle; exact selected physical tool method still required",
+      "applicabilityCondition": "INTERNAL_PHYSICAL_TOOL_ORGANIZATION_AND_COMPATIBLE_WORKING_PARTS",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "hand-hammer",
+      "titleRu": "Молоток монтажный",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "tools-working-parts",
+      "operation": "formwork",
+      "categoryKey": "tools",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Молоток монтажный: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source33-0503 plus whole form/placement/strip cycle; exact selected physical tool method still required",
+      "applicabilityCondition": "INTERNAL_PHYSICAL_TOOL_ORGANIZATION_AND_COMPATIBLE_WORKING_PARTS",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "concrete-shovel",
+      "titleRu": "Лопата для бетонной смеси",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "tools-working-parts",
+      "operation": "formwork",
+      "categoryKey": "tools",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Лопата для бетонной смеси: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source33-0503 plus whole form/placement/strip cycle; exact selected physical tool method still required",
+      "applicabilityCondition": "INTERNAL_PHYSICAL_TOOL_ORGANIZATION_AND_COMPATIBLE_WORKING_PARTS",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "concrete-trowel",
+      "titleRu": "Гладилка для бетона",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "tools-working-parts",
+      "operation": "formwork",
+      "categoryKey": "tools",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Гладилка для бетона: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source33-0503 plus whole form/placement/strip cycle; exact selected physical tool method still required",
+      "applicabilityCondition": "INTERNAL_PHYSICAL_TOOL_ORGANIZATION_AND_COMPATIBLE_WORKING_PARTS",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "concrete-straightedge",
+      "titleRu": "Правило для бетона",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "tools-working-parts",
+      "operation": "formwork",
+      "categoryKey": "tools",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Правило для бетона: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source33-0503 plus whole form/placement/strip cycle; exact selected physical tool method still required",
+      "applicabilityCondition": "INTERNAL_PHYSICAL_TOOL_ORGANIZATION_AND_COMPATIBLE_WORKING_PARTS",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "welding-lead",
+      "titleRu": "Сварочный кабель с держателем и зажимом",
+      "category": "equipment",
+      "unitId": "m",
+      "parentNeedKey": "tools-working-parts",
+      "operation": "reinforcement",
+      "categoryKey": "tools",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Сварочный кабель с держателем и зажимом: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source04-0444; real welded/tied rebar method; not an additional welding labour norm",
+      "applicabilityCondition": "PROJECT_WELDING_APPLICABILITY_AND_INTERNAL_SAFE_PHYSICAL_KIT",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вm; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "welding-face-shield",
+      "titleRu": "Щиток для сварочных работ",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "tools-working-parts",
+      "operation": "reinforcement",
+      "categoryKey": "tools",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Щиток для сварочных работ: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source04-0444; real welded/tied rebar method; not an additional welding labour norm",
+      "applicabilityCondition": "PROJECT_WELDING_APPLICABILITY_AND_INTERNAL_SAFE_PHYSICAL_KIT",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "concrete-bucket",
+      "titleRu": "Бадья для бетонной смеси",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "rigging",
+      "operation": "handling",
+      "categoryKey": "rigging",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Бадья для бетонной смеси: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF11§1.43; source crane rows; selected loads/rigging drawing",
+      "applicabilityCondition": "REAL_PROJECT_LOAD_FIT_AND_INTERNAL_PHYSICAL_RIGGING_BOM",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false,
+      "executableProjectCondition": {
+        "parameterKey": "pos_concrete_feed",
+        "applicableValue": "Краном в бадье",
+        "unknownState": "CONDITION_REQUIRED",
+        "applicableMissingQuantityState": "QUANTITY_REQUIRED",
+        "notApplicableState": "INACTIVE"
+      }
+    },
+    {
+      "key": "lifting-sling",
+      "titleRu": "Строп грузовой",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "rigging",
+      "operation": "handling",
+      "categoryKey": "rigging",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Строп грузовой: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF11§1.43; source crane rows; selected loads/rigging drawing",
+      "applicabilityCondition": "REAL_PROJECT_LOAD_FIT_AND_INTERNAL_PHYSICAL_RIGGING_BOM",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "lifting-traverse",
+      "titleRu": "Траверса грузовая",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "rigging",
+      "operation": "handling",
+      "categoryKey": "rigging",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Траверса грузовая: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF11§1.43; source crane rows; selected loads/rigging drawing",
+      "applicabilityCondition": "REAL_PROJECT_LOAD_FIT_AND_INTERNAL_PHYSICAL_RIGGING_BOM",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false,
+      "executableProjectCondition": {
+        "parameterKey": "lifting_traverse_applies",
+        "applicableValue": "Применяется по проекту",
+        "unknownState": "CONDITION_REQUIRED",
+        "applicableMissingQuantityState": "QUANTITY_REQUIRED",
+        "notApplicableState": "INACTIVE"
+      }
+    },
+    {
+      "key": "temporary-power-cable",
+      "titleRu": "Кабель временного электропитания",
+      "category": "material",
+      "unitId": "m",
+      "parentNeedKey": "energy-water-provision",
+      "operation": "placement",
+      "categoryKey": "consumables",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Кабель временного электропитания: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source04-0444/11-0180 or0183/33-0503/water; exact power/water scheme",
+      "applicabilityCondition": "INTERNAL_CONNECTION_METHOD_AND_REAL_PROJECT_POINTS_NOT_MACHINEHOURS_TO_KWH",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вm; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "electrical-protection",
+      "titleRu": "Устройство защитного отключения и распределения",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "energy-water-provision",
+      "operation": "placement",
+      "categoryKey": "consumables",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Устройство защитного отключения и распределения: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source04-0444/11-0180 or0183/33-0503/water; exact power/water scheme",
+      "applicabilityCondition": "INTERNAL_CONNECTION_METHOD_AND_REAL_PROJECT_POINTS_NOT_MACHINEHOURS_TO_KWH",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "water-feed-hose",
+      "titleRu": "Рукав подачи воды",
+      "category": "equipment",
+      "unitId": "m",
+      "parentNeedKey": "energy-water-provision",
+      "operation": "placement",
+      "categoryKey": "consumables",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Рукав подачи воды: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Source04-0444/11-0180 or0183/33-0503/water; exact power/water scheme",
+      "applicabilityCondition": "INTERNAL_CONNECTION_METHOD_AND_REAL_PROJECT_POINTS_NOT_MACHINEHOURS_TO_KWH",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вm; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "additional-truckmixer",
+      "titleRu": "Автобетоносмеситель по схеме подачи",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "parentNeedKey": "external-delivery-feed",
+      "operation": "handling",
+      "categoryKey": "delivery_feed",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Автобетоносмеситель по схеме подачи: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF10§1.39/1.40 andPDF11§1.43; only if actualPOS/PPR requires additional operation",
+      "applicabilityCondition": "CONDITIONAL_REAL_POS_PPR_AND_INTERNAL_ADDITIONAL_SERVICE_QUANTITY_NORM",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вmachine_hour; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false,
+      "executableProjectCondition": {
+        "parameterKey": "pos_truckmixer_applies",
+        "applicableValue": "Применяется по проекту",
+        "unknownState": "CONDITION_REQUIRED",
+        "applicableMissingQuantityState": "QUANTITY_REQUIRED",
+        "notApplicableState": "INACTIVE"
+      }
+    },
+    {
+      "key": "additional-concrete-pump",
+      "titleRu": "Автобетононасос по схеме подачи",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "parentNeedKey": "external-delivery-feed",
+      "operation": "handling",
+      "categoryKey": "delivery_feed",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Автобетононасос по схеме подачи: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF10§1.39/1.40 andPDF11§1.43; only if actualPOS/PPR requires additional operation",
+      "applicabilityCondition": "CONDITIONAL_REAL_POS_PPR_AND_INTERNAL_ADDITIONAL_SERVICE_QUANTITY_NORM",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вmachine_hour; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false,
+      "executableProjectCondition": {
+        "parameterKey": "pos_concrete_feed",
+        "applicableValue": "Автобетононасосом",
+        "unknownState": "CONDITION_REQUIRED",
+        "applicableMissingQuantityState": "QUANTITY_REQUIRED",
+        "notApplicableState": "INACTIVE"
+      }
+    },
+    {
+      "key": "external-concrete-delivery",
+      "titleRu": "Внешняя доставка бетонной смеси",
+      "category": "service",
+      "unitId": "trip",
+      "parentNeedKey": "external-delivery-feed",
+      "operation": "handling",
+      "categoryKey": "delivery_feed",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Внешняя доставка бетонной смеси: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF10§1.39/1.40 andPDF11§1.43; only if actualPOS/PPR requires additional operation",
+      "applicabilityCondition": "CONDITIONAL_REAL_POS_PPR_AND_INTERNAL_ADDITIONAL_SERVICE_QUANTITY_NORM",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вtrip; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "access-stair",
+      "titleRu": "Средство подъёма на рабочую площадку",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "access-protection",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Средство подъёма на рабочую площадку: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF6§1.1 scaffold/workplatform labour; sourcecolumn/beam/stair geometry; actual access design",
+      "applicabilityCondition": "REAL_PROJECT_ACCESS_APPLICABILITY_AND_INTERNAL_PROTECTIVE_STOCK_NORM",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "edge-guard",
+      "titleRu": "Временное ограждение края",
+      "category": "equipment",
+      "unitId": "m",
+      "parentNeedKey": "access-protection",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Временное ограждение края: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF6§1.1 scaffold/workplatform labour; sourcecolumn/beam/stair geometry; actual access design",
+      "applicabilityCondition": "REAL_PROJECT_ACCESS_APPLICABILITY_AND_INTERNAL_PROTECTIVE_STOCK_NORM",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вm; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "fall-protection",
+      "titleRu": "Средство защиты от падения",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "access-protection",
+      "operation": "formwork",
+      "categoryKey": "access_protection",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Средство защиты от падения: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "PDF6§1.1 scaffold/workplatform labour; sourcecolumn/beam/stair geometry; actual access design",
+      "applicabilityCondition": "REAL_PROJECT_ACCESS_APPLICABILITY_AND_INTERNAL_PROTECTIVE_STOCK_NORM",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "test-sample-mould",
+      "titleRu": "Форма для контрольного образца бетона",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "quality-acceptance",
+      "operation": "control",
+      "categoryKey": "control",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Форма для контрольного образца бетона: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Concrete acceptance project/quality specification; source does not state sample frequency or lab rate",
+      "applicabilityCondition": "INTERNAL_QA_FREQUENCY_LABOUR_AND_PHYSICAL_METHOD_WITH_PROJECT_ACCEPTANCE_SCOPE",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "concrete-testing",
+      "titleRu": "Контрольное испытание бетона",
+      "category": "service",
+      "unitId": "test",
+      "parentNeedKey": "quality-acceptance",
+      "operation": "control",
+      "categoryKey": "control",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Контрольное испытание бетона: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Concrete acceptance project/quality specification; source does not state sample frequency or lab rate",
+      "applicabilityCondition": "INTERNAL_QA_FREQUENCY_LABOUR_AND_PHYSICAL_METHOD_WITH_PROJECT_ACCEPTANCE_SCOPE",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вtest; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "asbuilt-control",
+      "titleRu": "Исполнительный контроль геометрии",
+      "category": "service",
+      "unitId": "man_hour",
+      "parentNeedKey": "quality-acceptance",
+      "operation": "control",
+      "categoryKey": "control",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Исполнительный контроль геометрии: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Concrete acceptance project/quality specification; source does not state sample frequency or lab rate",
+      "applicabilityCondition": "INTERNAL_QA_FREQUENCY_LABOUR_AND_PHYSICAL_METHOD_WITH_PROJECT_ACCEPTANCE_SCOPE",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вman_hour; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "water-applicator",
+      "titleRu": "Устройство распределения воды для ухода",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "curing-physical-method",
+      "operation": "curing",
+      "categoryKey": "consumables",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Устройство распределения воды для ухода: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Sourcewholecare plus listedwater/cover; actual regime; no generic water allocation/device count",
+      "applicabilityCondition": "COMPATIBLE_INTERNAL_CURING_METHOD_AND_REAL_PROJECT_ENVIRONMENT",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "temperature-control",
+      "titleRu": "Прибор контроля температуры бетона",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "curing-physical-method",
+      "operation": "curing",
+      "categoryKey": "consumables",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Прибор контроля температуры бетона: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Sourcewholecare plus listedwater/cover; actual regime; no generic water allocation/device count",
+      "applicabilityCondition": "COMPATIBLE_INTERNAL_CURING_METHOD_AND_REAL_PROJECT_ENVIRONMENT",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "cleaning-scraper",
+      "titleRu": "Скребок для очистки опалубки",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "cleaning-waste",
+      "operation": "cleaning",
+      "categoryKey": "cleaning_waste",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Скребок для очистки опалубки: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Whole strip/care cycle does not quantify cleaning stock/waste; actual equipment/disposal route",
+      "applicabilityCondition": "INTERNAL_CLEANING_CONSUMABLE_WASTE_METHOD_AND_REAL_DISPOSAL_SCHEME",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "cleaning-brush",
+      "titleRu": "Щётка для очистки оборудования",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "cleaning-waste",
+      "operation": "cleaning",
+      "categoryKey": "cleaning_waste",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Щётка для очистки оборудования: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Whole strip/care cycle does not quantify cleaning stock/waste; actual equipment/disposal route",
+      "applicabilityCondition": "INTERNAL_CLEANING_CONSUMABLE_WASTE_METHOD_AND_REAL_DISPOSAL_SCHEME",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вpiece; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "washwater-container",
+      "titleRu": "Ёмкость сбора промывочной воды",
+      "category": "equipment",
+      "unitId": "m3",
+      "parentNeedKey": "cleaning-waste",
+      "operation": "cleaning",
+      "categoryKey": "cleaning_waste",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Ёмкость сбора промывочной воды: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Whole strip/care cycle does not quantify cleaning stock/waste; actual equipment/disposal route",
+      "applicabilityCondition": "INTERNAL_CLEANING_CONSUMABLE_WASTE_METHOD_AND_REAL_DISPOSAL_SCHEME",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вm3; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "solid-waste-container",
+      "titleRu": "Ёмкость сбора строительных отходов",
+      "category": "equipment",
+      "unitId": "m3",
+      "parentNeedKey": "cleaning-waste",
+      "operation": "cleaning",
+      "categoryKey": "cleaning_waste",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Ёмкость сбора строительных отходов: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Whole strip/care cycle does not quantify cleaning stock/waste; actual equipment/disposal route",
+      "applicabilityCondition": "INTERNAL_CLEANING_CONSUMABLE_WASTE_METHOD_AND_REAL_DISPOSAL_SCHEME",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вm3; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "waste-disposal",
+      "titleRu": "Вывоз строительных отходов",
+      "category": "service",
+      "unitId": "trip",
+      "parentNeedKey": "cleaning-waste",
+      "operation": "cleaning",
+      "categoryKey": "cleaning_waste",
+      "profileKinds": [
+        "column",
+        "beam",
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Вывоз строительных отходов: применимость и количество не установлены полным совместимым документом; исходные машино-часы/объём/суммарная масса не определяют этот ресурс.",
+      "sourceEvidence": "Whole strip/care cycle does not quantify cleaning stock/waste; actual equipment/disposal route",
+      "applicabilityCondition": "INTERNAL_CLEANING_CONSUMABLE_WASTE_METHOD_AND_REAL_DISPOSAL_SCHEME",
+      "returnConditionRu": "Полный совместимый первичный физический метод/проектная ведомость, организация и количество вtrip; единственный владелец оплаты/закупки и проверенный баланс; без1kit/постов из объёма.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "deep-vibrator-working-part",
+      "titleRu": "Рабочая часть глубинного вибратора",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "tools-working-parts",
+      "operation": "placement",
+      "categoryKey": "tools",
+      "profileKinds": [
+        "column",
+        "beam"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Рабочая часть глубинного вибратора: точное совместимое исполнение и количество не заданы; часовая норма не является количеством рабочих частей.",
+      "sourceEvidence": "Source11-0180; exact compatible deep device/working part method",
+      "applicabilityCondition": "SOURCE_MACHINE_IDENTITY_EXACT_PHYSICAL_WORKING_PART_REQUIRED",
+      "returnConditionRu": "Точный совместимый физический комплект с организацией и количествами; не переносить глубинную рабочую часть на поверхностный11-0183.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    },
+    {
+      "key": "surface-vibrator-working-plate",
+      "titleRu": "Рабочая плита поверхностного вибратора",
+      "category": "equipment",
+      "unitId": "piece",
+      "parentNeedKey": "tools-working-parts",
+      "operation": "placement",
+      "categoryKey": "tools",
+      "profileKinds": [
+        "stair"
+      ],
+      "kind": "UNRESOLVED_APPLICATION_NORM_OR_COMPLETE_PROJECT_BOM",
+      "missingRu": "Рабочая плита поверхностного вибратора: точное совместимое исполнение и количество не заданы; часовая норма не является количеством рабочих частей.",
+      "sourceEvidence": "Source11-0183; surface device only, deephead is incompatible",
+      "applicabilityCondition": "SOURCE_MACHINE_IDENTITY_EXACT_PHYSICAL_WORKING_PART_REQUIRED",
+      "returnConditionRu": "Точный совместимый физический комплект с организацией и количествами; не переносить глубинную рабочую часть на поверхностный11-0183.",
+      "quantity": null,
+      "paid": false,
+      "procurement": false
+    }
+  ],
+  "diagnosticCategoriesAreNotLeafResources": true,
+  "leafNeedsPerProfile": {
+    "column": 45,
+    "beam": 45,
+    "stair": 45
+  },
+  "projectApplicabilityFacts": [
+    {
+      "key": "pos_concrete_feed",
+      "titleRu": "Подача бетонной смеси по ПОС/ППР",
+      "values": [
+        "Краном в бадье",
+        "Автобетононасосом"
+      ],
+      "testOnlyValue": "Краном в бадье",
+      "sourceRole": "REAL_APPROVED_POS_PPR_OBJECT_FACT_NOT_PRODUCTIVITY_NORM"
+    },
+    {
+      "key": "pos_truckmixer_applies",
+      "titleRu": "Автобетоносмеситель предусмотрен ПОС",
+      "values": [
+        "Применяется по проекту",
+        "Не применяется по проекту"
+      ],
+      "testOnlyValue": "Не применяется по проекту",
+      "sourceRole": "REAL_APPROVED_POS_OBJECT_FACT_NOT_MACHINE_HOURS"
+    },
+    {
+      "key": "formwork_ties_apply",
+      "titleRu": "Стяжки опалубки предусмотрены проектом",
+      "values": [
+        "Применяется по проекту",
+        "Не применяется по проекту"
+      ],
+      "testOnlyValue": "Не применяется по проекту",
+      "sourceRole": "REAL_APPROVED_DESIGN_APPLICABILITY_NOT_RESOURCE_QUANTITY"
+    },
+    {
+      "key": "formwork_anchors_apply",
+      "titleRu": "Анкеры опалубки предусмотрены проектом",
+      "values": [
+        "Применяется по проекту",
+        "Не применяется по проекту"
+      ],
+      "testOnlyValue": "Не применяется по проекту",
+      "sourceRole": "REAL_APPROVED_DESIGN_APPLICABILITY_NOT_RESOURCE_QUANTITY"
+    },
+    {
+      "key": "project_embeds_apply",
+      "titleRu": "Закладные детали предусмотрены конструктивом",
+      "values": [
+        "Применяется по проекту",
+        "Не применяется по проекту"
+      ],
+      "testOnlyValue": "Не применяется по проекту",
+      "sourceRole": "REAL_APPROVED_DESIGN_APPLICABILITY_NOT_RESOURCE_QUANTITY"
+    },
+    {
+      "key": "project_bar_joints_apply",
+      "titleRu": "Специальные соединения арматуры предусмотрены конструктивом",
+      "values": [
+        "Применяется по проекту",
+        "Не применяется по проекту"
+      ],
+      "testOnlyValue": "Не применяется по проекту",
+      "sourceRole": "REAL_APPROVED_DESIGN_APPLICABILITY_NOT_RESOURCE_QUANTITY"
+    },
+    {
+      "key": "lifting_traverse_applies",
+      "titleRu": "Траверса предусмотрена схемой строповки",
+      "values": [
+        "Применяется по проекту",
+        "Не применяется по проекту"
+      ],
+      "testOnlyValue": "Не применяется по проекту",
+      "sourceRole": "REAL_APPROVED_DESIGN_APPLICABILITY_NOT_RESOURCE_QUANTITY"
+    }
+  ]
+}

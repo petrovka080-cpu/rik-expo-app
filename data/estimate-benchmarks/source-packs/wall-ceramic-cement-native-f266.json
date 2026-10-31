@@ -1,0 +1,247 @@
+{
+  "contract": "existing-wall-ceramic-cement-native-column/f266",
+  "status": "SOURCE_ONLY_NATIVE_COLUMN_COMPLETE_WHOLE_PROVISION_NOT_ADMITTED",
+  "catalogId": "canonical-work:base:tile_stone_interior_tile_wall_lay_standard",
+  "workKey": "tile_stone_interior_tile_wall_lay_standard",
+  "sourceKey": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+  "normId": "15-01-019-01",
+  "sourceArtifact": {
+    "path": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/KRER-15.pdf",
+    "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+    "bytes": 2472569,
+    "physicalPages": [
+      56,
+      57,
+      58
+    ],
+    "resourceColumnPage": 57,
+    "column": "15-01-019-01"
+  },
+  "rateBasis": {
+    "quantity": "100",
+    "unitId": "m2",
+    "meaningRu": "Площадь поверхности облицовки без учёта рельефа; техническая часть §2.3, стр.13"
+  },
+  "scopeRu": "Гладкая облицовка кирпичных и бетонных стен белой глазурованной керамической плиткой на цементном растворе, без карнизных, плинтусных и угловых плиток и без установки туалетного гарнитура.",
+  "excludedRu": [
+    "Деревянное основание и нормы02/04/06/08",
+    "Клей из сухой смеси, нормы05–08",
+    "Плитки туалетного гарнитура03/04/07/08",
+    "Карнизные, плинтусные и угловые плитки, таблица15-01-020",
+    "Камень вместо точной глазурованной керамической плитки",
+    "Перенос М150/CM11/CE40 или расходов пола",
+    "Вывод физических единиц или аренды из машино-часов",
+    "Дополнительные3% запаса/боя сверх приведённой строки100м² плитки"
+  ],
+  "conditions": [
+    {
+      "locator": "КРЕР15,стр.8,§1.2а",
+      "fact": "Обычный интерьер до3,5м; инвентарные столики/стремянки/приставные лестницы учтены как условия труда, но количество/наличие не нормированы этой колонкой."
+    },
+    {
+      "locator": "КРЕР15,стр.9,§1.4",
+      "fact": "Искусственные плитки на плоских или криволинейных внутренних поверхностях с радиусом более2м; иной радиус не допущен."
+    },
+    {
+      "locator": "КРЕР15,стр.10,§1.9",
+      "fact": "Необходимая насечка основания — отдельная работа15-02-031-03/04; деревянное основание здесь не применяется. Норма01 не создаёт количественного допуска насечки/выравнивания."
+    }
+  ],
+  "nativeRows": [
+    {
+      "key": "whole-labour",
+      "rowId": "tile-wall:kg15-01901:whole-labour",
+      "sourceResourceCode": "000-1003-6",
+      "nameRu": "Труд облицовщика среднего разряда 3,6",
+      "unitId": "man_hour",
+      "ratePer100M2": "228.00",
+      "category": "labor",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "key": "operator-labour",
+      "rowId": "tile-wall:kg15-01901:operator-labour",
+      "sourceResourceCode": null,
+      "nameRu": "Труд машинистов",
+      "unitId": "man_hour",
+      "ratePer100M2": "0.86",
+      "category": "labor",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "key": "loader",
+      "rowId": "tile-wall:kg15-01901:loader",
+      "sourceResourceCode": "03-0020",
+      "nameRu": "Автопогрузчик грузоподъёмностью 5 т",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.05",
+      "category": "equipment",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "key": "hoist",
+      "rowId": "tile-wall:kg15-01901:hoist",
+      "sourceResourceCode": "03-0327",
+      "nameRu": "Одномачтовый подъёмник грузоподъёмностью до 500 кг, высота подъёма до 45 м",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.81",
+      "category": "equipment",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "key": "water",
+      "rowId": "tile-wall:kg15-01901:water",
+      "sourceResourceCode": "01-0601-0001",
+      "nameRu": "Вода",
+      "unitId": "m3",
+      "ratePer100M2": "0.463",
+      "category": "material",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "key": "cement",
+      "rowId": "tile-wall:kg15-01901:cement",
+      "sourceResourceCode": "01-0303-0001",
+      "nameRu": "Портландцемент общестроительный бездобавочный марки 400",
+      "unitId": "t",
+      "ratePer100M2": "0.04",
+      "category": "material",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "key": "tile",
+      "rowId": "tile-wall:kg15-01901:tile",
+      "sourceResourceCode": "01-3206-0001",
+      "nameRu": "Плитка керамическая глазурованная для внутренней облицовки стен, гладкая, без завала, белая",
+      "unitId": "m2",
+      "ratePer100M2": "100",
+      "category": "material",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "key": "rags",
+      "rowId": "tile-wall:kg15-01901:rags",
+      "sourceResourceCode": "01-7204-0001",
+      "nameRu": "Ветошь",
+      "unitId": "kg",
+      "ratePer100M2": "0.5",
+      "category": "material",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "key": "sawdust",
+      "rowId": "tile-wall:kg15-01901:sawdust",
+      "sourceResourceCode": "01-7222-0001",
+      "nameRu": "Древесные опилки",
+      "unitId": "m3",
+      "ratePer100M2": "0.1",
+      "category": "material",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "key": "ready-mortar",
+      "rowId": "tile-wall:kg15-01901:ready-mortar",
+      "sourceResourceCode": "03-0409-0003",
+      "nameRu": "Готовый тяжёлый цементный отделочный раствор состава 1:3",
+      "unitId": "m3",
+      "ratePer100M2": "1.5",
+      "category": "material",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    }
+  ],
+  "includedOperations": [
+    {
+      "key": "sort",
+      "rowId": "tile-wall:kg15-01901:operation:sort",
+      "nameRu": "Сортировка плиток",
+      "paidOwnerRowId": "tile-wall:kg15-01901:whole-labour",
+      "separatePayment": false
+    },
+    {
+      "key": "face",
+      "rowId": "tile-wall:kg15-01901:operation:face",
+      "nameRu": "Облицовка поверхности",
+      "paidOwnerRowId": "tile-wall:kg15-01901:whole-labour",
+      "separatePayment": false
+    },
+    {
+      "key": "cut-fit",
+      "rowId": "tile-wall:kg15-01901:operation:cut-fit",
+      "nameRu": "Перерубка плиток и приточка кромок",
+      "paidOwnerRowId": "tile-wall:kg15-01901:whole-labour",
+      "separatePayment": false
+    },
+    {
+      "key": "fill-joints",
+      "rowId": "tile-wall:kg15-01901:operation:fill-joints",
+      "nameRu": "Заполнение швов",
+      "paidOwnerRowId": "tile-wall:kg15-01901:whole-labour",
+      "separatePayment": false
+    },
+    {
+      "key": "dust-rub",
+      "rowId": "tile-wall:kg15-01901:operation:dust-rub",
+      "nameRu": "Распудривание облицованных поверхностей",
+      "paidOwnerRowId": "tile-wall:kg15-01901:whole-labour",
+      "separatePayment": false
+    },
+    {
+      "key": "clean-wash",
+      "rowId": "tile-wall:kg15-01901:operation:clean-wash",
+      "nameRu": "Очистка и промывка поверхности облицовки",
+      "paidOwnerRowId": "tile-wall:kg15-01901:whole-labour",
+      "separatePayment": false
+    }
+  ],
+  "sourcePriceBoundary": {
+    "baseSomPriceColumnIsNotQuantityOrCurrentTariff": true,
+    "machinePriceAdmissions": "UNRUN_EXACT_SOURCE_OPERATION_2_REQUIREMENTS_ROOT_OWNER",
+    "operatorPaidSecondTime": false,
+    "materialCost": "SOURCE_ONLY_PROPOSED_KNOWN_CONSUMPTION_NOT_PROCUREMENT",
+    "procurement": false
+  },
+  "currentParent": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\next-current-parents-r266\\wall\\results\\CURRENT_FULL_PARENT_1_R257.json",
+    "sha256": "f39a6c6cc1689c2e4fd009cec8101a2028321050b8b5db656fe3e7b5e0de09d6",
+    "definitionId": "359cacb4-486f-52e7-9e16-17695d16ee9b",
+    "definitionSha256": "e3fbb9b48422cb047426245ee8a131e379dd68e0401298931d69dd45e6b24712",
+    "definitionVersion": 3,
+    "shape": [
+      1,
+      59,
+      59
+    ],
+    "bindings": 0,
+    "baselineId": "88b14346-801d-5dfc-b230-22d95418373d",
+    "sourceClosureRows": 0,
+    "registryAbsenceFreshGuard": false
+  },
+  "priorReadingSuperseded": {
+    "incorrectLabour": "112.62",
+    "cause": "Цена рабочего разряда3,4 ошибочно прочитана как расход01; исправлено до создания pack/model. 116.05 также цена, не расход.",
+    "incorrectNails01": "0.004t",
+    "nailsActual01": "DASH_NOT_APPLICABLE;0.004t belongs02",
+    "correctLabour": "228.00man_hour,grade3.6",
+    "originalImagesAndMessagesRetained": true
+  },
+  "provisionBoundary": {
+    "wholeNativeRateRows": 10,
+    "includedOperationMarkers": 6,
+    "completeNativeColumn": true,
+    "physicalToolQuantitiesFromThisTable": false,
+    "realProjectObjects": 0,
+    "FULL": false,
+    "normalConfigDispatchReady": false,
+    "remaining": "Ни таблица01, ни актуальные59 generic rows не доказывают количество/наличие ручного инструмента, инвентаря доступа, СИЗ, конкретную подготовку основания и поставку. Не создавать kit1/новые оплачиваемые generic нормы."
+  }
+}

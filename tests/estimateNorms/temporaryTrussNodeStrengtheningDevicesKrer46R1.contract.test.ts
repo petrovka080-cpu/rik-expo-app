@@ -25,12 +25,13 @@ describe("KRER 46-05-004-01 truss-node strengthening devices", () => {
     "0.00012", "0.00036", "1.47",
   ];
 
-  test("owns four distinct appended identities", () => {
-    expect(TEMPORARY_TRUSS_NODE_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).toHaveLength(4);
-    expect(new Set(TEMPORARY_TRUSS_NODE_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).size).toBe(4);
-    expect(TEMPORARY_TRUSS_NODE_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS)
-      .toEqual(Object.values(TEMPORARY_TRUSS_NODE_STRENGTHENING_DEVICES_KRER46_VARIANTS)
-        .map((variant) => variant.catalogId));
+  test("keeps the actual technologies and removes area-only identities", () => {
+    expect(TEMPORARY_TRUSS_NODE_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).toEqual([
+      "canonical-work:master:temporary_truss_node_strengthening_devices_standard",
+      "canonical-work:master:temporary_truss_node_strengthening_devices_wet_zone",
+    ]);
+    expect(TEMPORARY_TRUSS_NODE_STRENGTHENING_DEVICES_KRER46_VARIANTS).not.toHaveProperty("small_area");
+    expect(TEMPORARY_TRUSS_NODE_STRENGTHENING_DEVICES_KRER46_VARIANTS).not.toHaveProperty("large_area");
   });
 
   test("binds exact table 46-05-004-01 and its official artifact", () => {
@@ -146,11 +147,13 @@ describe("KRER 46-05-004-01 truss-node strengthening devices", () => {
   });
 
   test("resolves all variants and rejects an unsupported key", () => {
-    for (const key of ["standard", "large_area", "small_area", "wet_zone"] as const) {
+    for (const key of ["standard", "wet_zone"] as const) {
       expect(resolveTemporaryTrussNodeStrengtheningDevicesKrer46Variant(key).catalogId)
         .toContain(`_${key}`);
     }
-    expect(() => resolveTemporaryTrussNodeStrengtheningDevicesKrer46Variant("bad" as never))
-      .toThrow("VARIANT_UNSUPPORTED");
+    for (const key of ["large_area", "small_area", "bad"] as const) {
+      expect(() => resolveTemporaryTrussNodeStrengtheningDevicesKrer46Variant(key as never))
+        .toThrow("VARIANT_UNSUPPORTED");
+    }
   });
 });

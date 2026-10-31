@@ -1,3 +1,6 @@
+import type {CanonicalEstimateOperationResourceAcceptanceV1} from './canonicalEstimateOperationComposition';
+import type {CanonicalNormSourceAdmissionEvidenceV1} from './canonicalNormSourceAdmissionEvidenceV1';
+import type { CanonicalPhysicalNormEvidenceV1 } from './canonicalPhysicalNormEvidenceV1';
 import {parseCanonicalSelectedMaterialDeliveryRequestR1} from './canonicalSelectedMaterialDeliveryContractR1';
 import { assertCanonicalPurchaseSupplyRowV1, canonicalPurchaseSupplyBlocksV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
@@ -5,6 +8,7 @@ import { canonicalScopeRequirementDecisionV1 } from './canonicalScopeRequirement
 import {parseCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';
 import type { CanonicalOrderedSpecificationBinding } from './canonicalOrderedSpecificationBindings';
 import { parseCanonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
+import {parseCanonicalPublicResourceAlternativesV1} from './canonicalPublicResourceAlternativesV1';
 import type { AdmissionDecision } from "./estimateAdmissionR3";
 import { canonicalDerivedQuantityEditPolicyV1, type CanonicalDerivedQuantityEditPolicyV1 } from './canonicalDerivedQuantityEditPolicyV1';
 import { canonicalFusionDerivedQuantityClearConsentS2758, type CanonicalFusionDerivedQuantityClearConsentS2758 } from './canonicalFusionDerivedQuantityClearAdmissionS2758';
@@ -146,6 +150,29 @@ export type CanonicalEstimateLegacyRevisionRequest = {
   rows: CanonicalEstimateLegacyRow[];
 };
 
+/** Transient server read result, not a persisted approval or source authority. */
+export type CanonicalManualPreliminaryReviewEligibilityV1 = Readonly<{
+  contractVersion:'canonical-manual-preliminary-review-eligibility/v1';
+  revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string;
+  eligible:boolean;status:'ELIGIBLE'|'BLOCKED';unknownQuantityCount:number;auditSha256:string;reasonRu:string;
+}>;
+/** Transient server-owned document preview eligibility; never approval authority.
+ * unknownQuantityCount counts visible physical RESOURCE rows, not process notes. */
+export type CanonicalProfessionalPdfReviewEligibilityV1 = Readonly<{
+  contractVersion:'canonical-professional-pdf-review-eligibility/v1';
+  revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string;
+  eligible:boolean;status:'ELIGIBLE'|'BLOCKED';unknownQuantityCount:number;auditSha256:string;reasonRu:string;
+}>;
+/** Review intent is separate from final/manual approval and source admission. */
+export type CanonicalProfessionalPdfIssuancePurpose = 'STANDARD' | 'PRELIMINARY_REVIEW';
+export type CanonicalProfessionalPdfReviewRequestV1 = Readonly<{
+  revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string;
+  acknowledgedPreliminaryReview:true;
+}>;
+export type CanonicalProfessionalPdfReviewAcknowledgmentV1 = CanonicalProfessionalPdfReviewRequestV1 & Readonly<{
+  contractVersion:'canonical-professional-pdf-review-ack/v1';issuancePurpose:'PRELIMINARY_REVIEW';
+  actorUserId:string;acknowledgedAt:string;unknownQuantityCount:number;auditSha256:string;
+}>;
 export type CanonicalEstimateArtifactView = {
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   artifactId: string;
@@ -158,6 +185,7 @@ export type CanonicalEstimateArtifactView = {
   sha256: string | null;
   metadata: Record<string, unknown>;
   contentAdmission?: AdmissionDecision;
+  operationResourceAcceptanceV1?: CanonicalEstimateOperationResourceAcceptanceV1;
   errorCode: string | null;
   createdAt: string;
   updatedAt: string;
@@ -213,6 +241,8 @@ export type CanonicalEstimateJobView = {
   attempt: number;
   resultRevisionId: string | null;
   errorCode: string | null;
+  /** Authored validation explanation only; absent on older/code-only jobs. */
+  errorUserMessageRu?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -276,6 +306,9 @@ export type CanonicalEstimateRevisionView = {
   inputHash?: string | null;
   outputHash?: string | null;
   contentAdmission?: AdmissionDecision;
+  operationResourceAcceptanceV1?: CanonicalEstimateOperationResourceAcceptanceV1;
+  manualPreliminaryReviewEligibilityV1?:CanonicalManualPreliminaryReviewEligibilityV1;
+  professionalPdfReviewEligibilityV1?:CanonicalProfessionalPdfReviewEligibilityV1;
   legacyWarningRu?: string | null;
   /** Current external admission annotation; the saved revision is unchanged. */
   contentWithdrawalReasonRu?: string | null;
@@ -336,6 +369,7 @@ export type CanonicalEstimatePreliminaryNeedView = {
   commercialCostCoverageDecision?: CanonicalCommercialCostCoverageDecisionView;
   commercialRateCoverage?: CanonicalCommercialRateCoverageView;
   publicResourcePresentation?: import('./canonicalPublicResourcePresentationV1').CanonicalPublicResourcePresentationV1;
+  publicResourceAlternatives?: import('./canonicalPublicResourceAlternativesV1').CanonicalPublicResourceAlternativesV1;
   manualTitleOverride?: boolean;
   manualQuantityOverride?: boolean;
   calculatedQuantityBeforeOverride?: string | null;
@@ -394,6 +428,7 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       && Array.isArray(need.missing_parameter_ids)
       ? graph.titleSpecificationParameterIds.filter((id): id is string => typeof id === 'string' && (need.missing_parameter_ids as unknown[]).includes(id)) : [];
     const publicResourcePresentation = parseCanonicalPublicResourcePresentationV1(graph?.publicResourcePresentationV1);
+    const publicResourceAlternatives = parseCanonicalPublicResourceAlternativesV1(graph?.publicResourceAlternativesV1);
     const derivedQuantityEditPolicy = canonicalDerivedQuantityEditPolicyV1(
       (need.calculation_trace as Record<string, unknown> | undefined)?.derivedQuantityEditPolicy,
     );
@@ -440,6 +475,7 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       ...(commercialCostCoverageDecision ? { commercialCostCoverageDecision } : {}),
       ...(commercialRateCoverage ? { commercialRateCoverage } : {}),
       ...(publicResourcePresentation ? { publicResourcePresentation } : {}),
+      ...(publicResourceAlternatives ? { publicResourceAlternatives } : {}),
       ...(derivedQuantityEditPolicy?.unitId === String(need.unit_id ?? '') ? { derivedQuantityEditPolicy } : {}),
       ...((need.calculation_trace as Record<string, unknown> | undefined)?.manualTitleOverride === true ? { manualTitleOverride: true } : {}),
       manualQuantityOverride: (need.calculation_trace as Record<string, unknown> | undefined)?.manualQuantityOverride === true,
@@ -576,6 +612,9 @@ export type CanonicalEstimateRevisionRowView = {
   rowSha256: string;
   /** Immutable price evidence saved with this exact revision row. */
   priceSource?: CanonicalEstimateRevisionRowPriceSource;
+  /** Server evaluation bound to this immutable revision and row. */
+  physicalNormEvidenceV1?: CanonicalPhysicalNormEvidenceV1;
+  normSourceAdmissionEvidenceV1?:CanonicalNormSourceAdmissionEvidenceV1;
 };
 
 export type CanonicalEstimateRevisionRowPriceSource = {
@@ -618,7 +657,33 @@ export type CanonicalEstimateSearchMatchType =
   | "T5_NORMALIZED_SUBSTRING"
   | "T6_TYPO_TRANSLITERATION_SUGGESTION";
 
-export type CanonicalEstimateSearchItem = {
+/** Public grouping never changes the exact calculation/history identity. */
+export type CanonicalEstimateConditionProfileV1 = {
+  catalogId: string;
+  definitionVersionId: string;
+  definitionReleaseId: string;
+  conditionId: string;
+  /** Full exact work name; conditionTitleRu is only the condition label. */
+  titleRu: string;
+  conditionTitleRu?: string;
+  technologyVariant: string | null;
+  primaryUom: string;
+  operationKind: string;
+  publicationState: CanonicalEstimateSearchPublicationState;
+  estimateReady: boolean;
+  contentAdmission?: AdmissionDecision | null;
+  selectableMode: "PROFESSIONAL" | "PRELIMINARY" | "NONE";
+  nonselectableReasonRu: string | null;
+};
+
+export type CanonicalEstimateConditionProfileGroupingV1 = {
+  publicWorkKey?: string;
+  publicCatalogId?: string;
+  matchedConditionCatalogId?: string | null;
+  conditionProfiles?: readonly CanonicalEstimateConditionProfileV1[];
+};
+
+export type CanonicalEstimateSearchItem = CanonicalEstimateConditionProfileGroupingV1 & {
   catalogId: string;
   definitionVersionId: string | null;
   definitionReleaseId: string | null;
@@ -656,6 +721,7 @@ export type CanonicalEstimateSearchItem = {
 };
 
 export type CanonicalEstimateSearchPage = {
+  catalogVisibilityVersion?: string;
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   searchIndexReleaseId: string;
   searchIndexSnapshotSha256: string;
@@ -687,6 +753,9 @@ export type CanonicalEstimateSearchPage = {
 };
 
 export type CanonicalEstimateResourceSearchItem = {
+  /** Display only; titleRu retains the complete source name for selection. */
+  displayNameRu?: string;
+  displayDetailsRu?: readonly string[];
   resourceId: string;
   definitionVersionId: string;
   definitionReleaseId: string;
@@ -713,6 +782,7 @@ export type CanonicalEstimateResourceSearchPage = {
 };
 
 export type CanonicalEstimateSearchGroupPage = {
+  catalogVisibilityVersion?: string;
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   searchIndexReleaseId: string;
   searchIndexSnapshotSha256: string;
@@ -724,7 +794,8 @@ export type CanonicalEstimateSearchGroupPage = {
   shownCount: number;
   items: Array<Pick<CanonicalEstimateSearchItem,
     "catalogId" | "canonicalNameRu" | "publicationState" | "catalogOrigin" | "operationKind" | "technologyVariant"
-    | "estimateReady" | "contentAdmission">>;
+    | "estimateReady" | "contentAdmission" | "publicWorkKey" | "publicCatalogId"
+    | "matchedConditionCatalogId" | "conditionProfiles">>;
   nextCursor: string | null;
 };
 
@@ -783,12 +854,14 @@ export type CanonicalEstimateCatalogItem = {
   manualPriceMigrationBindings?: Record<string,string>;
   /** Exact resource/application evidence for retaining stored manual exclusions. */
   manualExclusionMigrationBindings?: Record<string,string>;
+  /** Source/application evidence for retaining already saved quantities. */
+  manualQuantityMigrationBindings?: Record<string,string>;
   /** Complete operation membership and resource/application evidence. */
   compositionOperationMigrationBindingsV1?: Record<string,string>;
   /** Server-admitted equivalence for one exact predecessor, never a general bypass. */
-  manualMigrationPredecessorV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;operationBindings?:Record<string,string>;compositionSelectionIdsPreservedV1?:true};
+  manualMigrationPredecessorV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;quantityBindings?:Record<string,string>;operationBindings?:Record<string,string>;compositionSelectionIdsPreservedV1?:true};
   /** At most two exact server-proven predecessors for the admitted 5→6→7 chain. */
-  manualMigrationPredecessorsV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;operationBindings?:Record<string,string>;compositionSelectionIdsPreservedV1?:true}[];
+  manualMigrationPredecessorsV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;quantityBindings?:Record<string,string>;operationBindings?:Record<string,string>;compositionSelectionIdsPreservedV1?:true}[];
   /** Exact specification questions belonging to opted-in manual order rows. */
   orderedSpecificationBindings?: CanonicalOrderedSpecificationBinding[];
   contentAdmission?: AdmissionDecision;
@@ -825,6 +898,29 @@ export type CanonicalEstimateCatalogItem = {
     provenance?: Record<string, unknown>;
   }>;
 };
+
+/** Prompt extraction is not calculation/admission evidence. Its identity is
+ * tied to the same catalog response and exact request text. */
+export type CanonicalCatalogPromptExtractionV1 = Readonly<{
+  contract: "canonical-catalog-prompt-extraction/v1";
+  catalogId: string;
+  releaseId: string;
+  definitionVersion: number;
+  prompt: string;
+  immutableCalculationIdentityV1?: CanonicalImmutableCalculationIdentityV1;
+  schema: ReadonlyArray<Pick<CanonicalEstimateCatalogItem["parameterSchema"][number],
+    "parameterId" | "ordinal" | "valueType" | "unitId" | "titleRu">>;
+  /** Empty object preserves a matched parser whose keys are outside this schema. */
+  concretePlacement: Readonly<Record<string, string | number | boolean>> | null;
+}>;
+
+/** Exact parser/guard input projection. The full catalog response, admission
+ * and its additional schema metadata remain owned by the existing API. */
+export type CanonicalCatalogPromptInputV1 = Readonly<
+  Pick<CanonicalCatalogPromptExtractionV1,
+    "catalogId" | "releaseId" | "definitionVersion" | "immutableCalculationIdentityV1">
+  & {parameterSchema: CanonicalCatalogPromptExtractionV1["schema"]}
+>;
 
 export class CanonicalEstimateApiError extends Error {
   readonly code: string;

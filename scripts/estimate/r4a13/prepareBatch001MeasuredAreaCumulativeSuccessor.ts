@@ -301,6 +301,7 @@ async function auditCandidate(client: Client, input: {
 }
 
 async function main(): Promise<void> {
+  if(APPLY)throw new Error('STOP_LEGACY_DIRECT_DEFINITION_WRITE_INDEPENDENT_OPERATION_COMPOSITION_REQUIRED: migrate this new successor admission to the existing canonicalDefinitionPublisherR1; read-only history and dry-run remain available.');
   exactDatabaseGuard();
   invariant(existsSync(MASTER_PATH) && sha256(readFileSync(MASTER_PATH)) === MASTER_SHA256,
     "STOP_BATCH001_CUMULATIVE_MASTER_SHA256_DRIFT");

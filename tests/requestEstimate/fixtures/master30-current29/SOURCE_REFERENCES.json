@@ -1,0 +1,270 @@
+{
+  "contract": "portable-source-reference-index/r1",
+  "rootLocationHints": {
+    "repository": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7",
+    "workspace": "C:\\Users\\User\\Documents\\Codex\\2026-10-30\\files-pasted-by-the-user-gox",
+    "codexDocuments": "C:\\Users\\User\\Documents\\Codex"
+  },
+  "meaning": "Relative source refs only; original files/manifests immutable, no executable pin or authority",
+  "references": [
+    {
+      "id": "r001",
+      "root": "repository",
+      "path": ".release-runtime/r4a13-6/s19-first-estimate/master-benchmark-evidence-map-v1/master-benchmark-evidence-map.json",
+      "sha256": "2759cc49e0d15cc1230a6b5557a5b5378c96e3305e721289844a9ebf96dbf6c9",
+      "bytes": 112816
+    },
+    {
+      "id": "r002",
+      "root": "repository",
+      "path": "tests/requestEstimate/master30CurrentPromptIngress.db.contract.test.ts",
+      "sha256": "ad944c3459ea2ffe6f8e567d8f02fbbb9a6a0605a404ad0c4bc70ecb7bfb63fc",
+      "bytes": 55558
+    },
+    {
+      "id": "r003",
+      "root": "repository",
+      "path": "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
+      "sha256": "9b6322feb70e38191e7fe171d82dadebfe47816890d4c339f890477ebc83a258",
+      "bytes": 1700
+    },
+    {
+      "id": "r004",
+      "root": "workspace",
+      "path": "work/package-composition/master30-sixteen-publication-bindings-v1/SIXTEEN_PUBLICATION_BINDING_LEDGER.json",
+      "sha256": "24de83be5b62bc42fe744eeda6b33423042c78b7c4bba2049c8660739915d8c1",
+      "bytes": 36401
+    },
+    {
+      "id": "r005",
+      "root": "workspace",
+      "path": "work/package-composition/master30-sixteen-ingress-scope-addendum-v1/SOURCE_MANIFEST.json",
+      "sha256": "71132619279a8929259e330e02b9f790999520c07c1a20f27fd55a49606f4e2b",
+      "bytes": 1262
+    },
+    {
+      "id": "r006",
+      "root": "workspace",
+      "path": "work/current-dto-oracle-companions-root-a1/DTO_ORACLE_COMPANIONS.json",
+      "sha256": "56b3935863452948e922b25f23f0c478383b4630026673b1875e83385c09cc48",
+      "bytes": 3354
+    },
+    {
+      "id": "r007",
+      "root": "workspace",
+      "path": "work/db-verification-sol/cases1-2-archived-ingress-declarations-v1/CASE1_INGRESS_DECLARATION.json",
+      "sha256": "1fa8dd03c699d8bc53429a9f236bf527150d6ecfc9dd187dbb6bd7a6779702c9",
+      "bytes": 49083
+    },
+    {
+      "id": "r008",
+      "root": "repository",
+      "path": "data/estimate-benchmarks/fixtures/concrete-curing-roller-current-strip-foundation-r124.json",
+      "sha256": "81e3f607f5b649b57aa9d40e38e596f3985d8c645e3e08987c2a1612454e3a31",
+      "bytes": 11493831
+    },
+    {
+      "id": "r009",
+      "root": "repository",
+      "path": "src/lib/estimate/backendPlatform/canonicalCatalogParameterStorageMapperV1.ts",
+      "sha256": "1fe91d3ec15541dbcd2d3baa74dd00710136add16003955a877b134145549f24",
+      "bytes": 4516
+    },
+    {
+      "id": "r010",
+      "root": "workspace",
+      "path": "work/db-verification-sol/cases1-2-archived-ingress-declarations-v1/CASE2_INGRESS_DECLARATION.json",
+      "sha256": "c571592b081b71890c2ca4813555922257636fbf7d07a071b481d03698d50fd6",
+      "bytes": 39870
+    },
+    {
+      "id": "r011",
+      "root": "repository",
+      "path": "data/estimate-benchmarks/fixtures/concrete-curing-roller-current-foundation-slab-r124.json",
+      "sha256": "d8ca9ce8252675baf2f8697ebde3a8250cba414be70f09c06668755b3d400cc0",
+      "bytes": 12217776
+    },
+    {
+      "id": "r012",
+      "root": "workspace",
+      "path": "work/db-verification-sol/case9-archived-ingress-oracle-v1/CASE9_INGRESS_DECLARATION.json",
+      "sha256": "10ca9a2d0e93b4135c5bbcfee4ca07a00fa28db59c9d27d4d54af21ab2bedee9",
+      "bytes": 26126
+    },
+    {
+      "id": "r013",
+      "root": "codexDocuments",
+      "path": "2026-10-29/files-pasted-by-the-user-gox/work/facade-current-raw-parent255-r1153/FACADE_CURRENT_BODY_RAW/parameters.json",
+      "sha256": "197c784a9585509665274e5a1429078e2ba1e58b242310ab2193d41256fdd1c8",
+      "bytes": 1641791
+    },
+    {
+      "id": "r014",
+      "root": "workspace",
+      "path": "work/package-composition/case8-s2763-original-publication-declaration-v1/CASE8_DECLARATION.json",
+      "sha256": "949d7c4a48cf1d8d70c4733ab8d25d76647d4f99077f67b3f165e58a76e12542",
+      "bytes": 13394
+    },
+    {
+      "id": "r015",
+      "root": "workspace",
+      "path": "work/db-verification-sol/case10-original-publication-binding-v1/CASE10_DECLARATION_AND_GAP.json",
+      "sha256": "15bd2769038f2f84f62551b451eeee100d1397e85f7197495a5436bd0e2675e9",
+      "bytes": 7650
+    },
+    {
+      "id": "r016",
+      "root": "repository",
+      "path": "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.ts",
+      "sha256": "cf73e5767efe06a52a5b54ebbb83124d939fd24237cdf8d811c15ac707cc9931",
+      "bytes": 28301
+    },
+    {
+      "id": "r017",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-32/rebar-cage-operation-completion-successor/acceptance.json",
+      "sha256": "429f50ae722f06b1c123586983f7bdc9e709cacf1a548e1135e9289228babbce",
+      "bytes": 6788
+    },
+    {
+      "id": "r018",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-63/pvc15-cleaner-consumer-mode/acceptance.json",
+      "sha256": "03c4f1498e7c48de93970bdd3b672d30944884c4d7685aa4d878ec8c8f033692",
+      "bytes": 12839
+    },
+    {
+      "id": "r019",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-63/interior-plaster-base-labour/publication/acceptance.json",
+      "sha256": "cb3e020aa7cf46dd22f0b7d266146b421ecc6248697797e045a865fac6ef381c",
+      "bytes": 50649
+    },
+    {
+      "id": "r020",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-31/ancillary-material-orders-current/independent-acceptance.json",
+      "sha256": "3411775505574efa0a49d53c8477b804956cc9e1af4b9a1826d27652644f1593",
+      "bytes": 49309
+    },
+    {
+      "id": "r021",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/vvgng-ls-minimum-clarification-successor/acceptance.json",
+      "sha256": "5bc63e88fe727d612b51d37abd97594534664a513544e206f336b42f193ceea5",
+      "bytes": 11256
+    },
+    {
+      "id": "r022",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/vvgng-ls-minimum-clarification-current/independent-acceptance.json",
+      "sha256": "170e61ba828935a9ddf2b51f0308419dce72a4a09f14d5a6182aac4313636d51",
+      "bytes": 74514
+    },
+    {
+      "id": "r023",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-23/led-luminaire-installation-balanced-successor/acceptance.json",
+      "sha256": "4900c25ee4cedef7fe1899b44f18f8975f4ce78ca9a39b62a7355b48479b5477",
+      "bytes": 11678
+    },
+    {
+      "id": "r024",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-23/led-luminaire-installation-balanced-current/independent-acceptance.json",
+      "sha256": "35b6776f3e5d662f56edf5877aa93052f92b446cce042e91df8b69c7a940725d",
+      "bytes": 68286
+    },
+    {
+      "id": "r025",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/cat6-twisted-pair-cable-balanced-successor/acceptance.json",
+      "sha256": "2d004314be1b18b1d82c0e114a60754fd7c876df559e152d38c8ef6cc12d88c7",
+      "bytes": 11886
+    },
+    {
+      "id": "r026",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/cat6-twisted-pair-cable-balanced-current/independent-acceptance.json",
+      "sha256": "a513430d80f842e9d130cb56b82790d991877aa44becb47548a55ec8b36f19f8",
+      "bytes": 52600
+    },
+    {
+      "id": "r027",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/optical-fiber-splicing-balanced-successor/acceptance.json",
+      "sha256": "cf0e2d43cf649a74022670f9c05ce6afdb6ddd533c917962c7b3f8011ae692e1",
+      "bytes": 11893
+    },
+    {
+      "id": "r028",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/optical-fiber-splicing-balanced-current/independent-acceptance.json",
+      "sha256": "3320bc21b4eb54c743cf3aabf89cf0c548053a3f59a10ced0f8224ae13a5eebb",
+      "bytes": 2263
+    },
+    {
+      "id": "r029",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/addressable-smoke-detector-balanced-successor/acceptance.json",
+      "sha256": "9085af8149482a6db7e9e2cb79d02b9795b49242e9d8eb266ddf4b8695dbab87",
+      "bytes": 12395
+    },
+    {
+      "id": "r030",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/addressable-smoke-detector-balanced-current/independent-acceptance.json",
+      "sha256": "a8e917ab0fdfff3c327e36a1c16d0302ec1b45844ab1f5dfeffcec1a1dae1a99",
+      "bytes": 64927
+    },
+    {
+      "id": "r031",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-63/pump-grout-material-series/acceptance.json",
+      "sha256": "2e4dce430e3638753f5258d6c01322f1116db976859c6932e1893e55a765ee3b",
+      "bytes": 13967
+    },
+    {
+      "id": "r032",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/hot-water-boiler-piping-balanced-successor/acceptance.json",
+      "sha256": "e0b46e7caa69d635dae9e3d07929dfaef285d12b76fc9d19ec5a9def3fa58197",
+      "bytes": 12576
+    },
+    {
+      "id": "r033",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/hot-water-boiler-piping-balanced-current/independent-acceptance.json",
+      "sha256": "0a9b2c99169d92aefe9359295af0c214c4ea489322c5b871b5a963fc18b7c246",
+      "bytes": 90400
+    },
+    {
+      "id": "r034",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/industrial-steel-pipe-butt-weld-balanced-successor/acceptance.json",
+      "sha256": "718b935918cbdb3848d48aa08010f00f71e19b7b6a4cb356179f2a12f3f5be25",
+      "bytes": 12578
+    },
+    {
+      "id": "r035",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/industrial-steel-pipe-butt-weld-balanced-current/independent-acceptance.json",
+      "sha256": "93d48209500584fa44ef5b59121e147c6f42f5eca2a968d66297d841d92dc9f3",
+      "bytes": 109660
+    },
+    {
+      "id": "r036",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/server-rack-42u-grounding-balanced-successor/acceptance.json",
+      "sha256": "2a538ad44e01698cd0fa04def147f3bfb8151c9ff42cc2220feef35b3bc87da1",
+      "bytes": 11945
+    },
+    {
+      "id": "r037",
+      "root": "repository",
+      "path": ".release-runtime/r568/s27-24/server-rack-42u-grounding-balanced-current/independent-acceptance.json",
+      "sha256": "d9d734e314aa83bd13b369fb85517934b5347df2c8a2c30c83eba0ac4d51fac0",
+      "bytes": 76513
+    }
+  ]
+}

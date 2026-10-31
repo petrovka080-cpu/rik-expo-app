@@ -1,0 +1,275 @@
+{
+  "contract": "source-only-low-current-native-parameter-identity-forward/r478",
+  "SOURCE_FORWARD": true,
+  "notActualCapturedR415Output": true,
+  "notCurrentDbOrSourceAuthority": true,
+  "families": {
+    "scs": {
+      "catalogId": "canonical-work:expanded:low_voltage_system",
+      "nativeContract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+      "nativeParameterCount": 47,
+      "sourceHistoricalFixture": {
+        "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\data\\estimate-benchmarks\\fixtures\\low-current-project-scope-current-scs-r1.json",
+        "sha256": "7025fe1e8280c49a0fcaabb43d388279592b919a7ae8d64b6df94aeb9b9011a6",
+        "bytes": 823747
+      },
+      "identityLeaves": [
+        {
+          "parameterId": "lvs_copper_profile_record_r5",
+          "before": {
+            "contract": "existing-scs-system-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "rc09:scs-copper-existing-whole-operation-r5:lvs_copper_profile_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:low_voltage_system:lvs_copper_profile_record_r5"
+          }
+        },
+        {
+          "parameterId": "lvs_route_whole_method_record_r5",
+          "before": {
+            "contract": "existing-scs-system-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "rc09:scs-copper-existing-whole-operation-r5:lvs_route_whole_method_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:low_voltage_system:lvs_route_whole_method_record_r5"
+          }
+        },
+        {
+          "parameterId": "lvs_outlet_whole_method_record_r5",
+          "before": {
+            "contract": "existing-scs-system-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "rc09:scs-copper-existing-whole-operation-r5:lvs_outlet_whole_method_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:low_voltage_system:lvs_outlet_whole_method_record_r5"
+          }
+        },
+        {
+          "parameterId": "lvs_panel_whole_method_record_r5",
+          "before": {
+            "contract": "existing-scs-system-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "rc09:scs-copper-existing-whole-operation-r5:lvs_panel_whole_method_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:low_voltage_system:lvs_panel_whole_method_record_r5"
+          }
+        },
+        {
+          "parameterId": "lvs_marking_register_record_r5",
+          "before": {
+            "contract": "existing-scs-system-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "rc09:scs-copper-existing-whole-operation-r5:lvs_marking_register_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:low_voltage_system:lvs_marking_register_record_r5"
+          }
+        },
+        {
+          "parameterId": "lvs_copper_acceptance_record_r5",
+          "before": {
+            "contract": "existing-scs-system-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "rc09:scs-copper-existing-whole-operation-r5:lvs_copper_acceptance_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:low_voltage_system:lvs_copper_acceptance_record_r5"
+          }
+        },
+        {
+          "parameterId": "lvs_whole_operation_review_decision_r5",
+          "before": {
+            "contract": "existing-scs-system-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "rc09:scs-copper-existing-whole-operation-r5:lvs_whole_operation_review_decision_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:low_voltage_system:lvs_whole_operation_review_decision_r5"
+          }
+        }
+      ],
+      "beforeCodeOwnedHashes": {
+        "newProjectParametersSha256": "a7046727f6e95b818966cf855b3cdcf93ff1cf4e3003fe9b8b5952ccd3ff487d",
+        "representativeComputationSha256": "c75aa7fefb8db248fb2ff5edd326733913ec453f2e210aa407e371e44d05b767",
+        "cloneSemanticComputationSha256": "a5dbae88187e138796913898863150a57864362bc307e7c5bc5a4c67249e1f16"
+      },
+      "afterCodeOwnedHashes": {
+        "newProjectParametersSha256": "a73b697c09deda678c3406ce230859c1827f2d58f082fbc04dd97c6482c36799",
+        "representativeComputationSha256": "30aa46616cd2029a8282c9a2eb38f1b3243c7e9b5f3f1e120096d1f7e89c2002",
+        "cloneSemanticComputationSha256": "eddbcd3dda6830f2917acc80a1425f7cd56e42be0335b0a37a4ec1f7a6fd5190"
+      },
+      "unchangedOriginCaptureAndAllOtherAnchors": {
+        "captureSha256": "3090fe07d1487edaa2bb41b3dab87267f3da3c7717c3049cebf846b497dd9065",
+        "parentDefinitionReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+        "parentSearchReleaseId": "9b042edf-ca06-50f6-969a-556e6d14547a",
+        "definitionId": "cb5756cb-cb9d-5238-b415-9fb3913601ea",
+        "definitionSha256": "0e464c9301721640a7eb7b8c1e59ba0a4c3f24000c510541b4736da44c6a855c",
+        "baselineId": "260f981d-bdcb-5ad3-8a15-018731c44455",
+        "capturedContentPassportSha256": "87b2563f7312f430a52944883d6507eef425f73ac78ee490aa0ebe0fc048ec4e",
+        "newProjectParameterIds": [
+          "lvs_copper_profile_record_r5",
+          "lvs_route_whole_method_record_r5",
+          "lvs_outlet_whole_method_record_r5",
+          "lvs_panel_whole_method_record_r5",
+          "lvs_marking_register_record_r5",
+          "lvs_copper_acceptance_record_r5",
+          "lvs_whole_operation_review_decision_r5"
+        ],
+        "resourceGraphChangesSha256": "e1a53862159228f04a9d11ffed72a7be8a87d9bfc870ec6f174f7d0709042420",
+        "baselineSemanticsSha256": "66646a012921629bc2d78270860bdf1719db3a8d6221ab31825b5031ad4011a2",
+        "originalDefinitionSourceMetadataSha256": "fb725d87aa0d12c6931c10e58b2c81290e156f2bc92445558e8ca9122f221fc3",
+        "exactGraphKeys": [
+          "operationCompositionV1",
+          "inputParameterIds",
+          "scopeRequirementV1",
+          "sourceWholeObjectBoundaryR5"
+        ]
+      },
+      "sourceForwardNotActualR415Output": true
+    },
+    "acs": {
+      "catalogId": "canonical-work:expanded:access_control_system",
+      "nativeContract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+      "nativeParameterCount": 53,
+      "sourceHistoricalFixture": {
+        "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\data\\estimate-benchmarks\\fixtures\\low-current-project-scope-current-acs-r1.json",
+        "sha256": "0b642bde9a36905b01bb5e13f322dd19128225443c5cc414129bfe97e3351f24",
+        "bytes": 1050434
+      },
+      "identityLeaves": [
+        {
+          "parameterId": "acs_reader_whole_method_record_r5",
+          "before": {
+            "contract": "existing-acs-summary-persisted-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "access-control:whole-operations:r1:acs_reader_whole_method_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:access_control_system:acs_reader_whole_method_record_r5"
+          }
+        },
+        {
+          "parameterId": "acs_lock_whole_method_record_r5",
+          "before": {
+            "contract": "existing-acs-summary-persisted-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "access-control:whole-operations:r1:acs_lock_whole_method_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:access_control_system:acs_lock_whole_method_record_r5"
+          }
+        },
+        {
+          "parameterId": "acs_psu_whole_method_record_r5",
+          "before": {
+            "contract": "existing-acs-summary-persisted-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "access-control:whole-operations:r1:acs_psu_whole_method_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:access_control_system:acs_psu_whole_method_record_r5"
+          }
+        },
+        {
+          "parameterId": "acs_battery_whole_method_record_r5",
+          "before": {
+            "contract": "existing-acs-summary-persisted-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "access-control:whole-operations:r1:acs_battery_whole_method_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:access_control_system:acs_battery_whole_method_record_r5"
+          }
+        },
+        {
+          "parameterId": "acs_cabling_whole_method_record_r5",
+          "before": {
+            "contract": "existing-acs-summary-persisted-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "access-control:whole-operations:r1:acs_cabling_whole_method_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:access_control_system:acs_cabling_whole_method_record_r5"
+          }
+        },
+        {
+          "parameterId": "acs_commissioning_whole_method_record_r5",
+          "before": {
+            "contract": "existing-acs-summary-persisted-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "access-control:whole-operations:r1:acs_commissioning_whole_method_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:access_control_system:acs_commissioning_whole_method_record_r5"
+          }
+        },
+        {
+          "parameterId": "acs_controller_compatibility_record_r5",
+          "before": {
+            "contract": "existing-acs-summary-persisted-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "access-control:whole-operations:r1:acs_controller_compatibility_record_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:access_control_system:acs_controller_compatibility_record_r5"
+          }
+        },
+        {
+          "parameterId": "acs_whole_operation_review_decision_r5",
+          "before": {
+            "contract": "existing-acs-summary-persisted-whole-operation-object-scope/r5",
+            "semantic_parameter_key": "access-control:whole-operations:r1:acs_whole_operation_review_decision_r5"
+          },
+          "after": {
+            "contract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+            "semantic_parameter_key": "canonical-work:expanded:access_control_system:acs_whole_operation_review_decision_r5"
+          }
+        }
+      ],
+      "beforeCodeOwnedHashes": {
+        "newProjectParametersSha256": "b1b2bf2d3ab206483dd66325dd98a922400844d39230ea7151b3ee72d9146797",
+        "representativeComputationSha256": "15237fb6b02386a5bb82454975888f781a883a20640ed7eccf3ee58e4bd88f6f",
+        "cloneSemanticComputationSha256": "4af25ad544c848279034bbe68dbf0b8126e8a9edcdea98956ba6da93021f14e9"
+      },
+      "afterCodeOwnedHashes": {
+        "newProjectParametersSha256": "0accbd7812adbc5b4b2445caa6ac013094475ebb3e30bcede6ffa3c554b55328",
+        "representativeComputationSha256": "5b18724deacc4db3635194799f6ac0df0916acbf864f8116e5881628cec8620a",
+        "cloneSemanticComputationSha256": "036284a1a73ba50db62508069b9763fee9d96b8f021b06f1778c8323a1c18525"
+      },
+      "unchangedOriginCaptureAndAllOtherAnchors": {
+        "captureSha256": "2105da5b64ac3787265e216825329c5e515dfd930d675cbd1288fd0466299c60",
+        "parentDefinitionReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+        "parentSearchReleaseId": "9b042edf-ca06-50f6-969a-556e6d14547a",
+        "definitionId": "b6ba50d2-9a88-5173-888f-bb75f92d85b5",
+        "definitionSha256": "0472bffdf0dee8d0c603c93c1735c3c59518e5a639072a243d86058bb630fc57",
+        "baselineId": "f2aab897-30d8-5ea7-b662-c86daad9aea3",
+        "capturedContentPassportSha256": "9b787af4489f9e48dd71bc6f27093ed3a0cbefa4441ce7fc4bd5d4efcde8fd92",
+        "newProjectParameterIds": [
+          "acs_reader_whole_method_record_r5",
+          "acs_lock_whole_method_record_r5",
+          "acs_psu_whole_method_record_r5",
+          "acs_battery_whole_method_record_r5",
+          "acs_cabling_whole_method_record_r5",
+          "acs_commissioning_whole_method_record_r5",
+          "acs_controller_compatibility_record_r5",
+          "acs_whole_operation_review_decision_r5"
+        ],
+        "resourceGraphChangesSha256": "4907133b7255707178c3a8917f65230ba5b03130ec141e91e6431de9380f894a",
+        "baselineSemanticsSha256": "5408211f5e26a7d5cd7a74f9f1530b068f29fde1bbe4b8cbcecef4df3b500cc1",
+        "originalDefinitionSourceMetadataSha256": "a06b4b45b726fc945ec54c715243196137944023d7e89c8072d22aa4d2348381",
+        "exactGraphKeys": [
+          "operationCompositionV1",
+          "inputParameterIds",
+          "scopeRequirementV1",
+          "sourceWholeObjectBoundaryR5",
+          "sourceWholeOperationBoundaryV1"
+        ]
+      },
+      "sourceForwardNotActualR415Output": true
+    }
+  }
+}

@@ -3,9 +3,13 @@ import {type RoofPreparationMigrationModelV1 as Model,type RoofPreparationDefini
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
 import {canonicalEstimateSha256HexText} from './canonicalEstimateSha256';
 import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
+import expansion from '../../../../data/estimate-benchmarks/source-packs/ct126-four-prepared-wall-branches-r2.json';
+import {buildCt126PreparedWallBranchesR2} from '../v4/ct126PreparedWallBranchesR2';
 type Input={fromDefinition:Identity;toDefinition:Identity;from:Model;to:Model};
 const parents=require('../../../../data/estimate-benchmarks/fixtures/ct126-six-wall-v3-parents-s27-69.json') as {reps:PurchaseGroupRepresentative[]};
 const sourcePackSha256=canonicalEstimateSha256HexText(canonicalEstimateStableJson(binding));
+const expansionPackSha256=canonicalEstimateSha256HexText(canonicalEstimateStableJson(expansion));
+const currentParents=require('../../../../data/estimate-benchmarks/fixtures/ct126-current-four-v4-parents-r2.json') as {reps:PurchaseGroupRepresentative[]};
 /** Full executable metadata, including derived lookups and future policies.
  * SQL identities, audit timestamps and stored derivative hashes are excluded. */
 function semanticHash(model:Model):string{
@@ -17,7 +21,12 @@ function semanticHash(model:Model):string{
   parameters:project(model.parameters,['parameter_id','ordinal','title_ru','value_type','unit_id','required','default_value','constraints_json','truth_metadata'],'parameter_id'),
  }));
 }
-export function buildCt126SixDryWallMigrationProofS2769(input:Input){return{
+export function buildCt126SixDryWallMigrationProofS2769(input:Input){
+ const target=expansion.targets.find(t=>t.catalogId===input.fromDefinition.catalogId&&t.predecessorDefinitionId===input.fromDefinition.id&&t.parentSha256===input.fromDefinition.sha256);
+ if(target)return{contractVersion:'canonical-ct126-six-dry-wall-migration/r2',catalogId:input.fromDefinition.catalogId,
+  fromDefinitionId:input.fromDefinition.id,toDefinitionId:input.toDefinition.id,fromDefinitionSha256:input.fromDefinition.sha256,toDefinitionSha256:input.toDefinition.sha256,
+  fromSemanticSha256:semanticHash(input.from),toSemanticSha256:semanticHash(input.to),sourcePackSha256:expansionPackSha256};
+ return{
  contractVersion:'canonical-ct126-six-dry-wall-migration/v1',catalogId:input.fromDefinition.catalogId,
  fromDefinitionId:input.fromDefinition.id,toDefinitionId:input.toDefinition.id,
  fromDefinitionSha256:input.fromDefinition.sha256,toDefinitionSha256:input.toDefinition.sha256,
@@ -26,7 +35,18 @@ export function buildCt126SixDryWallMigrationProofS2769(input:Input){return{
  * model qualify. New parameters do not invalidate saved owner exclusions.
  * A positive CT126 choice selects its admitted scope; legacy owners remain restorable. */
 export function admitCt126SixDryWallMigrationProofS2769(input:Input&{proof:unknown}){
- const p=input.proof as ReturnType<typeof buildCt126SixDryWallMigrationProofS2769>|null,target=binding.targets.find(t=>t.catalogId===input.fromDefinition.catalogId);
+ const proof=input.proof as ReturnType<typeof buildCt126SixDryWallMigrationProofS2769>|null;
+ if(proof?.contractVersion==='canonical-ct126-six-dry-wall-migration/r2'){
+  const target=expansion.targets.find(t=>t.catalogId===input.fromDefinition.catalogId),frozen=currentParents.reps.find(r=>r.definition.catalog_id===input.fromDefinition.catalogId);
+  if(!target||!frozen||proof.sourcePackSha256!==expansionPackSha256||proof.catalogId!==input.fromDefinition.catalogId||proof.catalogId!==input.toDefinition.catalogId
+   ||proof.fromDefinitionId!==target.predecessorDefinitionId||proof.fromDefinitionSha256!==target.parentSha256
+   ||proof.fromDefinitionId!==input.fromDefinition.id||proof.fromDefinitionSha256!==input.fromDefinition.sha256
+   ||proof.toDefinitionId!==input.toDefinition.id||proof.toDefinitionSha256!==input.toDefinition.sha256||proof.fromDefinitionId===proof.toDefinitionId
+   ||!/^[a-f0-9-]{36}$/u.test(proof.toDefinitionId)||!/^[a-f0-9]{64}$/u.test(proof.toDefinitionSha256)
+   ||proof.fromSemanticSha256!==semanticHash(input.from)||proof.toSemanticSha256!==semanticHash(input.to)||semanticHash(frozen)!==semanticHash(input.from))return null;
+  try{if(semanticHash(buildCt126PreparedWallBranchesR2(frozen))!==semanticHash(input.to))return null;return{proof,normalizedTo:input.from};}catch{return null;}
+ }
+ const p=proof,target=binding.targets.find(t=>t.catalogId===input.fromDefinition.catalogId);
  if(!p||!target||p.contractVersion!=='canonical-ct126-six-dry-wall-migration/v1'||p.sourcePackSha256!==sourcePackSha256
   ||p.catalogId!==input.fromDefinition.catalogId||p.catalogId!==input.toDefinition.catalogId
   ||p.fromDefinitionId!==target.predecessorDefinitionId||p.fromDefinitionSha256!==target.parentSha256

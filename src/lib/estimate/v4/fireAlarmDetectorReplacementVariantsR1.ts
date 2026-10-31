@@ -47,24 +47,6 @@ export const FIRE_ALARM_DETECTOR_REPLACEMENT_VARIANTS = Object.freeze({
       "замена адресных дымовых извещателей высокой плотности",
     ],
   }),
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_replace_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Замена адресных пожарных извещателей на большой площади",
-    aliasesRu: [
-      "замена извещателей АПС большая площадь",
-      "замена адресных дымовых извещателей большого объекта",
-    ],
-  }),
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_replace_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Замена адресных пожарных извещателей на малой площади",
-    aliasesRu: [
-      "замена извещателей АПС малая площадь",
-      "замена адресных дымовых извещателей небольшого объекта",
-    ],
-  }),
   standard: Object.freeze({
     catalogId: "canonical-work:base:electrical_interior_fire_alarm_replace_standard",
     catalogVariant: "STANDARD_ZONE_SEARCH_IDENTITY",

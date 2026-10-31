@@ -1,0 +1,142 @@
+{
+  "contract": "gox.independent-whole-operation-map/r2",
+  "generatedFromCurrentRows": false,
+  "evidencePinnedBeforeOwner": true,
+  "requiredOperations": [
+    {
+      "operationId": "plan",
+      "result": "Назначены отдельная конструкция, возраст, схема, зоны и точки",
+      "expectedRoles": [
+        "planning-labour"
+      ]
+    },
+    {
+      "operationId": "mobilize",
+      "result": "Полный комплект доставлен по фактическому маршруту",
+      "expectedRoles": [
+        "transport",
+        "handling-labour",
+        "case"
+      ]
+    },
+    {
+      "operationId": "survey",
+      "result": "Арматура, края, дефекты и условия испытания проверены",
+      "expectedRoles": [
+        "detector",
+        "geometry-measure",
+        "moisture-meter",
+        "temperature-meter",
+        "marking",
+        "survey-labour"
+      ]
+    },
+    {
+      "operationId": "prepare",
+      "result": "Отверстия подходящего размера очищены и измерены",
+      "expectedRoles": [
+        "drill",
+        "drill-bit",
+        "hole-brush",
+        "blow-pump",
+        "power-supply",
+        "dust-control",
+        "prepare-labour"
+      ]
+    },
+    {
+      "operationId": "anchor",
+      "result": "Классический анкер подготовлен и установлен с контролем затяжки",
+      "expectedRoles": [
+        "anchor",
+        "spanner",
+        "torque-wrench",
+        "grease",
+        "wire-brush",
+        "anchor-labour"
+      ]
+    },
+    {
+      "operationId": "test",
+      "result": "Получена действительная запись усилия, скалывания и смещения",
+      "expectedRoles": [
+        "press",
+        "micrometer",
+        "test-labour",
+        "instrument-use"
+      ]
+    },
+    {
+      "operationId": "retest",
+      "result": "Фактические повторные точки и причины документированы",
+      "expectedRoles": [
+        "retest-labour"
+      ]
+    },
+    {
+      "operationId": "process",
+      "result": "Обработаны действительные результаты по выбранному стандартному пути",
+      "expectedRoles": [
+        "processing-labour",
+        "computer",
+        "usb-cable"
+      ]
+    },
+    {
+      "operationId": "report",
+      "result": "Результаты связаны с точками, возрастом и подтверждённой поверкой",
+      "expectedRoles": [
+        "report-labour",
+        "whole-service"
+      ]
+    },
+    {
+      "operationId": "restore",
+      "result": "Отверстия и места скалывания восстановлены совместимой системой",
+      "expectedRoles": [
+        "repair-mortar",
+        "repair-preparation",
+        "repair-water",
+        "repair-labour"
+      ]
+    },
+    {
+      "operationId": "clean",
+      "result": "Оснащение очищено, пыль и обломки собраны и удалены",
+      "expectedRoles": [
+        "cleaning-cloth",
+        "technical-alcohol",
+        "waste-container",
+        "waste-collection",
+        "waste-transport",
+        "charger"
+      ]
+    },
+    {
+      "operationId": "access",
+      "result": "Рабочее место, ограждение и защита соответствуют фактическим условиям",
+      "expectedRoles": [
+        "access-equipment",
+        "ppe",
+        "barriers",
+        "device-sling"
+      ]
+    }
+  ],
+  "requiredCategories": [
+    "MATERIALS",
+    "CONSUMABLES",
+    "TOOLS",
+    "ACCESSORIES",
+    "MACHINERY",
+    "LABOUR",
+    "LOGISTICS",
+    "ACCESS",
+    "PPE",
+    "POWER",
+    "SERVICE",
+    "WASTE"
+  ],
+  "coveragePolicy": "Every role must be a compatible quantitative source owner, explicitly retained unresolved application norm, or independently justified not-applicable role; source kit counts alone cannot mark the whole cycle ready.",
+  "newFull": 0
+}

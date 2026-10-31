@@ -1,3 +1,5 @@
+import historicalBinding from '../../../../data/estimate-benchmarks/fixtures/aggressive-floor-protection-dust-binding-historical-four-s27-69.json';
+import {aggressiveFloorProtectionDustHistoricalBindingSha256S2769} from '../v4/aggressiveFloorProtectionDustCompleteS2769';
 import {buildAggressiveFloorProtectionDustCompleteS2769,aggressiveFloorCompleteBindingS2769 as binding} from '../v4/aggressiveFloorProtectionDustCompleteS2769';
 import {buildAggressiveFloorProtectionDustMigrationProofS2769 as proof,admitAggressiveFloorProtectionDustMigrationProofS2769 as admit} from './canonicalAggressiveFloorProtectionDustMigrationS2769';
 import {canonicalManualPriceMigrationBindings as prices,canonicalManualExclusionMigrationBindings as exclusions,canonicalStoredManualPricesCanMigrate} from './canonicalManualPriceReleaseMigration';
@@ -7,12 +9,14 @@ import {overlayS2769AggressiveFloorProtectionDustComplete} from '../../../../scr
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
 import {estimateDeterministicHash as hash} from '../estimateDeterministicHash';
 const parents=require('../../../../data/estimate-benchmarks/fixtures/aggressive-floor-four-v4-parents-and-barrier-s27-69.json') as {models:PurchaseGroupRepresentative[]};
-function input(index=0) {
- const from=parents.models[index] as unknown as PurchaseGroupRepresentative,to=buildAggressiveFloorProtectionDustCompleteS2769(from);
+const activeParents=parents.models.filter(parent=>binding.targets.some(target=>target.catalogId===parent.definition.catalog_id));
+const historicalContext={binding:historicalBinding,sourcePackSha256:aggressiveFloorProtectionDustHistoricalBindingSha256S2769};
+function input(index=0,legacy=false) {
+ const from=(legacy?parents.models:activeParents)[index] as unknown as PurchaseGroupRepresentative,to=buildAggressiveFloorProtectionDustCompleteS2769(from,legacy?historicalContext:undefined);
  return{from,to,fromDefinition:{id:String(from.definition.id),catalogId:String(from.definition.catalog_id),sha256:String(from.definition.definition_sha256)},
   toDefinition:{id:'55555555-5555-4555-8555-555555555555',catalogId:String(from.definition.catalog_id),sha256:'a'.repeat(64)}};
 }
-test.each([0,1,2,3])('admits the full four-type publisher model with generated SQL identities: %s',index=>{
+test.each(activeParents.map((_,i)=>i))('admits the active two-type publisher model with generated SQL identities: %s',index=>{
  const i=input(index),r=overlayS2769AggressiveFloorProtectionDustComplete(i.from,'77777777-7777-4777-8777-777777777777').representative;
  const plan=createCanonicalDefinitionClonePlan({contract:binding.contract,
   definition:{id:i.toDefinition.id,releaseId:'22222222-2222-4222-8222-222222222222',catalogId:i.toDefinition.catalogId,
@@ -33,7 +37,7 @@ test.each([0,1,2,3])('admits the full four-type publisher model with generated S
  expect(plan.formulas.every(f=>/^[a-f0-9]{64}$/u.test(f.ast_sha256))).toBe(true);
 });
 test.each([0,1,2,3])('keeps historical prices, exclusions and operation bindings restorable: %s',index=>{
- const i=input(index),admitted=admit({...i,proof:proof(i)});expect(admitted).not.toBeNull();
+ const i=input(index,true),admitted=admit({...i,proof:{...proof(i),sourcePackSha256:historicalContext.sourcePackSha256}});expect(admitted).not.toBeNull();
  const normalized=admitted!.normalizedTo,id=Object.keys(prices(i.from))[0]!;
  expect(prices(normalized)).toEqual(prices(i.from));expect(exclusions(normalized)).toEqual(exclusions(i.from));
  expect(canonicalStoredManualPricesCanMigrate({rowOverrides:{[id]:{unitPrice:'75',includedInEstimate:false,includedInProcurement:false,provenance:{kind:'manual'}}},
@@ -58,4 +62,15 @@ test.each(['old-unit','new-owner','old-formula','new-formula','old-condition','s
  }
  if(change==='unlisted-parent')i.fromDefinition.id='66666666-6666-4666-8666-666666666666';
  expect(admit({...i,proof:proof(i)})).toBeNull();
+});
+
+// Retired identities remain readable solely through the pinned old proof.
+test.each(parents.models.map((_,i)=>i))('active publication rejects retired ids; exact old proof remains valid: %s',index=>{
+ const parent=parents.models[index]!,retired=!binding.targets.some(t=>t.catalogId===parent.definition.catalog_id);
+ if(retired)expect(()=>buildAggressiveFloorProtectionDustCompleteS2769(parent)).toThrow();
+ const i=input(index,true),oldProof={...proof(i),sourcePackSha256:historicalContext.sourcePackSha256};
+ expect(admit({...i,proof:oldProof})).not.toBeNull();
+ expect(admit({...i,proof:{...oldProof,sourcePackSha256:'0'.repeat(64)}})).toBeNull();
+ const forged=structuredClone(historicalBinding);forged.contract+=':FORGED';
+ expect(()=>buildAggressiveFloorProtectionDustCompleteS2769(parent,{binding:forged,sourcePackSha256:historicalContext.sourcePackSha256})).toThrow('PINNED_HISTORICAL_BINDING_REQUIRED');
 });

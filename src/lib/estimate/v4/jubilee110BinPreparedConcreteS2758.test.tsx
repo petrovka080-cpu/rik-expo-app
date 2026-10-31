@@ -4,7 +4,7 @@ import {jubilee110BinControlS2758,verifyJubilee110BinS2758} from '../../../../sc
 import {buildMasterParameterCalculationConsumers} from '../../../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import type {CanonicalEstimateCatalogItem} from '../backendPlatform/contracts';
 import {buildConsumerCanonicalPrecompileParameterSession,consumerCanonicalPrecompileParameterOverrides} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
-import {buildCanonicalBaselinePlan} from '../../../features/consumerRepair/consumerCanonicalBaselineCompile';import {buildCanonicalParameterCards} from '../../estimatePresentation/buildCanonicalParameterCards';
+import {buildCanonicalBaselinePlan} from '../backendPlatform/canonicalConsumerPromptPlanServerR1';import {buildCanonicalParameterCards} from '../../estimatePresentation/buildCanonicalParameterCards';
 import {InlineParamEditor,ParameterDisclosurePanel} from '../../../features/consumerRepair/ConsumerRepairProgressiveEstimatePanel';import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';import {estimateDeterministicHash} from '../estimateDeterministicHash';
 import {ConsumerRepairItemRow} from '../../../features/consumerRepair/ConsumerRepairItemRow';
 import {adaptCanonicalRevisionToStructuredEstimate} from '../backendPlatform/canonicalEstimateForemanAdapter';
@@ -64,25 +64,69 @@ it('uses schema ownership when a Russian project title resembles a professional 
 it.each(['actual_bin_supply_specification','bin_stock_compatibility_reference'])('does not erase physical N/4N for missing purchase %s',async missing=>{const r=await compileJubilee110BinS2758({...jubilee110BinControlS2758(),bin_stock:1,bin_reserve:1,bin_quantum:2,bin_stock_compatibility_reference:'CONTROL_ONLY: full compatible included assemblies',[missing]:undefined});expect(quantity(r,'bin-consumed')).toBe('3');expect(quantity(r,'fixing-consumed')).toBe('12');expect(quantity(r,'fixing-included')).toBe('12');expect(quantity(r,'bin-order')).toBeUndefined();for(const id of ['fixing-consumed','fixing-included']){const row=r.rows.find(x=>x.row_id===prefix+':'+id)!;expect(row.included_in_estimate).toBe(false);expect(row.included_in_procurement).toBe(false);expect(row.unit_price).toBeNull();}});
 it('retains physical4N without a default included/separate mode',async()=>{const r=await compileJubilee110BinS2758({...jubilee110BinControlS2758(),anchor_supply_scope:undefined});expect(quantity(r,'bin-consumed')).toBe('3');expect(quantity(r,'fixing-consumed')).toBe('12');expect(r.rows.filter(x=>x.included_in_procurement)).toHaveLength(0);expect(quantity(r,'fixing-included')).toBeUndefined();});
 it('keeps covered complete assemblies at physical12 and order0',async()=>{const r=await compileJubilee110BinS2758({...jubilee110BinControlS2758(3,true),fixing_stock:16,fixing_quantum:4,fixing_stock_compatibility_reference:'CONTROL_ONLY: compatible whole assemblies'});expect(quantity(r,'fixing-consumed')).toBe('12');expect(quantity(r,'fixing-order')).toBe('0');expect(r.rows.filter(x=>x.included_in_procurement&&Number(x.quantity)>0)).toHaveLength(1);});
-it.each(pack.gaps.map(g=>g.id))('blocks manual0/1 from inventing source-owned %s',async id=>{const d=jubilee110BinDefinitionS2758();for(const q of [0,1])await expect(compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,primaryMeasureParameterId:'bin_count',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:jubilee110BinControlS2758(),confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:13,hashJson:async v=>estimateDeterministicHash(v),rowOverrides:{[prefix+':'+id]:{quantity:q,provenance:{kind:'manual',reason:'CONTROL_ONLY negative'}}}})).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});});
+it.each(pack.gaps.map(g=>g.id))('retains authored0/1 for source-owned %s without closing the source',async id=>{
+  const d=jubilee110BinDefinitionS2758(),input=jubilee110BinControlS2758(),before=JSON.stringify({d,input}),
+    parameter='open_scope_qty_'+id.replaceAll('-','_'),baseline=await physicalAmend(id,null,false,input),
+    original=baseline.preliminaryNeeds.find(n=>n.row_id===prefix+':'+id)!;
+  expect(original).toMatchObject({quantity:null,need_state:'QUANTITY_REQUIRED'});
+  for(const q of [0,1]){
+    const r=await physicalAmend(id,q,false,input),need=r.preliminaryNeeds.find(n=>n.row_id===prefix+':'+id)!;
+    expect(need).toMatchObject({quantity:String(q),unit_price:null,need_state:'QUANTITY_REQUIRED',procurement_eligible:false});
+    expect(need.missing_parameter_ids).toEqual(original.missing_parameter_ids);expect(need.missing_parameter_ids).toContain(parameter);
+    expect(need.calculation_trace).toMatchObject({manualAmendment:{kind:'manual',reason:'CONTROL_ONLY derived quantity regression'},
+      manualQuantityOverride:true,calculatedQuantityBeforeOverride:null,formulaId:prefix+':formula:'+id});
+    expect(need.normative_trace).toEqual([]);expect(r.rows).toEqual(baseline.rows);
+    expect(r.preliminaryNeeds.map(n=>n.row_id)).toEqual(baseline.preliminaryNeeds.map(n=>n.row_id));
+    expect(r.totals.amount).toBe(baseline.totals.amount);expect(r.parameters[parameter]??null).toBeNull();
+    await expect(physicalAmend(id,q,false,input,false)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
+    await expect(compileJubilee110BinS2758({...input,[parameter]:q})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
+  }
+  expect(d.parameters.find(p=>p.parameter_id===parameter)!.truth_metadata)
+    .toMatchObject({visibility_role:'INTERNAL_ONLY',value_source_role:'UNRESOLVED_APPLICATION_NORM'});
+  expect(JSON.stringify({d,input})).toBe(before);
+});
 it.each(['project_bin_configuration_reference','prepared_foundation_acceptance_reference','safe_drilling_foundation_reference','actual_concrete_strength_n_mm2','minimum_safe_drilling_depth_mm'])('requires actual project installation applicability %s independently of supply',async id=>{const r=await compileJubilee110BinS2758({...jubilee110BinControlS2758(),[id]:undefined});expect(quantity(r,'bin-consumed')).toBeUndefined();expect(quantity(r,'fixing-consumed')).toBeUndefined();});
 
 it.each([{minimum_anchor_edge_distance_mm:109},{minimum_safe_drilling_depth_mm:129},{actual_concrete_strength_n_mm2:19.9},{actual_concrete_strength_n_mm2:30.1}])('rejects numeric foundation geometry outside exact manufacturer limits %j',async bad=>{await expect(compileJubilee110BinS2758({...jubilee110BinControlS2758(),...bad})).rejects.toThrow();});
 
 function expandAll(renderer:TestRenderer.ReactTestRenderer){for(const id of ['request-estimate-show-more-parameters','request-estimate-filled-parameters-toggle','request-estimate-advanced-parameters-toggle','request-estimate-foundation-parameters-toggle','request-estimate-procurement-parameters-toggle']){const node=renderer.root.findAll(n=>n.props.testID===id&&typeof n.props.onPress==='function')[0];if(node)act(()=>node.props.onPress());}}
-async function physicalAmend(id:string,q:number|null,separate:boolean,input:Record<string,unknown>=jubilee110BinControlS2758(3,separate)){
+async function physicalAmend(id:string,q:number|null,separate:boolean,input:Record<string,unknown>=jubilee110BinControlS2758(3,separate),authored=true){
   const d=jubilee110BinDefinitionS2758();return compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,
     primaryMeasureParameterId:'bin_count',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],
     submittedParameters:input,confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:13,hashJson:async v=>estimateDeterministicHash(v),
-    rowOverrides:{[prefix+':'+id]:{quantity:q,provenance:{kind:'manual',reason:'CONTROL_ONLY derived quantity regression'}}}});
+    rowOverrides:{[prefix+':'+id]:{quantity:q,...(authored?{provenance:{kind:'manual',reason:'CONTROL_ONLY derived quantity regression'}}:{})}}});
 }
-it.each([['bin-consumed',7],['fixing-consumed',20],['fixing-included',20]] as const)('rejects independent physical %s without changing demand or orders',async(id,q)=>{
-  for(const separate of [false,true])await expect(physicalAmend(id,q,separate)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
-});
-it.each([['bin-consumed',3],['fixing-consumed',12],['fixing-included',12]] as const)('prevents equal %s pins, then allows bin_count edits and null clear',async(id,q)=>{
+it.each([['bin-consumed',7,'3'],['fixing-consumed',20,'12'],['fixing-included',20,'12']] as const)('retains authored physical %s without changing its source basis or orders',async(id,q,calculated)=>{
   for(const separate of [false,true]){
-    await expect(physicalAmend(id,q,separate)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
+    const input=jubilee110BinControlS2758(3,separate),d=jubilee110BinDefinitionS2758(),before=JSON.stringify({input,d}),
+      baseline=await physicalAmend(id,null,separate,input),r=await physicalAmend(id,q,separate,input),
+      row=r.rows.find(row=>row.row_id===prefix+':'+id),original=baseline.rows.find(row=>row.row_id===prefix+':'+id);
+    if(id==='fixing-included'&&separate)expect(row).toBeUndefined();
+    else{
+      expect(row).toMatchObject({quantity:String(q),included_in_estimate:false,included_in_procurement:false});
+      expect(row!.calculation_trace).toMatchObject({manualQuantityOverride:true,calculatedQuantityBeforeOverride:calculated,
+        manualAmendment:{kind:'manual',reason:'CONTROL_ONLY derived quantity regression'},derivedQuantityEditPolicy:{mode:'PARAMETERS_ONLY'}});
+      expect(row!.normative_trace).toEqual(original!.normative_trace);
+    }
+    expect(r.parameters.bin_count).toBe(3);expect(quantity(r,'bin-order')).toBe('3');
+    expect(quantity(r,'bin-consumed')).toBe(id==='bin-consumed'?String(q):'3');
+    expect(quantity(r,'fixing-consumed')).toBe(id==='fixing-consumed'?String(q):'12');
+    expect(quantity(r,'fixing-order')).toBe(separate?'12':undefined);expect(r.totals.amount).toBe('0');
+    expect(r.rows.filter(row=>row.included_in_procurement).map(row=>row.row_id))
+      .toEqual(baseline.rows.filter(row=>row.included_in_procurement).map(row=>row.row_id));
+    expect(JSON.stringify({input,d})).toBe(before);
+    await expect(physicalAmend(id,q,separate,input,false)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
+  }
+});
+it.each([['bin-consumed',3],['fixing-consumed',12],['fixing-included',12]] as const)('retains equal explicit %s pins, then restores bin_count calculation on null clear',async(id,q)=>{
+  for(const separate of [false,true]){
+    const pinned=await physicalAmend(id,q,separate),pinnedRow=pinned.rows.find(row=>row.row_id===prefix+':'+id);
+    if(id==='fixing-included'&&separate)expect(pinnedRow).toBeUndefined();
+    else{expect(pinnedRow?.quantity).toBe(String(q));expect(pinnedRow?.calculation_trace)
+      .toMatchObject({manualQuantityOverride:true,calculatedQuantityBeforeOverride:String(q)});}
     const cleared=await physicalAmend(id,null,separate);expect(quantity(cleared,'bin-consumed')).toBe('3');expect(quantity(cleared,'fixing-consumed')).toBe('12');
+    const clearedRow=cleared.rows.find(row=>row.row_id===prefix+':'+id);
+    if(clearedRow)expect(clearedRow.calculation_trace).not.toHaveProperty('manualQuantityOverride');
     const changed=await physicalAmend(id,null,separate,{...jubilee110BinControlS2758(4,separate)});
     expect(quantity(changed,'bin-consumed')).toBe('4');expect(quantity(changed,'bin-order')).toBe('4');expect(quantity(changed,'fixing-consumed')).toBe('16');
     expect(quantity(changed,'fixing-included')).toBe(separate?undefined:'16');expect(quantity(changed,'fixing-order')).toBe(separate?'16':undefined);
@@ -90,11 +134,17 @@ it.each([['bin-consumed',3],['fixing-consumed',12],['fixing-included',12]] as co
 });
 it('keeps physical edits held when source installation facts are absent',async()=>{
   const input={...jubilee110BinControlS2758(),prepared_foundation_acceptance_reference:undefined};
-  await expect(physicalAmend('bin-consumed',3,false,input)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
+  const retained=await physicalAmend('bin-consumed',3,false,input),need=retained.preliminaryNeeds.find(row=>row.row_id===prefix+':bin-consumed')!;
+  expect(quantity(retained,'bin-consumed')).toBeUndefined();expect(quantity(retained,'fixing-consumed')).toBeUndefined();
+  expect(need).toMatchObject({quantity:'3',need_state:'CONDITION_REQUIRED',procurement_eligible:false});
+  expect(need.missing_parameter_ids).toContain('prepared_foundation_acceptance_reference');
+  expect(need.calculation_trace).toMatchObject({manualQuantityOverride:true,calculatedQuantityBeforeOverride:'3'});
+  expect(retained.rows.filter(row=>row.included_in_procurement)).toHaveLength(0);
+  await expect(physicalAmend('bin-consumed',3,false,input,false)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
   const cleared=await physicalAmend('bin-consumed',null,false,input);expect(quantity(cleared,'bin-consumed')).toBeUndefined();
   expect(quantity(cleared,'fixing-consumed')).toBeUndefined();
 });
-it.each([false,true])('locks only source-derived quantities in the actual projected normal rows (separate=%s)',async separate=>{
+it.each([false,true])('offers explicit manual quantity edits in actual projected rows without mutating source (separate=%s)',async separate=>{
   const compiled=await compileJubilee110BinS2758(jubilee110BinControlS2758(3,separate)),c=catalog();
   const rows:CanonicalEstimateRevisionRowView[]=compiled.rows.map(r=>{const trace=r.calculation_trace;
     if(!trace||typeof trace!=='object'||Array.isArray(trace)||!Array.isArray(r.normative_trace))throw Error('actual compiler row trace required');
@@ -108,22 +158,33 @@ it.each([false,true])('locks only source-derived quantities in the actual projec
     totals:{amount:'0'},rowCount:rows.length,checksumSha256:'a'.repeat(64),compilerVersion:pack.contract,
     parameters:compiled.parameters,createdAt:'2026-10-11T00:00:00.000Z'};
   const draft=buildStructuredEstimateRequestDraft(adaptCanonicalRevisionToStructuredEstimate({catalog:c,revision,rows}));
-  for(const draftItem of draft.items){const id=String(draftItem.sourceParameters?.rowCode),locked=['bin-consumed','fixing-consumed','fixing-included'].some(s=>id===prefix+':'+s),change=jest.fn();
+  for(const draftItem of draft.items){const id=String(draftItem.sourceParameters?.rowCode),derived=['bin-consumed','fixing-consumed','fixing-included'].some(s=>id===prefix+':'+s),change=jest.fn();
     const item={...draftItem,id,requestDraftId:'CONTROL_ONLY',currency:'KGS' as const,source:'ai_suggested' as const,editableByConsumer:true,createdAt:revision.createdAt};
+    const before=JSON.stringify({compiled,draft,item});
     let renderer!:TestRenderer.ReactTestRenderer;act(()=>{renderer=TestRenderer.create(<ConsumerRepairItemRow item={item} onDecrease={jest.fn()} onIncrease={jest.fn()}
       onQuantityChange={change} onUnitPriceChange={jest.fn()} onRemove={jest.fn()}/>);});
     const input=renderer.root.findAll(n=>n.props.testID==='consumer-repair-item-quantity-input-'+id&&typeof n.props.onChangeText==='function')[0];
-    expect(input.props.editable).toBe(!locked);
+    expect(input.props.editable).not.toBe(false);
     for(const step of ['minus','plus']){const button=renderer.root.findAll(n=>n.props.testID==='consumer-repair-item-'+step+'-'+id&&typeof n.props.onPress==='function')[0];
-      expect(button.props.disabled).toBe(locked);if(locked)act(()=>button.props.onPress());}
-    if(locked){act(()=>input.props.onChangeText('99'));act(()=>input.props.onBlur());expect(change).not.toHaveBeenCalled();
-      const rendered=JSON.stringify(renderer.toJSON());expect(rendered).toContain('Количество устанавливаемых урн');
+      expect(button.props.disabled).not.toBe(true);}
+    if(derived){
+      act(()=>input.props.onChangeText('99'));expect(change).toHaveBeenCalledTimes(1);
+      expect(change).toHaveBeenNthCalledWith(1,id,'99',undefined,'input');
+      act(()=>input.props.onBlur());expect(change).toHaveBeenCalledTimes(2);
+      expect(change).toHaveBeenLastCalledWith(id,'99',expect.objectContaining({source:'direct_input'}));
+      for(const [step,value] of [['plus','100'],['minus','99']]){const button=renderer.root.findAll(n=>n.props.testID==='consumer-repair-item-'+step+'-'+id&&typeof n.props.onPress==='function')[0];
+        act(()=>button.props.onPress());expect(change).toHaveBeenLastCalledWith(id,value,expect.objectContaining({source:'stepper'}));}
+      expect(change).toHaveBeenCalledTimes(4);
+      const proof=renderer.root.findAll(n=>n.props.testID==='consumer-repair-item-professional-proof-'+id&&typeof n.props.onPress==='function')[0];
+      act(()=>proof.props.onPress());const rendered=JSON.stringify(renderer.toJSON());expect(rendered).toContain('Количество устанавливаемых урн');
       expect(rendered).not.toContain('Сохранённое количество ожидает подтверждения технического источника.');
-      expect(rendered).not.toContain('Поле можно изменить.');}
+      expect(rendered).not.toContain('Поле можно изменить.');
+    }
+    expect(JSON.stringify({compiled,draft,item})).toBe(before);
     act(()=>renderer.unmount());
   }
 });
-it.each(['bin_count','prepared_foundation_acceptance_reference'])('retains the derived lock through compact needs when %s is missing',async missing=>{
+it.each(['bin_count','prepared_foundation_acceptance_reference'])('retains source holds and permits explicit manual input through compact needs when %s is missing',async missing=>{
   const d=jubilee110BinDefinitionS2758(),c=catalog();
   // The real immutable transport admits SHA256 identities. The local owner
   // preview's eh_ hash is intentionally unsuitable for this contract test.
@@ -145,11 +206,26 @@ it.each(['bin_count','prepared_foundation_acceptance_reference'])('retains the d
     const item={...draftItem,id,requestDraftId:'CONTROL_ONLY',currency:'KGS' as const,source:'ai_suggested' as const,editableByConsumer:true,createdAt:revision.createdAt};
     let renderer!:TestRenderer.ReactTestRenderer;act(()=>{renderer=TestRenderer.create(<ConsumerRepairItemRow item={item} onDecrease={jest.fn()} onIncrease={jest.fn()}
       onQuantityChange={change} onUnitPriceChange={jest.fn()} onRemove={jest.fn()}/>);});
-    const input=renderer.root.findAll(n=>n.props.testID==='consumer-repair-item-quantity-input-'+id&&typeof n.props.onChangeText==='function')[0];expect(input.props.editable).toBe(false);
+    const input=renderer.root.findAll(n=>n.props.testID==='consumer-repair-item-quantity-input-'+id&&typeof n.props.onChangeText==='function')[0];expect(input.props.editable).not.toBe(false);
     for(const step of ['minus','plus']){const button=renderer.root.findAll(n=>n.props.testID==='consumer-repair-item-'+step+'-'+id&&typeof n.props.onPress==='function')[0];
-      expect(button.props.disabled).toBe(true);act(()=>button.props.onPress());}
-    act(()=>input.props.onChangeText('99'));act(()=>input.props.onBlur());expect(change).not.toHaveBeenCalled();
-    const text=JSON.stringify(renderer.toJSON());expect(text).toContain('Количество устанавливаемых урн');
+      expect(button.props.disabled).not.toBe(true);}
+    const original=JSON.stringify({storage,transport,revision,draft,item});
+    act(()=>input.props.onChangeText('99'));expect(change).toHaveBeenCalledTimes(1);
+    expect(change).toHaveBeenNthCalledWith(1,id,'99',undefined,'input');act(()=>input.props.onBlur());
+    expect(change).toHaveBeenCalledTimes(2);expect(change).toHaveBeenLastCalledWith(id,'99',expect.objectContaining({source:'direct_input'}));
+    expect(compact.quantity).toBe(missing==='bin_count'?null:suffix==='bin-consumed'?'3':'12');expect(compact.missingParameterIds).toContain(missing);
+    expect(JSON.stringify({storage,transport,revision,draft,item})).toBe(original);
+    const proof=renderer.root.findAll(n=>n.props.testID==='consumer-repair-item-professional-proof-'+id&&typeof n.props.onPress==='function')[0];
+    act(()=>proof.props.onPress());const text=JSON.stringify(renderer.toJSON());
+    if(missing==='bin_count'){
+      expect(item.quantity).toBeNull();expect(input.props.placeholder).toBe('Введите количество');
+      expect(item.sourceParameters?.missingParameterIds).toContain('bin_count');
+      expect(item.sourceParameters?.canonicalDerivedQuantityEditPolicyV1).toMatchObject({mode:'PARAMETERS_ONLY',parameterIds:['bin_count']});
+      expect(item.sourceParameters?.calculatedQuantityBeforeOverride).toBeNull();expect(item.sourceParameters?.manualQuantityOverride).toBe(false);
+      expect(renderer.root.findAllByProps({testID:'consumer-repair-item-quantity-mode-'+id})).toHaveLength(0);
+      expect(text).toContain('Результат формулы: требует исходных данных.');expect(text).toContain(item.titleRu);
+      expect(text).not.toContain('Рассчитано автоматически:');expect(text).not.toContain('bin_count');
+    }else expect(text).toContain('Количество устанавливаемых урн');
     expect(text).not.toContain('Количество определит расчёт после подтверждения технического источника.');
     act(()=>renderer.unmount());
   }

@@ -1,0 +1,1788 @@
+{
+  "contract": "gox-build.facade-current-family-whole-systems/r3",
+  "status": "AUTHORING_IN_PROGRESS_NOT_THIRD_READY_QUEUE_ENTRY",
+  "sources": [
+    {
+      "key": "TN-ETICS2025",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-ETICS2025-full-primary.pdf",
+      "sha256": "12425a25026f07eb1a19876df0c3741ad9b688d7814078d17a6cb250f23c1102",
+      "bytes": 6528592,
+      "pdfPages": 56,
+      "url": "https://pim.tn.ru/8/3/a/f/83afac9a2ff5969ab1e5094f17286b602f794eea_______________________________________________________________________.pdf?response-content-disposition=filename%3D%22%D0%A2%D0%B5%D1%85%D0%BD%D0%BE%D0%BB%D0%BE%D0%B3%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B0%D1%8F+%D0%BA%D0%B0%D1%80%D1%82%D0%B0+%D0%BF%D0%BE+%D0%BC%D0%BE%D0%BD%D1%82%D0%B0%D0%B6%D1%83+%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B+%D1%84%D0%B0%D1%81%D0%B0%D0%B4%D0%BD%D0%BE%D0%B9+%D1%82%D0%B5%D0%BF%D0%BB%D0%BE%D0%B8%D0%B7%D0%BE%D0%BB%D1%8F%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D0%BE%D0%B9+%D0%BA%D0%BE%D0%BC%D0%BF%D0%BE%D0%B7%D0%B8%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D0%BE%D0%B9+%D0%A2%D0%9D_%D0%A4%D0%90%D0%A1%D0%90%D0%94+%D0%9F%D1%80%D0%BE%D1%84%D0%B8.pdf%22",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": [
+        8,
+        9,
+        10,
+        13,
+        14,
+        15,
+        41,
+        47,
+        48,
+        49,
+        52,
+        53
+      ]
+    },
+    {
+      "key": "TN-ETICS-STO2025",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-ETICS-STO2025-full-primary.pdf",
+      "sha256": "1196d223fb0210f8842d8b2d209297591a7453018ff3b9519e1e630c19670514",
+      "bytes": 3306454,
+      "pdfPages": 41,
+      "url": "https://pim.tn.ru/6/8/c/5/68c5a43d9cb13622f98783d05183bcffbf4789c2________72746455_4.4.2_2025_________.pdf?response-content-disposition=filename%3D%22%D0%A1%D0%A2%D0%9E+72746455_4_4_2_2025+%D0%A1%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B+%D1%84%D0%B0%D1%81%D0%B0%D0%B4%D0%BD%D1%8B%D0%B5+%D1%82%D0%B5%D0%BF%D0%BB%D0%BE%D0%B8%D0%B7%D0%BE%D0%BB%D1%8F%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D0%B5+%D0%BA%D0%BE%D0%BC%D0%BF%D0%BE%D0%B7%D0%B8%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D0%B5+%D1%81+%D0%BD%D0%B0%D1%80%D1%83%D0%B6%D0%BD%D1%8B%D0%BC%D0%B8+%D1%88%D1%82%D1%83%D0%BA%D0%B0%D1%82%D1%83%D1%80%D0%BD%D1%8B%D0%BC%D0%B8+%D1%81%D0%BB%D0%BE%D1%8F%D0%BC%D0%B8+%D0%A2%D0%9D_%D0%A4%D0%90%D0%A1%D0%90%D0%94+%D0%9F%D1%80%D0%BE%D1%84%D0%B8+%D0%B8+%D0%A2%D0%9D_%D0%A4%D0%90%D0%A1%D0%90%D0%94+%D0%9A%D0%BE%D0%BC%D0%B1%D0%B8.pdf%22",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": [
+        14,
+        29,
+        30,
+        31,
+        32,
+        33
+      ]
+    },
+    {
+      "key": "TN-VHF",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-VHF-full-primary.pdf",
+      "sha256": "726daf4928c2c3e98fc85aa16be6dfb2d276a856d5382fc8a3f6e73a1ef4d763",
+      "bytes": 1024704,
+      "pdfPages": 18,
+      "url": "https://pim.tn.ru/a/a/b/9/aab9bd3b1f9986f9ed110110a37a96c393ecce53_ast_instal_facsys__build_airgap.pdf?response-content-disposition=filename%3D%22%D0%A3%D1%81%D1%82%D1%80%D0%BE%D0%B9%D1%81%D1%82%D0%B2%D0%BE+%D0%BD%D0%B0%D0%B2%D0%B5%D1%81%D0%BD%D0%BE%D0%B9+%D1%84%D0%B0%D1%81%D0%B0%D0%B4%D0%BD%D0%BE%D0%B9+%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B+%D1%83%D1%82%D0%B5%D0%BF%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F+%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B9+%D1%81+%D0%B2%D0%BE%D0%B7%D0%B4%D1%83%D1%88%D0%BD%D1%8B%D0%BC+%D0%B7%D0%B0%D0%B7%D0%BE%D1%80%D0%BE%D0%BC+%D1%81+%D0%BF%D1%80%D0%B8%D0%BC%D0%B5%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5%D0%BC+%D0%BC%D0%B0%D1%82%D0%B5%D1%80%D0%B8%D0%B0%D0%BB%D0%BE%D0%B2+%D0%9A%D0%BE%D1%80%D0%BF%D0%BE%D1%80%D0%B0%D1%86%D0%B8%D0%B8+%D0%A2%D0%95%D0%A5%D0%9D%D0%9E%D0%9D%D0%98%D0%9A%D0%9E%D0%9B%D0%AC.pdf%22",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": [
+        15,
+        16
+      ]
+    },
+    {
+      "key": "TN-VHF-STO2024",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-VHF-STO2024-full-primary.pdf",
+      "sha256": "8d19a93533a64d82a2fec06e061fd9545d4bc7c8a6b691372b8ce1fcd995d687",
+      "bytes": 2360891,
+      "pdfPages": 60,
+      "url": "https://pim.tn.ru/a/4/4/f/a44f3b39dbc7fcebfbb1b14bc4addd77e6be4f3c________72746455.4.4.3_2024________________________________._2.pdf?response-content-disposition=filename%3D%22%D0%A1%D0%A2%D0%9E+72746455_4_4_3_2024+%D0%A1%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0+%D1%84%D0%B0%D1%81%D0%B0%D0%B4%D0%BD%D0%B0%D1%8F+%D0%BD%D0%B0%D1%80%D1%83%D0%B6%D0%BD%D0%BE%D0%B3%D0%BE+%D1%83%D1%82%D0%B5%D0%BF%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F+%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B9+%D0%BD%D0%B0%D0%B2%D0%B5%D1%81%D0%BD%D0%B0%D1%8F+%D1%81+%D0%B2%D0%BE%D0%B7%D0%B4%D1%83%D1%88%D0%BD%D1%8B%D0%BC+%D0%B7%D0%B0%D0%B7%D0%BE%D1%80%D0%BE%D0%BC+%D0%A2%D0%9D_%D0%A4%D0%90%D0%A1%D0%90%D0%94+%D0%92%D0%95%D0%9D%D0%A2_+%D0%A2%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5+%D0%BE%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5_+%D0%A2%D1%80%D0%B5%D0%B1%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F+%D0%BA+%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8E%2C+%D0%BC%D0%B0%D1%82%D0%B5%D1%80%D0%B8%D0%B0%D0%BB%D0%B0%D0%BC%2C+%D0%B8%D0%B7%D0%B4%D0%B5%D0%BB%D0%B8%D1%8F%D0%BC+%D0%B8+%D0%BA%D0%BE%D0%BD%D1%81%D1%82%D1%80%D1%83%D0%BA%D1%86%D0%B8%D1%8F%D0%BC.pdf%22",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": [
+        2,
+        19,
+        20
+      ]
+    },
+    {
+      "key": "TN-VHF-system-current-primary.pdf",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-VHF-system-current-primary.pdf",
+      "sha256": "131b423186beb0de8057817c2d2b16a2ab2ff0a17e06a113b3c24b9ec0102d87",
+      "bytes": 251673,
+      "pdfPages": 3,
+      "url": "https://pim.tn.ru/0/8/2/b/082bb411554ffb7441c1cc401ee7dc46429149d1_______________________10000071_________________________________________RU_ru.pdf?response-content-disposition=filename%3D%22%D0%A2%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9+%D0%BB%D0%B8%D1%81%D1%82+%D0%A4%D0%90%D0%A1_10000071+%D0%A2%D0%9D_%D0%A4%D0%90%D0%A1%D0%90%D0%94+%D0%92%D0%B5%D0%BD%D1%82.pdf%22",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": []
+    },
+    {
+      "key": "SP-KR65-101-2025",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/SP-KR65-101-2025-full-primary.pdf",
+      "sha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+      "bytes": 3283661,
+      "pdfPages": 178,
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/obedinennyeizolacionnye-13267ac76cb422108.87225877.pdf",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": [
+        1,
+        97
+      ],
+      "sourceWarnings": [
+        "Actualsignedorder51of10.02.2025enclosed,butbodypreface/effectivedateplaceholdersremain",
+        "Scope1namesinternalroomswhile7.1.6explicitlycontainsfacadepreconditions;donotclaimuniversalSFTKtechnicaladmission"
+      ]
+    },
+    {
+      "key": "SP-KR53-101-2025",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/SP-KR53-101-2025-official.pdf",
+      "sha256": "279ad74a648a122a62ccb8bdc1a601c8c14138ef37fcb71fb7692c1bafdcdd31",
+      "sourceKind": "OFFICIAL_KG_FULL_PRIMARY_PDF_REUSE_EXACT",
+      "priorSealedSource": "steel-historical-candidate-r2",
+      "visuallyReviewedPages": "Previouslyreviewedfullsource;newsourcebranchesnotrepeated"
+    }
+  ],
+  "systems": [
+    {
+      "key": "current_mineral_wool_thin_render",
+      "publicTechnologyNameRu": "Утеплённый фасад с минераловатными плитами и тонкослойной отделкой",
+      "publicCardDisposition": "INTERNAL_SOURCE_PROFILE_OF_EXISTING_FACADE_INSULATION_WORK_NOT_BRAND_CARD",
+      "currentCatalogId": "canonical-work:base:insulation_interior_facade_install_standard",
+      "sourceSystem": "ТН-ФАСАД Профи; techcard Ihalf2025;STO72746455-4.4.2-2025",
+      "systemExactNodes": {
+        "basePrimer": "020",
+        "bondingAndBase": "210(S)",
+        "insulation": "ТЕХНОФАС ОПТИМА",
+        "insulationFixing": "TERMOCLIP Стена1MT — actual approved length/type/layout",
+        "mesh": "2000",
+        "decorativePrimer": "001",
+        "decorativeRender": "401;grain2mm;factorytinted",
+        "paint": null
+      },
+      "sourcePages": [
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        15,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53
+      ],
+      "quantities": {
+        "bondingDryKgPerM2": "5.5",
+        "baseDryKgPerM2": "5.5",
+        "dryBagKg": "25",
+        "bondingWaterLPer25Kg": "5.25",
+        "baseWaterLPer25Kg": "5.75",
+        "insulationAreaCoefficient": "1.1",
+        "mainMeshM2PerM2": "1.1",
+        "mineralRenderKgPerM2At2mm": "2.6",
+        "renderWaterLPer25KgMinimum": "3.75",
+        "renderWaterLPer25KgMaximum": "4.25",
+        "primerTrialSourceRangeGPerM2": [
+          "100",
+          "350"
+        ],
+        "paintPerOneCoatSourceGPerM2": [
+          "100",
+          "200"
+        ],
+        "paintSourceWording": "Расход, не менее; depends on substrate/colour/method;notproveduniversalupperlimit",
+        "sourceAssemblyAdhesionMinPercent": "40"
+      },
+      "labor": [
+        {
+          "key": "scaffold",
+          "titleRu": "Установка и разборка лесов",
+          "scopeUnitId": "m2",
+          "manHoursPerScopeUnit": "0.4350",
+          "sourceExampleQuantity": "1200",
+          "printedExampleManHours": "522.0",
+          "literalRateTimesExample": "522.0000",
+          "profession": "Монтажник",
+          "crewPersons": 3,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "cleaning",
+          "titleRu": "Очистка стен",
+          "scopeUnitId": "m2",
+          "manHoursPerScopeUnit": "0.0200",
+          "sourceExampleQuantity": "1000",
+          "printedExampleManHours": "20.0",
+          "literalRateTimesExample": "20.0000",
+          "profession": "Штукатур",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "priming",
+          "titleRu": "Огрунтовка стен",
+          "scopeUnitId": "m2",
+          "manHoursPerScopeUnit": "0.0907",
+          "sourceExampleQuantity": "1000",
+          "printedExampleManHours": "90.7",
+          "literalRateTimesExample": "90.7000",
+          "profession": "Маляр",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "layout",
+          "titleRu": "Провешивание стен",
+          "scopeUnitId": "m2",
+          "manHoursPerScopeUnit": "0.1200",
+          "sourceExampleQuantity": "1000",
+          "printedExampleManHours": "120.0",
+          "literalRateTimesExample": "120.0000",
+          "profession": "Штукатур",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "levelling",
+          "titleRu": "Сплошное выравнивание поверхности",
+          "scopeUnitId": "m2",
+          "manHoursPerScopeUnit": "0.3000",
+          "sourceExampleQuantity": "1000",
+          "printedExampleManHours": "300.0",
+          "literalRateTimesExample": "300.0000",
+          "profession": "Штукатур",
+          "crewPersons": 2,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "starter",
+          "titleRu": "Установка опорного профиля",
+          "scopeUnitId": "m",
+          "manHoursPerScopeUnit": "0.2840",
+          "sourceExampleQuantity": "150",
+          "printedExampleManHours": "42.6",
+          "literalRateTimesExample": "42.6000",
+          "profession": "Штукатур",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "bonding",
+          "titleRu": "Приклеивание минераловатных плит, зачеканка швов и шлифовка стыков",
+          "scopeUnitId": "m2",
+          "manHoursPerScopeUnit": "0.4700",
+          "sourceExampleQuantity": "1000",
+          "printedExampleManHours": "470.0",
+          "literalRateTimesExample": "470.0000",
+          "profession": "Штукатур",
+          "crewPersons": 2,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "anchors",
+          "titleRu": "Сверление и установка дюбелей",
+          "scopeUnitId": "piece",
+          "manHoursPerScopeUnit": "0.0549",
+          "sourceExampleQuantity": "6150",
+          "printedExampleManHours": "337.6",
+          "literalRateTimesExample": "337.6350",
+          "profession": "Штукатур",
+          "crewPersons": 2,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "reinforcement-profiles",
+          "titleRu": "Усиливающие элементы и профили из стеклосетки",
+          "scopeUnitId": "m",
+          "manHoursPerScopeUnit": "0.2980",
+          "sourceExampleQuantity": "400",
+          "printedExampleManHours": "119.2",
+          "literalRateTimesExample": "119.2000",
+          "profession": "Штукатур",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "base",
+          "titleRu": "Штукатурный слой со стеклосеткой",
+          "scopeUnitId": "m2",
+          "manHoursPerScopeUnit": "0.3147",
+          "sourceExampleQuantity": "1050",
+          "printedExampleManHours": "330.4",
+          "literalRateTimesExample": "330.4350",
+          "profession": "Штукатур",
+          "crewPersons": 2,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "finish-priming",
+          "titleRu": "Огрунтовка оштукатуренных поверхностей",
+          "scopeUnitId": "m2",
+          "manHoursPerScopeUnit": "0.0907",
+          "sourceExampleQuantity": "1050",
+          "printedExampleManHours": "95.2",
+          "literalRateTimesExample": "95.2350",
+          "profession": "Маляр",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "render",
+          "titleRu": "Декоративный раствор",
+          "scopeUnitId": "m2",
+          "manHoursPerScopeUnit": "0.1200",
+          "sourceExampleQuantity": "1050",
+          "printedExampleManHours": "126.0",
+          "literalRateTimesExample": "126.0000",
+          "profession": "Штукатур",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "painting",
+          "titleRu": "Окраска фасада",
+          "scopeUnitId": "m2",
+          "manHoursPerScopeUnit": "0.1428",
+          "sourceExampleQuantity": "1050",
+          "printedExampleManHours": "149.9",
+          "literalRateTimesExample": "149.9400",
+          "profession": "Маляр",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "horizontal-feed",
+          "titleRu": "Переноска со склада до30м",
+          "scopeUnitId": "t",
+          "manHoursPerScopeUnit": "1.9800",
+          "sourceExampleQuantity": "32",
+          "printedExampleManHours": "63.4",
+          "literalRateTimesExample": "63.3600",
+          "profession": "Подсобник",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "mixing",
+          "titleRu": "Приготовление сухой смеси миксером",
+          "scopeUnitId": "t",
+          "manHoursPerScopeUnit": "6.7000",
+          "sourceExampleQuantity": "17",
+          "printedExampleManHours": "113.9",
+          "literalRateTimesExample": "113.9000",
+          "profession": "Подсобник",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        },
+        {
+          "key": "vertical-feed",
+          "titleRu": "Подача электролебёдкой до10м",
+          "scopeUnitId": "t",
+          "manHoursPerScopeUnit": "1.3300",
+          "sourceExampleQuantity": "32",
+          "printedExampleManHours": "42.6",
+          "literalRateTimesExample": "42.5600",
+          "profession": "Подсобник",
+          "crewPersons": 1,
+          "crewCountNotHourMultiplier": true,
+          "pdfPage": 47
+        }
+      ],
+      "physicalProvision": [
+        {
+          "ordinal": 1,
+          "key": "mortar-mixer",
+          "titleRu": "Растворосмеситель 80л",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "capacity_l": "80",
+            "power_kw": "1.5",
+            "mass_kg": "200"
+          },
+          "operationKeys": [
+            "mixing"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 2,
+          "key": "slow-drill-with-paddle",
+          "titleRu": "Дрель низкооборотная со специальной насадкой",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "power_kw": "0.6",
+            "mass_kg": "3.9"
+          },
+          "operationKeys": [
+            "mixing"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 3,
+          "key": "perforator",
+          "titleRu": "Перфоратор",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "power_kw": "0.5",
+            "hole_diameter_mm": "13"
+          },
+          "operationKeys": [
+            "drilling"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 4,
+          "key": "screwdriver",
+          "titleRu": "Электрошуруповёрт",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "power_kw": "0.23"
+          },
+          "operationKeys": [
+            "starter",
+            "anchors"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 5,
+          "key": "industrial-vacuum",
+          "titleRu": "Пылесос промышленный со шлангом3,5м",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "power_kw": "1.2",
+            "container_l": "18",
+            "hose_m": "3.5",
+            "mass_kg": "11"
+          },
+          "operationKeys": [
+            "preparation",
+            "drilling"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 6,
+          "key": "pressure-washer",
+          "titleRu": "Агрегат высокого давления для промывки стен",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "pressure_mpa": "25",
+            "mass_kg": "75"
+          },
+          "operationKeys": [
+            "preparation"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 7,
+          "key": "surface-grinder",
+          "titleRu": "Шлифовальная машина для очистки основания",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "power_kw": "0.56"
+          },
+          "operationKeys": [
+            "preparation"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 8,
+          "key": "eps-jigsaw",
+          "titleRu": "Электролобзик для пенополистирольных плит",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "power_kw": "0.35",
+            "applicability": "EPS_ONLY_NOT_SELECTED_MW"
+          },
+          "operationKeys": [
+            "eps-cutting"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": false,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 9,
+          "key": "insulation-handsaw",
+          "titleRu": "Пила-ножовка для плит утеплителя",
+          "quantity": "3",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "cutting"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 10,
+          "key": "buckets-aggregate",
+          "titleRu": "Вёдра для смесей5/20/30л, суммарное число",
+          "quantity": "10",
+          "unitId": "piece",
+          "physicalProperties": {
+            "sizes_l": [
+              "5",
+              "20",
+              "30"
+            ],
+            "distributionBySizePublished": false
+          },
+          "operationKeys": [
+            "mixing",
+            "internal-feed"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 11,
+          "key": "wide-brush",
+          "titleRu": "Кисть-макловица",
+          "quantity": "3",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "priming",
+            "finish-priming"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 12,
+          "key": "adhesive-trowel",
+          "titleRu": "Кельма для клеевого состава",
+          "quantity": "3",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "bonding"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 13,
+          "key": "notched-spatula",
+          "titleRu": "Шпатель с квадратными зубьями6–10мм",
+          "quantity": "3",
+          "unitId": "piece",
+          "physicalProperties": {
+            "square_tooth_mm_min": "6",
+            "square_tooth_mm_max": "10"
+          },
+          "operationKeys": [
+            "bonding"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 14,
+          "key": "outer-corner-spatula",
+          "titleRu": "Шпатель для наружного угла",
+          "quantity": "3",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "junctions"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 15,
+          "key": "inner-corner-spatula",
+          "titleRu": "Шпатель для внутреннего угла",
+          "quantity": "3",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "junctions"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 16,
+          "key": "rules-and-floats-aggregate",
+          "titleRu": "Правила и полутёрки, суммарное число",
+          "quantity": "3",
+          "unitId": "piece",
+          "physicalProperties": {
+            "types": [
+              "toothed_float600mm",
+              "small_toothed_float250mm"
+            ],
+            "tooth_width_mm": "10",
+            "distributionByTypePublished": false
+          },
+          "operationKeys": [
+            "bonding",
+            "base",
+            "render"
+          ],
+          "pdfPage": 52,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 17,
+          "key": "metal-spatulas-aggregate",
+          "titleRu": "Шпатели металлические100/200/300мм, суммарное число",
+          "quantity": "3",
+          "unitId": "piece",
+          "physicalProperties": {
+            "widths_mm": [
+              "100",
+              "200",
+              "300"
+            ],
+            "distributionByWidthPublished": false
+          },
+          "operationKeys": [
+            "preparation"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 18,
+          "key": "mesh-scissors",
+          "titleRu": "Ножницы для стеклосетки",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "base",
+            "junctions"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 19,
+          "key": "sheet-shears",
+          "titleRu": "Ножницы ручные по оцинкованной стали",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "junctions"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 20,
+          "key": "sealant-gun",
+          "titleRu": "Герметизатор",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "junctions"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 21,
+          "key": "sheet-work-tools-aggregate",
+          "titleRu": "Набор для жестяных работ, буквальная исходная позиция",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "individualWorkingPartsPublished": false
+          },
+          "operationKeys": [
+            "junctions"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 22,
+          "key": "metal-tape",
+          "titleRu": "Рулетка металлическая",
+          "quantity": "3",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "layout"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 23,
+          "key": "metal-rulers-aggregate",
+          "titleRu": "Линейки300/500/1500мм, суммарное число",
+          "quantity": "3",
+          "unitId": "piece",
+          "physicalProperties": {
+            "lengths_mm": [
+              "300",
+              "500",
+              "1500"
+            ],
+            "distributionByLengthPublished": false
+          },
+          "operationKeys": [
+            "cutting"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 24,
+          "key": "wood-straightedge",
+          "titleRu": "Рейка деревянная длиной не менее2м",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "minLength_m": "2"
+          },
+          "operationKeys": [
+            "quality"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 25,
+          "key": "squares",
+          "titleRu": "Угольник",
+          "quantity": "2",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "quality"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 26,
+          "key": "rule",
+          "titleRu": "Правило",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "quality"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 27,
+          "key": "level",
+          "titleRu": "Уровень",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "quality"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 28,
+          "key": "feeler-set",
+          "titleRu": "Набор щупов",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {
+            "individualWorkingPartsPublished": false
+          },
+          "operationKeys": [
+            "quality"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        },
+        {
+          "ordinal": 29,
+          "key": "moisture-meter",
+          "titleRu": "Влагомер",
+          "quantity": "1",
+          "unitId": "piece",
+          "physicalProperties": {},
+          "operationKeys": [
+            "quality"
+          ],
+          "pdfPage": 53,
+          "basis": {
+            "kind": "ONE_PUBLISHED_CREW_FRONT",
+            "persons": 12
+          },
+          "selectedForMW": true,
+          "quantityIsOperatingHours": false,
+          "wholeKitSufficiencyAccepted": false
+        }
+      ],
+      "distinctBases": {
+        "labourExample": {
+          "conditionedFacadeAreaM2": "1000",
+          "glazingCoefficient": "0.18",
+          "plannedCalendarDays": 45,
+          "monthlyProductivityBrigadePersons": 14,
+          "monthlyProductivityNotRuntimeNorm": true
+        },
+        "toolStockPersons": 12,
+        "doNotScale12PersonStockFrom14PersonProductivity": true,
+        "sourceExampleBaseArea1050IsNotUniversal1_05Multiplier": true
+      },
+      "sourceWarnings": [
+        "section10 points to wrong appendixnumbers: actualequipmentappendix4,not3",
+        "techcard2025referencesSTO2019;currentSTO2025replaces2019;compatibilitymustbecheckedagainstfullselectedprofile",
+        "EPSjigsawline8notusedforselectedMW",
+        "publishedaggregate10bucketsdoesnotmean10bucketsforeachsize",
+        "publishedaggregate3rulers/spatulas/floatsdoesnotpublishdistributionbytype",
+        "printedroundedlaboursubtotalsarenotexactrateproducts",
+        "sourceextraordinaryconditions/downspouts/flashings/outoftolerancelevellingarenotunconditionallycovered",
+        "CurrentSTO2025section6.6narrows010application: selectedsilicone401uses001;olderTC010permissionnotcarriedforward"
+      ],
+      "remainingInternalNorms": [
+        "compatibleworkingpartsandwear/reservebyrealworkfront",
+        "completephysicalscaffoldsystemBOMifnotcontractedreadyaccess",
+        "cleanupwater/wastepackaging/fullcommercialdeliveryquantitiesoutsidepublishedinternalfeed"
+      ],
+      "projectFacts": [
+        "actualprimaryandindependentoperationareas/lengths",
+        "structuralanchortype/length/countandpulloutreport",
+        "junction/opening/fire/projectBOQ",
+        "oneactive12personfrontcountandPPRreference",
+        "actualverifiedprimer/painttrialconsumptionandbatchwaterrecipe",
+        "accessPPR/scaffoldlayout/electricpower/logisticsactualroute"
+      ],
+      "newFULL": 0,
+      "selectedBoundedProfile": {
+        "key": "mw_optima_210_base4mm_401_2mm_tinted",
+        "publicNameRu": "Минераловатный фасад с цветной силиконовой штукатуркой",
+        "baseLayerThicknessMm": "4",
+        "baseThicknessEvidence": "IntersectionofTCtable3consumption3–4mmandoperation8base4–5mm",
+        "decorativeMaterial": "401,grain2mm,factorytinted",
+        "decorativeSourceConsumptionKgPerM2": "2.7",
+        "decorativeConsumptionIsApproximate": true,
+        "decorativePrimer": "001;currentSTO2025section6.6specificallyrequiresfor401/402;TCtable1providesrate",
+        "paintIncluded": false,
+        "paintExclusionEvidence": "TC7.5.4.11+holderKZsystempage:colouredsiliconefinishingrequiresnoextrapaint",
+        "maxPublishedInternalVerticalFeedHeightM": "10",
+        "wholeProductionHeightIsNot150MPlatformCapacity": true,
+        "wholeKitStockNormPersons": 12,
+        "monthlyProductivity14PersonBrigadeNotUsed": true,
+        "selectedSourceLaborKeys": [
+          "scaffold",
+          "cleaning",
+          "priming",
+          "layout",
+          "levelling",
+          "starter",
+          "bonding",
+          "anchors",
+          "reinforcement-profiles",
+          "base",
+          "finish-priming",
+          "render",
+          "horizontal-feed",
+          "mixing",
+          "vertical-feed"
+        ],
+        "insulationThicknessMm": "120"
+      }
+    },
+    {
+      "key": "porcelain_ventilated_facade",
+      "publicTechnologyNameRu": "Утеплённый навесной фасад с керамогранитной облицовкой",
+      "selectedExactSystem": "ТН-ФАСАД ВЕНТ(СТ-КГ-В-Т);STO72746455-4.4.3-2024,edition28.11.2025withamendment2",
+      "notMechanicalVariantProduct": true,
+      "publicCardIsNotPanelFormat": true,
+      "panelScope": {
+        "material": "porcelain",
+        "sourceFormatsMm": [
+          [
+            "600",
+            "600"
+          ],
+          [
+            "1200",
+            "600"
+          ]
+        ],
+        "thicknessMm": "10",
+        "sourceFormatsAreInternalGeometryNotCards": true
+      },
+      "sourceTechcard": "IIhalf2020;18spreadPDFpages;currentholderKZpagelinksit",
+      "sourcePrimaryPages": {
+        "wholeScope": [
+          2,
+          3
+        ],
+        "toolStock": 15,
+        "laborAndOperations": 16,
+        "exactSubsystem": [
+          19,
+          20
+        ],
+        "currentSystemTDS": [
+          1,
+          2,
+          3
+        ]
+      },
+      "labor": [
+        {
+          "key": "layout",
+          "scopeUnitId": "m2",
+          "printedScopeQuantity": "10",
+          "printedManHours": "0.15",
+          "crew": [
+            {
+              "role": "installer",
+              "grade": 5,
+              "persons": 1
+            },
+            {
+              "role": "installer",
+              "grade": 4,
+              "persons": 1
+            }
+          ]
+        },
+        {
+          "key": "brackets",
+          "scopeUnitId": "piece",
+          "printedScopeQuantity": "10",
+          "printedManHours": "0.32",
+          "crew": [
+            {
+              "role": "installer",
+              "grade": 5,
+              "persons": 1
+            },
+            {
+              "role": "installer",
+              "grade": 4,
+              "persons": 1
+            }
+          ]
+        },
+        {
+          "key": "guides",
+          "scopeUnitId": "m2",
+          "printedScopeQuantity": "10",
+          "printedManHours": "1.30",
+          "crew": [
+            {
+              "role": "installer",
+              "grade": 5,
+              "persons": 1
+            },
+            {
+              "role": "installer",
+              "grade": 4,
+              "persons": 1
+            }
+          ]
+        },
+        {
+          "key": "cladding",
+          "scopeUnitId": "m2",
+          "printedScopeQuantity": "1",
+          "printedManHours": "0.84",
+          "crew": [
+            {
+              "role": "cladding_installer",
+              "grade": 4,
+              "persons": 1
+            }
+          ]
+        },
+        {
+          "key": "insulation",
+          "scopeUnitId": "m2",
+          "printedScopeQuantity": "1",
+          "printedManHours": "0.30",
+          "crew": [
+            {
+              "role": "insulator",
+              "grade": 4,
+              "persons": 1
+            },
+            {
+              "role": "insulator",
+              "grade": 3,
+              "persons": 1
+            },
+            {
+              "role": "insulator",
+              "grade": 2,
+              "persons": 1
+            }
+          ]
+        },
+        {
+          "key": "scaffold",
+          "scopeUnitId": "m2",
+          "printedScopeQuantity": "10",
+          "printedManHours": "1.14",
+          "crew": [
+            {
+              "role": "carpenter",
+              "grade": 4,
+              "persons": 1
+            },
+            {
+              "role": "carpenter",
+              "grade": 2,
+              "persons": 1
+            }
+          ]
+        }
+      ],
+      "physicalProvision": [
+        {
+          "ordinal": 1,
+          "key": "facade-platform",
+          "titleRu": "Фасадная люлька4м,300кг",
+          "quantity": "1",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "brackets",
+            "insulation",
+            "guides",
+            "cladding",
+            "junctions"
+          ]
+        },
+        {
+          "ordinal": 2,
+          "key": "plumb-cord",
+          "titleRu": "Отвес0,4кг со шнуром5м",
+          "quantity": "2",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "layout",
+            "brackets",
+            "guides",
+            "cladding",
+            "quality"
+          ]
+        },
+        {
+          "ordinal": 3,
+          "key": "spirit-level",
+          "titleRu": "Ватерпас1,5м",
+          "quantity": "1",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "brackets",
+            "guides",
+            "quality"
+          ]
+        },
+        {
+          "ordinal": 4,
+          "key": "laser-survey-level",
+          "titleRu": "Лазерный нивелир0,1мм/м",
+          "quantity": "1",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "layout",
+            "quality"
+          ]
+        },
+        {
+          "ordinal": 5,
+          "key": "laser-level",
+          "titleRu": "Лазерный уровень0,1мм/м",
+          "quantity": "1",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "layout",
+            "quality"
+          ]
+        },
+        {
+          "ordinal": 6,
+          "key": "drill",
+          "titleRu": "Дрель1000Вт, отверстие в бетоне до20мм",
+          "quantity": "1",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "brackets",
+            "insulation"
+          ]
+        },
+        {
+          "ordinal": 7,
+          "key": "steel-tape",
+          "titleRu": "Рулетка стальная20м",
+          "quantity": "2",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "layout",
+            "quality"
+          ]
+        },
+        {
+          "ordinal": 8,
+          "key": "ratchet-screwdriver",
+          "titleRu": "Отвёртка с рычажным наконечником",
+          "quantity": "2",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "junctions",
+            "guides"
+          ]
+        },
+        {
+          "ordinal": 9,
+          "key": "manual-nut-driver",
+          "titleRu": "Гайковёрт ручной, момент по расчёту",
+          "quantity": "1",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "brackets"
+          ]
+        },
+        {
+          "ordinal": 10,
+          "key": "drill-and-driver-attachments",
+          "titleRu": "Электродрель800Вт с насадками для завинчивания",
+          "quantity": "1",
+          "unitId": "set",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "literalQuantity": "1компл",
+          "publishedSetInternalsNotIndividuallyQuantified": true,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "brackets",
+            "guides"
+          ]
+        },
+        {
+          "ordinal": 11,
+          "key": "manual-riveter",
+          "titleRu": "Ручной заклёпочный инструмент",
+          "quantity": "1",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "guides",
+            "cladding"
+          ]
+        },
+        {
+          "ordinal": 12,
+          "key": "battery-riveter",
+          "titleRu": "Заклёпочный пистолет аккумуляторный",
+          "quantity": "1",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "guides",
+            "cladding"
+          ]
+        },
+        {
+          "ordinal": 13,
+          "key": "metal-shears",
+          "titleRu": "Ножницы для алюминиевого листа до2,5мм",
+          "quantity": "1",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": false,
+          "operationKeys": []
+        },
+        {
+          "ordinal": 14,
+          "key": "hammer",
+          "titleRu": "Молоток для дюбелей",
+          "quantity": "1",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "brackets",
+            "insulation"
+          ]
+        },
+        {
+          "ordinal": 15,
+          "key": "insulation-gloves",
+          "titleRu": "Защитные перчатки для теплоизоляции",
+          "quantity": "2",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "insulation"
+          ]
+        },
+        {
+          "ordinal": 16,
+          "key": "fencing",
+          "titleRu": "Ограждения участка",
+          "quantity": null,
+          "unitId": null,
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": true,
+          "selectedForPorcelain": false,
+          "operationKeys": []
+        },
+        {
+          "ordinal": 17,
+          "key": "safety-belt",
+          "titleRu": "Предохранительный пояс",
+          "quantity": "2",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "brackets",
+            "insulation",
+            "guides",
+            "cladding",
+            "junctions"
+          ]
+        },
+        {
+          "ordinal": 18,
+          "key": "helmet",
+          "titleRu": "Каска строительная",
+          "quantity": "2",
+          "unitId": "piece",
+          "pdfPage": 15,
+          "basis": "PER_LINK_SIZE_NOT_IN_TABLE15_ITSELF",
+          "sourceQuantityAbsent": false,
+          "selectedForPorcelain": true,
+          "operationKeys": [
+            "brackets",
+            "insulation",
+            "guides",
+            "cladding",
+            "junctions"
+          ]
+        }
+      ],
+      "sourceNormMaterials": "CurrentSTO4.4explicitlyrequiresnormandreservesinrealprojecttechnologyBOQ;notblanktemplatefilledfromarea",
+      "projectFacts": [
+        "realstructuralcomponentBOM/wind/seismic/base/pullout",
+        "exactapprovedclamp/rivet/anchor/thermalbreak/profileandactualquantities",
+        "realpanelcutlayoutandsupply",
+        "PPRaccess/power/protection/QA/waste/externalroutes"
+      ],
+      "doNotClaimFullToolKitFromTable15": true,
+      "remainingSpecificSourceGaps": [
+        "table15saysperlinkwithoutuniversalcrewsize;table16hasdifferent1/2/3-personcrews",
+        "insulationknifeandworkingpartsmentionedintable17butnotquantifiedintable15",
+        "metal-scissorsnotaporcelaincutter;precutfactorysupplyrequiresrealcutlayout/serviceproof",
+        "publishedlaborrecommendationexcludespreparatoryworks",
+        "actualKGmandatoryrequirementsremainapplicable;RFregionTDSisnolegalKGadmission",
+        "Table15drill-with-attachmentsis1set,not1standalonedrill;internalsnotinvented",
+        "KGprojectprofileis50mmaximumselectedscope;8dowels/m2high/windconditionnotborrowedasanunconditionalnorm",
+        "Table15drill-with-attachmentsis1set,not1standalonedrill;internalsnotinvented",
+        "KGprojectprofileis50mmaximumselectedscope;8dowels/m2high/windconditionnotborrowedasanunconditionalnorm",
+        "Table15drill-with-attachmentsis1set,not1standalonedrill;internalsnotinvented",
+        "KGprojectprofileis50mmaximumselectedscope;8dowels/m2high/windconditionnotborrowedasanunconditionalnorm"
+      ],
+      "newFULL": 0,
+      "catalogId": "canonical-work:master:facade_ventilated_porcelain_install",
+      "workKey": "facade_ventilated_porcelain_install",
+      "groupId": "wg:master:facade_ventilated_porcelain_install",
+      "sourceId": "gox_facade_ventilated_porcelain_whole_r3",
+      "prefix": "facade:current-porcelain:r3",
+      "primaryParameterId": "porcelain_facade_area_m2",
+      "selectedBoundedProfile": {
+        "key": "vertical_T_visible_clamps_porcelain10_singleMW100",
+        "wholeSubsystem": "СТ-КГ-В-Т",
+        "sourceEdition": "СТО72746455-4.4.3-2024;28.11.2025;Изм.2",
+        "panelsMm": [
+          "600",
+          "600",
+          "10"
+        ],
+        "panelFormatIsNotPublicCard": true,
+        "insulation": "ТЕХНОВЕНТ СТАНДАРТ;singlelayer;100mm actualheatdesign",
+        "insulationM2PerM2": "1.1",
+        "brackets": "КР-Н-L/КРУ-1р-L/КРУ-2р-L only as selected real structural BOM",
+        "thermalBreak": "90x60x2/90x80x2/70x70x2 per compatible actual bracket",
+        "guide": "ТО-А-Б-t;real designed section and thickness",
+        "rowClamp": "A.26;10–11mm;БЗ",
+        "startClamp": "A.34;10–11mm;РЖ",
+        "cornerClamp": "A.40;10–11mm;БЗ",
+        "noHiddenClampBorrow": true,
+        "structuralRivets": "Actual compatible stainless fixation toKG6.11;doNotCopyTC4.0mmAsModernStructuralRule",
+        "access": "Ready façade platform4m/300kg;realPPR safetyload/power/rigging required;not150mproductionadmission",
+        "scopeProductionHeightMaximumM": "50",
+        "KGGeneralLimit66mNot150m": true,
+        "sourceLaborApplicableKeys": [
+          "layout",
+          "brackets",
+          "guides",
+          "cladding",
+          "insulation"
+        ],
+        "scaffoldLaborNotAddedToReadyPlatformMethod": true,
+        "exactStockFrontBasis": "Table15literalPER_LINK;sizeNOTproved;never12/2/3personrescaling",
+        "membrane": "No membrane only for selected holder-approved single stone-wool layer AND acceptedKGdesign;notgenericall-insulationrule"
+      },
+      "projectComponents": [
+        {
+          "key": "thermal-break",
+          "titleRu": "Терморазрыв под кронштейн по проекту",
+          "unitId": "piece",
+          "operation": "brackets",
+          "sourceIdentity": "A.06/A.07/A.08 exactpair",
+          "parameterId": "porcelain_bom_thermal_break",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "bracket",
+          "titleRu": "Несущий фасадный кронштейн по проекту",
+          "unitId": "piece",
+          "operation": "brackets",
+          "sourceIdentity": "A.48/A.50/A.51 exactstructuralmember",
+          "parameterId": "porcelain_bom_bracket",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "fixing-washer",
+          "titleRu": "Шайба фиксирующая30×33×2мм из коррозионностойкой стали",
+          "unitId": "piece",
+          "operation": "brackets",
+          "sourceIdentity": "A.99 AISI430",
+          "parameterId": "porcelain_bom_fixing_washer",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "base-anchor",
+          "titleRu": "Фасадный анкер основания по принятому испытанию",
+          "unitId": "piece",
+          "operation": "brackets",
+          "sourceIdentity": "Approvedanchor/length/pullout/design;notarea",
+          "parameterId": "porcelain_bom_base_anchor",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "structural-rivet",
+          "titleRu": "Коррозионностойкая заклёпка подсистемы по проекту",
+          "unitId": "piece",
+          "operation": "guides",
+          "sourceIdentity": "KG6.11 andSTO exactjoint;notTC4.0mmgeneric",
+          "parameterId": "porcelain_bom_structural_rivet",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "bracket-extender",
+          "titleRu": "Удлинитель кронштейна по проекту",
+          "unitId": "piece",
+          "operation": "guides",
+          "sourceIdentity": "A.91",
+          "parameterId": "porcelain_bom_bracket_extender",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "T-guide",
+          "titleRu": "Профиль Т-образный фасадный по принятому сечению",
+          "unitId": "m",
+          "operation": "guides",
+          "sourceIdentity": "A.83 ТО-А-Б-t",
+          "parameterId": "porcelain_bom_T_guide",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "row-clamp",
+          "titleRu": "Кляммер рядовой для плиты10мм",
+          "unitId": "piece",
+          "operation": "cladding",
+          "sourceIdentity": "A.26 selectedvisible10–11mm БЗ",
+          "parameterId": "porcelain_bom_row_clamp",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "start-clamp",
+          "titleRu": "Кляммер стартовый для плиты10мм",
+          "unitId": "piece",
+          "operation": "cladding",
+          "sourceIdentity": "A.34 selectedvisible10–11mm РЖ",
+          "parameterId": "porcelain_bom_start_clamp",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "corner-clamp",
+          "titleRu": "Кляммер угловой для плиты10мм",
+          "unitId": "piece",
+          "operation": "cladding",
+          "sourceIdentity": "A.40 selectedvisible10–11mm БЗ",
+          "parameterId": "porcelain_bom_corner_clamp",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "panel",
+          "titleRu": "Керамогранитная фасадная плита600×600×10мм",
+          "unitId": "piece",
+          "operation": "cladding",
+          "sourceIdentity": "Table5.3;actualapprovedcutandsupplylayout",
+          "parameterId": "porcelain_bom_panel",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "insulation-anchor",
+          "titleRu": "Тарельчатый анкер для минераловатной плиты100мм по проекту",
+          "unitId": "piece",
+          "operation": "insulation",
+          "sourceIdentity": "Termoclip2MH;actualapprovedlength/base/pattern;not5/6/8universal",
+          "parameterId": "porcelain_bom_insulation_anchor",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "window-bracket",
+          "titleRu": "Кронштейн оконного обрамления по проекту",
+          "unitId": "piece",
+          "operation": "junctions",
+          "sourceIdentity": "A.52 РЖ200-54-50-1.0",
+          "parameterId": "porcelain_bom_window_bracket",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "node-bracket",
+          "titleRu": "Кронштейн дополнительной подконструкции по проекту",
+          "unitId": "piece",
+          "operation": "junctions",
+          "sourceIdentity": "A.49 КР-С-У",
+          "parameterId": "porcelain_bom_node_bracket",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "node-profile",
+          "titleRu": "Профиль дополнительной подконструкции по проекту",
+          "unitId": "m",
+          "operation": "junctions",
+          "sourceIdentity": "A.59 ГО-А-Б-t",
+          "parameterId": "porcelain_bom_node_profile",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "node-extender",
+          "titleRu": "Удлинитель дополнительной подконструкции по проекту",
+          "unitId": "piece",
+          "operation": "junctions",
+          "sourceIdentity": "A.90",
+          "parameterId": "porcelain_bom_node_extender",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "mounting-shelf",
+          "titleRu": "Монтажная полка625×625×1,2мм по проекту",
+          "unitId": "piece",
+          "operation": "junctions",
+          "sourceIdentity": "A.56",
+          "parameterId": "porcelain_bom_mounting_shelf",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "fixing-angle",
+          "titleRu": "Крепёжный угол60×60×62×2мм по проекту",
+          "unitId": "piece",
+          "operation": "junctions",
+          "sourceIdentity": "A.44",
+          "parameterId": "porcelain_bom_fixing_angle",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "left-connector",
+          "titleRu": "Соединитель дополнительного профиля левый",
+          "unitId": "piece",
+          "operation": "junctions",
+          "sourceIdentity": "A.84",
+          "parameterId": "porcelain_bom_left_connector",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "right-connector",
+          "titleRu": "Соединитель дополнительного профиля по принятому чертежу",
+          "unitId": "piece",
+          "operation": "junctions",
+          "sourceIdentity": "A.85 sourcecallslefttoo;drawingidentityusedwithoutinventinghandedness",
+          "parameterId": "porcelain_bom_right_connector",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "flashings",
+          "titleRu": "Стальное обрамление и отливы по развёрнутой ведомости",
+          "unitId": "m2",
+          "operation": "junctions",
+          "sourceIdentity": "TCtable17 windowsteel;realprojectstocknotgrossfacade",
+          "parameterId": "porcelain_bom_flashings",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        },
+        {
+          "key": "fire-screen",
+          "titleRu": "Стальной противопожарный элемент толщиной по проекту, не менее0,55мм",
+          "unitId": "m2",
+          "operation": "fire",
+          "sourceIdentity": "KG7actualdesignedextent≥70mmfullcavitywhereapplicable",
+          "parameterId": "porcelain_bom_fire_screen",
+          "quantitySource": "ABSOLUTE_REAL_APPROVED_PROJECT_BOM_NOT_APPLICATION_NORM_OR_TEST_DEFAULT"
+        }
+      ],
+      "unknownNeeds": [
+        {
+          "key": "preparation-labor",
+          "titleRu": "Подготовительные работы и труд по примыканиям вне опубликованной нормы",
+          "missingFact": "Table16 explicitly excludes preparation. No published quantified split for real opening/fire/junctionscope;wholecladdinghoursnotpartitioned."
+        },
+        {
+          "key": "working-parts",
+          "titleRu": "Рабочие части и оснастка для утеплителя и керамогранита",
+          "missingFact": "Insulationknife,compatiblebits,polyurethanehammer,porcelaincutting/dust/waterandwearreservearenotquantifiedbytable15;metalshearsnotceramiccutter."
+        },
+        {
+          "key": "access-power-protection",
+          "titleRu": "Оснастка люльки, питание, ограждения и защита работников",
+          "missingFact": "1platformperlinkand2helmets/beltsdonotprovidefullrigging/electric/fencingorcoveragefor3-personinsulationcrew;table15linksizeisnotstated."
+        },
+        {
+          "key": "quality-services",
+          "titleRu": "Объектные испытания, контроль и исполнительные услуги",
+          "missingFact": "KGhiddenacts/pullout/per-zone10percentchecksrequired;actualtestplanandservice/labor/consumablequantitiesnotinpublishedtable16."
+        },
+        {
+          "key": "delivery-feed-waste",
+          "titleRu": "Подача, внешняя доставка, защитная упаковка и отходы",
+          "missingFact": "WholeVHFtechcarddoesnotpublishmatchedfeed/haul/waste/cleanupnorm;publishedstockisnotoperatingtimeortransportservice."
+        }
+      ]
+    }
+  ],
+  "priorComponentsRemainImmutable": true,
+  "wholeFamilyNotCompleteYet": true,
+  "newFULL": 0
+}

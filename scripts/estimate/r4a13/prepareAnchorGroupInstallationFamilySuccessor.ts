@@ -476,7 +476,7 @@ async function main(): Promise<void> {
     && Number(residual.counts?.minimumCompiled) === 10_331
     && Number(residual.counts?.minimumFailed) === 0,
   "STOP_ANCHOR_GROUP_INSTALLATION_RESIDUAL_DRIFT");
-  invariant(TARGETS.length === 6 && new Set(TARGETS.map((target) => target.catalogId)).size === 6,
+  invariant(Number(TARGETS.length) === 6 && new Set(TARGETS.map((target) => target.catalogId)).size === 6,
     "STOP_ANCHOR_GROUP_INSTALLATION_TARGET_SET");
   for (const path of SOURCE_PATHS) {
     invariant(existsSync(resolve(path)), `STOP_ANCHOR_GROUP_INSTALLATION_SOURCE_MISSING:${path}`);

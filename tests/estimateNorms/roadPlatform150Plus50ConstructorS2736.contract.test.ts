@@ -1,11 +1,12 @@
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {compileRoadPlatform150Plus50S2736 as compile,ROAD_PLATFORM_DEFINITION_S2736 as definition,ROAD_PLATFORM_SOURCE_METADATA_S2736 as source,ROAD_PLATFORM_SOURCE_ID_S2736 as combinedSourceId} from '../../src/lib/estimate/v4/roadPlatform150Plus50ConstructorS2736';
-import {compileAsphaltInstallLargeAreaKrer27ProfileR1 as asphalt,ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,ASPHALT_INSTALL_KRER27_PARAMETERS,ASPHALT_INSTALL_KRER27_RESOURCES,ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS,ASPHALT_INSTALL_KRER27_SOURCE_METADATA} from '../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1';
+import {compileAsphaltInstallKrer27ProfileR1 as asphalt,ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,ASPHALT_INSTALL_KRER27_PARAMETERS,ASPHALT_INSTALL_KRER27_RESOURCES,ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS,ASPHALT_INSTALL_KRER27_SOURCE_METADATA} from '../../src/lib/estimate/v4/asphaltInstallKrer27ProfileR1';
 import {buildMasterParameterCalculationConsumers} from '../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import {canonicalEstimateRevisionRowFromStorage} from '../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper';
 import {canonicalEstimateParameterChoiceLabelRu} from '../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics';
 import {isConsumerMeaningfulCanonicalParameter} from '../../src/features/consumerRepair/consumerCanonicalParameterEditor';
+import {isCanonicalEstimateSourceManagedParameter} from '../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics';
 import type {CanonicalEstimateCatalogItem} from '../../src/lib/estimate/backendPlatform/contracts';
 const known={area_m2:1000,base_delivery_cost_mode:'INCLUDED',base_extra_mobilization_cost_mode:'INCLUDED',base_qa_cost_mode:'INCLUDED',base_delivery_included_reference:'VALIDATION_FIXTURE material contract includes delivery; no runtime default',base_extra_mobilization_included_reference:'VALIDATION_FIXTURE equipment contract includes extra transport; no runtime default',base_qa_included_reference:'VALIDATION_FIXTURE project acceptance contract includes base QA; no runtime default'};
 const yes={road_formation_accepted:'YES',road_base_150mm_m1200_approved:'YES',road_asphalt_50mm_approved:'YES',road_layer_interface_approved:'YES'};
@@ -39,18 +40,28 @@ describe('selected150mm KRER crushed stone base plus ready50mm asphalt construct
     }
     expect(new Set(definition.resources.map(x=>x.row_id)).size).toBe(definition.resources.length);
   });
-  test('only preliminary asphalt assumptions are editable and stock labels identify the physical material',()=>{
+  test('only user-owned preliminary asphalt inputs are editable while technical source assumptions remain protected',()=>{
     const assumptions=ASPHALT_INSTALL_KRER27_PARAMETERS.filter(p=>ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION[p.parameter_id]==='ASSUMPTION');
     expect(assumptions.length).toBeGreaterThan(0);
     for(const p of assumptions)expect(definition.parameters.find(x=>x.parameter_id===p.parameter_id)?.truth_metadata?.visibility_role).toBe('USER_INPUT');
     const consumers=buildMasterParameterCalculationConsumers({parameters:definition.parameters,formulas:definition.formulas,resources:definition.resources});
+    const editableAssumptionIds=['layer_thickness_mm','haul_distance_km','truck_capacity_t','truck_average_speed_km_h','truck_turnaround_h','acceptance_lot_m2','traffic_control_setup_count'];
+    const actualEditableIds:string[]=[],before=JSON.stringify(definition);
     for(const original of ASPHALT_INSTALL_KRER27_PARAMETERS.filter(p=>p.parameter_id!=='area_m2')){
       const p=definition.parameters.find(x=>x.parameter_id===original.parameter_id)!;
       const schema:CanonicalEstimateCatalogItem['parameterSchema'][number]={parameterId:p.parameter_id,ordinal:p.ordinal,valueType:p.value_type as CanonicalEstimateCatalogItem['parameterSchema'][number]['valueType'],unitId:p.unit_id,titleRu:p.title_ru,required:p.required,defaultValue:p.default_value,constraints:p.constraints_json ?? {},
         visibilityRole:p.truth_metadata.visibility_role as 'USER_INPUT',valueSourceRole:p.truth_metadata.value_source_role as CanonicalEstimateCatalogItem['parameterSchema'][number]['valueSourceRole'],runtimeProfileClassification:definition.runtimeClassification[p.parameter_id],
         formulaConsumers:consumers.formulaConsumers[p.parameter_id],resourceBranchConsumers:consumers.resourceConsumers[p.parameter_id]};
-      expect(isConsumerMeaningfulCanonicalParameter(schema)).toBe(ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION[p.parameter_id]==='ASSUMPTION');
+      const meaningful=isConsumerMeaningfulCanonicalParameter(schema);
+      expect(meaningful).toBe(editableAssumptionIds.includes(p.parameter_id));
+      if(meaningful)actualEditableIds.push(p.parameter_id);
+      if(p.parameter_id==='mobilization_count_per_unique_machine'){
+        expect(definition.runtimeClassification[p.parameter_id]).toBe('ASSUMPTION');
+        expect(isCanonicalEstimateSourceManagedParameter(schema)).toBe(true);expect(meaningful).toBe(false);
+      }
     }
+    expect(actualEditableIds.sort()).toEqual([...editableAssumptionIds].sort());
+    expect(JSON.stringify(definition)).toBe(before);
     for(const p of definition.parameters.filter(x=>/^base_(stone40|stone10|water)_(stock|reserve)$/.test(x.parameter_id)))expect(p.title_ru).not.toMatch(/stone40|stone10|water/);
     expect(definition.parameters.find(p=>p.parameter_id==='base_stone40_stock')?.title_ru).toContain('40–70');
     expect(definition.parameters.find(p=>p.parameter_id==='base_water_stock')?.title_ru).toContain('вода');

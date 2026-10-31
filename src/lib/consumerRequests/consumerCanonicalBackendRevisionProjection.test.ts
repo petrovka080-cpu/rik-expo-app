@@ -87,6 +87,53 @@ function bundle(revisionId: string, quantity: number): ConsumerRepairDraftBundle
 }
 
 describe("canonical backend revision projection", () => {
+  test.each([false,true])('retains a future execution duty without turning it into a missing calculation (compact=%s)',compact=>{
+    const source=bundle(PARENT_ID,120),p=source.structuredEstimatePayload!;
+    const baseline=appendCanonicalBackendRevisionProjection({previousBundle:null,nextBundle:source,payload:p}).estimateDraftRevisionState!.revisions[0]!;
+    const decision={contractVersion:'canonical-scope-requirement-decision/v1' as const,rowId:'site-execution',groupId:'work',
+      groupTitleRu:'Работа',titleRu:'Проверить площадку перед работой',reasonRu:'Сохранённые правила эксплуатации',kind:'PROCESS' as const,
+      status:'PROCESS_REQUIRED' as const,coveringRowIds:['asphalt-mixture'],originalRowIds:[],missingObjectFactParameterIds:[],
+      numericNormAccepted:false as const,separatePaymentAccepted:false as const};
+    p.canonicalBackend!.preliminaryNeeds=[{rowId:decision.rowId,ordinal:1,section:'work',category:'service',titleRu:decision.titleRu,
+      unitId:'',quantity:null,unitPrice:null,needState:'CONDITION_REQUIRED',missingParameterIds:[],selected:true,procurementEligible:false,
+      formulaId:'execution-condition',needSha256:'d'.repeat(64),...(compact?{scopeRequirementDecision:decision}
+        :{calculationTrace:{resourceGraph:{scopeRequirementDecisionV1:decision}}})}];
+    const before=JSON.stringify(source),result=appendCanonicalBackendRevisionProjection({previousBundle:null,nextBundle:source,payload:p});
+    const revision=result.estimateDraftRevisionState!.revisions[0]!;
+    expect(revision.status).toBe('draft_ready');expect(revision.estimateLevel).toBe(baseline.estimateLevel);
+    expect(revision.missingInputs).toEqual([]);expect(revision.boq.rows).toEqual(baseline.boq.rows);
+    expect(revision.preliminaryRows).toEqual([expect.objectContaining({rowId:'site-execution',quantity:null,unitPrice:null})]);
+    expect(JSON.stringify(source)).toBe(before);
+  });
+
+  test.each(['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','OBJECT_FACT_REQUIRED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED','REQUIRED_RESOURCE_EXCLUDED'] as const)(
+    'an actual %s gap still keeps the revision preliminary',status=>{
+      const source=bundle(PARENT_ID,120),p=source.structuredEstimatePayload!;
+      p.canonicalBackend!.preliminaryNeeds=[{rowId:'site-check',ordinal:1,section:'work',category:'service',titleRu:'Проверка',unitId:'',
+        quantity:null,unitPrice:null,needState:'CONDITION_REQUIRED',missingParameterIds:[],selected:true,procurementEligible:false,
+        formulaId:'check',needSha256:'d'.repeat(64),scopeRequirementDecision:{contractVersion:'canonical-scope-requirement-decision/v1',
+          rowId:'site-check',groupId:'work',groupTitleRu:'Работа',titleRu:'Проверка',reasonRu:'Реальное ограничение',kind:'PROJECT_SCOPE',status,
+          coveringRowIds:[],originalRowIds:[],missingObjectFactParameterIds:[],numericNormAccepted:false,separatePaymentAccepted:false}}];
+      const result=appendCanonicalBackendRevisionProjection({previousBundle:null,nextBundle:source,payload:p}).estimateDraftRevisionState!.revisions[0]!;
+      expect(result.status).toBe('needs_more_params_but_preliminary_available');expect(result.estimateLevel).toBe('PRELIMINARY_QUANTITY_BOQ');
+      expect(result.preliminaryRows).toHaveLength(1);
+  });
+
+  test.each(['QUANTITY_REQUIRED','SUPPLY_CONFIRMATION_REQUIRED','foreign-row','missing-source','conflicting-evidence'])(
+    'an execution label cannot erase a %s gap',variant=>{
+      const source=bundle(PARENT_ID,120),p=source.structuredEstimatePayload!;
+      const decision={contractVersion:'canonical-scope-requirement-decision/v1' as const,rowId:variant==='foreign-row'?'other':'check',
+        groupId:'work',groupTitleRu:'Работа',titleRu:'Проверка',reasonRu:'SOURCE',kind:'PROCESS' as const,status:'PROCESS_REQUIRED' as const,
+        coveringRowIds:[],originalRowIds:[],missingObjectFactParameterIds:[],numericNormAccepted:false as const,separatePaymentAccepted:false as const};
+      p.canonicalBackend!.preliminaryNeeds=[{rowId:'check',ordinal:1,section:'work',category:'service',titleRu:'Проверка',unitId:'',quantity:null,
+        unitPrice:null,needState:variant==='QUANTITY_REQUIRED'||variant==='SUPPLY_CONFIRMATION_REQUIRED'?variant:'CONDITION_REQUIRED',
+        missingParameterIds:variant==='missing-source'?['real-source']:[],selected:true,procurementEligible:false,formulaId:'check',
+        needSha256:'d'.repeat(64),scopeRequirementDecision:decision,...(variant==='conflicting-evidence'
+          ?{calculationTrace:{resourceGraph:{scopeRequirementDecisionV1:{...decision,status:'PROJECT_SCOPE_OPEN'}}}}:{})}];
+      const result=appendCanonicalBackendRevisionProjection({previousBundle:null,nextBundle:source,payload:p}).estimateDraftRevisionState!.revisions[0]!;
+      expect(result.status).toBe('needs_more_params_but_preliminary_available');expect(result.estimateLevel).toBe('PRELIMINARY_QUANTITY_BOQ');
+      expect(result.preliminaryRows).toHaveLength(1);
+  });
   test.each([false, true])("compares a known preliminary quantity with the resolved model, including older projections (%s)", (legacy) => {
     const source = bundle(PARENT_ID, 8);
     source.items[0]!.titleRu = "Угольники PP-R 20 мм";
@@ -220,9 +267,11 @@ describe("canonical backend revision projection", () => {
     expect(current).toMatchObject({
       status: "needs_more_params_but_preliminary_available",
       estimateLevel: "PRELIMINARY_QUANTITY_BOQ",
-      applicableBoqRowsCount: 3,
+      applicableBoqRowsCount: 4,
     });
     expect(current?.boq.rows).toHaveLength(3);
+    expect(current?.boq.rows.map(row=>row.rowId)).toEqual(['asphalt-mixture','conditional-haul-not-applicable','required-control-ledger-row']);
+    expect(current?.preliminaryRows).toEqual([expect.objectContaining({rowId:'preliminary-roller',quantity:null,unitPrice:null})]);
     expect(current?.boq.rows).toContainEqual(expect.objectContaining({
       rowId: "conditional-haul-not-applicable",
     }));

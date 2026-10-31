@@ -1,13 +1,16 @@
 import React from "react";
+import { Platform } from "react-native";
 import TestRenderer, { act } from "react-test-renderer";
 import * as baselineCompile from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
 import * as canonicalClient from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
 import * as requestBinding from "../../src/lib/estimateStructuredPipeline/structuredEstimateRequestBinding";
 import * as consumerService from "../../src/lib/consumerRequests/consumerRequestService";
 import * as parameterEditor from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
-import * as artifactHydration from "../../src/features/consumerRepair/consumerCanonicalArtifactHydration";
 import {appendCanonicalBackendRevisionProjection} from "../../src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection";
 import {saveConsumerRepairBundle} from "../../src/lib/consumerRequests/consumerRequestRepository";
+import * as repository from "../../src/lib/consumerRequests/consumerRequestRepository";
+import { InMemoryEstimateRevisionDurableStore } from "../../src/lib/platform/estimateRevisionDurableStore.memory";
+import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 import { __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
 import { buildCanonicalConsumerRepairRevisionFixture } from "./canonicalConsumerRepairRevisionFixture";
 
@@ -111,16 +114,16 @@ import {
 } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer";
 
 describe("consumer repair durable storage startup UI", () => {
-  it("labels only an explicitly marked immutable fixture and keeps missing quantity facts mandatory in preview copy", () => {
+  it("labels only an explicitly marked immutable fixture and keeps unfinished application work visible", () => {
     expect(canonicalEstimatePreviewIsExplicitValidationFixture(" ДЕМО / VALIDATION_FIXTURE: переход35м")).toBe(true);
     expect(canonicalEstimatePreviewIsExplicitValidationFixture("Реальный объект, пример ДЕМО / VALIDATION_FIXTURE: внутри текста")).toBe(false);
     expect(canonicalEstimatePreviewIsExplicitValidationFixture(null)).toBe(false);
     expect(canonicalEstimatePreviewSaveStatusRu({ saved: true, preliminaryNeedCount: 1909 }))
-      .toContain("Для полного расчёта нужны исходные сведения");
+      .toContain("Приложение ещё не завершило расчёт части позиций");
     expect(canonicalEstimatePreviewSaveStatusRu({ saved: true, preliminaryNeedCount: 1909 }))
       .toContain("Полный итог не рассчитан");
     expect(canonicalEstimatePreviewSaveStatusRu({ saved: true, preliminaryNeedCount: 0 }))
-      .toContain("проверьте количества, источники и цены");
+      .toContain("проверить количества и цены");
     expect(canonicalEstimatePreviewSaveStatusRu({ saved: false, preliminaryNeedCount: 1909 }))
       .toBe("Сохраняем смету в черновике…");
   });
@@ -213,21 +216,87 @@ describe("consumer repair durable storage startup UI", () => {
     jest.spyOn(consumerService,'upsertConsumerRepairCanonicalBackendDraft').mockReturnValue(bundle);
     jest.spyOn(canonicalClient,'getCanonicalEstimateRevision').mockResolvedValue({revisionId,releaseId} as never);
     jest.spyOn(canonicalClient,'listCanonicalEstimatePhotoAttachments').mockResolvedValue({attachments:[]} as never);
-    let finishArtifacts!: (value: Awaited<ReturnType<typeof artifactHydration.loadConsumerCanonicalReadyArtifacts>>) => void;
-    const loadArtifacts=jest.spyOn(artifactHydration,'loadConsumerCanonicalReadyArtifacts').mockImplementation(()=>new Promise(resolve=>{finishArtifacts=resolve;}));
+    let finishArtifacts!: () => void;
+    const artifactsResponse = new Promise<void>(resolve => { finishArtifacts = resolve; });
+    let artifactsRequested!: () => void;
+    const requested = new Promise<void>(resolve => { artifactsRequested = resolve; });
+    const loadArtifacts=jest.spyOn(canonicalClient,'getCanonicalEstimateArtifact').mockImplementation(async ({kind})=>{
+      artifactsRequested();await artifactsResponse;
+      return {artifactId:kind==='pdf'?'pdf-ready':'buyer-ready',kind,status:'ready',revisionId,releaseId} as never;
+    });
     let renderer!:TestRenderer.ReactTestRenderer;
     await act(async()=>{renderer=TestRenderer.create(<ConsumerRepairRequestScreen consumerUserId={owner} initialCanonicalRevisionId={revisionId}/>);});
     let restoring!:Promise<unknown>;
-    await act(async()=>{if(!mockLoadCanonicalRevision)throw Error('load_callback_missing');restoring=mockLoadCanonicalRevision({revisionId,requestDraftId:bundle.draft.id,problemText:prompt});await Promise.resolve();});
-    expect(loadArtifacts).toHaveBeenCalledTimes(1);
+    await act(async()=>{if(!mockLoadCanonicalRevision)throw Error('load_callback_missing');restoring=mockLoadCanonicalRevision({revisionId,requestDraftId:bundle.draft.id,problemText:prompt});await requested;});
+    expect(loadArtifacts).toHaveBeenCalledTimes(2);
     expect(renderer.root.findAllByProps({testID:'consumer-estimate-meaningful-preview'})).toHaveLength(0);
     expect(mockAcceptCanonicalBackendDraft).not.toHaveBeenCalled();
     let restored!:typeof bundle;
-    await act(async()=>{finishArtifacts([{artifactId:'pdf-ready',kind:'pdf',revisionId,releaseId},{artifactId:'buyer-ready',kind:'procurement',revisionId,releaseId}]);restored=await restoring as typeof bundle;});
+    await act(async()=>{finishArtifacts();restored=await restoring as typeof bundle;});
     const revision=restored.estimateDraftRevisionState?.revisions.find(r=>r.revisionId===revisionId);
     expect(revision?.artifacts.pdfArtifactId).toBe('pdf-ready');expect(revision?.artifacts.procurementArtifactId).toBe('buyer-ready');
     expect(renderer.root.findAllByProps({testID:'consumer-estimate-meaningful-preview'})).toHaveLength(0);
     await act(async()=>renderer.unmount());
+  });
+
+  it('cold-restores a child and its comparison baseline in one durable native commit, retaining manual values and the final barrier', async () => {
+    const platformDescriptor = Object.getOwnPropertyDescriptor(Platform, 'OS')!;
+    const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { product: 'ReactNative' } });
+    Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
+    const store = new InMemoryEstimateRevisionDurableStore();
+    repository.setConsumerRepairTransactionalDurableStoreForTests(store);
+    const writes = jest.spyOn(store, 'writeBundleAtomically');
+    const actualRepository = jest.requireActual<typeof repository>('../../src/lib/consumerRequests/consumerRequestRepository');
+    jest.mocked(repository.awaitConsumerRepairBundleDurableCommit).mockClear().mockImplementation(actualRepository.awaitConsumerRepairBundleDurableCommit);
+    let renderer: TestRenderer.ReactTestRenderer | undefined;
+    try {
+      const owner = 'native-remote-lineage-owner', prompt = 'ДЕМО / VALIDATION_FIXTURE: сохранённая правка';
+      const parent = buildCanonicalConsumerRepairRevisionFixture(prompt);
+      const child = buildCanonicalConsumerRepairRevisionFixture(prompt);
+      const parentId = String(parent.items[0].sourceParameters?.canonicalBackendRevisionId);
+      const childId = String(child.items[0].sourceParameters?.canonicalBackendRevisionId);
+      const releaseId = String(child.items[0].sourceParameters?.canonicalBackendReleaseId);
+      child.items[0] = { ...child.items[0], quantity: 17, unitPrice: 123.5, sourceParameters: { ...child.items[0].sourceParameters, manualQuantityOverride: true } };
+      const mapping = (aiDraft: typeof child, revisionId: string, parentRevisionId: string | null) => {
+        const payload = { version: 'test', estimateId: revisionId, fingerprint: revisionId, rows: [], clarifications: [],
+          totals: { materialsTotal: 0, laborTotal: 0, equipmentTotal: 0, deliveryTotal: 0, grandTotal: 0 },
+          workKey: 'native-lineage', workTitle: prompt, inputText: prompt,
+          canonicalBackend: { compilerOwner: 'backend', revisionId, parentRevisionId, releaseId,
+            catalogId: 'canonical-work:test:consumer-history-fixture', checksumSha256: 'b'.repeat(64), preliminaryNeeds: [] } };
+        aiDraft.structuredEstimatePayload = payload as never;
+        return { payload, rows: [] };
+      };
+      const parentMapping = mapping(parent, parentId, null), childMapping = mapping(child, childId, parentId);
+      jest.spyOn(parameterEditor, 'loadConsumerCanonicalRevisionDraftMapping').mockImplementation(async ({ revisionId }) =>
+        (revisionId === parentId ? parentMapping : childMapping) as never);
+      jest.spyOn(requestBinding, 'buildStructuredEstimateRequestDraft').mockImplementation(payload =>
+        payload.canonicalBackend?.revisionId === parentId ? parent : child);
+      jest.spyOn(canonicalClient, 'getCanonicalEstimateRevision').mockImplementation(async revisionId => ({ revisionId, releaseId }) as never);
+      jest.spyOn(canonicalClient, 'listCanonicalEstimatePhotoAttachments').mockResolvedValue({ attachments: [] } as never);
+      jest.spyOn(canonicalClient, 'getCanonicalEstimateArtifact').mockResolvedValue({ status: 'pending' } as never);
+      await act(async () => { renderer = TestRenderer.create(<ConsumerRepairRequestScreen consumerUserId={owner} initialCanonicalRevisionId={childId} />); });
+      let restored!: ReturnType<typeof consumerService.upsertConsumerRepairCanonicalBackendDraft>;
+      await act(async () => {
+        if (!mockLoadCanonicalRevision) throw Error('load_callback_missing');
+        restored = await mockLoadCanonicalRevision({ revisionId: childId, requestDraftId: '', problemText: prompt }) as typeof restored;
+      });
+      expect(writes).toHaveBeenCalledTimes(1);
+      expect(repository.awaitConsumerRepairBundleDurableCommit).toHaveBeenCalledTimes(1);
+      const cold = await store.recoverLastValid(restored.draft.id);
+      expect(cold?.estimateDraftRevisionState?.revisions.map(row => row.revisionId)).toEqual([parentId, childId]);
+      expect(cold?.estimateDraftRevisionState?.currentRevisionId).toBe(childId);
+      expect(cold?.estimateDraftRevisionState?.diffs).toEqual([expect.objectContaining({ fromRevisionId: parentId, toRevisionId: childId })]);
+      expect(cold?.items[0]).toMatchObject({ quantity: 17, unitPrice: 123.5, sourceParameters: { manualQuantityOverride: true } });
+      expect(renderer!.root.findAllByProps({ testID: 'consumer-estimate-meaningful-preview' })).toHaveLength(0);
+    } finally {
+      if (renderer) await act(async () => renderer!.unmount());
+      await flushTransactionalConsumerRepairWrites();
+      repository.setConsumerRepairTransactionalDurableStoreForTests(null);
+      Object.defineProperty(Platform, 'OS', platformDescriptor);
+      if (navigatorDescriptor) Object.defineProperty(globalThis, 'navigator', navigatorDescriptor);
+      else Reflect.deleteProperty(globalThis, 'navigator');
+    }
   });
 
   it.each(["open", "draft", "owner", "fingerprint"] as const)("preserves the saved manual preview's exact workspace through pending hydration: %s", async (scenario) => {

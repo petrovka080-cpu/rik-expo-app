@@ -23,17 +23,15 @@ function quantities(rows: readonly { row_id: string; quantity: string }[]) {
 }
 
 describe("S27.3 F09 fire-alarm electrical connection variants", () => {
-  test("uses six exact identities and the verified official KРЕРм artifact", () => {
+  test("preserves the surviving exact identities and source boundary", () => {
     expect(VARIANT_KEYS).toEqual([
       "high_load",
-      "large_area",
-      "small_area",
       "standard",
       "technical_room",
       "wet_zone",
     ]);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      FIRE_ALARM_ELECTRICAL_CONNECTION_VARIANTS[key].catalogId)).size).toBe(6);
+      FIRE_ALARM_ELECTRICAL_CONNECTION_VARIANTS[key].catalogId)).size).toBe(4);
     expect(FIRE_ALARM_ELECTRICAL_CONNECTION_PARAMETERS).toHaveLength(2);
     expect(FIRE_ALARM_ELECTRICAL_CONNECTION_FORMULAS).toHaveLength(14);
     expect(FIRE_ALARM_ELECTRICAL_CONNECTION_RESOURCES).toHaveLength(14);

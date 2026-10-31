@@ -4,7 +4,7 @@
  */
 
 export type DrywallFlatCeilingOperationV6 = "PREPARE" | "FRAME" | "ALIGN" | "INSULATE" | "CLAD" | "FINISH_JOINT" | "REPAIR";
-export type DrywallFlatCeilingVariantV6 = "standard" | "large_area" | "small_area" | "technical_room" | "wet_zone" | "high_load";
+export type DrywallFlatCeilingVariantV6 = "standard" | "technical_room" | "wet_zone" | "high_load";
 export type DrywallFlatCeilingExpectedCandidateV6 = {
   candidateId: string;
   category: "material" | "labor" | "equipment" | "transport" | "testing" | "documentation" | "subcontract_service" | "temporary_work" | "waste";
@@ -15,39 +15,25 @@ export type DrywallFlatCeilingExpectedCandidateV6 = {
 };
 
 export const DRYWALL_FLAT_CEILING_PROFESSIONAL_CATALOG_IDS_V6: readonly string[] = Object.freeze([
-  "drywall_ceiling_interior_drywall_ceiling_align_large_area",
-  "drywall_ceiling_interior_drywall_ceiling_align_small_area",
   "drywall_ceiling_interior_drywall_ceiling_align_standard",
   "drywall_ceiling_interior_drywall_ceiling_align_technical_room",
   "drywall_ceiling_interior_drywall_ceiling_align_wet_zone",
   "drywall_ceiling_interior_drywall_ceiling_clad_high_load",
-  "drywall_ceiling_interior_drywall_ceiling_clad_large_area",
-  "drywall_ceiling_interior_drywall_ceiling_clad_small_area",
   "drywall_ceiling_interior_drywall_ceiling_clad_standard",
   "drywall_ceiling_interior_drywall_ceiling_clad_technical_room",
   "drywall_ceiling_interior_drywall_ceiling_clad_wet_zone",
-  "drywall_ceiling_interior_drywall_ceiling_finish_joint_large_area",
-  "drywall_ceiling_interior_drywall_ceiling_finish_joint_small_area",
   "drywall_ceiling_interior_drywall_ceiling_finish_joint_standard",
   "drywall_ceiling_interior_drywall_ceiling_finish_joint_technical_room",
   "drywall_ceiling_interior_drywall_ceiling_finish_joint_wet_zone",
-  "drywall_ceiling_interior_drywall_ceiling_frame_large_area",
-  "drywall_ceiling_interior_drywall_ceiling_frame_small_area",
   "drywall_ceiling_interior_drywall_ceiling_frame_standard",
   "drywall_ceiling_interior_drywall_ceiling_frame_technical_room",
   "drywall_ceiling_interior_drywall_ceiling_frame_wet_zone",
-  "drywall_ceiling_interior_drywall_ceiling_insulate_large_area",
-  "drywall_ceiling_interior_drywall_ceiling_insulate_small_area",
   "drywall_ceiling_interior_drywall_ceiling_insulate_standard",
   "drywall_ceiling_interior_drywall_ceiling_insulate_technical_room",
   "drywall_ceiling_interior_drywall_ceiling_insulate_wet_zone",
-  "drywall_ceiling_interior_drywall_ceiling_prepare_large_area",
-  "drywall_ceiling_interior_drywall_ceiling_prepare_small_area",
   "drywall_ceiling_interior_drywall_ceiling_prepare_standard",
   "drywall_ceiling_interior_drywall_ceiling_prepare_technical_room",
   "drywall_ceiling_interior_drywall_ceiling_prepare_wet_zone",
-  "drywall_ceiling_interior_drywall_ceiling_repair_large_area",
-  "drywall_ceiling_interior_drywall_ceiling_repair_small_area",
   "drywall_ceiling_interior_drywall_ceiling_repair_standard",
   "drywall_ceiling_interior_drywall_ceiling_repair_technical_room",
   "drywall_ceiling_interior_drywall_ceiling_repair_wet_zone"
@@ -1761,58 +1747,6 @@ const OPERATION: Readonly<Record<DrywallFlatCeilingOperationV6, readonly Drywall
 } as Record<DrywallFlatCeilingOperationV6, DrywallFlatCeilingExpectedCandidateV6[]>);
 const VARIANT: Readonly<Record<DrywallFlatCeilingVariantV6, readonly DrywallFlatCeilingExpectedCandidateV6[]>> = Object.freeze({
   "standard": [],
-  "large_area": [
-    {
-      "applicability": "APPLICABLE",
-      "basis": "Независимо восстановлено из физической технологии плоского подвесного потолка, owner-границы и стадий приемки; legacy BOQ и implementation builder не использованы.",
-      "candidateId": "large_area_control_zones",
-      "category": "testing",
-      "titleRu": "Дополнительные контрольные захватки большой площади",
-      "unitId": "test"
-    },
-    {
-      "applicability": "APPLICABLE",
-      "basis": "Независимо восстановлено из физической технологии плоского подвесного потолка, owner-границы и стадий приемки; legacy BOQ и implementation builder не использованы.",
-      "candidateId": "large_area_joint_review",
-      "category": "subcontract_service",
-      "titleRu": "Проверка деформационных и контрольных швов",
-      "unitId": "service"
-    },
-    {
-      "applicability": "APPLICABLE",
-      "basis": "Независимо восстановлено из физической технологии плоского подвесного потолка, owner-границы и стадий приемки; legacy BOQ и implementation builder не использованы.",
-      "candidateId": "large_area_internal_logistics",
-      "category": "transport",
-      "titleRu": "Логистика между захватками",
-      "unitId": "t_m"
-    }
-  ],
-  "small_area": [
-    {
-      "applicability": "APPLICABLE",
-      "basis": "Независимо восстановлено из физической технологии плоского подвесного потолка, owner-границы и стадий приемки; legacy BOQ и implementation builder не использованы.",
-      "candidateId": "small_area_manual_feed",
-      "category": "labor",
-      "titleRu": "Ручная подача в стесненной зоне",
-      "unitId": "man_hour"
-    },
-    {
-      "applicability": "APPLICABLE",
-      "basis": "Независимо восстановлено из физической технологии плоского подвесного потолка, owner-границы и стадий приемки; legacy BOQ и implementation builder не использованы.",
-      "candidateId": "small_area_local_cutting",
-      "category": "labor",
-      "titleRu": "Локальный раскрой в стесненной зоне",
-      "unitId": "man_hour"
-    },
-    {
-      "applicability": "APPLICABLE",
-      "basis": "Независимо восстановлено из физической технологии плоского подвесного потолка, owner-границы и стадий приемки; legacy BOQ и implementation builder не использованы.",
-      "candidateId": "small_area_compact_enclosure",
-      "category": "temporary_work",
-      "titleRu": "Компактная пылезащитная зона",
-      "unitId": "service"
-    }
-  ],
   "technical_room": [
     {
       "applicability": "APPLICABLE",

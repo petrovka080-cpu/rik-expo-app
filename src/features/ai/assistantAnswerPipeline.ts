@@ -2,7 +2,7 @@ import { answerAlwaysOnExternalKnowledgeQuestion } from "../../lib/ai/alwaysOnEx
 import { createAiEstimatePlugin } from "../../lib/aiPlatform/plugins/estimate/AiEstimatePlugin";
 import { resolveAiLiveScreenId } from "../../lib/ai/liveScreenCopilot";
 import { classifyCanonicalEstimateIntent } from "../../lib/estimate/backendPlatform/canonicalEstimateIntent";
-import { adaptCanonicalCompilationToAssistantProjection } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
+import { adaptCanonicalCompilationToAssistantProjection } from "../../lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";

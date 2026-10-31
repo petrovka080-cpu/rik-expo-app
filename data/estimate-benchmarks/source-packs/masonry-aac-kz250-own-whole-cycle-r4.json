@@ -1,0 +1,477 @@
+{
+  "contract": "gox-build.masonry-aac-kz250-own-whole-cycle/r4",
+  "sourceId": "source:masonry:aac:kz250-m150-whole-cycle2019:r4",
+  "prefix": "masonry:aac:kz250-m150:whole-cycle:r4",
+  "status": "ACTIVE_OWN_INTERNATIONAL_WHOLE_SOURCE_IMPLEMENTATION_NOT_ACCEPTED",
+  "titleRu": "Кладка стены из газобетонных блоков толщиной 250 мм",
+  "selectorId": "aackz4_selected_whole_method",
+  "selectorValue": "OWN_TNKSN_RK_8_07_06_2019_AAC250_M150",
+  "source": {
+    "id": "TNKSN_KZ_8_07_06_2019",
+    "sha256": "f5db7d0913d2d5f57634fb587a37fbccb61f9dda1787046fe13c30b096fe5b10",
+    "wall": "Calculation3, wall250mm under structural floor,600x250x200mm length/width/height, table3. Partition table4 is excluded.",
+    "territory": "Kazakhstan, own2019 edition. International quantity/method profile; no claim ofKG adoption and no source prices imported.",
+    "path": "data/estimate-benchmarks/source-artifacts/masonry-aac-kz250-whole-cycle-r4/TNKSN-KZ-8.07-06-2019-official.pdf",
+    "url": "https://new-shop.ksm.kz/media/egfntd/ntdgo/2_8_07_06_2019.pdf"
+  },
+  "wall": {
+    "blockLengthM": "0.6",
+    "blockThicknessM": "0.25",
+    "blockHeightM": "0.2",
+    "wallThicknessM": "0.25",
+    "scope": "Calculation3; wall under structural floor; source table3 and main/auxiliary operation calculation3. Not partitiontable4.",
+    "minimumBondMm": "120",
+    "jointMm": "3"
+  },
+  "mixing": {
+    "binderGrade": "M150",
+    "dryKgPerM3": "25",
+    "waterM3PerM3": "0.0055",
+    "maximumSourceMixerSpeedRpm": "300",
+    "firstMixMinutes": [
+      "4",
+      "5"
+    ],
+    "restMinutes": "5",
+    "secondMixMinutes": [
+      "4",
+      "5"
+    ],
+    "maximumSourceUseMinutes": "60",
+    "nominalPowerNotTime": true,
+    "noCT21OrCollomixSpeedTransfer": true,
+    "noPackageSizeAsMinimumJob": true
+  },
+  "quantityAxes": {
+    "V": "Own net wall volume in m3, not current KG400/500 or legacyq.",
+    "B": "Actual block pieces handled in the independently declared unloading/feed task, divided by1000; source example0.033 is not a capacity or universal delivered pallet count.",
+    "T_block": "Actual tonnes moved by handcart within30m, with a mass record; not the source example0.544 and not a freely entered t/m3 coefficient.",
+    "T_glue_unload": "Actual gross tonnes unloaded for this task; source example0.544 is not silently corrected to0.025.",
+    "T_glue_feed": "Actual gross tonnes raised for this task, with declared packaging/handler scope.",
+    "T_glue_cart": "Actual tonnes carted within30m, with declared packaging scope.",
+    "S_internal": "Actual horizontal projection m2 of an applicable whole internal tubular scaffold layout. It is not wall area or a factor of V."
+  },
+  "sourceOwnership": [
+    {
+      "key": "identity-design",
+      "resources": [
+        "Exact AAC600x250x200 product, adopted standard/edition, structural/seismic junction design, actual approved PPR"
+      ],
+      "quantityBasis": "ACTUAL_OBJECT_DOCUMENTS_NOT_A_SOURCE_CONFIRMATION_SWITCH"
+    },
+    {
+      "key": "material-consumption",
+      "sourceLocator": "PDF39 table3",
+      "resourceRatesPerV": {
+        "aac_m3": "1",
+        "m150_dry_kg": "25",
+        "glue_mix_water_m3": "0.0055",
+        "ready_first_row_cement_sand_m3": "0.017",
+        "strip_steel_kg": "0.951",
+        "dowel_5x120_kg": "0.07"
+      },
+      "solePaymentOwners": "Own new profile material rows only; no inherited KG AAC rates are active in this choice."
+    },
+    {
+      "key": "main-laying-preparation-cutting",
+      "sourceLocator": "PDF50 calculation3 main row1",
+      "labourManH": "3.8889*V",
+      "crew": [
+        {
+          "profession": "mason",
+          "grade": 4,
+          "persons": 1
+        },
+        {
+          "profession": "mason",
+          "grade": 3,
+          "persons": 1
+        }
+      ],
+      "included": [
+        "glue preparation",
+        "first-row levelling layer",
+        "sawing and fitting blocks",
+        "wall laying"
+      ],
+      "solePaymentOwner": "main-labour"
+    },
+    {
+      "key": "block-unload",
+      "sourceLocator": "PDF50 calculation3 auxiliary1",
+      "labourManH": "2.0833*B",
+      "towerCraneMachineH": "1.0417*B",
+      "tractorMachineH": "1.0417*B",
+      "semitrailerMachineH": "1.0417*B",
+      "scope": "Actual block pallet unloading. No replacement of1000piece axis by volume without a source basis."
+    },
+    {
+      "key": "block-feed",
+      "sourceLocator": "PDF51 calculation3 auxiliary2",
+      "labourManH": "3.4729*B",
+      "towerCraneMachineH": "1.7354*B",
+      "scope": "Exact48-piece unit load; whole rated pallet/handler/receiving platform, actual gross mass and real crane curve remain object facts."
+    },
+    {
+      "key": "block-handcart",
+      "sourceLocator": "PDF51 calculation3 auxiliary3",
+      "labourManH": "0.0842*T_block",
+      "crew": [
+        {
+          "profession": "helper",
+          "grade": 2,
+          "persons": 1
+        }
+      ],
+      "scope": "Within30m, actual mass moved, not nominal dry density or arbitrary source0.544t."
+    },
+    {
+      "key": "glue-unload",
+      "sourceLocator": "PDF51 calculation3 auxiliary4",
+      "labourManH": "0.0833*T_glue_unload",
+      "towerCraneMachineH": "0.0417*T_glue_unload",
+      "tractorMachineH": "0.0417*T_glue_unload",
+      "semitrailerMachineH": "0.0417*T_glue_unload",
+      "sourceExampleMassT": "0.544",
+      "scope": "Use only the published per-tonne operation rate with actual task mass. Do not present a changed mass as the original source total."
+    },
+    {
+      "key": "glue-feed",
+      "sourceLocator": "PDF51 calculation3 auxiliary5",
+      "labourManH": "0.1389*T_glue_feed",
+      "towerCraneMachineH": "0.0694*T_glue_feed",
+      "sourceExampleMassT": "0.025"
+    },
+    {
+      "key": "glue-handcart",
+      "sourceLocator": "PDF51 calculation3 auxiliary6",
+      "labourManH": "0.0694*T_glue_cart",
+      "sourceExampleMassT": "0.025"
+    },
+    {
+      "key": "glue-mixing",
+      "sourceLocator": "PDF18 section2.2.2.2; PDF51 auxiliary7",
+      "machineHours": "6.668*(25*V/1000)",
+      "auxiliaryLabourDisplayManH": "6.668*(25*V/1000)",
+      "auxiliaryLabourCostTreatment": "INFORMATIONAL_SCOPE",
+      "labourPaidBy": "main-labour",
+      "reason": "Main3.8889 expressly includes glue preparation. The same preparation cannot receive a second paid labour owner. Machine norm is a separate resource; do not erase it when excluding duplicate labour."
+    },
+    {
+      "key": "first-row-ready-mortar",
+      "sourceLocator": "PDF14 first row and PDF39 table3",
+      "materialM3": "0.017*V",
+      "scope": "Own cement-sand mortar, grade by approved design. It is not automatically KG03-0405-0003 cement-limeM50. Ready supply and its exact receipt/feed interface must be composed separately; no invented on-site recipe."
+    }
+  ],
+  "materialRates": [
+    {
+      "key": "aac_blocks",
+      "titleRu": "Газобетонные блоки 600 × 250 × 200 мм",
+      "unitId": "m3",
+      "rate": "1"
+    },
+    {
+      "key": "dry_adhesive",
+      "titleRu": "Сухой кладочный клей М150 для газобетонных блоков",
+      "unitId": "kg",
+      "rate": "25"
+    },
+    {
+      "key": "mixing_water",
+      "titleRu": "Чистая вода для затворения кладочного клея",
+      "unitId": "m3",
+      "rate": "0.0055"
+    },
+    {
+      "key": "first_row_mortar",
+      "titleRu": "Готовый цементно-песчаный раствор первого ряда",
+      "unitId": "m3",
+      "rate": "0.017"
+    },
+    {
+      "key": "strip_steel",
+      "titleRu": "Полосовая сталь для связей кладки",
+      "unitId": "kg",
+      "rate": "0.951"
+    },
+    {
+      "key": "dowel_5x120",
+      "titleRu": "Дюбель для крепления связей, 5 × 120 мм",
+      "unitId": "kg",
+      "rate": "0.07"
+    }
+  ],
+  "handlingFacts": [
+    {
+      "key": "blocks_unloaded_piece",
+      "titleRu": "Число блоков по отдельной ведомости разгрузки",
+      "unitId": "piece",
+      "integer": true,
+      "sourceRole": "PROJECT_DOCUMENTATION"
+    },
+    {
+      "key": "blocks_fed_piece",
+      "titleRu": "Число блоков по отдельной ведомости подъёма",
+      "unitId": "piece",
+      "integer": true,
+      "sourceRole": "PROJECT_DOCUMENTATION"
+    },
+    {
+      "key": "block_cart_t",
+      "titleRu": "Фактическая масса блоков при перемещении тележкой до 30 м",
+      "unitId": "t",
+      "sourceRole": "PROJECT_DOCUMENTATION"
+    },
+    {
+      "key": "glue_unloaded_t",
+      "titleRu": "Фактическая масса груза при разгрузке клея",
+      "unitId": "t",
+      "sourceRole": "PROJECT_DOCUMENTATION"
+    },
+    {
+      "key": "glue_fed_t",
+      "titleRu": "Фактическая масса груза при подъёме клея",
+      "unitId": "t",
+      "sourceRole": "PROJECT_DOCUMENTATION"
+    },
+    {
+      "key": "glue_cart_t",
+      "titleRu": "Фактическая масса груза при перемещении клея тележкой до 30 м",
+      "unitId": "t",
+      "sourceRole": "PROJECT_DOCUMENTATION"
+    }
+  ],
+  "internalNormGaps": [
+    {
+      "key": "whole_bearing_dpc",
+      "titleRu": "Полное опирание и отсечка капиллярной влаги",
+      "unitId": "set",
+      "category": "equipment",
+      "reason": "Связать готовый первый ряд, отдельный способ отсечки и фактическое основание.0.017м3/м3 не задаёт толщину постели и не является готовой изоляцией."
+    },
+    {
+      "key": "whole_access",
+      "titleRu": "Полный комплект доступа, ограждений и лестниц",
+      "unitId": "set",
+      "category": "equipment",
+      "reason": "Собственная схема и полный состав подмостей; один исходный set не раскрывает все элементы. КРЕР scaffold не переносится на международный профиль без отдельной совместимой композиции."
+    },
+    {
+      "key": "whole_material_handling",
+      "titleRu": "Полный комплект разгрузки, подъёма и приёма материалов",
+      "unitId": "set",
+      "category": "equipment",
+      "reason": "Нужны совместимые полные поддон, строповка, крановая характеристика и площадка.48блоков/940кг остаются ссылкой точного изделия, а не универсальной массой."
+    },
+    {
+      "key": "whole_mixing_cleaning",
+      "titleRu": "Полный комплект приготовления клея и очистки оборудования",
+      "unitId": "set",
+      "category": "equipment",
+      "reason": "Собственный комплект до300об/мин с корзинчатой насадкой, сосудом, электропитанием и полным безопасным закрытием. Скорость CT21 и Collomix не заменяет исходную."
+    },
+    {
+      "key": "whole_cutting_ppe_control",
+      "titleRu": "Полное обеспечение резки, контроля и защиты исполнителей",
+      "unitId": "set",
+      "category": "equipment",
+      "reason": "Повторно использовать целую совместимую ручную резку и исходный контрольный комплект; не подменять полный доступ и защиту одним инструментом."
+    },
+    {
+      "key": "whole_residue_external_supply",
+      "titleRu": "Полный сбор остатков, возврат и внешняя доставка",
+      "unitId": "set",
+      "category": "service",
+      "reason": "Операционные часы разгрузки не покрывают внешнюю автомобильную доставку и не назначают нулевые отходы."
+    }
+  ],
+  "consumerContract": {
+    "ordinaryInputs": [
+      "wall length",
+      "wall height",
+      "openings area",
+      "storey height"
+    ],
+    "technicalInputChannel": "Existing confirmedParameters from bound source/object records; never copied from consumer scalar payload",
+    "stockReserveBatchProductivityNormQuestions": false,
+    "missingDeveloperNormNotAnObjectConfirmation": true,
+    "primaryMeasure": {
+      "parameterId": "aackz4_net_wall_area_m2",
+      "unitId": "m2",
+      "expression": "m33_masonry_wall_length_m*m33_masonry_wall_height_m-m33_masonry_openings_area_m2",
+      "kind": "SOURCE_PROVEN_READONLY_GEOMETRY",
+      "runtimeInput": false,
+      "confirmedInput": false,
+      "actualQuantityFormulaConsumer": true
+    },
+    "runtimeProfileKeys": [
+      "aackz4_selected_whole_method",
+      "aackz4_first_row_feed_method"
+    ],
+    "historicalQNotReusedInNewCustomerBaseline": true,
+    "wholeFirstRowFeedSourceSelection": "A fixed application-owned source choice, not a new consumer question or an actual object document"
+  },
+  "boundaries": {
+    "historicalKgAacUnchanged": true,
+    "ct21OwnBranchPreserved": true,
+    "noSourceExample033Or544AsUniversalQuantity": true,
+    "noRoundedNetVolumeAsActualPieceHandlingCount": true,
+    "noSecondGluePreparationPaidLabour": true,
+    "newPublicCards": 0,
+    "full": 0,
+    "wholeFamilyReady": false,
+    "technicalSourceCompleteIsNotObjectExecutionOrFinancialAdmission": true
+  },
+  "savedIndependentSource": {
+    "path": "received-r3/AAC250_OPERATION_OWNERSHIP_R2.json",
+    "sha256": "0de37fd01969e203020145ca8f177524142680cd8dc66865d08aa5b98bbe065c"
+  },
+  "currentParent": {
+    "definitionId": "79c63634-3fa6-513a-87ed-f2e3c7807835",
+    "definitionVersion": 5,
+    "definitionSha256": "bfbe5869280540c0c009825d091504faa7d6813ff2e63b2c34a3434e8b524f0d",
+    "capturePath": "data/estimate-benchmarks/fixtures/masonry-aac-current-v5-parent-r4.json",
+    "captureSha256": "bc54b0986f53bf4f560683abaecb41b65a305d1b70af50fc98a8d085e9259004",
+    "contentPassportPath": "data/estimate-benchmarks/fixtures/masonry-aac-current-v5-content-passport-r4.json",
+    "contentPassportSha256": "135a3edec02c2b2565901f28a88a6c815efef078e92130d0ca566e881104dbcb"
+  },
+  "locatorKey": "masonry-aac-kz250-current-card-composite-r4",
+  "integrationModules": [
+    {
+      "path": "src/lib/estimate/v4/masonryAacKz250WholeCycleR4.ts",
+      "sha256": "edf5690ea00c364f1279ec1bf2e1b58303b90afbec739f442face8bf1b293502"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryAacKz250CurrentCardR4.ts",
+      "sha256": "313a1596773ac65cf74d48cc8255cdd8df34f232ef82a271a790cc6d9f6d4bda"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryM50EffectiveLiftCorrectionR4.ts",
+      "sha256": "4d5682b020b571f5927e7087daeae93c64ca837320e94b409b9e67066d9e5431"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryBearingDpcLooseWholeMethodR4.ts",
+      "sha256": "b3c5178534fa1a26b1f287cfc492c55381cb22a06af01cc264408af13101ec4a"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryAacKz250WholeFirstRowFeedReuseR4.ts",
+      "sha256": "4e85d3090be06efef45e165948dac72f33ddff808ba88c4db214140a82710ad0"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryReadyM50WholeSupplyCycleR2.ts",
+      "sha256": "80f44a7cb88a927f7aaefdf159c57f3c72232619c27bba2b90cb3a4aa0dd8a21"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryCeramic250WholeFamilyCompositionR2.ts",
+      "sha256": "a75ed7497eea65c125e16e2814e818b5516a76c66f059c103c827ab4f590f7bc"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryAacKz250NormObjectBoundaryR4.ts",
+      "sha256": "0356678e8dde6fc29f9281f36c8c9ab65c6ed5aa0ace968938678390a54423b2"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryAacKz250OwnWholeKitReuseR4.ts",
+      "sha256": "ac08e03a9b76de4c77289d5c51d83b018860819a0f6638204f75ecf54d08daee"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryAacKz250ExistingCuttingReuseR4.ts",
+      "sha256": "5cebc271e19fda601b9d364bebd7af24d190d9a75f295d02e10432efff5db6f3"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasonryAacKz250CurrentCardR4.ts",
+      "sha256": "40c866dbbc3c9023303fabad35957ca8ea24db40b63757d4de4885980d7ab569"
+    }
+  ],
+  "reusedSubworks": [
+    {
+      "sourcePath": "data/estimate-benchmarks/source-packs/masonry-bearing-dpc-loose-whole-method-r4.json",
+      "useRestriction": "Only exact250mm grounded straight-run applicability; all seven original German components retained. Bed beneath DPC is an unresolved application norm, not automatically supplied by AAC first-course0.017V. No second paid owner; separate DPC bed/labour/tool/waste norms remain unknown.",
+      "sourceSha256": "8c6d71afe3bc56542ed1ccd6a96fae7b4aaa934278c9a03e4b8510ba5adbfab0"
+    },
+    {
+      "sourcePath": "data/estimate-benchmarks/source-packs/masonry-m50-effective-lift-correction-r4.json",
+      "useRestriction": "Only tested physical effective-mass expression and maker/method evidence; no M50 material grade,0.234 consumption or financial rate transfer",
+      "sourceSha256": "201104e104dffb92db68793e21c2cee2587656a5fde5c5c3b24068f84f2af259"
+    },
+    {
+      "sourcePath": "data/estimate-benchmarks/source-packs/masonry-aac-kz250-whole-first-row-feed-reuse-r4.json",
+      "useRestriction": "Exact compatible ready cement-sand first-row physical feed only.19 source rows, accepted balance control, existing own mortar/effective quantity and load checks; no M50 financial transfer or full closure.",
+      "sourceSha256": "473775ccc4f2ee3cbacec250305b8ea67b3db82f20094ebf651dbb5bb8b7d2e7"
+    },
+    {
+      "sourcePath": "data/estimate-benchmarks/source-packs/masonry-ready-m50-whole-supply-cycle-r2.json",
+      "useRestriction": "Historical accepted physical source decomposition only; its M50/KG financial scope and old no-AAC boundary are not edited. New bounded adaptation proof is the separate AAC annex.",
+      "sourceSha256": "205cfd61fd08a24586cd6a0058a4e513c12fc250832bdea1b342745085f4a773"
+    },
+    {
+      "sourcePath": "data/estimate-benchmarks/source-packs/masonry-aac-kz250-own-table8-kit-reuse-r4.json",
+      "useRestriction": "Same captured KZ2019 table8 all41lines, source whole-brigade stock only. Reuse five physical IDs without sums;7brigade counts remain null without actual bound plan. No new financial norms, owner, procurement or actual readiness. Own hand saw and<=300rpm drill; no foreign mixer or MBS dependency.",
+      "sourceSha256": "319e4e2dec8e65007247e5fc8e0327e933fbc00e8e4465c0e2af9be0c437b859"
+    },
+    {
+      "sourcePath": "data/estimate-benchmarks/source-packs/masonry-aac-cutting-mbs510-r1.json",
+      "sourceSha256": "ede689847be523806d3083cbe5cd45a44c43b546d62bbae5812e2f11df9880ff",
+      "useRestriction": "Only exact captured29 physical/gap rows and26 source-managed parameters. Optional machine selection has no default and no new hours/financial owner; unknown manufacturer work envelope and all normative leaves remain mandatory. Independent manual Table8 saw is retained."
+    }
+  ],
+  "reusedPhysicalPrimaryArtifacts": [
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-whole-cycle-r2/METEL-YAR1-original.pdf",
+      "sha256": "9f86c3fffc6471afcd249960e89e0cd4433ac4187098f04a21efd15fe0a4ad62"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-aac-cutting-mbs510-r1/lissmac-mbs-08-2025-en.pdf",
+      "sha256": "67ba30f5c89a62af6d06af6ffabb84d96c84f0b16851af0bab761b9830183f44"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-aac-cutting-mbs510-r1/aeroc-manual-2016-official.pdf",
+      "sha256": "f503948988703a152df4b297d82ee947594b7c931e9d165f592dac927ef15519"
+    }
+  ],
+  "wholeFirstRowFeedReuse": {
+    "contract": "masonry-aac-kz250-whole-first-row-feed-reuse/r4",
+    "annexPath": "data/estimate-benchmarks/source-packs/masonry-aac-kz250-whole-first-row-feed-reuse-r4.json",
+    "annexSha256": "473775ccc4f2ee3cbacec250305b8ea67b3db82f20094ebf651dbb5bb8b7d2e7",
+    "wholePhysicalRosterRows": 9,
+    "wholeProcessRows": 8,
+    "actualReturnWasteRows": 2,
+    "scopeAndBalanceControlsAdded": 3,
+    "newFinancialNorms": 0,
+    "closedParentNeeds": 0,
+    "runtime": "UNRUN"
+  },
+  "normObjectBoundary": {
+    "contract": "masonry-aac-kz250-norm-object-boundary/r4",
+    "mandatoryRequirementRowId": "masonry:aac:kz250-m150:whole-cycle:r4:need:source-system-fit",
+    "protectedActualObjectParameterIds": [
+      "aackz4_wall_material_batch_reference",
+      "aackz4_wall_source_compatibility_reference",
+      "aackz4_wall_structural_design_reference"
+    ],
+    "ordinaryTechnicalQuestions": 0,
+    "knownNormativeQuantityDoesNotConfirmActualObject": true,
+    "documentsDoNotCreateMissingDeveloperNorm": true,
+    "kgComplianceClaim": false,
+    "closedParentNeeds": 0,
+    "full": 0,
+    "runtime": "UNRUN"
+  },
+  "existingCuttingConsumerAnnex": {
+    "contract": "masonry-aac-kz250-existing-cutting-reuse/r4",
+    "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+    "selectorId": "aac_cut_method_r1",
+    "selectorDefault": null,
+    "retainedRows": 29,
+    "retainedParameters": 26,
+    "independentCapturedEntriesReused": 29,
+    "usesExistingSawingOperation": true,
+    "manualTable8SawIndependent": true,
+    "manufacturerWorkEnvelopeUnknown": true,
+    "wholeCuttingReady": false,
+    "newRows": 0,
+    "newNorms": 0,
+    "newPaidOwners": 0,
+    "newProcurementOwners": 0
+  }
+}

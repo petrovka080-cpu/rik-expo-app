@@ -1,0 +1,115 @@
+{
+  "contract": "gox.facade.ventilated.existing-thermowood-consumer/r5",
+  "status": "WIP_PRIVATE_EXISTING_PARENT_PROFILE_NOT_READY_NOT_INTAKEN",
+  "catalogId": "canonical-work:expanded:ventilated_facade",
+  "currentDefinitionId": "68a5f104-e991-581d-b326-656e30eb5647",
+  "currentDefinitionSha256": "771f4300bfeabc4bdf28985d6d6480c553dba89adc4269f8611d9f31e8108377",
+  "currentBaselineId": "c2ee7a48-313e-53b3-b66f-40ff5d9fa8bd",
+  "captures": [
+    {
+      "path": "data/estimate-benchmarks/fixtures/facade-ventilated-current-parent-source-r5.json",
+      "sha256": "cb1f977624b248f370f8e89266b6a8cc6b01ace44421e56839933a4bdc3b5eb3",
+      "originalPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c-2\\work\\facades-continuation-r5\\review\\component-parent-full-source-readback-r5\\capture.json"
+    },
+    {
+      "path": "data/estimate-benchmarks/fixtures/facade-ventilated-approved-template-source-r5.json",
+      "sha256": "8f2ac2724b124306f530b9fe61469257109fd10b3a739fbeb1179256481a1d36",
+      "originalPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c-2\\work\\facades-continuation-r5\\review\\component-parent-approved-source-r5\\approved-source-evidence.json"
+    }
+  ],
+  "reusedWholeDefinition": "facadeBoardWithEndProtectionDefinitionR5",
+  "validatedReadback": "facadeBoardCutEndFactsR5",
+  "ordinaryNewProfileInputs": [
+    "ventilated_thermowood_net_area_m2"
+  ],
+  "selection": "Ready exact source profile or unchanged legacy; no norm constructor",
+  "legacyResources": 45,
+  "legacyIncluded": 16,
+  "legacyExcluded": 29,
+  "requiredExistingHelper": "appendOptionalAutomaticOwnerR1",
+  "sourceIds": [
+    "gox_facade_board_source_fixing_r3_thermowood-horizontal-tg",
+    "gox_facade_timber_end_protection_r5"
+  ],
+  "exactSourceProfile": "thermowood-horizontal-tg",
+  "actualProjectSourceFitAccepted": false,
+  "readbackMissingMeans": "UNRESOLVED_PRELIMINARY_NEEDS_NOT_ZERO_OR_PROJECT_APPROVAL",
+  "unknownBoardGrossSupplyStillNeeded": true,
+  "noEngineeringReferenceRatesTransferred": true,
+  "newNorms": 0,
+  "newCatalogIds": 0,
+  "newFULL": 0,
+  "publisher": "UNRUN_ROOT_ONLY",
+  "API": "UNRUN_ROOT_ONLY",
+  "newReadyQueueEntry": false,
+  "reusedSourcePackPins": [
+    {
+      "path": "data/estimate-benchmarks/source-packs/facade-board-source-fixing-r3.json",
+      "sha256": "7b3df843ba16c63f4a97bf2af4b888b98f25f4dc9e528573afee62c8f70c8ffa"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/facade-timber-end-protection-r5.json",
+      "sha256": "82fa9c0e6e0631f70dedf6bc6f7c1c9f8039fc468f566cd05cde2a70ec29bd29"
+    }
+  ],
+  "retainedPrimarySourceMetadata": [
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-board-source-fixing-r3/LUNAWOOD-facade-2022.pdf",
+      "sha256": "b22f49aef753e630cee81a1e850182232b59c1f4ba8aba47bb18ad65255810a0",
+      "pdfPagesRead": [
+        14,
+        25,
+        36,
+        37,
+        38,
+        39,
+        44
+      ],
+      "territory": "Manufacturerforeignmethod;noautomaticKGadmission",
+      "originalCapturedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\LUNAWOOD-facade-2022.pdf"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-timber-end-protection-r5/TEKNOS-endgrain-240001-TDS-2022-10-11.pdf",
+      "url": "https://www.teknos.com/document/tds/DRYWOOD%20KOPSE%20SEALER%20_%20ENDGRAIN%20SEALER_240001-00_TDS_en.pdf",
+      "sha256": "f483fd6adfd719e9b4ab74e2d92832247521ccb6a7b3341908c75f9c6cbdd906",
+      "pdfPages": 2,
+      "fullRelevantPagesRead": [
+        1,
+        2
+      ],
+      "retrievedAtUtc": "2026-10-23T09:33:19.766109+00:00"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-timber-end-protection-r5/TEKNOS-endgrain-SDS-2025-11-21.pdf",
+      "url": "https://www.teknos.com/document/sds/DRYWOOD%20KOPSE%20SEALER%20_%20ENDGRAIN%20SEALER_2025-11-21_EU_en.pdf",
+      "sha256": "61d5b4af89a32937cbac3d9ec624cb3c08aca703be542e864ad51c92fee7ac34",
+      "pdfPages": 26,
+      "fullRelevantPagesRead": [
+        1,
+        5,
+        6,
+        10,
+        11,
+        12,
+        20
+      ],
+      "retrievedAtUtc": "2026-10-23T09:33:20.750313+00:00"
+    }
+  ],
+  "countryAndEditionPolicy": "Retain the exact original manufacturer document metadata; no unsupported country adoption or site compliance claim. Unstated country stays unknown and does not block the technically exact original profile.",
+  "workInProgress": {
+    "module": "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts",
+    "usesExistingOptionalComposition": true,
+    "namespaceUsed": false,
+    "sameExistingComponentIDsAndOwners": true,
+    "sameAreaAndInstalledPieceReadbackRequired": true,
+    "missingReadbackNotDefaulted": true,
+    "onlyNewPublicGeometryInputs": 1,
+    "normalConfig": "PREPARED_UNRUN_EXISTING_SOLE_PUBLISHER",
+    "independentCompletenessMap": "PREPARED_FROM_ORIGINAL_TWO_SOURCE_PACKS_NOT_CURRENT_ROWS",
+    "legacyAndMainConsumerTests": "ONE_NEW_CONFIG_CASE_PREPARED_7_CORE_CALLS_UNRUN",
+    "noReadyManifestYet": true,
+    "sameGeometryDocumentAndPieceLayoutShaRequired": true,
+    "remainingUnknownNeedsWithAcceptedReadback": 17
+  }
+}

@@ -25,12 +25,13 @@ describe("KRER 46-05-001-03 temporary vertical protective barrier", () => {
     "0.0050055", "0.001065", "0.3053", "0.08875", "40.825",
   ];
 
-  test("owns four distinct appended identities", () => {
-    expect(TEMPORARY_VERTICAL_PROTECTIVE_BARRIER_BOARD_FRAME_KRER46_CATALOG_IDS).toHaveLength(4);
-    expect(new Set(TEMPORARY_VERTICAL_PROTECTIVE_BARRIER_BOARD_FRAME_KRER46_CATALOG_IDS).size).toBe(4);
-    expect(TEMPORARY_VERTICAL_PROTECTIVE_BARRIER_BOARD_FRAME_KRER46_CATALOG_IDS)
-      .toEqual(Object.values(TEMPORARY_VERTICAL_PROTECTIVE_BARRIER_BOARD_FRAME_KRER46_VARIANTS)
-        .map((variant) => variant.catalogId));
+  test("keeps the actual technologies and removes area-only identities", () => {
+    expect(TEMPORARY_VERTICAL_PROTECTIVE_BARRIER_BOARD_FRAME_KRER46_CATALOG_IDS).toEqual([
+      "canonical-work:master:temporary_vertical_protective_barrier_board_frame_standard",
+      "canonical-work:master:temporary_vertical_protective_barrier_board_frame_wet_zone",
+    ]);
+    expect(TEMPORARY_VERTICAL_PROTECTIVE_BARRIER_BOARD_FRAME_KRER46_VARIANTS).not.toHaveProperty("small_area");
+    expect(TEMPORARY_VERTICAL_PROTECTIVE_BARRIER_BOARD_FRAME_KRER46_VARIANTS).not.toHaveProperty("large_area");
   });
 
   test("binds only exact official rate column 46-05-001-03", () => {
@@ -136,11 +137,13 @@ describe("KRER 46-05-001-03 temporary vertical protective barrier", () => {
   });
 
   test("resolves all variants and rejects an unsupported key", () => {
-    for (const key of ["standard", "large_area", "small_area", "wet_zone"] as const) {
+    for (const key of ["standard", "wet_zone"] as const) {
       expect(resolveTemporaryVerticalProtectiveBarrierBoardFrameKrer46Variant(key).catalogId)
         .toContain(`_${key}`);
     }
-    expect(() => resolveTemporaryVerticalProtectiveBarrierBoardFrameKrer46Variant("bad" as never))
-      .toThrow("VARIANT_UNSUPPORTED");
+    for (const key of ["large_area", "small_area", "bad"] as const) {
+      expect(() => resolveTemporaryVerticalProtectiveBarrierBoardFrameKrer46Variant(key as never))
+        .toThrow("VARIANT_UNSUPPORTED");
+    }
   });
 });

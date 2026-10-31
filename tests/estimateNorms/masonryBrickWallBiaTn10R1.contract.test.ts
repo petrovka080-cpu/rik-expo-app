@@ -1,5 +1,9 @@
+import { extractBiaTn10MasonryCanonicalParametersV1 as parsePureBia } from "../../src/lib/estimate/ownedDomain/masonryBiaTn10PromptParametersV1";
+import { extractBiaTn10MasonryCanonicalParametersV1 as parseLegacyBia } from "../../src/lib/estimate/ownedDomain/masonryBiaTn10ProductionBindingV1";
+import { MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS as pureNeutralIds } from "../../src/lib/estimate/contracts/masonryBiaTn10IdentityV1";
+import { MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS as legacyNeutralIds } from "../../src/lib/estimate/v4/masonryBrickWallBiaTn10R1";
 import { canonicalMaterialQuantityBasisFromRow } from "../../src/lib/estimate/backendPlatform/canonicalMaterialQuantityProjection";
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import { BIA_TN10_MASONRY_REQUIRED_IDS } from "../../src/lib/estimate/v4/domainFactory";
 import {
@@ -57,7 +61,27 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
       "equipment schedule reference: BIA-WALL-EQ-001-REV-A; logistics plan reference: BIA-WALL-LOG-001-REV-A;",
       "quality plan reference: BIA-WALL-QA-001-REV-C",
     ].join(" ");
+    const pureParsed = parsePureBia(prompt);
+    expect(parsePureBia).toBe(parseLegacyBia);
+    expect(pureParsed).toMatchObject({
+      product_profile_id: "standard-profile:bia-tn10:selected-table-4-fired-clay-brick:v1",
+      measured_net_brick_wall_area_m2: 90,
+      brick_bond_correction_factor: 1.05, mortar_bond_correction_factor: 1.1,
+      brick_breakage_percent: 3, mortar_waste_percent: 5,
+      brick_supplier_package_pieces: 500, mortar_supplier_package_m3: 0.25,
+      fired_clay_brick_confirmed: true, dpc_applicable: false,
+    });
+    expect(Object.isFrozen(pureParsed)).toBe(true);
+    expect(parsePureBia(prompt.replace("90 m2", "90,0 m2"))).toEqual(pureParsed);
+    expect(parsePureBia("Brick wall 90 m2")).toBeNull();
+    expect(pureNeutralIds).toBe(legacyNeutralIds);
+    expect(pureNeutralIds).toEqual([
+      "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+      "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
+    ]);
     const catalog = {
+      // Offline fixture identity; not a published release or object authentication.
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
       catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_standard",
       workKey: "masonry_interior_brick_wall_lay_standard",
       parameterSchema: MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS.map((parameter) => ({
@@ -87,13 +111,17 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
       brick_supplier_package_pieces: 500,
       mortar_supplier_package_m3: 0.25,
     });
+    const technicalRoom = buildCanonicalBaselinePlan({
+      catalog: { ...catalog, catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_technical_room" },
+      prompt,
+    });
+    expect(Object.keys(technicalRoom.parameters)).toHaveLength(60);
     for (const catalogId of [
       "canonical-work:base:masonry_interior_brick_wall_lay_large_area",
       "canonical-work:base:masonry_interior_brick_wall_lay_small_area",
-      "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
     ]) {
-      const variant = buildCanonicalBaselinePlan({ catalog: { ...catalog, catalogId }, prompt });
-      expect(Object.keys(variant.parameters)).toHaveLength(60);
+      const retiredAreaVariant = buildCanonicalBaselinePlan({ catalog: { ...catalog, catalogId }, prompt });
+      expect(retiredAreaVariant.parameters).toEqual({});
     }
     const distinctHighLoad = buildCanonicalBaselinePlan({
       catalog: { ...catalog, catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_high_load" },

@@ -1,3 +1,5 @@
+import { extractRicsNrm2FormworkCanonicalParametersV1 as extractPrompt } from "../../src/lib/estimate/ownedDomain/formworkRicsNrm2PromptParametersV1";
+import { extractRicsNrm2FormworkCanonicalParametersV1 as extractLegacyPrompt } from "../../src/lib/estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1";
 import { buildDirectConsumerRepairOpenWorldAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import { compileDynamicProfessionalBoq } from "../../src/lib/ai/professionalBoq/compileDynamicProfessionalBoq";
 import { buildOwnedDomainEstimatorReasoningPlan } from "../../src/lib/estimate/ownedDomain/buildOwnedDomainEstimatorReasoningPlan";
@@ -79,6 +81,29 @@ function completePrompt(areaM2 = 123.45): string {
 }
 
 describe("RICS NRM2 measured formwork contact-area norm", () => {
+  test("preserves measured formwork prompt values through the pure parser and legacy export", () => {
+    const expected = Object.fromEntries(
+      Object.entries(exactInputs()).map(([key, value]) => [key, value.value]),
+    );
+    const parsed = extractPrompt(completePrompt());
+    expect(parsed).toEqual(expected);
+    expect(Object.isFrozen(parsed)).toBe(true);
+    expect(extractLegacyPrompt).toBe(extractPrompt);
+    for (const unit of ["м²", "м2", "m2", "sqm"]) {
+      expect(extractPrompt(completePrompt().replace("123.45 м²", `123,45 ${unit}`)))
+        .toEqual(expected);
+    }
+    expect(extractPrompt(completePrompt().replace("123.45 м²", "1 234,5 м²")))
+      .toEqual({ ...expected, measured_formwork_contact_area_m2: 1234.5 });
+    expect(extractPrompt("Обычная опалубка стены площадью 123 м2")).toBeNull();
+    expect(extractPrompt("Опалубка по RICS NRM 2")).toEqual({
+      product_profile_id: RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
+    });
+    expect(extractPrompt(completePrompt(0))).toEqual(
+      Object.fromEntries(Object.entries(expected).filter(([key]) => key !== "measured_formwork_contact_area_m2")),
+    );
+  });
+
   test("registers the reviewed Work section 11 measurement identity", () => {
     expect(RICS_NRM2_FORMWORK_SOURCE_METADATA).toMatchObject({
       norm_id: RICS_NRM2_FORMWORK_NORM_ID,

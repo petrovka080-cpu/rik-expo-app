@@ -1,0 +1,8 @@
+Representation: bounded cloud primary HTML text witness, not raw HTML bytes.
+Official URL: https://www.legrand.fr/pro/catalogue/boitier-saillie-etanche-plexo-2-postes-horizontaux-et-verticaux-sans-cloison-avec-4-embouts-a-membrane-gris
+Exact product reference:069672L; product heading identifies four membrane entry ends.
+Cloud text locators: exact reference line120, product heading118, composition line152.
+Short verbatim excerpt: Un boîtier composé d'une platine et d'un cadre
+Paraphrase: The described factory box comprises one support plate and one frame and is sold as the four-membrane-entry version. These parts remain contained in one whole box.
+Boundary: Manufacturer-described factory contents, not actual lot inspection or exact069576L+069672L pairing. Four entry membranes do not imply four inserted cables, glands, penetrations or a cutting/drilling quantity.
+Payment/order: Keep one box supply owner; contained parts create no separate orders or additional payment.

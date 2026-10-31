@@ -1,0 +1,1996 @@
+{
+  "status": "PINNED_REAL_HEADER_GRAPH_EVIDENCE_NOT_FULL_CAPTURE_OR_DB_PREFLIGHT",
+  "indexFileSha256": "33bdf3f0dff139f0da003bf389b25555a0535529dc6655424450364cfdb8721c",
+  "records": [
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_standard",
+      "sourceRawCaptureFileSha256": "7af028bcfd2a10b78c1b31bd59d87436f8f9aa30f1f5d1c0363e5a77b7443542",
+      "sourceMetadataLosslessRoundtrip": true,
+      "definition": {
+        "id": "b8557cd6-b7b6-5487-9832-1247991dcc98",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_standard",
+        "definition_sha256": "ef59aa460894451b7541b6aa4939573a13aee67cc8d17f0738ba426ae0624365",
+        "definition_version": 17,
+        "source_metadata": {
+          "contract": "gox-build.monolithic-family-physical-provision/r2",
+          "synthetic": false,
+          "priceState": "PARTIAL_NEEDS_PRICE",
+          "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+          "sourceHashes": [
+            {
+              "path": "scripts/estimate/r4a13/prepareS2733EmbeddedCoatingCompletionSuccessor.ts",
+              "sha256": "ffdd6c78fdb95ae73267fdcf07410a0c0c80e55934d25f3278c29343008ddb71"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733EmbeddedCoatingCompletionOverlay.ts",
+              "sha256": "db2b5423efe14bf6e34628b3264539924045a90b9a5c939d2e370252b474ea10"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733EmbeddedCoatingCompletionTargets.ts",
+              "sha256": "0abc2d0742f5d35ffe6aabcd0497b6d5ad4bd6296e644bebba8dbb58fa436eba"
+            },
+            {
+              "path": "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts",
+              "sha256": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845"
+            },
+            {
+              "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+              "sha256": "aa758eed70290212753014ab0010358d3dcc3c8356edf782188fa3edcdeff4e7"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
+              "sha256": "c5b01155590a05b91c727dee9d3c5da9f0419fbb4fa61776eb5669876b73c223"
+            },
+            {
+              "path": "src/lib/estimate/v4/embeddedCoatingCompletionS2733.ts",
+              "sha256": "0be65a2d97a3ffa48cfa1142673b5baa7fa589431c5c997a20eaf5f27703ee56"
+            },
+            {
+              "path": "src/lib/estimate/v4/concreteSlabEmbeddedItemsR1.ts",
+              "sha256": "f7d2fcc00ce514b9fd4dc99c930dcca37bcce45c1c7faa81b14a110fc4b73001"
+            },
+            {
+              "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+              "sha256": "0c0c6980a78290e8cf3a23d5a600b55ae63ea04e0e3479eda40f513e64fd3d5d"
+            },
+            {
+              "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+              "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+              "sha256": "78d155a0382ba4741ebff4a24596babef940ca5e6c0430c9245d88a4fc6ad21a"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+              "sha256": "33a52832b3a4a1c88d5d22cf9dab058b0ad3ca8326c365d33526f28c06bd9ddf"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+              "sha256": "5f2ce7a5b36b366891ba18187ca4a8fe64266fd2574cf34ae36f1be5cfc4df41"
+            }
+          ],
+          "activationAllowed": false,
+          "sourceFingerprint": "6910c8139b12ebf46a30a918950bfe1a710744ec58499b80e256ae0c09ef22f9",
+          "normativeSourceIds": [
+            "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
+            "src_professional_norm_pack_reinforcement_project_bar_schedule_weight_same_unit_routing_v1",
+            "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1",
+            "src_manufacturer_doka_dokaflex_999776002_2024_08",
+            "src_professional_norm_pack_concrete_aci_spec_301_20_project_embedment_schedule_v1",
+            "src_professional_norm_pack_concrete_aci_117_10_embedded_item_tolerances_v1"
+          ],
+          "productionEligible": false,
+          "fullApplicableScope": true,
+          "parameterSchemaSha256": "90a1abce2dc842704417a6ab8990261bbf40a2aaf1c91d0eb66816b28233964d",
+          "definitionSchemaSha256": "0d61da97430f57a76b9f527c112dbdec1b9a12015e019a08557917422651bb62",
+          "predecessorDefinitionId": "2b034b7a-d0d1-5faf-84c4-abb41de2a4cd",
+          "acceptanceEvidenceSha256": "e5c59c9710bb420bd1f03f43bc88e02303a49d805a7fc61fdbfc3ed316508f83",
+          "predecessorBaselineLeafId": "0d846f4a-95a2-5167-8a5a-eabb9911552a",
+          "winterHeatingCompletionContract": "rik-expo-app.s27-33.winter-heating-completion.v1",
+          "formworkMaterialPurchaseContract": "rik-expo-app.s27-33.formwork-material-purchase.v1",
+          "retainedParentBindingSuccessorV1": {
+            "normId": "ACTUAL_APPROVED_PHYSICAL_SCHEDULE_PLUS_PINNED_KG06_AND_FACTORY_ASSEMBLIES_R2",
+            "contract": "gox-build.monolithic-family-physical-provision/r2",
+            "sourceId": "gox_monolithic_family_physical_provision_r2:card1",
+            "parentBaselineId": "7e283061-7093-51b9-8d54-66a4046b0685",
+            "sourceFingerprint": "6910c8139b12ebf46a30a918950bfe1a710744ec58499b80e256ae0c09ef22f9",
+            "parentDefinitionId": "733e0d11-dbfd-5033-8366-f250e752168c",
+            "capturedParentSha256": "8fd0506bde93b1ef541f3dd9f5a78c071686c746680f76e78b95fe9a0ee19a65"
+          },
+          "embeddedCoatingCompletionContract": "rik-expo-app.s27-33.embedded-coating-completion.v1",
+          "embeddedWeldingCompletionContract": "rik-expo-app.s27-33.embedded-welding-completion.v1",
+          "surfaceFinishingCompletionContract": "rik-expo-app.s27-33.surface-finishing-completion.v1",
+          "constructionJointCompletionContract": "rik-expo-app.s27-33.construction-joint-completion.v1",
+          "placementEquipmentCompletionContract": "rik-expo-app.s27-33.placement-equipment-completion.v1",
+          "placementVibrationCompletionContract": "rik-expo-app.s27-33.placement-vibration-completion.v1",
+          "compositeWaterCuringCompletionContract": "rik-expo-app.s27-33.composite-water-curing-completion.v1",
+          "embeddedInstallationCompletionContract": "rik-expo-app.s27-33.embedded-installation-completion.v1",
+          "reinforcementEquipmentCompletionContract": "rik-expo-app.s27-33.reinforcement-equipment-completion.v1"
+        }
+      },
+      "baseline": {
+        "id": "4b607758-fa45-580a-a879-8748ff5ed79e",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_standard",
+        "definition_version_id": "b8557cd6-b7b6-5487-9832-1247991dcc98",
+        "source_definition_version_id": "733e0d11-dbfd-5033-8366-f250e752168c",
+        "supersedes_baseline_id": "7e283061-7093-51b9-8d54-66a4046b0685"
+      }
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_pour_standard",
+      "sourceRawCaptureFileSha256": "2446c01543481883c62f15f190203c14b02dbe61288a7de82cc014f230d2c08f",
+      "sourceMetadataLosslessRoundtrip": true,
+      "definition": {
+        "id": "d00d3b23-8f6d-5155-b36f-6dedc0cd4177",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_concrete_slab_pour_standard",
+        "definition_sha256": "74bae311c024f5269764d746ae5373f7cb068db480775cfc251204274fa1826a",
+        "definition_version": 15,
+        "source_metadata": {
+          "contract": "gox-build.monolithic-family-physical-provision/r2",
+          "synthetic": false,
+          "priceState": "PARTIAL_NEEDS_PRICE",
+          "limitationRu": "Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю.",
+          "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+          "sourceHashes": [
+            {
+              "path": "scripts/estimate/r4a13/prepareS2733WinterHeatingCompletionSuccessor.ts",
+              "sha256": "2affe1b979d7df43d3b623ec1a723bb6ce78606c24d72ec35bbd0741c164e854"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733WinterHeatingCompletionOverlay.ts",
+              "sha256": "8a49959b4f04ab3f2a36e24a94d5773a0b4a2d898eadcfc02cbeef9f33eeb48b"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733SurfaceFinishingCompletionOverlay.ts",
+              "sha256": "4c9bafb5fa452111f7b94b69fde182c3e63922be23927c82c0910027f2cfb58d"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733PlacementEquipmentCompletionOverlay.ts",
+              "sha256": "23c1608a1ceff919b91e78bdbe826b1bea8d550cceda5c832cd57e56152162ff"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733CompositeWaterCuringOverlay.ts",
+              "sha256": "401afac27ad02d9e17fdd851580f6e51f5599f11126e1fc42cf6ba7e193159cd"
+            },
+            {
+              "path": "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts",
+              "sha256": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845"
+            },
+            {
+              "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+              "sha256": "aa758eed70290212753014ab0010358d3dcc3c8356edf782188fa3edcdeff4e7"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+              "sha256": "78d155a0382ba4741ebff4a24596babef940ca5e6c0430c9245d88a4fc6ad21a"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+              "sha256": "3fafc571851efdd424032a7832e0d05c02656d0a85faf17cb39693722d9332ba"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+              "sha256": "b9903c7529945057c6b623e27aa9d6b26dcced22fa4388e478ec20296dacce5d"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
+              "sha256": "c5b01155590a05b91c727dee9d3c5da9f0419fbb4fa61776eb5669876b73c223"
+            },
+            {
+              "path": "src/lib/estimate/v4/winterHeatingCompletionS2733.ts",
+              "sha256": "c210cfde5d788667ca4082395956789b613fe2a10a36e2e4c7a309d328213dbb"
+            },
+            {
+              "path": "src/lib/estimate/v4/stripFoundationConcretePlacementR1.ts",
+              "sha256": "32ad6ce6ca3de10be0504063f92ae8eff9c6a97ec915b4827db42f48ef3243f8"
+            },
+            {
+              "path": "src/lib/estimate/v4/anchorGroupWaterCuringResourcesS2733.ts",
+              "sha256": "d490657760180273972de16c86af40ceeb62c401a255d1a443a2aa3d4c639360"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733AnchorWaterCuringOverlay.ts",
+              "sha256": "57f7f15802c143433637ec2c720fa0688d161c589121410499e3427502435b4d"
+            },
+            {
+              "path": "src/lib/estimate/v4/concreteSlabCuringR1.ts",
+              "sha256": "bf998cb0ab33ef99e3f75305471125741231d86abbabd0d940f2e93ee1d9a472"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733ConcreteWaterCuringGroupOverlay.ts",
+              "sha256": "04511e3c082487942263ecc312900c904145901f6d8127d8cfe4952891a55368"
+            },
+            {
+              "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+              "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44"
+            },
+            {
+              "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+              "sha256": "0c0c6980a78290e8cf3a23d5a600b55ae63ea04e0e3479eda40f513e64fd3d5d"
+            }
+          ],
+          "activationAllowed": false,
+          "sourceFingerprint": "a2c8ed96b948dfdf1b52c1f3b3afcf673df7c3226f54bc2b39cd0774ad9a71a8",
+          "normativeSourceIds": [
+            "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+          ],
+          "productionEligible": false,
+          "sourceFreezeSha256": "c27d3b00d9edec683e6644338cf2f62aaad8b226f53e1f78698264e7e7e63f54",
+          "engineeringAccepted": false,
+          "fullApplicableScope": true,
+          "runtimeProfileInput": {},
+          "changedOwnerInputRows": [
+            "material:concrete:winter-heating-cable",
+            "work:concrete:finish-surface",
+            "work:concrete:winter-heating",
+            "equipment:concrete:heating-transformer",
+            "equipment:concrete:curing-water-application"
+          ],
+          "parameterSchemaSha256": "9339431e27cadb97744a6b2158ea41b342fa77dab586e2fba1332866d902b6aa",
+          "preservedParentRowIds": [
+            "material:concrete:ready-mix",
+            "material:concrete:curing-membrane",
+            "work:concrete:place-and-compact",
+            "work:concrete:cure",
+            "equipment:concrete:pump",
+            "equipment:concrete:crane-bucket",
+            "equipment:concrete:deep-vibrator",
+            "service:concrete:acceptance-control",
+            "material:concrete:construction-joint-waterstop",
+            "work:concrete:construction-joint-waterstop-install",
+            "delivery:concrete:ready-mix",
+            "material:concrete:curing-water",
+            "delivery:concrete:curing-water",
+            "equipment:concrete:construction-joint-included-tools",
+            "equipment:concrete:construction-joint-separate-tools",
+            "delivery:concrete:construction-joint-supply",
+            "delivery:concrete:vibration-equipment-and-kits",
+            "delivery:concrete:placement-equipment-and-kits",
+            "equipment:concrete:surface-finishing",
+            "delivery:concrete:surface-finishing-equipment-and-kits",
+            "material:concrete:winter-heating-included-energy",
+            "material:concrete:winter-heating-separate-energy",
+            "delivery:concrete:winter-heating-equipment-and-kits"
+          ],
+          "definitionSchemaSha256": "67569205276869be2b01ecfc1c6a92b486bf716c4ca75d3a1046ee3c952eb388",
+          "predecessorDefinitionId": "7ccde3c8-247e-5286-8ccc-d573ebcd9b80",
+          "acceptanceEvidenceSha256": "49090fa1e200c6d19655c2cc730d8b0816b8da1e04898b8d700c08149fb508e1",
+          "predecessorBaselineLeafId": "8d543c2e-adaa-5086-88d1-b7e127f6e6d8",
+          "waterCuringResourceContract": "rik-expo-app.s27-33.concrete-water-curing-group.v1",
+          "retiredAggregateMaterialRowIds": [
+            "material:concrete:curing-water-application-kit",
+            "material:concrete:construction-joint-included-kit",
+            "material:concrete:construction-joint-separate-kit",
+            "material:concrete:vibration-equipment-included-kit",
+            "material:concrete:vibration-equipment-separate-kit",
+            "material:concrete:pump-included-kit",
+            "material:concrete:crane-bucket-included-kit",
+            "material:concrete:placement-equipment-separate-kit",
+            "material:concrete:surface-finishing-manual-included-kit",
+            "material:concrete:surface-finishing-equipment-included-kit",
+            "material:concrete:surface-finishing-separate-kit",
+            "material:concrete:winter-heating-included-kit",
+            "material:concrete:winter-heating-separate-kit"
+          ],
+          "exampleProjectInputsAreNotNorms": true,
+          "winterHeatingCompletionContract": "rik-expo-app.s27-33.winter-heating-completion.v1",
+          "retainedParentBindingSuccessorV1": {
+            "normId": "06-01-041-03",
+            "contract": "gox-build.master212.monolithic-family-b/r1",
+            "sourceId": "master212_family_b_krer06_01_041_03_r1",
+            "parentBaselineId": "859d3a59-32ce-5285-8242-5498e5299536",
+            "sourceFingerprint": "0000cf3d6db8ac3f7fe2b721af3b66e89044c197620ce30a5c2f134d482a9d6e",
+            "parentDefinitionId": "874e9970-c748-56c6-8d64-1b558d011143",
+            "capturedParentSha256": "c57b5943dd7f37050c97e804fcf9bdfba74ae8c0b820aea3690cfbabfbfcd29c"
+          },
+          "surfaceFinishingCompletionContract": "rik-expo-app.s27-33.surface-finishing-completion.v1",
+          "constructionJointCompletionContract": "rik-expo-app.s27-33.construction-joint-completion.v1",
+          "retainedParentBindingContinuationV1": {
+            "contract": "master-retained-binding-continuation/r1",
+            "successor": {
+              "normId": "ACTUAL_APPROVED_PHYSICAL_SCHEDULE_PLUS_PINNED_KG06_AND_FACTORY_ASSEMBLIES_R2",
+              "contract": "gox-build.monolithic-family-physical-provision/r2",
+              "sourceId": "gox_monolithic_family_physical_provision_r2:card2",
+              "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_pour_standard",
+              "parentBaselineId": "978988cd-5d0f-5b32-a93a-d2973a76ee96",
+              "sourceFingerprint": "a2c8ed96b948dfdf1b52c1f3b3afcf673df7c3226f54bc2b39cd0774ad9a71a8",
+              "parentDefinitionId": "74f7f66a-7c2f-5cf1-b97b-029da11f2e94",
+              "capturedParentSha256": "5e5f9c65a74ed8252a04d936963883931f4fdbe43f1841afaddea0a45765fb94"
+            },
+            "previousSourceMetadata": {
+              "contract": "gox-build.master212.monolithic-family-b/r1",
+              "synthetic": false,
+              "priceState": "PARTIAL_NEEDS_PRICE",
+              "limitationRu": "Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю.",
+              "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+              "sourceHashes": [
+                {
+                  "path": "scripts/estimate/r4a13/prepareS2733WinterHeatingCompletionSuccessor.ts",
+                  "sha256": "2affe1b979d7df43d3b623ec1a723bb6ce78606c24d72ec35bbd0741c164e854"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733WinterHeatingCompletionOverlay.ts",
+                  "sha256": "8a49959b4f04ab3f2a36e24a94d5773a0b4a2d898eadcfc02cbeef9f33eeb48b"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733SurfaceFinishingCompletionOverlay.ts",
+                  "sha256": "4c9bafb5fa452111f7b94b69fde182c3e63922be23927c82c0910027f2cfb58d"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733PlacementEquipmentCompletionOverlay.ts",
+                  "sha256": "23c1608a1ceff919b91e78bdbe826b1bea8d550cceda5c832cd57e56152162ff"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733CompositeWaterCuringOverlay.ts",
+                  "sha256": "401afac27ad02d9e17fdd851580f6e51f5599f11126e1fc42cf6ba7e193159cd"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts",
+                  "sha256": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+                  "sha256": "aa758eed70290212753014ab0010358d3dcc3c8356edf782188fa3edcdeff4e7"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+                  "sha256": "78d155a0382ba4741ebff4a24596babef940ca5e6c0430c9245d88a4fc6ad21a"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+                  "sha256": "3fafc571851efdd424032a7832e0d05c02656d0a85faf17cb39693722d9332ba"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+                  "sha256": "b9903c7529945057c6b623e27aa9d6b26dcced22fa4388e478ec20296dacce5d"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
+                  "sha256": "c5b01155590a05b91c727dee9d3c5da9f0419fbb4fa61776eb5669876b73c223"
+                },
+                {
+                  "path": "src/lib/estimate/v4/winterHeatingCompletionS2733.ts",
+                  "sha256": "c210cfde5d788667ca4082395956789b613fe2a10a36e2e4c7a309d328213dbb"
+                },
+                {
+                  "path": "src/lib/estimate/v4/stripFoundationConcretePlacementR1.ts",
+                  "sha256": "32ad6ce6ca3de10be0504063f92ae8eff9c6a97ec915b4827db42f48ef3243f8"
+                },
+                {
+                  "path": "src/lib/estimate/v4/anchorGroupWaterCuringResourcesS2733.ts",
+                  "sha256": "d490657760180273972de16c86af40ceeb62c401a255d1a443a2aa3d4c639360"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733AnchorWaterCuringOverlay.ts",
+                  "sha256": "57f7f15802c143433637ec2c720fa0688d161c589121410499e3427502435b4d"
+                },
+                {
+                  "path": "src/lib/estimate/v4/concreteSlabCuringR1.ts",
+                  "sha256": "bf998cb0ab33ef99e3f75305471125741231d86abbabd0d940f2e93ee1d9a472"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733ConcreteWaterCuringGroupOverlay.ts",
+                  "sha256": "04511e3c082487942263ecc312900c904145901f6d8127d8cfe4952891a55368"
+                },
+                {
+                  "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+                  "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44"
+                },
+                {
+                  "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+                  "sha256": "0c0c6980a78290e8cf3a23d5a600b55ae63ea04e0e3479eda40f513e64fd3d5d"
+                }
+              ],
+              "activationAllowed": false,
+              "sourceFingerprint": "0000cf3d6db8ac3f7fe2b721af3b66e89044c197620ce30a5c2f134d482a9d6e",
+              "normativeSourceIds": [
+                "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+              ],
+              "productionEligible": false,
+              "sourceFreezeSha256": "c27d3b00d9edec683e6644338cf2f62aaad8b226f53e1f78698264e7e7e63f54",
+              "engineeringAccepted": false,
+              "fullApplicableScope": true,
+              "runtimeProfileInput": {},
+              "changedOwnerInputRows": [
+                "material:concrete:winter-heating-cable",
+                "work:concrete:finish-surface",
+                "work:concrete:winter-heating",
+                "equipment:concrete:heating-transformer",
+                "equipment:concrete:curing-water-application"
+              ],
+              "parameterSchemaSha256": "9339431e27cadb97744a6b2158ea41b342fa77dab586e2fba1332866d902b6aa",
+              "preservedParentRowIds": [
+                "material:concrete:ready-mix",
+                "material:concrete:curing-membrane",
+                "work:concrete:place-and-compact",
+                "work:concrete:cure",
+                "equipment:concrete:pump",
+                "equipment:concrete:crane-bucket",
+                "equipment:concrete:deep-vibrator",
+                "service:concrete:acceptance-control",
+                "material:concrete:construction-joint-waterstop",
+                "work:concrete:construction-joint-waterstop-install",
+                "delivery:concrete:ready-mix",
+                "material:concrete:curing-water",
+                "delivery:concrete:curing-water",
+                "equipment:concrete:construction-joint-included-tools",
+                "equipment:concrete:construction-joint-separate-tools",
+                "delivery:concrete:construction-joint-supply",
+                "delivery:concrete:vibration-equipment-and-kits",
+                "delivery:concrete:placement-equipment-and-kits",
+                "equipment:concrete:surface-finishing",
+                "delivery:concrete:surface-finishing-equipment-and-kits",
+                "material:concrete:winter-heating-included-energy",
+                "material:concrete:winter-heating-separate-energy",
+                "delivery:concrete:winter-heating-equipment-and-kits"
+              ],
+              "definitionSchemaSha256": "67569205276869be2b01ecfc1c6a92b486bf716c4ca75d3a1046ee3c952eb388",
+              "predecessorDefinitionId": "7ccde3c8-247e-5286-8ccc-d573ebcd9b80",
+              "acceptanceEvidenceSha256": "49090fa1e200c6d19655c2cc730d8b0816b8da1e04898b8d700c08149fb508e1",
+              "predecessorBaselineLeafId": "8d543c2e-adaa-5086-88d1-b7e127f6e6d8",
+              "waterCuringResourceContract": "rik-expo-app.s27-33.concrete-water-curing-group.v1",
+              "retiredAggregateMaterialRowIds": [
+                "material:concrete:curing-water-application-kit",
+                "material:concrete:construction-joint-included-kit",
+                "material:concrete:construction-joint-separate-kit",
+                "material:concrete:vibration-equipment-included-kit",
+                "material:concrete:vibration-equipment-separate-kit",
+                "material:concrete:pump-included-kit",
+                "material:concrete:crane-bucket-included-kit",
+                "material:concrete:placement-equipment-separate-kit",
+                "material:concrete:surface-finishing-manual-included-kit",
+                "material:concrete:surface-finishing-equipment-included-kit",
+                "material:concrete:surface-finishing-separate-kit",
+                "material:concrete:winter-heating-included-kit",
+                "material:concrete:winter-heating-separate-kit"
+              ],
+              "exampleProjectInputsAreNotNorms": true,
+              "winterHeatingCompletionContract": "rik-expo-app.s27-33.winter-heating-completion.v1",
+              "retainedParentBindingSuccessorV1": {
+                "normId": "06-01-041-03",
+                "contract": "gox-build.master212.monolithic-family-b/r1",
+                "sourceId": "master212_family_b_krer06_01_041_03_r1",
+                "parentBaselineId": "859d3a59-32ce-5285-8242-5498e5299536",
+                "sourceFingerprint": "0000cf3d6db8ac3f7fe2b721af3b66e89044c197620ce30a5c2f134d482a9d6e",
+                "parentDefinitionId": "874e9970-c748-56c6-8d64-1b558d011143",
+                "capturedParentSha256": "c57b5943dd7f37050c97e804fcf9bdfba74ae8c0b820aea3690cfbabfbfcd29c"
+              },
+              "surfaceFinishingCompletionContract": "rik-expo-app.s27-33.surface-finishing-completion.v1",
+              "constructionJointCompletionContract": "rik-expo-app.s27-33.construction-joint-completion.v1",
+              "placementEquipmentCompletionContract": "rik-expo-app.s27-33.placement-equipment-completion.v1",
+              "placementVibrationCompletionContract": "rik-expo-app.s27-33.placement-vibration-completion.v1",
+              "compositeWaterCuringCompletionContract": "rik-expo-app.s27-33.composite-water-curing-completion.v1"
+            },
+            "previousSuccessorSha256": "52897eae7d8b65369d18e4fa1305c6b97a337d1e8e81c0cc7e4c8f9aad84515c",
+            "previousSourceMetadataSha256": "6fc27db4496c3605c9eef74b278fdfaaf3126ec5a614656bdfe8c95f21d51c19"
+          },
+          "placementEquipmentCompletionContract": "rik-expo-app.s27-33.placement-equipment-completion.v1",
+          "placementVibrationCompletionContract": "rik-expo-app.s27-33.placement-vibration-completion.v1",
+          "compositeWaterCuringCompletionContract": "rik-expo-app.s27-33.composite-water-curing-completion.v1"
+        }
+      },
+      "baseline": {
+        "id": "7946c6db-7a88-5c56-9a1f-65dea95590f2",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_concrete_slab_pour_standard",
+        "definition_version_id": "d00d3b23-8f6d-5155-b36f-6dedc0cd4177",
+        "source_definition_version_id": "74f7f66a-7c2f-5cf1-b97b-029da11f2e94",
+        "supersedes_baseline_id": "978988cd-5d0f-5b32-a93a-d2973a76ee96"
+      }
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "sourceRawCaptureFileSha256": "1e7ebede81fece9ff675d2c6cd78966dceb684d044f34db951facd218d9ae0e9",
+      "sourceMetadataLosslessRoundtrip": true,
+      "definition": {
+        "id": "974aa5c7-f363-5424-a153-b65af40f52cb",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+        "definition_sha256": "7d2d7e9facc31cc1ddb52a250178c0b7b87b83c70f062dd9b1e5296832d75352",
+        "definition_version": 13,
+        "source_metadata": {
+          "normId": "SLAB-FOUNDATION-FULL-CYCLE-S27-19-PRELIMINARY-R1",
+          "contract": "gox-build.monolithic-family-physical-provision/r2",
+          "sourceId": "s27_19_slab_foundation_full_cycle_source_pack",
+          "limitationRu": "Для основной доставки бетона и вывоза грунта требуется выбрать по одной подтверждённой схеме отдельной оплаты.",
+          "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+          "activationAllowed": false,
+          "sourceFingerprint": "271558e3f8b9b97c50ce239b67b84e004e7132f167e495afadf90f3c005360ab",
+          "productionEligible": false,
+          "sourceFreezeSha256": "40c13fc274a63f334c2584f45e5904affe75e62d102f16a5f0fa5d2c2beecc81",
+          "subworkStageCounts": {
+            "base": 8,
+            "site": 1,
+            "curing": 8,
+            "embeds": 4,
+            "repair": 6,
+            "cleanup": 3,
+            "placing": 9,
+            "quality": 4,
+            "backfill": 3,
+            "blinding": 6,
+            "boundary": 4,
+            "drainage": 7,
+            "formwork": 9,
+            "excavation": 6,
+            "geotextile": 5,
+            "insulation": 5,
+            "setting-out": 4,
+            "reinforcement": 8,
+            "waterproofing": 8,
+            "demobilization": 1
+          },
+          "operationMetadataOnly": true,
+          "changedPriceScopeRowIds": [
+            "slab-full:09:delivery:mixer-trips",
+            "slab-full:09:delivery:ready-mix-distance",
+            "slab-full:09:equipment:mixer-truck-time",
+            "slab-full:02:delivery:soil-trips",
+            "slab-full:02:equipment:soil-trucks"
+          ],
+          "predecessorDefinitionId": "05c8cd61-f6d8-5093-8238-4b3c19b60f01",
+          "predecessorBaselineLeafId": "ba061106-1cc8-5274-8ff7-92f4a7dd5d43",
+          "invalidSuppliedValuePolicy": "REJECT",
+          "knownWorkScopeFirstEstimate": true,
+          "missingProjectQuantityPolicy": "PRELIMINARY_NEED",
+          "changedProjectInputMetadataIds": [
+            "slab_main_concrete_transport_pricing_basis",
+            "slab_main_concrete_transport_price_scope_reference",
+            "slab_soil_transport_pricing_basis",
+            "slab_soil_transport_price_scope_reference"
+          ],
+          "resourcesAndQuantitiesUnchanged": true,
+          "retainedParentBindingSuccessorV1": {
+            "normId": "WHOLE_ACCEPTED_FOUNDATION_COMPONENTS_AND_KRER06-01-001-01_SUBWORK",
+            "contract": "gox-build.master212.concrete-foundation-successor/r1",
+            "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+            "parentBaselineId": "56b75a05-caf6-5564-897f-0c71e69a5498",
+            "sourceFingerprint": "c21e13b8a570672ca19876f32cee8b7ce5b135c6a19cd23f7fa5864fca1d9928",
+            "parentDefinitionId": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+            "capturedParentSha256": "2db70ba71d27dabdbc95c1587f17539a4701a4bb0a5de39e317b726b18a04e44"
+          },
+          "retainedParentBindingContinuationV1": {
+            "contract": "master-retained-binding-continuation/r1",
+            "successor": {
+              "normId": "06-01-001-15",
+              "contract": "gox-build.master212.monolithic-family-b/r1",
+              "sourceId": "master212_family_b_krer06_01_001_15_r1",
+              "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+              "parentBaselineId": "28e2e88c-f4af-5ca2-be9e-3367bdb72026",
+              "sourceFingerprint": "cf46360041c0a8fd83abaa25e65b2daf5c29abbbab02b957681188685ecdbd88",
+              "parentDefinitionId": "89addaf7-94fd-5461-8d52-b7ab763fe7d0",
+              "capturedParentSha256": "8b2e8c6912abc082d301d02f15ee4483a4edc48e68e1ad3e1a05f4a5d79c2e7c"
+            },
+            "previousSourceMetadata": {
+              "normId": "SLAB-FOUNDATION-FULL-CYCLE-S27-19-PRELIMINARY-R1",
+              "contract": "gox-build.master212.concrete-foundation-successor/r1",
+              "sourceId": "s27_19_slab_foundation_full_cycle_source_pack",
+              "limitationRu": "Для основной доставки бетона и вывоза грунта требуется выбрать по одной подтверждённой схеме отдельной оплаты.",
+              "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+              "activationAllowed": false,
+              "sourceFingerprint": "c21e13b8a570672ca19876f32cee8b7ce5b135c6a19cd23f7fa5864fca1d9928",
+              "productionEligible": false,
+              "sourceFreezeSha256": "40c13fc274a63f334c2584f45e5904affe75e62d102f16a5f0fa5d2c2beecc81",
+              "subworkStageCounts": {
+                "base": 8,
+                "site": 1,
+                "curing": 8,
+                "embeds": 4,
+                "repair": 6,
+                "cleanup": 3,
+                "placing": 9,
+                "quality": 4,
+                "backfill": 3,
+                "blinding": 6,
+                "boundary": 4,
+                "drainage": 7,
+                "formwork": 9,
+                "excavation": 6,
+                "geotextile": 5,
+                "insulation": 5,
+                "setting-out": 4,
+                "reinforcement": 8,
+                "waterproofing": 8,
+                "demobilization": 1
+              },
+              "operationMetadataOnly": true,
+              "changedPriceScopeRowIds": [
+                "slab-full:09:delivery:mixer-trips",
+                "slab-full:09:delivery:ready-mix-distance",
+                "slab-full:09:equipment:mixer-truck-time",
+                "slab-full:02:delivery:soil-trips",
+                "slab-full:02:equipment:soil-trucks"
+              ],
+              "predecessorDefinitionId": "05c8cd61-f6d8-5093-8238-4b3c19b60f01",
+              "predecessorBaselineLeafId": "ba061106-1cc8-5274-8ff7-92f4a7dd5d43",
+              "invalidSuppliedValuePolicy": "REJECT",
+              "knownWorkScopeFirstEstimate": true,
+              "missingProjectQuantityPolicy": "PRELIMINARY_NEED",
+              "changedProjectInputMetadataIds": [
+                "slab_main_concrete_transport_pricing_basis",
+                "slab_main_concrete_transport_price_scope_reference",
+                "slab_soil_transport_pricing_basis",
+                "slab_soil_transport_price_scope_reference"
+              ],
+              "resourcesAndQuantitiesUnchanged": true,
+              "retainedParentBindingSuccessorV1": {
+                "normId": "WHOLE_ACCEPTED_FOUNDATION_COMPONENTS_AND_KRER06-01-001-01_SUBWORK",
+                "contract": "gox-build.master212.concrete-foundation-successor/r1",
+                "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+                "parentBaselineId": "56b75a05-caf6-5564-897f-0c71e69a5498",
+                "sourceFingerprint": "c21e13b8a570672ca19876f32cee8b7ce5b135c6a19cd23f7fa5864fca1d9928",
+                "parentDefinitionId": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+                "capturedParentSha256": "2db70ba71d27dabdbc95c1587f17539a4701a4bb0a5de39e317b726b18a04e44"
+              },
+              "parametersFormulasQuantitiesAndPriceBindingsUnchanged": true
+            },
+            "previousSuccessorSha256": "1e4562f9186d1b7931638c11f5de46ef5efa3f59af9810e6f5d9e52a933d6e3b",
+            "previousSourceMetadataSha256": "aab8083eb465ecd361c5c1a084c33c689ee15b9117a2ec2dea375f3dc1b5040e"
+          },
+          "retainedParentBindingContinuationV2": {
+            "contract": "master-retained-binding-continuation/r1",
+            "successor": {
+              "normId": "ACTUAL_APPROVED_PHYSICAL_SCHEDULE_PLUS_PINNED_KG06_AND_FACTORY_ASSEMBLIES_R2",
+              "contract": "gox-build.monolithic-family-physical-provision/r2",
+              "sourceId": "gox_monolithic_family_physical_provision_r2:card3",
+              "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+              "parentBaselineId": "950774f9-aebb-5e65-92d6-960000de7a89",
+              "sourceFingerprint": "271558e3f8b9b97c50ce239b67b84e004e7132f167e495afadf90f3c005360ab",
+              "parentDefinitionId": "e49082df-9ff0-54a1-8a89-c20064e22815",
+              "capturedParentSha256": "e0cab2d86e187b97312c549e7b980c0a197c9db4ac66f3041c633ae3469bd36a"
+            },
+            "previousSourceMetadata": {
+              "normId": "SLAB-FOUNDATION-FULL-CYCLE-S27-19-PRELIMINARY-R1",
+              "contract": "gox-build.master212.monolithic-family-b/r1",
+              "sourceId": "s27_19_slab_foundation_full_cycle_source_pack",
+              "limitationRu": "Для основной доставки бетона и вывоза грунта требуется выбрать по одной подтверждённой схеме отдельной оплаты.",
+              "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+              "activationAllowed": false,
+              "sourceFingerprint": "cf46360041c0a8fd83abaa25e65b2daf5c29abbbab02b957681188685ecdbd88",
+              "productionEligible": false,
+              "sourceFreezeSha256": "40c13fc274a63f334c2584f45e5904affe75e62d102f16a5f0fa5d2c2beecc81",
+              "subworkStageCounts": {
+                "base": 8,
+                "site": 1,
+                "curing": 8,
+                "embeds": 4,
+                "repair": 6,
+                "cleanup": 3,
+                "placing": 9,
+                "quality": 4,
+                "backfill": 3,
+                "blinding": 6,
+                "boundary": 4,
+                "drainage": 7,
+                "formwork": 9,
+                "excavation": 6,
+                "geotextile": 5,
+                "insulation": 5,
+                "setting-out": 4,
+                "reinforcement": 8,
+                "waterproofing": 8,
+                "demobilization": 1
+              },
+              "operationMetadataOnly": true,
+              "changedPriceScopeRowIds": [
+                "slab-full:09:delivery:mixer-trips",
+                "slab-full:09:delivery:ready-mix-distance",
+                "slab-full:09:equipment:mixer-truck-time",
+                "slab-full:02:delivery:soil-trips",
+                "slab-full:02:equipment:soil-trucks"
+              ],
+              "predecessorDefinitionId": "05c8cd61-f6d8-5093-8238-4b3c19b60f01",
+              "predecessorBaselineLeafId": "ba061106-1cc8-5274-8ff7-92f4a7dd5d43",
+              "invalidSuppliedValuePolicy": "REJECT",
+              "knownWorkScopeFirstEstimate": true,
+              "missingProjectQuantityPolicy": "PRELIMINARY_NEED",
+              "changedProjectInputMetadataIds": [
+                "slab_main_concrete_transport_pricing_basis",
+                "slab_main_concrete_transport_price_scope_reference",
+                "slab_soil_transport_pricing_basis",
+                "slab_soil_transport_price_scope_reference"
+              ],
+              "resourcesAndQuantitiesUnchanged": true,
+              "retainedParentBindingSuccessorV1": {
+                "normId": "WHOLE_ACCEPTED_FOUNDATION_COMPONENTS_AND_KRER06-01-001-01_SUBWORK",
+                "contract": "gox-build.master212.concrete-foundation-successor/r1",
+                "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+                "parentBaselineId": "56b75a05-caf6-5564-897f-0c71e69a5498",
+                "sourceFingerprint": "c21e13b8a570672ca19876f32cee8b7ce5b135c6a19cd23f7fa5864fca1d9928",
+                "parentDefinitionId": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+                "capturedParentSha256": "2db70ba71d27dabdbc95c1587f17539a4701a4bb0a5de39e317b726b18a04e44"
+              },
+              "retainedParentBindingContinuationV1": {
+                "contract": "master-retained-binding-continuation/r1",
+                "successor": {
+                  "normId": "06-01-001-15",
+                  "contract": "gox-build.master212.monolithic-family-b/r1",
+                  "sourceId": "master212_family_b_krer06_01_001_15_r1",
+                  "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+                  "parentBaselineId": "28e2e88c-f4af-5ca2-be9e-3367bdb72026",
+                  "sourceFingerprint": "cf46360041c0a8fd83abaa25e65b2daf5c29abbbab02b957681188685ecdbd88",
+                  "parentDefinitionId": "89addaf7-94fd-5461-8d52-b7ab763fe7d0",
+                  "capturedParentSha256": "8b2e8c6912abc082d301d02f15ee4483a4edc48e68e1ad3e1a05f4a5d79c2e7c"
+                },
+                "previousSourceMetadata": {
+                  "normId": "SLAB-FOUNDATION-FULL-CYCLE-S27-19-PRELIMINARY-R1",
+                  "contract": "gox-build.master212.concrete-foundation-successor/r1",
+                  "sourceId": "s27_19_slab_foundation_full_cycle_source_pack",
+                  "limitationRu": "Для основной доставки бетона и вывоза грунта требуется выбрать по одной подтверждённой схеме отдельной оплаты.",
+                  "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+                  "activationAllowed": false,
+                  "sourceFingerprint": "c21e13b8a570672ca19876f32cee8b7ce5b135c6a19cd23f7fa5864fca1d9928",
+                  "productionEligible": false,
+                  "sourceFreezeSha256": "40c13fc274a63f334c2584f45e5904affe75e62d102f16a5f0fa5d2c2beecc81",
+                  "subworkStageCounts": {
+                    "base": 8,
+                    "site": 1,
+                    "curing": 8,
+                    "embeds": 4,
+                    "repair": 6,
+                    "cleanup": 3,
+                    "placing": 9,
+                    "quality": 4,
+                    "backfill": 3,
+                    "blinding": 6,
+                    "boundary": 4,
+                    "drainage": 7,
+                    "formwork": 9,
+                    "excavation": 6,
+                    "geotextile": 5,
+                    "insulation": 5,
+                    "setting-out": 4,
+                    "reinforcement": 8,
+                    "waterproofing": 8,
+                    "demobilization": 1
+                  },
+                  "operationMetadataOnly": true,
+                  "changedPriceScopeRowIds": [
+                    "slab-full:09:delivery:mixer-trips",
+                    "slab-full:09:delivery:ready-mix-distance",
+                    "slab-full:09:equipment:mixer-truck-time",
+                    "slab-full:02:delivery:soil-trips",
+                    "slab-full:02:equipment:soil-trucks"
+                  ],
+                  "predecessorDefinitionId": "05c8cd61-f6d8-5093-8238-4b3c19b60f01",
+                  "predecessorBaselineLeafId": "ba061106-1cc8-5274-8ff7-92f4a7dd5d43",
+                  "invalidSuppliedValuePolicy": "REJECT",
+                  "knownWorkScopeFirstEstimate": true,
+                  "missingProjectQuantityPolicy": "PRELIMINARY_NEED",
+                  "changedProjectInputMetadataIds": [
+                    "slab_main_concrete_transport_pricing_basis",
+                    "slab_main_concrete_transport_price_scope_reference",
+                    "slab_soil_transport_pricing_basis",
+                    "slab_soil_transport_price_scope_reference"
+                  ],
+                  "resourcesAndQuantitiesUnchanged": true,
+                  "retainedParentBindingSuccessorV1": {
+                    "normId": "WHOLE_ACCEPTED_FOUNDATION_COMPONENTS_AND_KRER06-01-001-01_SUBWORK",
+                    "contract": "gox-build.master212.concrete-foundation-successor/r1",
+                    "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+                    "parentBaselineId": "56b75a05-caf6-5564-897f-0c71e69a5498",
+                    "sourceFingerprint": "c21e13b8a570672ca19876f32cee8b7ce5b135c6a19cd23f7fa5864fca1d9928",
+                    "parentDefinitionId": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+                    "capturedParentSha256": "2db70ba71d27dabdbc95c1587f17539a4701a4bb0a5de39e317b726b18a04e44"
+                  },
+                  "parametersFormulasQuantitiesAndPriceBindingsUnchanged": true
+                },
+                "previousSuccessorSha256": "1e4562f9186d1b7931638c11f5de46ef5efa3f59af9810e6f5d9e52a933d6e3b",
+                "previousSourceMetadataSha256": "aab8083eb465ecd361c5c1a084c33c689ee15b9117a2ec2dea375f3dc1b5040e"
+              },
+              "parametersFormulasQuantitiesAndPriceBindingsUnchanged": true
+            },
+            "previousSuccessorSha256": "03afd7b750ca031125b75e4386fd9753450fdae7d2b5530f0e618c652e25b846",
+            "previousSourceMetadataSha256": "a083c42a24601268af41d0296286e039ad5ffb5a86f8a93acdbfbc8bb9aab043"
+          },
+          "parametersFormulasQuantitiesAndPriceBindingsUnchanged": true
+        }
+      },
+      "baseline": {
+        "id": "5a90a659-bc3b-59bc-9644-8dc119ae5e5c",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+        "definition_version_id": "974aa5c7-f363-5424-a153-b65af40f52cb",
+        "source_definition_version_id": "e49082df-9ff0-54a1-8a89-c20064e22815",
+        "supersedes_baseline_id": "950774f9-aebb-5e65-92d6-960000de7a89"
+      }
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard",
+      "sourceRawCaptureFileSha256": "73766f6660c794cb7f4cddb6b7e6b39ee75590877be6650cb70c3d607e5892d4",
+      "sourceMetadataLosslessRoundtrip": true,
+      "definition": {
+        "id": "2c232923-725c-5487-a773-133dbb1e71f6",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard",
+        "definition_sha256": "7c86f01cbda46ae6e446723f006a7c6630dd7ab122f8be17e1f362dc400383bb",
+        "definition_version": 15,
+        "source_metadata": {
+          "contract": "gox-build.monolithic-family-physical-provision/r2",
+          "synthetic": false,
+          "priceState": "PARTIAL_NEEDS_PRICE",
+          "limitationRu": "Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю.",
+          "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+          "sourceHashes": [
+            {
+              "path": "scripts/estimate/r4a13/prepareS2733WinterHeatingCompletionSuccessor.ts",
+              "sha256": "2affe1b979d7df43d3b623ec1a723bb6ce78606c24d72ec35bbd0741c164e854"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733WinterHeatingCompletionOverlay.ts",
+              "sha256": "8a49959b4f04ab3f2a36e24a94d5773a0b4a2d898eadcfc02cbeef9f33eeb48b"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733SurfaceFinishingCompletionOverlay.ts",
+              "sha256": "4c9bafb5fa452111f7b94b69fde182c3e63922be23927c82c0910027f2cfb58d"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733PlacementEquipmentCompletionOverlay.ts",
+              "sha256": "23c1608a1ceff919b91e78bdbe826b1bea8d550cceda5c832cd57e56152162ff"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733CompositeWaterCuringOverlay.ts",
+              "sha256": "401afac27ad02d9e17fdd851580f6e51f5599f11126e1fc42cf6ba7e193159cd"
+            },
+            {
+              "path": "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts",
+              "sha256": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845"
+            },
+            {
+              "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+              "sha256": "aa758eed70290212753014ab0010358d3dcc3c8356edf782188fa3edcdeff4e7"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+              "sha256": "78d155a0382ba4741ebff4a24596babef940ca5e6c0430c9245d88a4fc6ad21a"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+              "sha256": "3fafc571851efdd424032a7832e0d05c02656d0a85faf17cb39693722d9332ba"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+              "sha256": "b9903c7529945057c6b623e27aa9d6b26dcced22fa4388e478ec20296dacce5d"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
+              "sha256": "c5b01155590a05b91c727dee9d3c5da9f0419fbb4fa61776eb5669876b73c223"
+            },
+            {
+              "path": "src/lib/estimate/v4/winterHeatingCompletionS2733.ts",
+              "sha256": "c210cfde5d788667ca4082395956789b613fe2a10a36e2e4c7a309d328213dbb"
+            },
+            {
+              "path": "src/lib/estimate/v4/stripFoundationConcretePlacementR1.ts",
+              "sha256": "32ad6ce6ca3de10be0504063f92ae8eff9c6a97ec915b4827db42f48ef3243f8"
+            },
+            {
+              "path": "src/lib/estimate/v4/anchorGroupWaterCuringResourcesS2733.ts",
+              "sha256": "d490657760180273972de16c86af40ceeb62c401a255d1a443a2aa3d4c639360"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733AnchorWaterCuringOverlay.ts",
+              "sha256": "57f7f15802c143433637ec2c720fa0688d161c589121410499e3427502435b4d"
+            },
+            {
+              "path": "src/lib/estimate/v4/concreteSlabCuringR1.ts",
+              "sha256": "bf998cb0ab33ef99e3f75305471125741231d86abbabd0d940f2e93ee1d9a472"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733ConcreteWaterCuringGroupOverlay.ts",
+              "sha256": "04511e3c082487942263ecc312900c904145901f6d8127d8cfe4952891a55368"
+            },
+            {
+              "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+              "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44"
+            },
+            {
+              "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+              "sha256": "0c0c6980a78290e8cf3a23d5a600b55ae63ea04e0e3479eda40f513e64fd3d5d"
+            }
+          ],
+          "activationAllowed": false,
+          "sourceFingerprint": "1a1428d196d50c7364193400a3109b7e2a5c33c72acfeda21dbc5a933066f520",
+          "normativeSourceIds": [
+            "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+          ],
+          "productionEligible": false,
+          "sourceFreezeSha256": "c27d3b00d9edec683e6644338cf2f62aaad8b226f53e1f78698264e7e7e63f54",
+          "engineeringAccepted": false,
+          "fullApplicableScope": true,
+          "runtimeProfileInput": {},
+          "changedOwnerInputRows": [
+            "material:concrete:winter-heating-cable",
+            "work:concrete:finish-surface",
+            "work:concrete:winter-heating",
+            "equipment:concrete:heating-transformer",
+            "equipment:concrete:curing-water-application"
+          ],
+          "parameterSchemaSha256": "9339431e27cadb97744a6b2158ea41b342fa77dab586e2fba1332866d902b6aa",
+          "preservedParentRowIds": [
+            "material:concrete:ready-mix",
+            "material:concrete:curing-membrane",
+            "work:concrete:place-and-compact",
+            "work:concrete:cure",
+            "equipment:concrete:pump",
+            "equipment:concrete:crane-bucket",
+            "equipment:concrete:deep-vibrator",
+            "service:concrete:acceptance-control",
+            "material:concrete:construction-joint-waterstop",
+            "work:concrete:construction-joint-waterstop-install",
+            "delivery:concrete:ready-mix",
+            "material:concrete:curing-water",
+            "delivery:concrete:curing-water",
+            "equipment:concrete:construction-joint-included-tools",
+            "equipment:concrete:construction-joint-separate-tools",
+            "delivery:concrete:construction-joint-supply",
+            "delivery:concrete:vibration-equipment-and-kits",
+            "delivery:concrete:placement-equipment-and-kits",
+            "equipment:concrete:surface-finishing",
+            "delivery:concrete:surface-finishing-equipment-and-kits",
+            "material:concrete:winter-heating-included-energy",
+            "material:concrete:winter-heating-separate-energy",
+            "delivery:concrete:winter-heating-equipment-and-kits"
+          ],
+          "definitionSchemaSha256": "1f34cf804f39f57bce3f9978bbe2dc59db0b071132ec471e6b74602eedc04f29",
+          "predecessorDefinitionId": "a8a60004-1d12-50aa-8219-6f25983cdd2d",
+          "acceptanceEvidenceSha256": "176726adbe512433c467d3c9ea555d2f193f54d4b43a1afbab0e39b1ad1f591e",
+          "predecessorBaselineLeafId": "4739a08f-addf-5c83-8515-49d0a1add3cc",
+          "waterCuringResourceContract": "rik-expo-app.s27-33.concrete-water-curing-group.v1",
+          "retiredAggregateMaterialRowIds": [
+            "material:concrete:curing-water-application-kit",
+            "material:concrete:construction-joint-included-kit",
+            "material:concrete:construction-joint-separate-kit",
+            "material:concrete:vibration-equipment-included-kit",
+            "material:concrete:vibration-equipment-separate-kit",
+            "material:concrete:pump-included-kit",
+            "material:concrete:crane-bucket-included-kit",
+            "material:concrete:placement-equipment-separate-kit",
+            "material:concrete:surface-finishing-manual-included-kit",
+            "material:concrete:surface-finishing-equipment-included-kit",
+            "material:concrete:surface-finishing-separate-kit",
+            "material:concrete:winter-heating-included-kit",
+            "material:concrete:winter-heating-separate-kit"
+          ],
+          "exampleProjectInputsAreNotNorms": true,
+          "winterHeatingCompletionContract": "rik-expo-app.s27-33.winter-heating-completion.v1",
+          "retainedParentBindingSuccessorV1": {
+            "normId": "KRER06-01-111-01",
+            "contract": "gox-build.monolithic-family-krer06/r1",
+            "sourceId": "gox-monolithic-family-krer06-10702-10903-11101-r1:stair",
+            "parentBaselineId": "acb022e5-8bb3-5500-835f-bf021eb5710e",
+            "sourceFingerprint": "a2409da32b1f0ea4a36501b644ab1504d7ce59ad0dab38f57bc01b0f8ca2f8bf",
+            "parentDefinitionId": "260945f5-eb8a-555a-8b7a-24b35d5b7d91",
+            "capturedParentSha256": "feb54afe85b588615f0587134771c50d49e47a90b50da18d25cf5eb888e15718"
+          },
+          "surfaceFinishingCompletionContract": "rik-expo-app.s27-33.surface-finishing-completion.v1",
+          "constructionJointCompletionContract": "rik-expo-app.s27-33.construction-joint-completion.v1",
+          "retainedParentBindingContinuationV1": {
+            "contract": "master-retained-binding-continuation/r1",
+            "successor": {
+              "normId": "ACTUAL_APPROVED_PHYSICAL_SCHEDULE_PLUS_PINNED_KG06_AND_FACTORY_ASSEMBLIES_R2",
+              "contract": "gox-build.monolithic-family-physical-provision/r2",
+              "sourceId": "gox_monolithic_family_physical_provision_r2:card4",
+              "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard",
+              "parentBaselineId": "f395fece-c36d-5cf2-a014-d6028a5bc597",
+              "sourceFingerprint": "1a1428d196d50c7364193400a3109b7e2a5c33c72acfeda21dbc5a933066f520",
+              "parentDefinitionId": "67087a24-8029-58cc-84a2-be54326cecb8",
+              "capturedParentSha256": "11eba7c225763f4240657f90313956627f18c65d3782677e942e6b4ed5be41aa"
+            },
+            "previousSourceMetadata": {
+              "contract": "gox-build.monolithic-family-krer06/r1",
+              "synthetic": false,
+              "priceState": "PARTIAL_NEEDS_PRICE",
+              "limitationRu": "Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю.",
+              "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+              "sourceHashes": [
+                {
+                  "path": "scripts/estimate/r4a13/prepareS2733WinterHeatingCompletionSuccessor.ts",
+                  "sha256": "2affe1b979d7df43d3b623ec1a723bb6ce78606c24d72ec35bbd0741c164e854"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733WinterHeatingCompletionOverlay.ts",
+                  "sha256": "8a49959b4f04ab3f2a36e24a94d5773a0b4a2d898eadcfc02cbeef9f33eeb48b"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733SurfaceFinishingCompletionOverlay.ts",
+                  "sha256": "4c9bafb5fa452111f7b94b69fde182c3e63922be23927c82c0910027f2cfb58d"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733PlacementEquipmentCompletionOverlay.ts",
+                  "sha256": "23c1608a1ceff919b91e78bdbe826b1bea8d550cceda5c832cd57e56152162ff"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733CompositeWaterCuringOverlay.ts",
+                  "sha256": "401afac27ad02d9e17fdd851580f6e51f5599f11126e1fc42cf6ba7e193159cd"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts",
+                  "sha256": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+                  "sha256": "aa758eed70290212753014ab0010358d3dcc3c8356edf782188fa3edcdeff4e7"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+                  "sha256": "78d155a0382ba4741ebff4a24596babef940ca5e6c0430c9245d88a4fc6ad21a"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+                  "sha256": "3fafc571851efdd424032a7832e0d05c02656d0a85faf17cb39693722d9332ba"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+                  "sha256": "b9903c7529945057c6b623e27aa9d6b26dcced22fa4388e478ec20296dacce5d"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
+                  "sha256": "c5b01155590a05b91c727dee9d3c5da9f0419fbb4fa61776eb5669876b73c223"
+                },
+                {
+                  "path": "src/lib/estimate/v4/winterHeatingCompletionS2733.ts",
+                  "sha256": "c210cfde5d788667ca4082395956789b613fe2a10a36e2e4c7a309d328213dbb"
+                },
+                {
+                  "path": "src/lib/estimate/v4/stripFoundationConcretePlacementR1.ts",
+                  "sha256": "32ad6ce6ca3de10be0504063f92ae8eff9c6a97ec915b4827db42f48ef3243f8"
+                },
+                {
+                  "path": "src/lib/estimate/v4/anchorGroupWaterCuringResourcesS2733.ts",
+                  "sha256": "d490657760180273972de16c86af40ceeb62c401a255d1a443a2aa3d4c639360"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733AnchorWaterCuringOverlay.ts",
+                  "sha256": "57f7f15802c143433637ec2c720fa0688d161c589121410499e3427502435b4d"
+                },
+                {
+                  "path": "src/lib/estimate/v4/concreteSlabCuringR1.ts",
+                  "sha256": "bf998cb0ab33ef99e3f75305471125741231d86abbabd0d940f2e93ee1d9a472"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733ConcreteWaterCuringGroupOverlay.ts",
+                  "sha256": "04511e3c082487942263ecc312900c904145901f6d8127d8cfe4952891a55368"
+                },
+                {
+                  "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+                  "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44"
+                },
+                {
+                  "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+                  "sha256": "0c0c6980a78290e8cf3a23d5a600b55ae63ea04e0e3479eda40f513e64fd3d5d"
+                }
+              ],
+              "activationAllowed": false,
+              "sourceFingerprint": "a2409da32b1f0ea4a36501b644ab1504d7ce59ad0dab38f57bc01b0f8ca2f8bf",
+              "normativeSourceIds": [
+                "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+              ],
+              "productionEligible": false,
+              "sourceFreezeSha256": "c27d3b00d9edec683e6644338cf2f62aaad8b226f53e1f78698264e7e7e63f54",
+              "engineeringAccepted": false,
+              "fullApplicableScope": true,
+              "runtimeProfileInput": {},
+              "changedOwnerInputRows": [
+                "material:concrete:winter-heating-cable",
+                "work:concrete:finish-surface",
+                "work:concrete:winter-heating",
+                "equipment:concrete:heating-transformer",
+                "equipment:concrete:curing-water-application"
+              ],
+              "parameterSchemaSha256": "9339431e27cadb97744a6b2158ea41b342fa77dab586e2fba1332866d902b6aa",
+              "preservedParentRowIds": [
+                "material:concrete:ready-mix",
+                "material:concrete:curing-membrane",
+                "work:concrete:place-and-compact",
+                "work:concrete:cure",
+                "equipment:concrete:pump",
+                "equipment:concrete:crane-bucket",
+                "equipment:concrete:deep-vibrator",
+                "service:concrete:acceptance-control",
+                "material:concrete:construction-joint-waterstop",
+                "work:concrete:construction-joint-waterstop-install",
+                "delivery:concrete:ready-mix",
+                "material:concrete:curing-water",
+                "delivery:concrete:curing-water",
+                "equipment:concrete:construction-joint-included-tools",
+                "equipment:concrete:construction-joint-separate-tools",
+                "delivery:concrete:construction-joint-supply",
+                "delivery:concrete:vibration-equipment-and-kits",
+                "delivery:concrete:placement-equipment-and-kits",
+                "equipment:concrete:surface-finishing",
+                "delivery:concrete:surface-finishing-equipment-and-kits",
+                "material:concrete:winter-heating-included-energy",
+                "material:concrete:winter-heating-separate-energy",
+                "delivery:concrete:winter-heating-equipment-and-kits"
+              ],
+              "definitionSchemaSha256": "1f34cf804f39f57bce3f9978bbe2dc59db0b071132ec471e6b74602eedc04f29",
+              "predecessorDefinitionId": "a8a60004-1d12-50aa-8219-6f25983cdd2d",
+              "acceptanceEvidenceSha256": "176726adbe512433c467d3c9ea555d2f193f54d4b43a1afbab0e39b1ad1f591e",
+              "predecessorBaselineLeafId": "4739a08f-addf-5c83-8515-49d0a1add3cc",
+              "waterCuringResourceContract": "rik-expo-app.s27-33.concrete-water-curing-group.v1",
+              "retiredAggregateMaterialRowIds": [
+                "material:concrete:curing-water-application-kit",
+                "material:concrete:construction-joint-included-kit",
+                "material:concrete:construction-joint-separate-kit",
+                "material:concrete:vibration-equipment-included-kit",
+                "material:concrete:vibration-equipment-separate-kit",
+                "material:concrete:pump-included-kit",
+                "material:concrete:crane-bucket-included-kit",
+                "material:concrete:placement-equipment-separate-kit",
+                "material:concrete:surface-finishing-manual-included-kit",
+                "material:concrete:surface-finishing-equipment-included-kit",
+                "material:concrete:surface-finishing-separate-kit",
+                "material:concrete:winter-heating-included-kit",
+                "material:concrete:winter-heating-separate-kit"
+              ],
+              "exampleProjectInputsAreNotNorms": true,
+              "winterHeatingCompletionContract": "rik-expo-app.s27-33.winter-heating-completion.v1",
+              "retainedParentBindingSuccessorV1": {
+                "normId": "KRER06-01-111-01",
+                "contract": "gox-build.monolithic-family-krer06/r1",
+                "sourceId": "gox-monolithic-family-krer06-10702-10903-11101-r1:stair",
+                "parentBaselineId": "acb022e5-8bb3-5500-835f-bf021eb5710e",
+                "sourceFingerprint": "a2409da32b1f0ea4a36501b644ab1504d7ce59ad0dab38f57bc01b0f8ca2f8bf",
+                "parentDefinitionId": "260945f5-eb8a-555a-8b7a-24b35d5b7d91",
+                "capturedParentSha256": "feb54afe85b588615f0587134771c50d49e47a90b50da18d25cf5eb888e15718"
+              },
+              "surfaceFinishingCompletionContract": "rik-expo-app.s27-33.surface-finishing-completion.v1",
+              "constructionJointCompletionContract": "rik-expo-app.s27-33.construction-joint-completion.v1",
+              "placementEquipmentCompletionContract": "rik-expo-app.s27-33.placement-equipment-completion.v1",
+              "placementVibrationCompletionContract": "rik-expo-app.s27-33.placement-vibration-completion.v1",
+              "compositeWaterCuringCompletionContract": "rik-expo-app.s27-33.composite-water-curing-completion.v1"
+            },
+            "previousSuccessorSha256": "d8c37bbcdd14912765ff75f747fdcfcafa839fe2bb5f8ff3909f458fb039d4a7",
+            "previousSourceMetadataSha256": "d457165ac272503b9921d941135d5cef9c718b6a00a8585b58d585b94e2c2aad"
+          },
+          "placementEquipmentCompletionContract": "rik-expo-app.s27-33.placement-equipment-completion.v1",
+          "placementVibrationCompletionContract": "rik-expo-app.s27-33.placement-vibration-completion.v1",
+          "compositeWaterCuringCompletionContract": "rik-expo-app.s27-33.composite-water-curing-completion.v1"
+        }
+      },
+      "baseline": {
+        "id": "c9e0f97f-c355-588f-9825-7680241f8b16",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard",
+        "definition_version_id": "2c232923-725c-5487-a773-133dbb1e71f6",
+        "source_definition_version_id": "67087a24-8029-58cc-84a2-be54326cecb8",
+        "supersedes_baseline_id": "f395fece-c36d-5cf2-a014-d6028a5bc597"
+      }
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+      "sourceRawCaptureFileSha256": "75895a795c71b42320e4077cbd61cf53b1a095d88389879f291506f989b9ccf8",
+      "sourceMetadataLosslessRoundtrip": true,
+      "definition": {
+        "id": "60bca5c0-cc41-5b8b-b754-18ce115a4d14",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+        "definition_sha256": "4979f59ddcce65dc063ad007a90e369aee0f943fdc9bcd3c72158b1799e7ad53",
+        "definition_version": 16,
+        "source_metadata": {
+          "contract": "gox-build.monolithic-family-physical-provision/r2",
+          "synthetic": false,
+          "priceState": "PARTIAL_NEEDS_PRICE",
+          "limitationRu": "Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю.",
+          "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+          "sourceHashes": [
+            {
+              "path": "scripts/estimate/r4a13/prepareS2733WinterHeatingCompletionSuccessor.ts",
+              "sha256": "2affe1b979d7df43d3b623ec1a723bb6ce78606c24d72ec35bbd0741c164e854"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733WinterHeatingCompletionOverlay.ts",
+              "sha256": "8a49959b4f04ab3f2a36e24a94d5773a0b4a2d898eadcfc02cbeef9f33eeb48b"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733SurfaceFinishingCompletionOverlay.ts",
+              "sha256": "4c9bafb5fa452111f7b94b69fde182c3e63922be23927c82c0910027f2cfb58d"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733PlacementEquipmentCompletionOverlay.ts",
+              "sha256": "23c1608a1ceff919b91e78bdbe826b1bea8d550cceda5c832cd57e56152162ff"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733CompositeWaterCuringOverlay.ts",
+              "sha256": "401afac27ad02d9e17fdd851580f6e51f5599f11126e1fc42cf6ba7e193159cd"
+            },
+            {
+              "path": "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts",
+              "sha256": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845"
+            },
+            {
+              "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+              "sha256": "aa758eed70290212753014ab0010358d3dcc3c8356edf782188fa3edcdeff4e7"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+              "sha256": "78d155a0382ba4741ebff4a24596babef940ca5e6c0430c9245d88a4fc6ad21a"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+              "sha256": "3fafc571851efdd424032a7832e0d05c02656d0a85faf17cb39693722d9332ba"
+            },
+            {
+              "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+              "sha256": "b9903c7529945057c6b623e27aa9d6b26dcced22fa4388e478ec20296dacce5d"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
+              "sha256": "c5b01155590a05b91c727dee9d3c5da9f0419fbb4fa61776eb5669876b73c223"
+            },
+            {
+              "path": "src/lib/estimate/v4/winterHeatingCompletionS2733.ts",
+              "sha256": "c210cfde5d788667ca4082395956789b613fe2a10a36e2e4c7a309d328213dbb"
+            },
+            {
+              "path": "src/lib/estimate/v4/stripFoundationConcretePlacementR1.ts",
+              "sha256": "32ad6ce6ca3de10be0504063f92ae8eff9c6a97ec915b4827db42f48ef3243f8"
+            },
+            {
+              "path": "src/lib/estimate/v4/anchorGroupWaterCuringResourcesS2733.ts",
+              "sha256": "d490657760180273972de16c86af40ceeb62c401a255d1a443a2aa3d4c639360"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733AnchorWaterCuringOverlay.ts",
+              "sha256": "57f7f15802c143433637ec2c720fa0688d161c589121410499e3427502435b4d"
+            },
+            {
+              "path": "src/lib/estimate/v4/concreteSlabCuringR1.ts",
+              "sha256": "bf998cb0ab33ef99e3f75305471125741231d86abbabd0d940f2e93ee1d9a472"
+            },
+            {
+              "path": "scripts/estimate/r4a13/s2733ConcreteWaterCuringGroupOverlay.ts",
+              "sha256": "04511e3c082487942263ecc312900c904145901f6d8127d8cfe4952891a55368"
+            },
+            {
+              "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+              "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44"
+            },
+            {
+              "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+              "sha256": "0c0c6980a78290e8cf3a23d5a600b55ae63ea04e0e3479eda40f513e64fd3d5d"
+            }
+          ],
+          "activationAllowed": false,
+          "sourceFingerprint": "9782b3badb4d86f034bb6b80f6c794e8efd6939fcacbb172cce73c4530498661",
+          "normativeSourceIds": [
+            "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+          ],
+          "productionEligible": false,
+          "sourceFreezeSha256": "c27d3b00d9edec683e6644338cf2f62aaad8b226f53e1f78698264e7e7e63f54",
+          "engineeringAccepted": false,
+          "fullApplicableScope": true,
+          "runtimeProfileInput": {},
+          "changedOwnerInputRows": [
+            "material:concrete:winter-heating-cable",
+            "work:concrete:finish-surface",
+            "work:concrete:winter-heating",
+            "equipment:concrete:heating-transformer",
+            "equipment:concrete:curing-water-application"
+          ],
+          "parameterSchemaSha256": "9339431e27cadb97744a6b2158ea41b342fa77dab586e2fba1332866d902b6aa",
+          "preservedParentRowIds": [
+            "material:concrete:ready-mix",
+            "material:concrete:curing-membrane",
+            "work:concrete:place-and-compact",
+            "work:concrete:cure",
+            "equipment:concrete:pump",
+            "equipment:concrete:crane-bucket",
+            "equipment:concrete:deep-vibrator",
+            "service:concrete:acceptance-control",
+            "material:concrete:construction-joint-waterstop",
+            "work:concrete:construction-joint-waterstop-install",
+            "delivery:concrete:ready-mix",
+            "material:concrete:curing-water",
+            "delivery:concrete:curing-water",
+            "equipment:concrete:construction-joint-included-tools",
+            "equipment:concrete:construction-joint-separate-tools",
+            "delivery:concrete:construction-joint-supply",
+            "delivery:concrete:vibration-equipment-and-kits",
+            "delivery:concrete:placement-equipment-and-kits",
+            "equipment:concrete:surface-finishing",
+            "delivery:concrete:surface-finishing-equipment-and-kits",
+            "material:concrete:winter-heating-included-energy",
+            "material:concrete:winter-heating-separate-energy",
+            "delivery:concrete:winter-heating-equipment-and-kits"
+          ],
+          "definitionSchemaSha256": "465a5ad003511c0eeb5ca47f469ef49ff918a12a6b0a3eff4011266e9ec0d5f9",
+          "predecessorDefinitionId": "f29b7e13-90dd-5e99-8cb1-3dccd95a47ce",
+          "acceptanceEvidenceSha256": "7f998ffd7fce118dac3b5d87e420de444d9f035f445d8cd33ab7d9b7e00cf6ce",
+          "predecessorBaselineLeafId": "0c45dd88-a032-5b56-830d-4b4ab06ebd76",
+          "waterCuringResourceContract": "rik-expo-app.s27-33.concrete-water-curing-group.v1",
+          "retiredAggregateMaterialRowIds": [
+            "material:concrete:curing-water-application-kit",
+            "material:concrete:construction-joint-included-kit",
+            "material:concrete:construction-joint-separate-kit",
+            "material:concrete:vibration-equipment-included-kit",
+            "material:concrete:vibration-equipment-separate-kit",
+            "material:concrete:pump-included-kit",
+            "material:concrete:crane-bucket-included-kit",
+            "material:concrete:placement-equipment-separate-kit",
+            "material:concrete:surface-finishing-manual-included-kit",
+            "material:concrete:surface-finishing-equipment-included-kit",
+            "material:concrete:surface-finishing-separate-kit",
+            "material:concrete:winter-heating-included-kit",
+            "material:concrete:winter-heating-separate-kit"
+          ],
+          "exampleProjectInputsAreNotNorms": true,
+          "winterHeatingCompletionContract": "rik-expo-app.s27-33.winter-heating-completion.v1",
+          "retainedParentBindingSuccessorV1": {
+            "normId": "WHOLE_ACCEPTED_FOUNDATION_COMPONENTS_AND_KRER06-01-001-01_SUBWORK",
+            "contract": "gox-build.master212.concrete-foundation-successor/r1",
+            "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+            "parentBaselineId": "0d97b56c-1a8d-5b07-841d-983a563bb20d",
+            "sourceFingerprint": "27e49d33e49ee5e397573b4cc4c10b81dc3f51552732d696204a7a0812fe9494",
+            "parentDefinitionId": "cb970826-ff8b-5919-8434-72f505c9f176",
+            "capturedParentSha256": "8f1b549f5e5f3628b30b744ab2fcaaba39d7907bc5fd3ad8c904c0a7357a3145"
+          },
+          "surfaceFinishingCompletionContract": "rik-expo-app.s27-33.surface-finishing-completion.v1",
+          "constructionJointCompletionContract": "rik-expo-app.s27-33.construction-joint-completion.v1",
+          "retainedParentBindingContinuationV1": {
+            "contract": "master-retained-binding-continuation/r1",
+            "successor": {
+              "normId": "06-01-001-22",
+              "contract": "gox-build.master212.concrete-normative-completion/r1",
+              "sourceId": "master212_concrete_krer06_00122_whole_cycle_completion_r1",
+              "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+              "parentBaselineId": "c4890ea7-3d2c-5171-b7f2-06bbdf42c516",
+              "sourceFingerprint": "622baf5e92112cbade10f306fa4b93cfdb6e9df643dafc00c658852c2345cda5",
+              "parentDefinitionId": "531afe77-8bf5-54df-9771-09301846d029",
+              "capturedParentSha256": "3b41318c276bd465b2ebe1183cb0d74806509bafe0f9397ead16471ccc9ad7ee"
+            },
+            "previousSourceMetadata": {
+              "contract": "gox-build.master212.concrete-foundation-successor/r1",
+              "synthetic": false,
+              "priceState": "PARTIAL_NEEDS_PRICE",
+              "limitationRu": "Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю.",
+              "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+              "sourceHashes": [
+                {
+                  "path": "scripts/estimate/r4a13/prepareS2733WinterHeatingCompletionSuccessor.ts",
+                  "sha256": "2affe1b979d7df43d3b623ec1a723bb6ce78606c24d72ec35bbd0741c164e854"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733WinterHeatingCompletionOverlay.ts",
+                  "sha256": "8a49959b4f04ab3f2a36e24a94d5773a0b4a2d898eadcfc02cbeef9f33eeb48b"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733SurfaceFinishingCompletionOverlay.ts",
+                  "sha256": "4c9bafb5fa452111f7b94b69fde182c3e63922be23927c82c0910027f2cfb58d"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733PlacementEquipmentCompletionOverlay.ts",
+                  "sha256": "23c1608a1ceff919b91e78bdbe826b1bea8d550cceda5c832cd57e56152162ff"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733CompositeWaterCuringOverlay.ts",
+                  "sha256": "401afac27ad02d9e17fdd851580f6e51f5599f11126e1fc42cf6ba7e193159cd"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts",
+                  "sha256": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+                  "sha256": "aa758eed70290212753014ab0010358d3dcc3c8356edf782188fa3edcdeff4e7"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+                  "sha256": "78d155a0382ba4741ebff4a24596babef940ca5e6c0430c9245d88a4fc6ad21a"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+                  "sha256": "3fafc571851efdd424032a7832e0d05c02656d0a85faf17cb39693722d9332ba"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+                  "sha256": "b9903c7529945057c6b623e27aa9d6b26dcced22fa4388e478ec20296dacce5d"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
+                  "sha256": "c5b01155590a05b91c727dee9d3c5da9f0419fbb4fa61776eb5669876b73c223"
+                },
+                {
+                  "path": "src/lib/estimate/v4/winterHeatingCompletionS2733.ts",
+                  "sha256": "c210cfde5d788667ca4082395956789b613fe2a10a36e2e4c7a309d328213dbb"
+                },
+                {
+                  "path": "src/lib/estimate/v4/stripFoundationConcretePlacementR1.ts",
+                  "sha256": "32ad6ce6ca3de10be0504063f92ae8eff9c6a97ec915b4827db42f48ef3243f8"
+                },
+                {
+                  "path": "src/lib/estimate/v4/anchorGroupWaterCuringResourcesS2733.ts",
+                  "sha256": "d490657760180273972de16c86af40ceeb62c401a255d1a443a2aa3d4c639360"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733AnchorWaterCuringOverlay.ts",
+                  "sha256": "57f7f15802c143433637ec2c720fa0688d161c589121410499e3427502435b4d"
+                },
+                {
+                  "path": "src/lib/estimate/v4/concreteSlabCuringR1.ts",
+                  "sha256": "bf998cb0ab33ef99e3f75305471125741231d86abbabd0d940f2e93ee1d9a472"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733ConcreteWaterCuringGroupOverlay.ts",
+                  "sha256": "04511e3c082487942263ecc312900c904145901f6d8127d8cfe4952891a55368"
+                },
+                {
+                  "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+                  "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44"
+                },
+                {
+                  "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+                  "sha256": "0c0c6980a78290e8cf3a23d5a600b55ae63ea04e0e3479eda40f513e64fd3d5d"
+                }
+              ],
+              "activationAllowed": false,
+              "sourceFingerprint": "27e49d33e49ee5e397573b4cc4c10b81dc3f51552732d696204a7a0812fe9494",
+              "normativeSourceIds": [
+                "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+              ],
+              "productionEligible": false,
+              "sourceFreezeSha256": "c27d3b00d9edec683e6644338cf2f62aaad8b226f53e1f78698264e7e7e63f54",
+              "engineeringAccepted": false,
+              "fullApplicableScope": true,
+              "runtimeProfileInput": {},
+              "changedOwnerInputRows": [
+                "material:concrete:winter-heating-cable",
+                "work:concrete:finish-surface",
+                "work:concrete:winter-heating",
+                "equipment:concrete:heating-transformer",
+                "equipment:concrete:curing-water-application"
+              ],
+              "parameterSchemaSha256": "9339431e27cadb97744a6b2158ea41b342fa77dab586e2fba1332866d902b6aa",
+              "preservedParentRowIds": [
+                "material:concrete:ready-mix",
+                "material:concrete:curing-membrane",
+                "work:concrete:place-and-compact",
+                "work:concrete:cure",
+                "equipment:concrete:pump",
+                "equipment:concrete:crane-bucket",
+                "equipment:concrete:deep-vibrator",
+                "service:concrete:acceptance-control",
+                "material:concrete:construction-joint-waterstop",
+                "work:concrete:construction-joint-waterstop-install",
+                "delivery:concrete:ready-mix",
+                "material:concrete:curing-water",
+                "delivery:concrete:curing-water",
+                "equipment:concrete:construction-joint-included-tools",
+                "equipment:concrete:construction-joint-separate-tools",
+                "delivery:concrete:construction-joint-supply",
+                "delivery:concrete:vibration-equipment-and-kits",
+                "delivery:concrete:placement-equipment-and-kits",
+                "equipment:concrete:surface-finishing",
+                "delivery:concrete:surface-finishing-equipment-and-kits",
+                "material:concrete:winter-heating-included-energy",
+                "material:concrete:winter-heating-separate-energy",
+                "delivery:concrete:winter-heating-equipment-and-kits"
+              ],
+              "definitionSchemaSha256": "465a5ad003511c0eeb5ca47f469ef49ff918a12a6b0a3eff4011266e9ec0d5f9",
+              "predecessorDefinitionId": "f29b7e13-90dd-5e99-8cb1-3dccd95a47ce",
+              "acceptanceEvidenceSha256": "7f998ffd7fce118dac3b5d87e420de444d9f035f445d8cd33ab7d9b7e00cf6ce",
+              "predecessorBaselineLeafId": "0c45dd88-a032-5b56-830d-4b4ab06ebd76",
+              "waterCuringResourceContract": "rik-expo-app.s27-33.concrete-water-curing-group.v1",
+              "retiredAggregateMaterialRowIds": [
+                "material:concrete:curing-water-application-kit",
+                "material:concrete:construction-joint-included-kit",
+                "material:concrete:construction-joint-separate-kit",
+                "material:concrete:vibration-equipment-included-kit",
+                "material:concrete:vibration-equipment-separate-kit",
+                "material:concrete:pump-included-kit",
+                "material:concrete:crane-bucket-included-kit",
+                "material:concrete:placement-equipment-separate-kit",
+                "material:concrete:surface-finishing-manual-included-kit",
+                "material:concrete:surface-finishing-equipment-included-kit",
+                "material:concrete:surface-finishing-separate-kit",
+                "material:concrete:winter-heating-included-kit",
+                "material:concrete:winter-heating-separate-kit"
+              ],
+              "exampleProjectInputsAreNotNorms": true,
+              "winterHeatingCompletionContract": "rik-expo-app.s27-33.winter-heating-completion.v1",
+              "retainedParentBindingSuccessorV1": {
+                "normId": "WHOLE_ACCEPTED_FOUNDATION_COMPONENTS_AND_KRER06-01-001-01_SUBWORK",
+                "contract": "gox-build.master212.concrete-foundation-successor/r1",
+                "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+                "parentBaselineId": "0d97b56c-1a8d-5b07-841d-983a563bb20d",
+                "sourceFingerprint": "27e49d33e49ee5e397573b4cc4c10b81dc3f51552732d696204a7a0812fe9494",
+                "parentDefinitionId": "cb970826-ff8b-5919-8434-72f505c9f176",
+                "capturedParentSha256": "8f1b549f5e5f3628b30b744ab2fcaaba39d7907bc5fd3ad8c904c0a7357a3145"
+              },
+              "surfaceFinishingCompletionContract": "rik-expo-app.s27-33.surface-finishing-completion.v1",
+              "constructionJointCompletionContract": "rik-expo-app.s27-33.construction-joint-completion.v1",
+              "placementEquipmentCompletionContract": "rik-expo-app.s27-33.placement-equipment-completion.v1",
+              "placementVibrationCompletionContract": "rik-expo-app.s27-33.placement-vibration-completion.v1",
+              "compositeWaterCuringCompletionContract": "rik-expo-app.s27-33.composite-water-curing-completion.v1"
+            },
+            "previousSuccessorSha256": "6aeb4ade9d07eb2eeb33644471835e267feb5369120076b7d759ab4bb050b45b",
+            "previousSourceMetadataSha256": "ddaf88a8e22217bc6787e42e4d0c180ef8498083614f7c894a27eac7d74a276e"
+          },
+          "retainedParentBindingContinuationV2": {
+            "contract": "master-retained-binding-continuation/r1",
+            "successor": {
+              "normId": "ACTUAL_APPROVED_PHYSICAL_SCHEDULE_PLUS_PINNED_KG06_AND_FACTORY_ASSEMBLIES_R2",
+              "contract": "gox-build.monolithic-family-physical-provision/r2",
+              "sourceId": "gox_monolithic_family_physical_provision_r2:card5",
+              "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+              "parentBaselineId": "50564651-12ae-556a-aaed-7830a01cc300",
+              "sourceFingerprint": "9782b3badb4d86f034bb6b80f6c794e8efd6939fcacbb172cce73c4530498661",
+              "parentDefinitionId": "1c380012-6b8b-5de5-8e15-35e945dd1a3a",
+              "capturedParentSha256": "55a1bd03fa7be65a6f238659c88dcb3ee08f7d6db0b5524a1830c74eaf828076"
+            },
+            "previousSourceMetadata": {
+              "contract": "gox-build.master212.concrete-normative-completion/r1",
+              "synthetic": false,
+              "priceState": "PARTIAL_NEEDS_PRICE",
+              "limitationRu": "Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю.",
+              "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+              "sourceHashes": [
+                {
+                  "path": "scripts/estimate/r4a13/prepareS2733WinterHeatingCompletionSuccessor.ts",
+                  "sha256": "2affe1b979d7df43d3b623ec1a723bb6ce78606c24d72ec35bbd0741c164e854"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733WinterHeatingCompletionOverlay.ts",
+                  "sha256": "8a49959b4f04ab3f2a36e24a94d5773a0b4a2d898eadcfc02cbeef9f33eeb48b"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733SurfaceFinishingCompletionOverlay.ts",
+                  "sha256": "4c9bafb5fa452111f7b94b69fde182c3e63922be23927c82c0910027f2cfb58d"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733PlacementEquipmentCompletionOverlay.ts",
+                  "sha256": "23c1608a1ceff919b91e78bdbe826b1bea8d550cceda5c832cd57e56152162ff"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733CompositeWaterCuringOverlay.ts",
+                  "sha256": "401afac27ad02d9e17fdd851580f6e51f5599f11126e1fc42cf6ba7e193159cd"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts",
+                  "sha256": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+                  "sha256": "aa758eed70290212753014ab0010358d3dcc3c8356edf782188fa3edcdeff4e7"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+                  "sha256": "78d155a0382ba4741ebff4a24596babef940ca5e6c0430c9245d88a4fc6ad21a"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+                  "sha256": "3fafc571851efdd424032a7832e0d05c02656d0a85faf17cb39693722d9332ba"
+                },
+                {
+                  "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+                  "sha256": "b9903c7529945057c6b623e27aa9d6b26dcced22fa4388e478ec20296dacce5d"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
+                  "sha256": "c5b01155590a05b91c727dee9d3c5da9f0419fbb4fa61776eb5669876b73c223"
+                },
+                {
+                  "path": "src/lib/estimate/v4/winterHeatingCompletionS2733.ts",
+                  "sha256": "c210cfde5d788667ca4082395956789b613fe2a10a36e2e4c7a309d328213dbb"
+                },
+                {
+                  "path": "src/lib/estimate/v4/stripFoundationConcretePlacementR1.ts",
+                  "sha256": "32ad6ce6ca3de10be0504063f92ae8eff9c6a97ec915b4827db42f48ef3243f8"
+                },
+                {
+                  "path": "src/lib/estimate/v4/anchorGroupWaterCuringResourcesS2733.ts",
+                  "sha256": "d490657760180273972de16c86af40ceeb62c401a255d1a443a2aa3d4c639360"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733AnchorWaterCuringOverlay.ts",
+                  "sha256": "57f7f15802c143433637ec2c720fa0688d161c589121410499e3427502435b4d"
+                },
+                {
+                  "path": "src/lib/estimate/v4/concreteSlabCuringR1.ts",
+                  "sha256": "bf998cb0ab33ef99e3f75305471125741231d86abbabd0d940f2e93ee1d9a472"
+                },
+                {
+                  "path": "scripts/estimate/r4a13/s2733ConcreteWaterCuringGroupOverlay.ts",
+                  "sha256": "04511e3c082487942263ecc312900c904145901f6d8127d8cfe4952891a55368"
+                },
+                {
+                  "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+                  "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44"
+                },
+                {
+                  "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+                  "sha256": "0c0c6980a78290e8cf3a23d5a600b55ae63ea04e0e3479eda40f513e64fd3d5d"
+                }
+              ],
+              "activationAllowed": false,
+              "sourceFingerprint": "622baf5e92112cbade10f306fa4b93cfdb6e9df643dafc00c658852c2345cda5",
+              "normativeSourceIds": [
+                "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+              ],
+              "productionEligible": false,
+              "sourceFreezeSha256": "c27d3b00d9edec683e6644338cf2f62aaad8b226f53e1f78698264e7e7e63f54",
+              "engineeringAccepted": false,
+              "fullApplicableScope": true,
+              "runtimeProfileInput": {},
+              "changedOwnerInputRows": [
+                "material:concrete:winter-heating-cable",
+                "work:concrete:finish-surface",
+                "work:concrete:winter-heating",
+                "equipment:concrete:heating-transformer",
+                "equipment:concrete:curing-water-application"
+              ],
+              "parameterSchemaSha256": "9339431e27cadb97744a6b2158ea41b342fa77dab586e2fba1332866d902b6aa",
+              "preservedParentRowIds": [
+                "material:concrete:ready-mix",
+                "material:concrete:curing-membrane",
+                "work:concrete:place-and-compact",
+                "work:concrete:cure",
+                "equipment:concrete:pump",
+                "equipment:concrete:crane-bucket",
+                "equipment:concrete:deep-vibrator",
+                "service:concrete:acceptance-control",
+                "material:concrete:construction-joint-waterstop",
+                "work:concrete:construction-joint-waterstop-install",
+                "delivery:concrete:ready-mix",
+                "material:concrete:curing-water",
+                "delivery:concrete:curing-water",
+                "equipment:concrete:construction-joint-included-tools",
+                "equipment:concrete:construction-joint-separate-tools",
+                "delivery:concrete:construction-joint-supply",
+                "delivery:concrete:vibration-equipment-and-kits",
+                "delivery:concrete:placement-equipment-and-kits",
+                "equipment:concrete:surface-finishing",
+                "delivery:concrete:surface-finishing-equipment-and-kits",
+                "material:concrete:winter-heating-included-energy",
+                "material:concrete:winter-heating-separate-energy",
+                "delivery:concrete:winter-heating-equipment-and-kits"
+              ],
+              "definitionSchemaSha256": "465a5ad003511c0eeb5ca47f469ef49ff918a12a6b0a3eff4011266e9ec0d5f9",
+              "predecessorDefinitionId": "f29b7e13-90dd-5e99-8cb1-3dccd95a47ce",
+              "acceptanceEvidenceSha256": "7f998ffd7fce118dac3b5d87e420de444d9f035f445d8cd33ab7d9b7e00cf6ce",
+              "predecessorBaselineLeafId": "0c45dd88-a032-5b56-830d-4b4ab06ebd76",
+              "waterCuringResourceContract": "rik-expo-app.s27-33.concrete-water-curing-group.v1",
+              "retiredAggregateMaterialRowIds": [
+                "material:concrete:curing-water-application-kit",
+                "material:concrete:construction-joint-included-kit",
+                "material:concrete:construction-joint-separate-kit",
+                "material:concrete:vibration-equipment-included-kit",
+                "material:concrete:vibration-equipment-separate-kit",
+                "material:concrete:pump-included-kit",
+                "material:concrete:crane-bucket-included-kit",
+                "material:concrete:placement-equipment-separate-kit",
+                "material:concrete:surface-finishing-manual-included-kit",
+                "material:concrete:surface-finishing-equipment-included-kit",
+                "material:concrete:surface-finishing-separate-kit",
+                "material:concrete:winter-heating-included-kit",
+                "material:concrete:winter-heating-separate-kit"
+              ],
+              "exampleProjectInputsAreNotNorms": true,
+              "winterHeatingCompletionContract": "rik-expo-app.s27-33.winter-heating-completion.v1",
+              "retainedParentBindingSuccessorV1": {
+                "normId": "WHOLE_ACCEPTED_FOUNDATION_COMPONENTS_AND_KRER06-01-001-01_SUBWORK",
+                "contract": "gox-build.master212.concrete-foundation-successor/r1",
+                "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+                "parentBaselineId": "0d97b56c-1a8d-5b07-841d-983a563bb20d",
+                "sourceFingerprint": "27e49d33e49ee5e397573b4cc4c10b81dc3f51552732d696204a7a0812fe9494",
+                "parentDefinitionId": "cb970826-ff8b-5919-8434-72f505c9f176",
+                "capturedParentSha256": "8f1b549f5e5f3628b30b744ab2fcaaba39d7907bc5fd3ad8c904c0a7357a3145"
+              },
+              "surfaceFinishingCompletionContract": "rik-expo-app.s27-33.surface-finishing-completion.v1",
+              "constructionJointCompletionContract": "rik-expo-app.s27-33.construction-joint-completion.v1",
+              "retainedParentBindingContinuationV1": {
+                "contract": "master-retained-binding-continuation/r1",
+                "successor": {
+                  "normId": "06-01-001-22",
+                  "contract": "gox-build.master212.concrete-normative-completion/r1",
+                  "sourceId": "master212_concrete_krer06_00122_whole_cycle_completion_r1",
+                  "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+                  "parentBaselineId": "c4890ea7-3d2c-5171-b7f2-06bbdf42c516",
+                  "sourceFingerprint": "622baf5e92112cbade10f306fa4b93cfdb6e9df643dafc00c658852c2345cda5",
+                  "parentDefinitionId": "531afe77-8bf5-54df-9771-09301846d029",
+                  "capturedParentSha256": "3b41318c276bd465b2ebe1183cb0d74806509bafe0f9397ead16471ccc9ad7ee"
+                },
+                "previousSourceMetadata": {
+                  "contract": "gox-build.master212.concrete-foundation-successor/r1",
+                  "synthetic": false,
+                  "priceState": "PARTIAL_NEEDS_PRICE",
+                  "limitationRu": "Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю.",
+                  "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+                  "sourceHashes": [
+                    {
+                      "path": "scripts/estimate/r4a13/prepareS2733WinterHeatingCompletionSuccessor.ts",
+                      "sha256": "2affe1b979d7df43d3b623ec1a723bb6ce78606c24d72ec35bbd0741c164e854"
+                    },
+                    {
+                      "path": "scripts/estimate/r4a13/s2733WinterHeatingCompletionOverlay.ts",
+                      "sha256": "8a49959b4f04ab3f2a36e24a94d5773a0b4a2d898eadcfc02cbeef9f33eeb48b"
+                    },
+                    {
+                      "path": "scripts/estimate/r4a13/s2733SurfaceFinishingCompletionOverlay.ts",
+                      "sha256": "4c9bafb5fa452111f7b94b69fde182c3e63922be23927c82c0910027f2cfb58d"
+                    },
+                    {
+                      "path": "scripts/estimate/r4a13/s2733PlacementEquipmentCompletionOverlay.ts",
+                      "sha256": "23c1608a1ceff919b91e78bdbe826b1bea8d550cceda5c832cd57e56152162ff"
+                    },
+                    {
+                      "path": "scripts/estimate/r4a13/s2733CompositeWaterCuringOverlay.ts",
+                      "sha256": "401afac27ad02d9e17fdd851580f6e51f5599f11126e1fc42cf6ba7e193159cd"
+                    },
+                    {
+                      "path": "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts",
+                      "sha256": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845"
+                    },
+                    {
+                      "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+                      "sha256": "aa758eed70290212753014ab0010358d3dcc3c8356edf782188fa3edcdeff4e7"
+                    },
+                    {
+                      "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+                      "sha256": "78d155a0382ba4741ebff4a24596babef940ca5e6c0430c9245d88a4fc6ad21a"
+                    },
+                    {
+                      "path": "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+                      "sha256": "3fafc571851efdd424032a7832e0d05c02656d0a85faf17cb39693722d9332ba"
+                    },
+                    {
+                      "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+                      "sha256": "b9903c7529945057c6b623e27aa9d6b26dcced22fa4388e478ec20296dacce5d"
+                    },
+                    {
+                      "path": "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
+                      "sha256": "c5b01155590a05b91c727dee9d3c5da9f0419fbb4fa61776eb5669876b73c223"
+                    },
+                    {
+                      "path": "src/lib/estimate/v4/winterHeatingCompletionS2733.ts",
+                      "sha256": "c210cfde5d788667ca4082395956789b613fe2a10a36e2e4c7a309d328213dbb"
+                    },
+                    {
+                      "path": "src/lib/estimate/v4/stripFoundationConcretePlacementR1.ts",
+                      "sha256": "32ad6ce6ca3de10be0504063f92ae8eff9c6a97ec915b4827db42f48ef3243f8"
+                    },
+                    {
+                      "path": "src/lib/estimate/v4/anchorGroupWaterCuringResourcesS2733.ts",
+                      "sha256": "d490657760180273972de16c86af40ceeb62c401a255d1a443a2aa3d4c639360"
+                    },
+                    {
+                      "path": "scripts/estimate/r4a13/s2733AnchorWaterCuringOverlay.ts",
+                      "sha256": "57f7f15802c143433637ec2c720fa0688d161c589121410499e3427502435b4d"
+                    },
+                    {
+                      "path": "src/lib/estimate/v4/concreteSlabCuringR1.ts",
+                      "sha256": "bf998cb0ab33ef99e3f75305471125741231d86abbabd0d940f2e93ee1d9a472"
+                    },
+                    {
+                      "path": "scripts/estimate/r4a13/s2733ConcreteWaterCuringGroupOverlay.ts",
+                      "sha256": "04511e3c082487942263ecc312900c904145901f6d8127d8cfe4952891a55368"
+                    },
+                    {
+                      "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+                      "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44"
+                    },
+                    {
+                      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+                      "sha256": "0c0c6980a78290e8cf3a23d5a600b55ae63ea04e0e3479eda40f513e64fd3d5d"
+                    }
+                  ],
+                  "activationAllowed": false,
+                  "sourceFingerprint": "27e49d33e49ee5e397573b4cc4c10b81dc3f51552732d696204a7a0812fe9494",
+                  "normativeSourceIds": [
+                    "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+                  ],
+                  "productionEligible": false,
+                  "sourceFreezeSha256": "c27d3b00d9edec683e6644338cf2f62aaad8b226f53e1f78698264e7e7e63f54",
+                  "engineeringAccepted": false,
+                  "fullApplicableScope": true,
+                  "runtimeProfileInput": {},
+                  "changedOwnerInputRows": [
+                    "material:concrete:winter-heating-cable",
+                    "work:concrete:finish-surface",
+                    "work:concrete:winter-heating",
+                    "equipment:concrete:heating-transformer",
+                    "equipment:concrete:curing-water-application"
+                  ],
+                  "parameterSchemaSha256": "9339431e27cadb97744a6b2158ea41b342fa77dab586e2fba1332866d902b6aa",
+                  "preservedParentRowIds": [
+                    "material:concrete:ready-mix",
+                    "material:concrete:curing-membrane",
+                    "work:concrete:place-and-compact",
+                    "work:concrete:cure",
+                    "equipment:concrete:pump",
+                    "equipment:concrete:crane-bucket",
+                    "equipment:concrete:deep-vibrator",
+                    "service:concrete:acceptance-control",
+                    "material:concrete:construction-joint-waterstop",
+                    "work:concrete:construction-joint-waterstop-install",
+                    "delivery:concrete:ready-mix",
+                    "material:concrete:curing-water",
+                    "delivery:concrete:curing-water",
+                    "equipment:concrete:construction-joint-included-tools",
+                    "equipment:concrete:construction-joint-separate-tools",
+                    "delivery:concrete:construction-joint-supply",
+                    "delivery:concrete:vibration-equipment-and-kits",
+                    "delivery:concrete:placement-equipment-and-kits",
+                    "equipment:concrete:surface-finishing",
+                    "delivery:concrete:surface-finishing-equipment-and-kits",
+                    "material:concrete:winter-heating-included-energy",
+                    "material:concrete:winter-heating-separate-energy",
+                    "delivery:concrete:winter-heating-equipment-and-kits"
+                  ],
+                  "definitionSchemaSha256": "465a5ad003511c0eeb5ca47f469ef49ff918a12a6b0a3eff4011266e9ec0d5f9",
+                  "predecessorDefinitionId": "f29b7e13-90dd-5e99-8cb1-3dccd95a47ce",
+                  "acceptanceEvidenceSha256": "7f998ffd7fce118dac3b5d87e420de444d9f035f445d8cd33ab7d9b7e00cf6ce",
+                  "predecessorBaselineLeafId": "0c45dd88-a032-5b56-830d-4b4ab06ebd76",
+                  "waterCuringResourceContract": "rik-expo-app.s27-33.concrete-water-curing-group.v1",
+                  "retiredAggregateMaterialRowIds": [
+                    "material:concrete:curing-water-application-kit",
+                    "material:concrete:construction-joint-included-kit",
+                    "material:concrete:construction-joint-separate-kit",
+                    "material:concrete:vibration-equipment-included-kit",
+                    "material:concrete:vibration-equipment-separate-kit",
+                    "material:concrete:pump-included-kit",
+                    "material:concrete:crane-bucket-included-kit",
+                    "material:concrete:placement-equipment-separate-kit",
+                    "material:concrete:surface-finishing-manual-included-kit",
+                    "material:concrete:surface-finishing-equipment-included-kit",
+                    "material:concrete:surface-finishing-separate-kit",
+                    "material:concrete:winter-heating-included-kit",
+                    "material:concrete:winter-heating-separate-kit"
+                  ],
+                  "exampleProjectInputsAreNotNorms": true,
+                  "winterHeatingCompletionContract": "rik-expo-app.s27-33.winter-heating-completion.v1",
+                  "retainedParentBindingSuccessorV1": {
+                    "normId": "WHOLE_ACCEPTED_FOUNDATION_COMPONENTS_AND_KRER06-01-001-01_SUBWORK",
+                    "contract": "gox-build.master212.concrete-foundation-successor/r1",
+                    "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+                    "parentBaselineId": "0d97b56c-1a8d-5b07-841d-983a563bb20d",
+                    "sourceFingerprint": "27e49d33e49ee5e397573b4cc4c10b81dc3f51552732d696204a7a0812fe9494",
+                    "parentDefinitionId": "cb970826-ff8b-5919-8434-72f505c9f176",
+                    "capturedParentSha256": "8f1b549f5e5f3628b30b744ab2fcaaba39d7907bc5fd3ad8c904c0a7357a3145"
+                  },
+                  "surfaceFinishingCompletionContract": "rik-expo-app.s27-33.surface-finishing-completion.v1",
+                  "constructionJointCompletionContract": "rik-expo-app.s27-33.construction-joint-completion.v1",
+                  "placementEquipmentCompletionContract": "rik-expo-app.s27-33.placement-equipment-completion.v1",
+                  "placementVibrationCompletionContract": "rik-expo-app.s27-33.placement-vibration-completion.v1",
+                  "compositeWaterCuringCompletionContract": "rik-expo-app.s27-33.composite-water-curing-completion.v1"
+                },
+                "previousSuccessorSha256": "6aeb4ade9d07eb2eeb33644471835e267feb5369120076b7d759ab4bb050b45b",
+                "previousSourceMetadataSha256": "ddaf88a8e22217bc6787e42e4d0c180ef8498083614f7c894a27eac7d74a276e"
+              },
+              "placementEquipmentCompletionContract": "rik-expo-app.s27-33.placement-equipment-completion.v1",
+              "placementVibrationCompletionContract": "rik-expo-app.s27-33.placement-vibration-completion.v1",
+              "compositeWaterCuringCompletionContract": "rik-expo-app.s27-33.composite-water-curing-completion.v1"
+            },
+            "previousSuccessorSha256": "8c589d7cd89d2c5bac031f2fef9b99340edbda957673945ef7771e63d45eea4d",
+            "previousSourceMetadataSha256": "99184da67a0bd1dd1ad8bbc760eaab805b35a93c12124c205db44007633c4591"
+          },
+          "placementEquipmentCompletionContract": "rik-expo-app.s27-33.placement-equipment-completion.v1",
+          "placementVibrationCompletionContract": "rik-expo-app.s27-33.placement-vibration-completion.v1",
+          "compositeWaterCuringCompletionContract": "rik-expo-app.s27-33.composite-water-curing-completion.v1"
+        }
+      },
+      "baseline": {
+        "id": "b46b765d-3fd0-5fe4-951a-0221afc19609",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+        "definition_version_id": "60bca5c0-cc41-5b8b-b754-18ce115a4d14",
+        "source_definition_version_id": "1c380012-6b8b-5de5-8e15-35e945dd1a3a",
+        "supersedes_baseline_id": "50564651-12ae-556a-aaed-7830a01cc300"
+      }
+    },
+    {
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+      "sourceRawCaptureFileSha256": "a5b6dea3aa427455928ab27f46335a44da25dffc6c2a2b4fac53a834fdf0e56c",
+      "sourceMetadataLosslessRoundtrip": true,
+      "definition": {
+        "id": "f0b798f2-dc0d-53ad-9989-9b3118f28dee",
+        "catalog_id": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+        "definition_sha256": "4b76637c8cbd578e9e48fc6f697a6840472fefc2749a40be1c591b6ae1cd7a70",
+        "definition_version": 2,
+        "source_metadata": {
+          "normId": "KRER06-01-109-03",
+          "contract": "gox-build.monolithic-family-physical-provision/r2",
+          "sourceId": "gox-monolithic-family-krer06-10702-10903-11101-r1:beam",
+          "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+          "activationAllowed": false,
+          "sourceFingerprint": "11eb24e8187e2598e5a1be614fcb5ba19f33d8eb00d3aca360ea6810436715a4",
+          "productionEligible": false,
+          "invalidSuppliedValuePolicy": "REJECT",
+          "knownWorkScopeFirstEstimate": true,
+          "missingProjectQuantityPolicy": "PRELIMINARY_NEED",
+          "retainedParentBindingSuccessorV1": {
+            "normId": "ACTUAL_APPROVED_PHYSICAL_SCHEDULE_PLUS_PINNED_KG06_AND_FACTORY_ASSEMBLIES_R2",
+            "contract": "gox-build.monolithic-family-physical-provision/r2",
+            "sourceId": "gox_monolithic_family_physical_provision_r2:card6",
+            "parentBaselineId": "6c42ded5-cfff-5038-8947-111f0655e8ab",
+            "sourceFingerprint": "11eb24e8187e2598e5a1be614fcb5ba19f33d8eb00d3aca360ea6810436715a4",
+            "parentDefinitionId": "d68949ea-1949-5e2f-a27c-1a24e69991ba",
+            "capturedParentSha256": "d65d42cad810143effdfb44d9f1c72d52c3d84a5e19bd0c9bd219bd0930591c0"
+          }
+        }
+      },
+      "baseline": {
+        "id": "c942035a-d318-5e5f-bdec-de4dd517fa8e",
+        "catalog_id": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+        "definition_version_id": "f0b798f2-dc0d-53ad-9989-9b3118f28dee",
+        "source_definition_version_id": "d68949ea-1949-5e2f-a27c-1a24e69991ba",
+        "supersedes_baseline_id": "6c42ded5-cfff-5038-8947-111f0655e8ab"
+      }
+    },
+    {
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_column_standard",
+      "sourceRawCaptureFileSha256": "b52b30d7b168b928c11b196d4dad067b91d39aa73054f18d3b616e5afec2333e",
+      "sourceMetadataLosslessRoundtrip": true,
+      "definition": {
+        "id": "28803151-4a5a-57ae-b288-28c500695c0a",
+        "catalog_id": "canonical-work:master:monolithic_reinforced_concrete_column_standard",
+        "definition_sha256": "a2052439e98a20a9878932581169e1cd7fa8570aeaccfc2e60cb1987e5e0d6c0",
+        "definition_version": 2,
+        "source_metadata": {
+          "normId": "KRER06-01-107-02",
+          "contract": "gox-build.monolithic-family-physical-provision/r2",
+          "sourceId": "gox-monolithic-family-krer06-10702-10903-11101-r1:column",
+          "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+          "activationAllowed": false,
+          "sourceFingerprint": "8e35bdf4f96e61a26b8f29f0345b73142488a91bcef41b3be26ce05c68a26648",
+          "productionEligible": false,
+          "invalidSuppliedValuePolicy": "REJECT",
+          "knownWorkScopeFirstEstimate": true,
+          "missingProjectQuantityPolicy": "PRELIMINARY_NEED",
+          "retainedParentBindingSuccessorV1": {
+            "normId": "ACTUAL_APPROVED_PHYSICAL_SCHEDULE_PLUS_PINNED_KG06_AND_FACTORY_ASSEMBLIES_R2",
+            "contract": "gox-build.monolithic-family-physical-provision/r2",
+            "sourceId": "gox_monolithic_family_physical_provision_r2:card7",
+            "parentBaselineId": "a56a6b5f-b764-5131-9c60-936f8bb3506e",
+            "sourceFingerprint": "8e35bdf4f96e61a26b8f29f0345b73142488a91bcef41b3be26ce05c68a26648",
+            "parentDefinitionId": "2edcb2a4-1323-573b-9e8b-47e036928b33",
+            "capturedParentSha256": "910d60aa83895a4d66a95c3ea08795efa08da6da47d5d3dcbf658bc42542fb64"
+          }
+        }
+      },
+      "baseline": {
+        "id": "446b223f-8294-57de-b5b2-283c517ed170",
+        "catalog_id": "canonical-work:master:monolithic_reinforced_concrete_column_standard",
+        "definition_version_id": "28803151-4a5a-57ae-b288-28c500695c0a",
+        "source_definition_version_id": "2edcb2a4-1323-573b-9e8b-47e036928b33",
+        "supersedes_baseline_id": "a56a6b5f-b764-5131-9c60-936f8bb3506e"
+      }
+    },
+    {
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+      "sourceRawCaptureFileSha256": "73d14f52e535be1ff8a005a093aa80e6f0f3c9f064752c60daec209f2d17e3ea",
+      "sourceMetadataLosslessRoundtrip": true,
+      "definition": {
+        "id": "f5cbff31-80c2-5799-831b-5b97e560a14b",
+        "catalog_id": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+        "definition_sha256": "4d3c4501515134d7785869dcaacb49d90ff6077d2f2780df3fec1ab7a9797ca4",
+        "definition_version": 2,
+        "source_metadata": {
+          "normId": "06-01-031-04",
+          "contract": "gox-build.monolithic-family-physical-provision/r2",
+          "sourceId": "master212_family_b_krer06_01_031_04_r1",
+          "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+          "activationAllowed": false,
+          "sourceFingerprint": "90f3071be037d8207d706aea998030554a21040cbf658cbf2f47ee18f490969e",
+          "productionEligible": false,
+          "invalidSuppliedValuePolicy": "REJECT",
+          "knownWorkScopeFirstEstimate": true,
+          "missingProjectQuantityPolicy": "PRELIMINARY_NEED",
+          "retainedParentBindingSuccessorV1": {
+            "normId": "ACTUAL_APPROVED_PHYSICAL_SCHEDULE_PLUS_PINNED_KG06_AND_FACTORY_ASSEMBLIES_R2",
+            "contract": "gox-build.monolithic-family-physical-provision/r2",
+            "sourceId": "gox_monolithic_family_physical_provision_r2:card8",
+            "parentBaselineId": "d75bc7ab-d430-5f12-97e0-c44e03202fed",
+            "sourceFingerprint": "90f3071be037d8207d706aea998030554a21040cbf658cbf2f47ee18f490969e",
+            "parentDefinitionId": "96a425a6-423e-5132-ae79-b3daca20f528",
+            "capturedParentSha256": "fc3626c06c953564cbdc8ee21f0959cab3828c7ade1f2b6f2196d2fe10af10b6"
+          }
+        }
+      },
+      "baseline": {
+        "id": "096047f6-5bb1-5f02-baa7-54f16ba4d199",
+        "catalog_id": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+        "definition_version_id": "f5cbff31-80c2-5799-831b-5b97e560a14b",
+        "source_definition_version_id": "96a425a6-423e-5132-ae79-b3daca20f528",
+        "supersedes_baseline_id": "d75bc7ab-d430-5f12-97e0-c44e03202fed"
+      }
+    }
+  ],
+  "fullCaptureAuthority": "Normal and locked existing retainer full-capture/PG TEXT comparison is still mandatory",
+  "unitHeaderCaptureHash": "Tests use a labelled synthetic outer hash for header-only shape tests; full guard tests use the existing full FLOOR fixture"
+}

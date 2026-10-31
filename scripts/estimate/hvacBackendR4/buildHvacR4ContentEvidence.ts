@@ -211,7 +211,7 @@ async function main(): Promise<void> {
   const externalHvacIds = new Set(HVAC_R4_EXTERNAL_INVENTORY.map((row) => row.catalog_id));
   const hvacIds = new Set(inventoryById.keys());
   const exclusionById = new Map(HVAC_REVIEWED_EXCLUSIONS.map((row) => [row.catalog_id, row]));
-  assertExact(global.rows.length === 11_610 && global.catalog_total === 11_610, "HVAC_GLOBAL_11610_RED");
+  assertExact(global.rows.length === 11_610 && Number(global.catalog_total) === 11_610, "HVAC_GLOBAL_11610_RED");
   assertExact(globalHvacIds.size === HVAC_COMPLETE_RECORD_COUNT, "HVAC_H_GLOBAL_RED");
   assertExact(HVAC_R4_EXTERNAL_DEMOLITION_INVENTORY.length === 4
     && HVAC_R4_EXTERNAL_A2_NON_DEMOLITION_INVENTORY.length === 88

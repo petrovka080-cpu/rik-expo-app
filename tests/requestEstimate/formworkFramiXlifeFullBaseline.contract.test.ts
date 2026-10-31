@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import { isCanonicalEstimateUserEditableParameter } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 import {
@@ -62,6 +62,8 @@ const FULL_PROJECT_PROMPT = [
 
 function catalog(catalogId: string = FORMWORK_FRAMI_XLIFE_PILE_CAP_WET_ZONE_CATALOG_ID) {
   return {
+    // Offline fixture identity; no source/project authority is inferred.
+    releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
     catalogId,
     workKey: "foundation_pile_cap_formwork_wet_zone",
     parameterSchema: FORMWORK_FRAMI_XLIFE_PARAMETERS.map((parameter) => {

@@ -1,4 +1,5 @@
-import {buildAggressiveFloorActualThicknessSuccessorS2769,aggressiveFloorActualThicknessBindingS2769 as binding} from '../v4/aggressiveFloorActualThicknessScopeS2769';
+import historicalBinding from '../../../../data/estimate-benchmarks/fixtures/aggressive-floor-actual-thickness-binding-historical-four-s27-69.json';
+import {buildAggressiveFloorActualThicknessSuccessorS2769,aggressiveFloorActualThicknessBindingS2769 as binding,aggressiveFloorActualThicknessHistoricalBindingSha256S2769} from '../v4/aggressiveFloorActualThicknessScopeS2769';
 import {type RoofPreparationMigrationModelV1 as Model,type RoofPreparationDefinitionIdentityV1 as Identity} from './canonicalRoofPreparationMigrationV1';
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
 import {canonicalEstimateSha256HexText} from './canonicalEstimateSha256';
@@ -6,6 +7,8 @@ import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
 type Input={fromDefinition:Identity;toDefinition:Identity;from:Model;to:Model};
 const parents=require('../../../../data/estimate-benchmarks/fixtures/aggressive-floor-four-v3-parents-s27-69.json') as {models:PurchaseGroupRepresentative[]};
 const sourcePackSha256=canonicalEstimateSha256HexText(canonicalEstimateStableJson(binding));
+const historicalSourcePackSha256=canonicalEstimateSha256HexText(canonicalEstimateStableJson(historicalBinding));
+if(historicalSourcePackSha256!==aggressiveFloorActualThicknessHistoricalBindingSha256S2769)throw Error('PINNED_HISTORICAL_BINDING_DRIFT');
 /** Full executable metadata, including derived lookups and future policies.
  * SQL identities, audit timestamps and stored derivative hashes are excluded. */
 function semanticHash(model:Model):string{
@@ -26,8 +29,13 @@ export function buildAggressiveFloorActualThicknessMigrationProofS2769(input:Inp
  * model qualify. New parameters do not invalidate saved owner exclusions.
  * Observed millimetres select the admitted rates; legacy owner data remain restorable. */
 export function admitAggressiveFloorActualThicknessMigrationProofS2769(input:Input&{proof:unknown}){
- const p=input.proof as ReturnType<typeof buildAggressiveFloorActualThicknessMigrationProofS2769>|null,target=binding.targets.find(t=>t.catalogId===input.fromDefinition.catalogId);
- if(!p||!target||p.contractVersion!=='canonical-aggressive-floor-actual-thickness-migration/v1'||p.sourcePackSha256!==sourcePackSha256
+ const p=input.proof as ReturnType<typeof buildAggressiveFloorActualThicknessMigrationProofS2769>|null;
+ if(!p)return null;
+ const selectedBinding=p.sourcePackSha256===sourcePackSha256?binding:p.sourcePackSha256===historicalSourcePackSha256?historicalBinding:null;
+ if(!selectedBinding)return null;
+ const selectedSourcePackSha256=selectedBinding===binding?sourcePackSha256:historicalSourcePackSha256;
+ const target=selectedBinding.targets.find(t=>t.catalogId===input.fromDefinition.catalogId);
+ if(!p||!target||p.contractVersion!=='canonical-aggressive-floor-actual-thickness-migration/v1'||p.sourcePackSha256!==selectedSourcePackSha256
   ||p.catalogId!==input.fromDefinition.catalogId||p.catalogId!==input.toDefinition.catalogId
   ||p.fromDefinitionId!==target.predecessorDefinitionId||p.fromDefinitionSha256!==target.parentSha256
   ||p.fromDefinitionId!==input.fromDefinition.id||p.fromDefinitionSha256!==input.fromDefinition.sha256
@@ -37,7 +45,7 @@ export function admitAggressiveFloorActualThicknessMigrationProofS2769(input:Inp
  try{
   const frozen=parents.models.find(r=>r.definition.id===target.predecessorDefinitionId) as unknown as PurchaseGroupRepresentative|undefined;
   if(!frozen||semanticHash(frozen)!==semanticHash(input.from))return null;
-  const expected=buildAggressiveFloorActualThicknessSuccessorS2769(frozen);
+  const expected=buildAggressiveFloorActualThicknessSuccessorS2769(frozen,selectedBinding===historicalBinding?{binding:historicalBinding,sourcePackSha256:historicalSourcePackSha256}:undefined);
   if(semanticHash(expected)!==semanticHash(input.to))return null;
   return{proof:p,normalizedTo:input.from};
  }catch{return null;}

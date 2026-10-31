@@ -44,3 +44,57 @@ test.each(['false','wrong-kind','no-covering-resource'])('invalid opt-in cannot 
  if(kind==='false')scope.costExclusionBreaksScopeV1=false;if(kind==='wrong-kind')scope.kind='PROJECT_SCOPE';if(kind==='no-covering-resource')scope.coveringRowIds=[];
  expect(()=>resolveCanonicalScopeRequirementV1({graph,rowId:'check',parameters:{q:20},parameterIds:new Set(['q','scope_check']),resourceIds:new Set(['check','own']),knownQuantityRowIds:new Set(['own'])})).toThrow('scope requirement identity invalid');
 });
+
+function semanticFixture(kind='INCLUDED'):CanonicalEstimateCompileCoreInput {
+ const input=fixture(kind==='INCLUDED');
+ input.parameterDefinitions[1]!.truth_metadata={visibility_role:'INTERNAL_ONLY',value_source_role:'COMPILER_DERIVED_RESOURCE_QUANTITY'};
+ const graph=input.resourceDefinitions[4]!.resource_graph;
+ graph.scopeRequirementV1={...(graph.scopeRequirementV1 as Record<string,unknown>),kind};
+ return input;
+}
+
+test.each(['INCLUDED','NOT_APPLICABLE','PROCESS'])('semantic %s retains a null-quantity ledger without asking for its internal carrier',async kind=>{
+ const result=await compileCanonicalEstimateCore(semanticFixture(kind));
+ const note=result.preliminaryNeeds.find(n=>n.row_id==='check')!;
+ expect(note).toMatchObject({quantity:null,need_state:'CONDITION_REQUIRED',missing_parameter_ids:[],selected:false,procurement_eligible:false});
+ expect(decision(result).status).toBe(kind==='PROCESS'?'PROCESS_REQUIRED':kind);
+ expect((note.calculation_trace as {inputParameterIds:string[]}).inputParameterIds).toEqual(['scope_check']);
+ expect(result.rows.find(r=>r.row_id==='own')!.quantity).toBe('20');
+});
+
+test('missing real numeric facts are not removed by included payment or internal-looking formula names',async()=>{
+ const input=semanticFixture();input.parameterDefinitions[1]!.truth_metadata={visibility_role:'ORDINARY',value_source_role:'USER_MEASURED'};
+ const note=(await compileCanonicalEstimateCore(input)).preliminaryNeeds.find(n=>n.row_id==='check')!;
+ expect(note).toMatchObject({quantity:null,need_state:'QUANTITY_REQUIRED',missing_parameter_ids:['scope_check']});
+});
+
+test('closed informational scope does not erase an unresolved application norm',async()=>{
+ const note=(await compileCanonicalEstimateCore(fixture())).preliminaryNeeds.find(n=>n.row_id==='check')!;
+ expect(note.missing_parameter_ids).toContain('scope_check');
+});
+
+test('open access and excluded physical coverage remain explicit conditions',async()=>{
+ const open=await compileCanonicalEstimateCore(semanticFixture('PROJECT_SCOPE'));
+ expect(decision(open).status).toBe('PROJECT_SCOPE_OPEN');
+ expect(open.preliminaryNeeds.find(n=>n.row_id==='check')!.need_state).toBe('CONDITION_REQUIRED');
+ const input=semanticFixture();input.rowOverrides={own:{includedInEstimate:false,provenance:{kind:'manual'}}};
+ const excluded=await compileCanonicalEstimateCore(input);
+ expect(decision(excluded).status).toBe('REQUIRED_RESOURCE_EXCLUDED');
+ expect(excluded.preliminaryNeeds.find(n=>n.row_id==='check')!.need_state).toBe('CONDITION_REQUIRED');
+});
+
+test('completed scope retains its ledger while a required object fact still opens a separate condition',async()=>{
+ const completed=semanticFixture('PROCESS');
+ const graph=completed.resourceDefinitions[4]!.resource_graph;
+ graph.scopeRequirementV1={...(graph.scopeRequirementV1 as Record<string,unknown>),satisfiedWhen:yes};
+ const result=await compileCanonicalEstimateCore(completed);
+ expect(decision(result).status).toBe('COMPLETED');
+ expect(result.preliminaryNeeds.find(n=>n.row_id==='check')!).toMatchObject({quantity:null,missing_parameter_ids:[]});
+ const input=semanticFixture();
+ input.parameterDefinitions.push({parameter_id:'site_acceptance',value_type:'string',required:false,default_value:null,constraints_json:{}});
+ const source=input.resourceDefinitions[4]!.resource_graph;
+ source.scopeRequirementV1={...(source.scopeRequirementV1 as Record<string,unknown>),requiredFactParameterIds:['site_acceptance']};
+ const open=await compileCanonicalEstimateCore(input);
+ expect(decision(open).status).toBe('OBJECT_FACT_REQUIRED');
+ expect(open.preliminaryNeeds.find(n=>n.row_id==='check')!).toMatchObject({quantity:null,need_state:'CONDITION_REQUIRED',missing_parameter_ids:['site_acceptance']});
+});

@@ -4,7 +4,7 @@ import {graniteKerbControlS2758,verifyGraniteKerbOtherS2758} from '../../../../s
 import {buildMasterParameterCalculationConsumers} from '../../../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import type {CanonicalEstimateCatalogItem} from '../backendPlatform/contracts';
 import {buildConsumerCanonicalPrecompileParameterSession} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
-import {buildCanonicalBaselinePlan} from '../../../features/consumerRepair/consumerCanonicalBaselineCompile';
+import {buildCanonicalBaselinePlan} from '../backendPlatform/canonicalConsumerPromptPlanServerR1';
 import {buildCanonicalParameterCards} from '../../estimatePresentation/buildCanonicalParameterCards';
 import {ParameterDisclosurePanel} from '../../../features/consumerRepair/ConsumerRepairProgressiveEstimatePanel';
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';import {estimateDeterministicHash} from '../estimateDeterministicHash';
@@ -14,7 +14,7 @@ function catalog():CanonicalEstimateCatalogItem{
   return {catalogId:pack.catalogId,titleRu:pack.titleRu,releaseId:'00000000-0000-5000-8000-000000000001',namespace:'global',domain:'transport',workKey:pack.workKey,definitionVersion:1,applicability:{primaryMeasureParameterId:'kerb_length_m'},professionalMetadata:{},parameterSchema:d.parameters.map(p=>{const t=p.truth_metadata,g=t.guide as Record<string,unknown>;return {parameterId:p.parameter_id,ordinal:p.ordinal,titleRu:p.title_ru,valueType:p.value_type,unitId:p.unit_id,required:p.required,defaultValue:p.default_value,constraints:p.constraints_json,visibilityRole:t.visibility_role,valueSourceRole:t.value_source_role,preliminaryCompilationAllowed:t.preliminary_compilation_allowed,semanticParameterKey:t.semantic_parameter_key,provenance:t.provenance,requiredWhen:t.required_when,formulaConsumers:c.formulaConsumers[p.parameter_id],resourceBranchConsumers:c.resourceConsumers[p.parameter_id],guide:{guideKind:g.guide_kind,guideShortRu:g.guide_short_ru,guideValidationPolicy:g.guide_validation_policy,sourceRole:g.source_role,sourceDocument:g.source_document,sourceLocator:g.source_locator,sourceSnapshotHash:g.source_snapshot_hash,guideVersion:g.guide_version,applicability:g.applicability,verifiedAt:g.verified_at}} as CanonicalEstimateCatalogItem['parameterSchema'][number];})};
 }
 function session(parameters:Record<string,unknown>){return buildConsumerCanonicalPrecompileParameterSession({catalog:catalog(),draftId:'granite-prepublication',parameters:parameters as Record<string,string|number>,userExplicitParameterIds:Object.keys(parameters),missingParameterIds:[]});}
-async function amended(input:Record<string,unknown>,id:string,quantity:number|null){const d=graniteKerbOtherDefinitionS2758();return compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,primaryMeasureParameterId:'kerb_length_m',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:input,confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:27,hashJson:async v=>estimateDeterministicHash(v),rowOverrides:{[prefix+':'+id]:{quantity,provenance:{kind:'manual',reason:'CONTROL_ONLY prepublication acceptance'}}}});}
+async function amended(input:Record<string,unknown>,id:string,quantity:number|null,authored=true){const d=graniteKerbOtherDefinitionS2758();return compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,primaryMeasureParameterId:'kerb_length_m',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:input,confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:27,hashJson:async v=>estimateDeterministicHash(v),rowOverrides:{[prefix+':'+id]:{quantity,...(authored?{provenance:{kind:'manual',reason:'CONTROL_ONLY prepublication acceptance'}}:{})}}});}
 const by=(r:Awaited<ReturnType<typeof compileGraniteKerbOtherS2758>>,id:string)=>r.rows.find(x=>x.row_id===prefix+':'+id);
 it('reads the exact granite04 column and finite composition through the current core',async()=>{expect(await verifyGraniteKerbOtherS2758()).toMatchObject({shape:[50,27,27],own:[19,6,5],physicalResources:9,includedOperations:3,acceptedCompleteTypes:0});});
 it('keeps cement-lime mortar and included granite cleaning distinct from old concrete kerbs',async()=>{
@@ -51,7 +51,24 @@ it.each([['crane',false],['crane',true],['truck',false],['truck',true]] as const
 it('keeps both unselected modes optional while the physical machine quantities remain known',async()=>{
   const r=await compileGraniteKerbOtherS2758({...graniteKerbControlS2758(),crane_fulfillment:undefined,truck_fulfillment:undefined});expect(r.rows).toHaveLength(17);expect(r.preliminaryNeeds).toHaveLength(10);expect(by(r,'crane-consumed')?.quantity).toBe('0.2414');for(const m of pack.machines){const p=graniteKerbOtherDefinitionS2758().parameters.find(x=>x.parameter_id===m.parameterId)!;expect(p.default_value).toBeNull();expect(p.required).toBe(false);}
 });
-it.each(pack.gaps.flatMap(g=>[0,1].map(q=>[g.id,q] as const)))('rejects source gap %s manual quantity%s',async(id,q)=>{await expect(amended(graniteKerbControlS2758(),id,q)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});});
+it.each(pack.gaps.flatMap(g=>[0,1].map(q=>[g.id,q] as const)))('retains authored source-gap %s quantity%s without admitting its norm',async(id,q)=>{
+  const d=graniteKerbOtherDefinitionS2758(),input=graniteKerbControlS2758(),before=JSON.stringify({d,input}),parameter='open_scope_qty_'+id.replaceAll('-','_'),
+    baseline=await amended(input,id,null),r=await amended(input,id,q),
+    original=baseline.preliminaryNeeds.find(n=>n.row_id===prefix+':'+id)!,need=r.preliminaryNeeds.find(n=>n.row_id===prefix+':'+id)!;
+  expect(original).toMatchObject({quantity:null,need_state:'QUANTITY_REQUIRED'});
+  expect(need).toMatchObject({quantity:String(q),unit_price:null,need_state:'QUANTITY_REQUIRED',procurement_eligible:false});
+  expect(need.missing_parameter_ids).toEqual(original.missing_parameter_ids);expect(need.missing_parameter_ids).toContain(parameter);
+  expect(need.calculation_trace).toMatchObject({manualAmendment:{kind:'manual',reason:'CONTROL_ONLY prepublication acceptance'},
+    manualQuantityOverride:true,calculatedQuantityBeforeOverride:null,formulaId:prefix+':formula:'+id});
+  expect(need.normative_trace).toEqual([]);expect(r.rows).toEqual(baseline.rows);
+  expect(r.preliminaryNeeds.map(n=>n.row_id)).toEqual(baseline.preliminaryNeeds.map(n=>n.row_id));
+  expect(r.totals.amount).toBe(baseline.totals.amount);expect(r.parameters[parameter]??null).toBeNull();
+  expect(d.parameters.find(p=>p.parameter_id===parameter)!.truth_metadata)
+    .toMatchObject({visibility_role:'INTERNAL_ONLY',value_source_role:'UNRESOLVED_APPLICATION_NORM'});
+  expect(JSON.stringify({d,input})).toBe(before);
+  await expect(amended(input,id,q,false)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
+  await expect(compileGraniteKerbOtherS2758({...input,[parameter]:q})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
+});
 it.each(['35,5 м','35.5м','35,5 метров'])('binds normal short length %s without supplying norm or supplier facts',tail=>{const p=buildCanonicalBaselinePlan({catalog:catalog(),prompt:pack.titleRu+' '+tail});expect(p.parameters.kerb_length_m).toBe('35.5');expect(Object.keys(p.parameters)).toEqual(['kerb_length_m']);});
 it('exposes every applicable final card and actual InlineEditor for zero/positive stock',()=>{
   for(const positive of [false,true]){const input=graniteKerbControlS2758();if(positive)for(const m of pack.materials)input[m.id+'_stock']=1;const s=session(input),cards=buildCanonicalParameterCards({session:s,revision:null}),editable=cards.filter(c=>c.editable);expect(editable).toHaveLength(positive?32:27);expect(cards.some(c=>/open_scope_qty_|effective_resource_quantity_/.test(c.key))).toBe(false);

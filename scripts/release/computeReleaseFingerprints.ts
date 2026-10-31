@@ -31,6 +31,7 @@ export const PRODUCT_SOURCE_PATTERNS = [
   "src",
   "components",
   "assets",
+  "data",
   "package.json",
   "package-lock.json",
   "app.json",
@@ -61,6 +62,7 @@ export const JS_BUNDLE_PATTERNS = [
   "src",
   "components",
   "assets",
+  "data",
   "babel.config.js",
   "babel.config.ts",
   "metro.config.js",
@@ -165,16 +167,19 @@ function compositeHash(parts: readonly string[]): string {
   return sha256(parts.join("\0"));
 }
 
-function fingerprint(name: FingerprintPayload["name"], patterns: readonly string[]): FingerprintPayload {
+type FileDigest = { sha256: string; bytes: number };
+
+function readExistingFileDigest(relativePath: string): FileDigest | null {
+  const bytes = readExistingFile(relativePath);
+  return bytes ? { sha256: sha256(bytes), bytes: bytes.length } : null;
+}
+
+function fingerprint(name: FingerprintPayload["name"], patterns: readonly string[],
+  readDigest: (relativePath: string) => FileDigest | null = readExistingFileDigest): FingerprintPayload {
   const files = gitSourceFiles(patterns)
     .map((relativePath) => {
-      const bytes = readExistingFile(relativePath);
-      if (!bytes) return null;
-      return {
-        path: relativePath,
-        sha256: sha256(bytes),
-        bytes: bytes.length,
-      };
+      const digest = readDigest(relativePath);
+      return digest ? { path: relativePath, ...digest } : null;
     })
     .filter((file): file is { path: string; sha256: string; bytes: number } => Boolean(file));
   const manifest = files.map((file) => `${file.path}\0${file.sha256}\0${file.bytes}`).join("\0");
@@ -192,6 +197,46 @@ export function computeReleaseFingerprintPayloads(): Record<FingerprintPayload["
     nativeBuildHash: computeReleaseFingerprintPayload("nativeBuildHash"),
     jsBundleFingerprint: computeReleaseFingerprintPayload("jsBundleFingerprint"),
     proofHarnessHash: computeReleaseFingerprintPayload("proofHarnessHash"),
+  };
+}
+
+/** Fresh frontend identity uses the existing path sets and serializer. Digest
+ * reuse lasts only this call; independent pre/post freeze scans still reread
+ * every file. Contents are streamed once with one bounded reusable buffer. */
+export function computeFrontendReleaseFingerprintPayloads(): Pick<
+  Record<FingerprintPayload["name"], FingerprintPayload>, "productSourceHash" | "jsBundleFingerprint"
+> {
+  const digests = new Map<string, FileDigest | null>();
+  const buffer = Buffer.allocUnsafe(64 * 1024);
+  const readDigest = (relativePath: string): FileDigest | null => {
+    if (digests.has(relativePath)) return digests.get(relativePath) ?? null;
+    let descriptor: number;
+    try {
+      descriptor = fs.openSync(path.join(process.cwd(), relativePath), "r");
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      digests.set(relativePath, null);
+      return null;
+    }
+    try {
+      const hash = createHash("sha256");
+      let bytes = 0;
+      for (;;) {
+        const length = fs.readSync(descriptor, buffer, 0, buffer.length, null);
+        if (length === 0) break;
+        hash.update(buffer.subarray(0, length));
+        bytes += length;
+      }
+      const digest = { sha256: hash.digest("hex"), bytes };
+      digests.set(relativePath, digest);
+      return digest;
+    } finally {
+      fs.closeSync(descriptor);
+    }
+  };
+  return {
+    productSourceHash: fingerprint("productSourceHash", PRODUCT_SOURCE_PATTERNS, readDigest),
+    jsBundleFingerprint: fingerprint("jsBundleFingerprint", JS_BUNDLE_PATTERNS, readDigest),
   };
 }
 

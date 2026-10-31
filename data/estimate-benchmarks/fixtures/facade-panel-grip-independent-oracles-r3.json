@@ -1,0 +1,108 @@
+{
+  "generatedFromProductRows": false,
+  "source": "full primary original case table PDF2 and selected200mm length table PDF16",
+  "cases": [
+    {
+      "caseId": "one-front-short",
+      "panelLengthM": "4.6",
+      "actualFronts": "1",
+      "minimumActiveLiftersPerPanel": "1",
+      "minimumSecuringSetsPerPanel": "1",
+      "expectedKitOwners": "1",
+      "expectedStock": {
+        "lifters": "2",
+        "adjustment-80": "4",
+        "adjustment-100": "4",
+        "adjustment-125": "4",
+        "adjustment-150": "4",
+        "adjustment-175": "4",
+        "adjustment-200": "4",
+        "adjustment-200-plus": "4",
+        "adjustment-230": "4",
+        "adjustment-300": "4",
+        "key19": "1",
+        "securing-strap-set": "2",
+        "instructions": "1",
+        "case": "1"
+      },
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "one-front-long",
+      "panelLengthM": "4.6001",
+      "actualFronts": "1",
+      "minimumActiveLiftersPerPanel": "2",
+      "minimumSecuringSetsPerPanel": "2",
+      "expectedKitOwners": "1",
+      "expectedStock": {
+        "lifters": "2",
+        "adjustment-80": "4",
+        "adjustment-100": "4",
+        "adjustment-125": "4",
+        "adjustment-150": "4",
+        "adjustment-175": "4",
+        "adjustment-200": "4",
+        "adjustment-200-plus": "4",
+        "adjustment-230": "4",
+        "adjustment-300": "4",
+        "key19": "1",
+        "securing-strap-set": "2",
+        "instructions": "1",
+        "case": "1"
+      },
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "two-fronts-long",
+      "panelLengthM": "6",
+      "actualFronts": "2",
+      "minimumActiveLiftersPerPanel": "2",
+      "minimumSecuringSetsPerPanel": "2",
+      "expectedKitOwners": "2",
+      "expectedStock": {
+        "lifters": "4",
+        "adjustment-80": "8",
+        "adjustment-100": "8",
+        "adjustment-125": "8",
+        "adjustment-150": "8",
+        "adjustment-175": "8",
+        "adjustment-200": "8",
+        "adjustment-200-plus": "8",
+        "adjustment-230": "8",
+        "adjustment-300": "8",
+        "key19": "2",
+        "securing-strap-set": "4",
+        "instructions": "2",
+        "case": "2"
+      },
+      "execution": "UNRUN"
+    }
+  ],
+  "negativeCases": [
+    {
+      "input": "6.0001m",
+      "reason": "outsideboundedoriginalsafetystrapandtwo-liftertable scope"
+    },
+    {
+      "input": "horizontalstandardtonguededge",
+      "reason": "manufacturerexplicitlyforbids selectedredliftermethod"
+    },
+    {
+      "input": "anothermanufacturer/glass/stone",
+      "reason": "originalspecificpanelapprovalnottransferable"
+    },
+    {
+      "input": "200mm interpreted as200kg rating",
+      "reason": "thicknessisnotWLL"
+    },
+    {
+      "input": "expiredinspection/damage/movement/gap/ownerrepair",
+      "reason": "sourcefulfilmentconditionmustreject/return"
+    },
+    {
+      "input": "protectedneeds0/1/77",
+      "reason": "userquantitydoesnotacceptapplicationnorm"
+    }
+  ],
+  "execution": "UNRUN"
+}

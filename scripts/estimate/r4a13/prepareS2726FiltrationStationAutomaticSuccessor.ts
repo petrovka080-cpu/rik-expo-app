@@ -177,6 +177,7 @@ void runMasterSingleDefinitionSuccessorR1({
     "data/estimate-benchmarks/source-packs/filtration-station-geometric-automatic-s27-26.json",
     "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
     "src/lib/estimate/v4/filtrationStationR1.ts",
+    "src/lib/estimate/v4/filtrationStationPromptR1.ts",
     "tests/estimateNorms/filtrationStationR1.contract.test.ts",
     "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts",

@@ -9,20 +9,26 @@ import {
 
 describe("Asphalt 35/35 normative composition", () => {
   const ledger = buildAsphalt35NormativeCompositionLedgerV3();
+  const operations=['install','lay','compact','repair','prepare','level','drain','finish'];
+  const expectedIds=[...operations.map(operation=>`paving_roads_landscape_interior_asphalt_${operation}_standard`),
+    ...operations.map(operation=>`paving_roads_landscape_interior_asphalt_${operation}_wet_zone`),
+    ...['install','lay','compact'].map(operation=>`paving_roads_landscape_interior_asphalt_${operation}_technical_room`)].sort();
+  const expectedCount=expectedIds.length;
 
-  test.each([1, 2, 3, 4, 5, 6, 7] as const)("cohort %i terminates exactly five records", (cohort) => {
+  test.each([1, 2, 3, 4] as const)("cohort %i terminates its exact retained catalog records", (cohort) => {
     const records = ledger.filter((row) => row.cohort === cohort);
-    expect(records).toHaveLength(5);
+    const expected=expectedIds.slice((cohort-1)*5,cohort*5);
+    expect(records.map(row=>row.workId)).toEqual(expected);
     expect(records.every((row) => row.terminalDecision === "EXECUTABLE_B")).toBe(true);
-    expect(new Set(records.map((row) => row.fixtureId)).size).toBe(5);
+    expect(new Set(records.map((row) => row.fixtureId)).size).toBe(expected.length);
   });
 
   test("accounts for the canonical denominator with complete normative and typed-BOQ trace", () => {
     expect(auditAsphalt35NormativeCompositionV3()).toMatchObject({
-      catalog_records: 35,
-      resolution_records: 35,
-      normative_composition_records: 35,
-      executable_records: 35,
+      catalog_records: expectedCount,
+      resolution_records: expectedCount,
+      normative_composition_records: expectedCount,
+      executable_records: expectedCount,
       blocked_c_records: 0,
       missing_terminal_decisions: 0,
       executable_without_work_specific_fixture: 0,
@@ -32,13 +38,13 @@ describe("Asphalt 35/35 normative composition", () => {
       successful_ambiguous_compilation: 0,
       C_profile_user_visible_compile: 0,
       duplicate_fixture_ids: 0,
-      unique_composition_fingerprints: 35,
-      kr_primary_source: 35,
-      kr_estimate_resource_binding: 35,
-      interstate_status_resolved: 35,
-      international_crosswalk_resolved: 35,
-      formula_trace: 35,
-      source_trace: 35,
+      unique_composition_fingerprints: expectedCount,
+      kr_primary_source: expectedCount,
+      kr_estimate_resource_binding: expectedCount,
+      interstate_status_resolved: expectedCount,
+      international_crosswalk_resolved: expectedCount,
+      formula_trace: expectedCount,
+      source_trace: expectedCount,
       unmapped: 0,
       unexplained: 0,
       unresolved_conflicts: 0,
@@ -68,14 +74,22 @@ describe("Asphalt 35/35 normative composition", () => {
     }
   });
 
-  test("keeps standard/small/large variants materially different without changing the canonical owner", () => {
+  test("keeps retained physical technologies distinct and rejects retired area-only variants", () => {
+    expect(RoadworksWaveAInventory.map(item=>item.workId)).toEqual(expectedIds);
     for (const operation of ["install", "lay", "compact", "repair", "level"] as const) {
-      const variants = (["standard", "small_area", "large_area"] as const).map((scope) => {
+      const scopes=[...(['standard','wet_zone'] as const),
+        ...(['install','lay','compact'].includes(operation)?['technical_room' as const]:[])];
+      const variants = scopes.map((scope) => {
         const item = RoadworksWaveAInventory.find((candidate) => candidate.workId.includes(`_asphalt_${operation}_${scope}`))!;
         const rows = compileRoadworksWaveAWork(item.canonicalWorkId, DEFAULT_ROADWORKS_WAVE_A_INPUTS, { scopeProfile: scope });
         return rows.rows.map((row) => `${row.rowId.slice(item.canonicalWorkId.length)}:${row.category}:${row.formulaId}`).join("|");
       });
-      expect(new Set(variants).size).toBe(3);
+      expect(new Set(variants).size).toBe(scopes.length);
+      for(const suffix of ['small_area','large_area']) {
+        const retired=`paving_roads_landscape_interior_asphalt_${operation}_${suffix}`;
+        expect(RoadworksWaveAInventory.some(item=>item.workId===retired)).toBe(false);
+        expect(()=>compileRoadworksWaveAWork(retired,DEFAULT_ROADWORKS_WAVE_A_INPUTS)).toThrow();
+      }
     }
   });
 

@@ -1,4 +1,6 @@
 import type { AiEstimateParameterCard } from "../estimate/aiEstimateParameterCardContract";
+import { canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateFixtureTextRu, canonicalPublicEstimateParameterGuideRu, canonicalPublicEstimateParameterTitleRu } from '../estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import type { CanonicalPublicInputContext } from '../estimate/backendPlatform/canonicalPublicEstimateInputWordingRu';
 import {
   aiEstimateRuLabelForParameter,
   aiEstimateRuSourceLabel,
@@ -14,6 +16,7 @@ import type {
 } from "../estimate/canonicalParameters/canonicalParameterCore";
 import { canonicalParameterAffectsEstimateCalculation } from "../estimate/canonicalParameters/canonicalParameterCalculationRelevance";
 import { resolveCanonicalParameterVisibility } from "../estimate/canonicalParameters/canonicalParameterCore";
+import { canonicalParameterSessionConditionValuesV1 } from '../estimate/canonicalParameters/canonicalParameterSessionConditionValuesV1';
 import { getAsphaltParameterV4 } from "../estimate/v4/asphalt/asphaltWorkSpecificParameterSchemaV4";
 import type { WorkSpecificParameterV4 } from "../estimate/v4/professionalEstimateV4Contract";
 
@@ -23,7 +26,7 @@ const COMPOSITE_DERIVED_COUNT: Readonly<Record<string, string>> = Object.freeze(
 });
 
 function publicParameterText(value: string | null | undefined): string {
-  return String(value ?? "")
+  return canonicalPublicEstimateFixtureTextRu(String(value ?? ""))
     .replace(/\s*Проверочный\s+объект\s+BATCH[-\s]*\d+\s*\.?/giu, "")
     .replace(/\b(?:backend|release|revision|child|server(?:-side)?)\b/gi, "")
     .replace(/\bBATCH[-\s]*\d+\b\.?/gi, "")
@@ -31,6 +34,40 @@ function publicParameterText(value: string | null | undefined): string {
     .replace(/\b[0-9a-f]{64}\b/gi, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function humanSourceText(value: string | null | undefined): string | null {
+  const raw = String(value ?? '').trim();
+  if (!raw || /canonical-work:|(?:^|[\\/])(?:src|data|scripts)[\\/]|\.json(?:$|:)|^[a-z0-9]+(?:[_:.-][a-z0-9]+)+$/iu.test(raw)
+    || /^[0-9a-f-]{32,}$/iu.test(raw) || (!/\s/u.test(raw) && !/[А-Яа-яЁё]/u.test(raw))) return null;
+  return publicParameterText(raw) || null;
+}
+
+function parameterSourceSummary(parameter: CanonicalParameter): string {
+  const evidence = parameter.sourceProvenance;
+  const document = humanSourceText(evidence?.document) ?? humanSourceText(parameter.normativeSource?.document);
+  const locator = humanSourceText(evidence?.locator) ?? humanSourceText(parameter.normativeSource?.locator);
+  const application = parameter.inputOwnership === 'APPLICATION';
+  const unresolved = application && (parameter.value == null || /UNRESOLVED/u.test(evidence?.sourceRole ?? ''));
+  const preliminary = evidence?.runtimeClassification === 'ASSUMPTION' || parameter.source === 'ASSUMED';
+  const norm = application && (evidence?.runtimeClassification === 'NORMATIVE' || evidence?.guideKind === 'MANDATORY_NORM_VALUE');
+  const label = unresolved ? 'Норма или техническое значение ещё не определены приложением'
+    : preliminary ? 'Предварительный профиль — требует проверки по проекту'
+    : norm ? 'Норма приложения — только для чтения'
+    : application ? 'Техническое значение приложения — только для чтения' : 'Данные объекта';
+  const value = parameter.value;
+  const unit = evidence?.unitLabel?.trim() || aiEstimateRuUnitForParameter(parameter.parameterId, parameter.unit);
+  const quantity = value == null ? '' : `: ${typeof value === 'number' ? displayNumber(value) : publicParameterText(String(value))}${unit ? ' ' + unit : ''}`;
+  const minimum = evidence?.minimum, maximum = evidence?.maximum;
+  const range = minimum != null || maximum != null
+    ? ` Допустимый диапазон по документу: ${minimum ?? 'не указан'}–${maximum ?? 'не указан'}${unit ? ' ' + unit : ''}.` : '';
+  const target = evidence?.target == null ? ''
+    : ` Справочное значение по документу: ${typeof evidence.target === 'number' ? displayNumber(evidence.target) : publicParameterText(evidence.target)}${unit ? ' ' + unit : ''}.`;
+  const source = document ? ` Источник: ${document}${locator ? '; ' + locator : '; точный пункт не указан'}.`
+    : locator ? ` Документ-источник не указан. Указанный пункт: ${locator}.`
+    : application ? ' Документ-источник и точный пункт для этого значения пока не указаны.'
+      : 'Документ-источник для этого поля не указан; значение подтверждают обмером или документом объекта.';
+  return `${label}${quantity}.${range}${target} ${source}`.replace(/\s+/gu, ' ').trim();
 }
 
 function revisionCardSource(
@@ -66,7 +103,7 @@ function revisionDisplayValue(
   if (typeof value === "boolean") return value ? "Да" : "Нет";
   const text = typeof value === "number"
     ? displayNumber(value)
-    : String(value);
+    : canonicalPublicEstimateFixtureTextRu(String(value));
   if (containsForbiddenAiEstimateVisibleToken(text) || /^[a-z0-9]+(?:_[a-z0-9]+)+$/iu.test(text)) {
     return "уточняется";
   }
@@ -149,7 +186,7 @@ export function buildRevisionParameterCards(
   }).sort((a, b) => a.labelRu.localeCompare(b.labelRu, "ru"));
 }
 
-function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificParameterV4 | null): {
+function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificParameterV4 | null, context: CanonicalPublicInputContext): {
   guideShortRu: string;
   guideKind: NonNullable<AiEstimateParameterCard["guideKind"]>;
   guideDetailsRu: string[];
@@ -157,18 +194,29 @@ function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificP
   const unit = aiEstimateRuUnitForParameter(parameter.parameterId, parameter.unit);
   const source = parameter.normativeSource;
   const applicability = asphalt?.applicability_condition ?? "always";
-  const affected = [...parameter.affectsFormula, ...parameter.affectsRows].join(", ") || "только паспорт параметров";
   let guideShortRu: string;
   let guideKind: NonNullable<AiEstimateParameterCard["guideKind"]>;
-  if (asphalt?.structured_group) {
+  const authoredGuide = canonicalPublicEstimateParameterGuideRu(parameter.parameterId, parameter.label, context);
+  if (parameter.inputOwnership === 'APPLICATION') {
+    guideShortRu = parameter.value == null
+      ? 'Приложению не хватает нормы или технического значения из проверенного источника. Вводить его вручную не требуется.'
+      : parameter.sourceProvenance?.runtimeClassification === 'ASSUMPTION' || parameter.source === 'ASSUMED'
+        ? 'Предварительный профиль приложения; его применимость к объекту ещё требует проверки.'
+        : 'Значение определяет приложение по указанному источнику; поле доступно только для чтения.';
+    guideKind = parameter.value == null ? 'NO_NUMERIC_NORM' : 'REFERENCE_GUIDANCE';
+  } else if (authoredGuide) {
+    guideShortRu = authoredGuide;
+    guideKind = parameter.allowedValues.length > 0 ? 'ENUM_DECISION_RULE'
+      : parameter.valueType === 'number' ? 'MEASUREMENT_RULE' : 'PROJECT_DEFINED';
+  } else if (asphalt?.structured_group) {
     guideShortRu = `Добавьте каждый ${asphalt.structured_group.item_label_ru.toLocaleLowerCase("ru-RU")} отдельно; количество рассчитывается автоматически`;
     guideKind = "DERIVED_VALUE_RULE";
   } else if (parameter.allowedValues.length > 0 || parameter.valueType === "boolean") {
     guideShortRu = `Правило выбора: ${publicParameterText(parameter.description)}`;
     guideKind = "ENUM_DECISION_RULE";
   } else if (source && parameter.validation.min != null && parameter.validation.max != null) {
-    guideShortRu = `Нормативный диапазон: ${parameter.validation.min}–${parameter.validation.max}${unit ? ` ${unit}` : ""}`;
-    guideKind = "NORMATIVE_RANGE";
+    guideShortRu = `Допустимый диапазон ввода: ${parameter.validation.min}–${parameter.validation.max}${unit ? ` ${unit}` : ""}`;
+    guideKind = "VALIDATION_RANGE";
   } else if (parameter.parameterId.includes("compaction_factor")) {
     guideShortRu = `По проекту/КРЕР: введите подтверждённый коэффициент${unit ? `, ${unit}` : ""}`;
     guideKind = "PROJECT_DEFINED";
@@ -176,23 +224,24 @@ function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificP
     guideShortRu = `По проекту/методике: введите подтверждённый технологический запас${unit ? `, ${unit}` : ""}`;
     guideKind = "PROJECT_DEFINED";
   } else if (parameter.valueType === "number") {
-    guideShortRu = `По проекту или обмеру: фиксированная числовая норма не установлена${unit ? `, ${unit}` : ""}`;
+    guideShortRu = `Укажите фактическое значение из обмера или принятого документа${unit ? `, ${unit}` : ""}. Пример формата не заменяет данные объекта.`;
     guideKind = "MEASUREMENT_RULE";
   } else {
-    guideShortRu = "По проекту: фиксированная числовая норма не установлена";
-    guideKind = "NO_NUMERIC_NORM";
+    guideShortRu = "Укажите точное согласованное обозначение, условие или ссылку из принятого документа. Не подбирайте значение наугад.";
+    guideKind = "PROJECT_DEFINED";
   }
   return {
     guideShortRu: publicParameterText(guideShortRu),
     guideKind,
     guideDetailsRu: [
+      ...(authoredGuide ? [`Полное условие поля: ${publicParameterText(parameter.description)}`] : []),
       `Почему нужен параметр: ${publicParameterText(parameter.description)}`,
-      source
-        ? `Нормативный документ: ${publicParameterText(source.document)}; редакция ${publicParameterText(source.revision)}; точный пункт ${publicParameterText(source.locator)}.`
-        : "Источник значения: проект, обмер, изготовитель или инженерное решение; универсальный числовой норматив не заявлен.",
-      source ? `Источник проверен ${source.checkedAt}.` : "Число не подставляется автоматически и требует подтверждённого источника пользователя.",
+      parameterSourceSummary(parameter),
+      source ? `Источник проверен ${source.checkedAt}.` : parameter.inputOwnership === 'APPLICATION'
+        ? 'Источник и значение определяет приложение; пользователь не становится источником нормы.'
+        : "Число не подставляется автоматически и требует подтверждённого источника пользователя.",
       `Применимость: ${publicParameterText(applicability)}.`,
-      `Изменяемые формулы/строки: ${publicParameterText(affected)}.`,
+      `Связанных позиций расчёта: ${parameter.affectsRows.length}.`,
     ],
   };
 }
@@ -254,11 +303,11 @@ function requiredLabel(parameter: CanonicalParameter): string {
 function displayValue(parameter: CanonicalParameter): string {
   if (parameter.value == null) return "нужно уточнить";
   const choice = parameter.allowedValues.find((candidate) => candidate.value === parameter.value);
-  if (choice) return choice.label;
+  if (choice) return canonicalPublicEstimateChoiceLabelRu(choice.label,choice.value);
   if (typeof parameter.value === "boolean") return parameter.value ? "Да" : "Нет";
   const value = typeof parameter.value === "number"
     ? displayNumber(parameter.value)
-    : String(parameter.value);
+    : canonicalPublicEstimateFixtureTextRu(String(parameter.value));
   const unit = aiEstimateRuUnitForParameter(parameter.parameterId, parameter.unit);
   return unit ? `${value} ${unit}` : value;
 }
@@ -270,9 +319,7 @@ export function buildCanonicalParameterCards(input: {
 }): AiEstimateParameterCard[] {
   if (!input.session) return [];
   const rowTitleById = new Map((input.revision?.boq.rows ?? []).map((row) => [row.rowId, row.titleRu]));
-  const sessionValues = new Map(input.session.parameters
-    .filter((parameter) => parameter.value != null)
-    .map((parameter) => [parameter.parameterId, parameter.value!]));
+  const sessionValues = canonicalParameterSessionConditionValuesV1(input.session);
   const conditionState = (parameter: CanonicalParameter): boolean | null => {
     return resolveCanonicalParameterVisibility(parameter.visibilityCondition, sessionValues);
   };
@@ -286,31 +333,37 @@ export function buildCanonicalParameterCards(input: {
   // only values that a formula or a BOQ/resource branch actually consumes.
   // Documentary references with no calculation consumer remain durable on
   // old revisions but do not clutter or block this form.
-  const visibleParameters = input.session.parameters.filter((parameter) => {
+  const displayParameters = input.session.parameters.filter(parameter =>
+    parameter.inputOwnership !== 'APPLICATION' && parameter.consumerInputRole !== 'APPLICATION_TECHNICAL');
+  const visibleParameters = displayParameters.filter((parameter) => {
     const state = conditionState(parameter);
     return parameter.parameterId !== "scope_profile"
     && (
       canonicalParameterAffectsEstimateCalculation(parameter)
       || tracedCalculationParameterIds.has(parameter.parameterId)
     )
-    && (backendBlockingParameterIds.has(parameter.parameterId) ? state !== false : state === true);
+    && (backendBlockingParameterIds.has(parameter.parameterId) ? state !== false : state === true
+      || parameter.inputOwnership === 'APPLICATION' && parameter.value != null && state !== false);
   });
   const derivedCountKeys = new Set(visibleParameters
     .map((parameter) => COMPOSITE_DERIVED_COUNT[parameter.parameterId])
     .filter((key): key is string => Boolean(key)));
   return visibleParameters.filter((parameter) => !derivedCountKeys.has(parameter.parameterId)).map((parameter) => {
     const asphalt = getAsphaltParameterV4(parameter.parameterId);
-    const guide = guideForParameter(parameter, asphalt);
+    const context = {catalogId: input.session!.workPassportId, unitId: parameter.unit, descriptionRu: parameter.description};
+    const guide = guideForParameter(parameter, asphalt, context);
     const affectedRowIds = input.revision?.trace.params.find(
       (candidate) => candidate.key === parameter.parameterId,
     )?.affectsRowIds ?? [...parameter.affectsRows];
     const choices = parameter.valueType === "boolean" && parameter.allowedValues.length === 0
       ? [{ value: "true", labelRu: "Да" }, { value: "false", labelRu: "Нет" }]
-      : parameter.allowedValues.map((choice) => ({ value: String(choice.value), labelRu: choice.label }));
+      : parameter.allowedValues.map((choice) => ({ value: String(choice.value), labelRu: canonicalPublicEstimateChoiceLabelRu(choice.label,choice.value) }));
     return {
       key: parameter.parameterId,
+      inputOwnership: parameter.inputOwnership,
+      sourceSummaryRu: parameterSourceSummary(parameter),
       consumerInputRole: parameter.consumerInputRole,
-      labelRu: publicParameterText(parameter.label),
+      labelRu: publicParameterText(canonicalPublicEstimateParameterTitleRu(parameter.parameterId, parameter.label, context)),
       value: parameter.value,
       displayValueRu: displayValue(parameter),
       unitRu: aiEstimateRuUnitForParameter(parameter.parameterId, parameter.unit),
@@ -321,15 +374,17 @@ export function buildCanonicalParameterCards(input: {
         : parameter.valueType === "boolean"
           ? "boolean"
           : parameter.allowedValues.length > 0 ? "select" : "text",
-      // A normative value is a visible starting point, not a locked control.
-      // The owner may replace it in this estimate while the reference and
-      // manual provenance remain distinct; calculated outputs stay read-only.
-      editable: parameter.source !== "CALCULATED",
-      clickAction: parameter.source !== "CALCULATED"
+      // Ownership comes from the published schema, not the value's label or source link.
+      editable: parameter.source !== "CALCULATED" && parameter.inputOwnership !== 'APPLICATION' && parameter.consumerInputRole !== 'APPLICATION_TECHNICAL',
+      clickAction: parameter.source !== "CALCULATED" && parameter.inputOwnership !== 'APPLICATION' && parameter.consumerInputRole !== 'APPLICATION_TECHNICAL'
         ? "open_parameter_editor"
         : "read_only",
       noStepperControls: true,
-      missing: parameter.value == null && parameter.state !== "NOT_APPLICABLE",
+      missing: parameter.value == null && (parameter.state !== "NOT_APPLICABLE"
+        // An unanswered visible object/scope choice is not a filled field.
+        // Optionality stays in requiredFor and never invents a default answer.
+        || parameter.consumerInputRole === 'OBJECT_FACT' && parameter.resourceSelectionInput === true
+          && parameter.allowedValues.length > 0),
       requiredFor: requiredFor(parameter),
       requiredForLabelRu: requiredLabel(parameter),
       affectsRowIds: affectedRowIds,
@@ -353,6 +408,9 @@ export function buildCanonicalParameterCards(input: {
           : "optional",
       choices,
       ...guide,
+      guideDetailsRu: [...(guide.guideDetailsRu ?? []),
+        ...(canonicalPublicEstimateParameterTitleRu(parameter.parameterId, parameter.label, context) !== parameter.label
+          ? ['Полное описание: ' + publicParameterText(parameter.label)] : [])],
       structuredGroup: structuredGroupForParameter(asphalt),
       derivedCountParameterKey: COMPOSITE_DERIVED_COUNT[parameter.parameterId],
     };

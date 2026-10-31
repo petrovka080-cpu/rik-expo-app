@@ -1,9 +1,9 @@
 import {
   ASPHALT_PARAMETER_SCHEMA_ID_V4,
   ASPHALT_WORK_ID_V4,
-  ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4,
   ASPHALT_V4_RUNTIME_TEMPLATE_VERSION,
-} from "../v4/asphalt";
+} from "../v4/asphalt/asphaltV4Constants";
+import { ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4 } from "../v4/asphalt/asphaltWorkSpecificParameterSchemaV4";
 import {
   ASPHALT_REFERENCE_V1_FORMULA_GRAPH_VERSION,
   ASPHALT_REFERENCE_V1_ID,
@@ -16,7 +16,7 @@ import {
   asphaltRelatedParameterKeysForProfileV4,
 } from "../v4/asphalt/asphaltRelatedSemanticRegistryV4";
 import { ASPHALT_RELATED_PARAMETER_METADATA_V4 } from "../v4/asphalt/asphaltRelatedProductionBindingV4";
-import { ASPHALT_MINIMAL_RESOURCE_REQUIRED_KEYS_V4 } from "../v4/asphalt/compileAsphaltRelatedThroughCoreV4";
+import { ASPHALT_MINIMAL_RESOURCE_REQUIRED_KEYS_V4 } from "../v4/asphalt/asphaltRelatedResourceParameterIdsV4";
 import { INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS } from "../v4/domains/interiorFinishesComplete/canonicalParameterSchemas";
 import { HVAC_CANONICAL_PARAMETER_SCHEMAS } from "../v4/domains/heatingVentilationComplete/canonicalParameterSchemas";
 import {

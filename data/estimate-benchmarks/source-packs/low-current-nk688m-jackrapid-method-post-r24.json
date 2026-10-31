@@ -1,0 +1,532 @@
+{
+  "contract": "low-current.nk688m-compatible-manual-method-post/r1",
+  "status": "ISOLATED_SOURCE_CANDIDATE_NOT_READY_NOT_ADMITTED",
+  "hostCatalogId": "canonical-work:expanded:low_voltage_system",
+  "prefix": "low-current:idc-manual-post:r24",
+  "profileId": "lcs_idc_hand_post_profile_r24",
+  "frontCountId": "lcs_idc_simultaneous_manual_posts_r24",
+  "nativeCategoryId": "lvs_copper_cable_category",
+  "nativeCompatibleCategory": "CAT6_LSZH",
+  "profileTitleRu": "Групповое IDC-оконцевание розеток категории 6, четырёхпарный медный кабель",
+  "internalMethod": "JR_PAN_2",
+  "sourceRole": "MANUFACTURER_LISTED_METHOD_TOOL_ROSTER_NOT_FACTORY_KIT_OR_INSTALLATION_RATE",
+  "primary": {
+    "key": "jackrapid",
+    "requestedUrl": "https://www.flukenetworks.com/datacom-cabling/installation-tools/JackRapid-Punchdown-Tool",
+    "finalUrl": "https://www.flukenetworks.com/datacom-cabling/installation-tools/JackRapid-Punchdown-Tool",
+    "contentType": "text/html; charset=utf-8",
+    "status": 200,
+    "accessedAtUtc": "2026-10-26T08:25:04.053924+00:00",
+    "maxBytes": 1048576,
+    "timeoutSeconds": 15,
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-26\\files-pasted-by-the-user-c\\work\\roofing\\scs-nk688m-compatible-manual-post-r1\\primary\\jackrapid-official.html",
+    "sha256": "4a666f475d7db9164b2c8ff9d9afe0248e35d031e085f6069270ad0d2ebe185e",
+    "bytes": 200468,
+    "elapsedSeconds": 0.43700000003445894
+  },
+  "supporting": [
+    {
+      "key": "cjast",
+      "requestedUrl": "https://www.panduit.com/en/products/copper-systems/copper-connectors/copper-connector-tools-accessories/p202234.html",
+      "finalUrl": "https://www.panduit.com/en/products/copper-systems/copper-connectors/copper-connector-tools-accessories/p202234.html",
+      "contentType": "text/html;charset=utf-8",
+      "status": 200,
+      "accessedAtUtc": "2026-10-26T08:25:05.300588+00:00",
+      "maxBytes": 1048576,
+      "timeoutSeconds": 15,
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-26\\files-pasted-by-the-user-c\\work\\roofing\\scs-nk688m-compatible-manual-post-r1\\primary\\cjast-official.html",
+      "sha256": "d90d11bef831d5f77ff48eb133696a444d45cc0bf9dba9e9bb3be8c748602803",
+      "bytes": 163350,
+      "elapsedSeconds": 1.25
+    },
+    {
+      "key": "cwst",
+      "requestedUrl": "https://www.panduit.com/en/products/copper-systems/copper-connectors/copper-connector-tools-accessories/p204790.html",
+      "finalUrl": "https://www.panduit.com/en/products/copper-systems/copper-connectors/copper-connector-tools-accessories/p204790.html",
+      "contentType": "text/html;charset=utf-8",
+      "status": 200,
+      "accessedAtUtc": "2026-10-26T08:25:05.934616+00:00",
+      "maxBytes": 1048576,
+      "timeoutSeconds": 15,
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-26\\files-pasted-by-the-user-c\\work\\roofing\\scs-nk688m-compatible-manual-post-r1\\primary\\cwst-official.html",
+      "sha256": "35aadb6a9753ed8c455c2b2ac31e365a60a38cdbc97230c25b1ada728e71fd3d",
+      "bytes": 163302,
+      "elapsedSeconds": 0.640999999945052
+    }
+  ],
+  "heldJackSpecification": {
+    "logicalPath": "data/estimate-benchmarks/source-packs/low-current-nk688m-existing-outlet-factory-scope-r24.json",
+    "sha256": "6d162af099b6fbc2e7ee03ba86651e1aab3b92cbc3404ca8e2bcaaf48069abe4",
+    "primarySha256": "9147b08cc7c7b237dbd7addc2ac9371c5734a06520ee5c625791445e38e8cefd",
+    "locator": "Physical PDF page 1, compatible tool methods; exact NK688M scope, not Cat6A."
+  },
+  "methodLocator": "jackrapid-official.html lines 1329-1335 instructions; lines 1402-1407 and 1445 model compatibility; line 1714 replacement-head accessory",
+  "parts": [
+    {
+      "key": "method-jr-pan-2:termination-tool",
+      "titleRu": "Инструмент группового IDC-оконцевания с совместимой рабочей головкой",
+      "internalModel": "JR-PAN-2",
+      "unitId": "piece",
+      "countPerExplicitEquippedPost": 1,
+      "assemblyBoundaryRu": "Одна исправная рабочая сборка: рукоятка и совместимая головка для указанного модуля. Сменная JR-PAN-2-H не добавляется второй первоначальной головкой."
+    },
+    {
+      "key": "method-jr-pan-2:wire-snips",
+      "titleRu": "Ножницы для подготовки медных жил кабеля",
+      "internalModel": "CWST",
+      "unitId": "piece",
+      "countPerExplicitEquippedPost": 1,
+      "assemblyBoundaryRu": "Один инструмент подготовки жил. Паспортный предел до 14 AWG не подтверждает безопасную работу на цепи под напряжением."
+    },
+    {
+      "key": "method-jr-pan-2:jacket-stripper",
+      "titleRu": "Регулируемый инструмент снятия оболочки кабеля",
+      "internalModel": "CJAST",
+      "unitId": "piece",
+      "countPerExplicitEquippedPost": 1,
+      "assemblyBoundaryRu": "Один инструмент подготовки оболочки. Диаметр, глубина и фактическая настройка проверяются отдельно; динамические числовые таблицы не закреплены в captured HTML."
+    }
+  ],
+  "quantityBasis": {
+    "kind": "EXPLICIT_ORGANISATIONAL_EQUIPPED_POST_INVENTORY",
+    "formula": "each listed working assembly = F",
+    "F": "actual positive whole simultaneous physical post count, same existing parameter; no default",
+    "oneEachIsDefinitionOfSelectedInventoryNotManufacturerRate": true,
+    "portsToPosts": null,
+    "hoursToPosts": null,
+    "installationConsumptionNorm": false
+  },
+  "methodSteps": [
+    {
+      "sequence": 10,
+      "role": "PREPARATION",
+      "actionRu": "Снять оболочку и уложить четыре пары по выбранной схеме; вставить модуль в инструмент правильной стороной.",
+      "locator": "Fluke HTML instructions lines 1329-1332"
+    },
+    {
+      "sequence": 20,
+      "role": "PROCESS",
+      "actionRu": "Полностью посадить модуль, полностью нажать привод и удалить излишки жил до отпускания привода.",
+      "locator": "Fluke HTML instructions lines 1332-1333"
+    },
+    {
+      "sequence": 30,
+      "role": "COMPLETION",
+      "actionRu": "Отпустить привод, снять модуль и визуально проверить правильность оконцевания.",
+      "locator": "Fluke HTML instructions lines 1334-1335"
+    }
+  ],
+  "notCoveredRu": [
+    "Количество постов, наличие, исправность, безопасное состояние цепи и доступ не подтверждены выбором профиля.",
+    "Конкретные кабель, оболочка, калибр жил, экранирование и схема должны соответствовать удержанному паспорту модуля.",
+    "Норма труда, расход на розетку, износ, запасная головка, доставка, СИЗ и маркировка не заданы этим roster.",
+    "Визуальная проверка не заменяет сертификационные измерения линии, протоколы и приёмку.",
+    "Это выбранное оснащение метода; изготовитель не заявлен поставщиком единого набора из всех трёх инструментов."
+  ],
+  "payment": {
+    "ownerId": "low-current:idc-manual-post:r24:provision-owner",
+    "newPaidOwners": 0,
+    "newProcurementOwners": 0,
+    "scopeRu": "Договорное обеспечение F одновременно оснащаемых постов выбранного состава; одна цена у прежнего владельца. Труд и сертификация принадлежат прежним native владельцам.",
+    "price": null,
+    "stockAvailability": null
+  },
+  "newPublicCards": 0,
+  "normAdmission": false,
+  "projectApproval": false,
+  "FULL": false,
+  "wholeOperationObjectScopeR5": {
+    "contract": "existing-scs-system-whole-operation-object-scope/r5",
+    "rowId": "rc09:lvs_system_install_certification",
+    "groupId": "rc09:scs-copper-existing-whole-operation-r5",
+    "groupTitleRu": "Подработы медной кабельной системы",
+    "decisionId": "lvs_whole_operation_review_decision_r5",
+    "unknown": "Фактическое обеспечение не проверено",
+    "approved": "Методы и обеспечение подтверждены документами",
+    "incompatible": "Метод или обеспечение не соответствует",
+    "reasonRu": "Фактические методы, совместимость и полное обеспечение медных линий не подтверждены. Нужны документы по инструменту и принадлежностям, расходникам, запасу, исправности, метрологии и замене; готовая заводская поставка и заданные часы не доказывают эту полноту.",
+    "facts": [
+      {
+        "id": "lvs_copper_profile_record_r5",
+        "key": "copper-profile",
+        "titleRu": "Документ кабеля: точное изделие, OD, толщина оболочки, жилы и совместимость выбранной разделки",
+        "when": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "greater_than",
+              "parameterId": "lvs_copper_cable_length_m",
+              "value": 0
+            },
+            {
+              "kind": "greater_than",
+              "parameterId": "lvs_information_outlet_count",
+              "value": 0
+            }
+          ]
+        },
+        "anchorRowIds": [
+          "rc09:lvs_copper_cable",
+          "rc09:lvs_information_outlet"
+        ]
+      },
+      {
+        "id": "lvs_route_whole_method_record_r5",
+        "key": "route",
+        "titleRu": "Документ метода прокладки: основание, крепление, проходки, инструмент, оснастка, расходники, доступ и запас",
+        "when": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "greater_than",
+              "parameterId": "lvs_copper_cable_length_m",
+              "value": 0
+            },
+            {
+              "kind": "greater_than",
+              "parameterId": "lvs_containment_length_m",
+              "value": 0
+            }
+          ]
+        },
+        "anchorRowIds": [
+          "rc09:lvs_copper_cable",
+          "rc09:lvs_containment",
+          "rc09:lvs_firestop"
+        ]
+      },
+      {
+        "id": "lvs_outlet_whole_method_record_r5",
+        "key": "outlet",
+        "titleRu": "Документ совместимого окончания розетки: выбранный метод, инструмент и принадлежности, крепление, наличие и замена",
+        "when": {
+          "kind": "greater_than",
+          "parameterId": "lvs_information_outlet_count",
+          "value": 0
+        },
+        "anchorRowIds": [
+          "rc09:lvs_information_outlet",
+          "rc09:lvs_faceplate_backbox",
+          "rc09:lvs_termination"
+        ]
+      },
+      {
+        "id": "lvs_panel_whole_method_record_r5",
+        "key": "panel",
+        "titleRu": "Документ патч-панели: точное изделие, совместимость модулей, крепление, окончания, PE, инструмент и расходники",
+        "when": {
+          "kind": "greater_than",
+          "parameterId": "lvs_patch_panel_count",
+          "value": 0
+        },
+        "anchorRowIds": [
+          "rc09:lvs_patch_panel",
+          "rc09:lvs_cable_manager",
+          "rc09:lvs_grounding_conductor"
+        ]
+      },
+      {
+        "id": "lvs_marking_register_record_r5",
+        "key": "marking",
+        "titleRu": "Документ маркировки: согласованная схема портов, кабелей и розеток, расходники, инструмент и исполнительный реестр",
+        "when": {
+          "kind": "greater_than",
+          "parameterId": "lvs_information_outlet_count",
+          "value": 0
+        },
+        "anchorRowIds": [
+          "rc09:lvs_label",
+          "rc09:lvs_outlet_register"
+        ]
+      },
+      {
+        "id": "lvs_copper_acceptance_record_r5",
+        "key": "qa",
+        "titleRu": "Документ испытаний и приёмки: применимая программа, прибор и метрология, действительные протоколы и комплект передачи",
+        "when": {
+          "kind": "greater_than",
+          "parameterId": "lvs_system_count",
+          "value": 0
+        },
+        "anchorRowIds": [
+          "rc09:lvs_permanent_link_test",
+          "rc09:lvs_test_report"
+        ]
+      }
+    ],
+    "nativeContextParameterIds": [
+      "lvs_system_count",
+      "lvs_information_outlet_count",
+      "lvs_patch_panel_count",
+      "lvs_copper_cable_length_m",
+      "lvs_containment_length_m"
+    ],
+    "operations": [
+      {
+        "key": "copper-profile",
+        "operationId": "rc09:scs-copper-existing-whole-operation-r5:copper-profile",
+        "operationTitleRu": "Подготовка совместимого медного кабеля",
+        "processOrdinal": 10,
+        "completionCriterionRu": "Метод и фактическое обеспечение документированы; количества, норма и приёмка проходят самостоятельные проверки."
+      },
+      {
+        "key": "route",
+        "operationId": "rc09:scs-copper-existing-whole-operation-r5:route",
+        "operationTitleRu": "Прокладка и закрепление кабеля СКС",
+        "processOrdinal": 20,
+        "completionCriterionRu": "Метод и фактическое обеспечение документированы; количества, норма и приёмка проходят самостоятельные проверки."
+      },
+      {
+        "key": "outlet",
+        "operationId": "rc09:scs-copper-existing-whole-operation-r5:outlet",
+        "operationTitleRu": "Установка и оконцевание информационной розетки",
+        "processOrdinal": 30,
+        "completionCriterionRu": "Метод и фактическое обеспечение документированы; количества, норма и приёмка проходят самостоятельные проверки."
+      },
+      {
+        "key": "panel",
+        "operationId": "rc09:scs-copper-existing-whole-operation-r5:panel",
+        "operationTitleRu": "Монтаж и оконцевание патч-панели",
+        "processOrdinal": 40,
+        "completionCriterionRu": "Метод и фактическое обеспечение документированы; количества, норма и приёмка проходят самостоятельные проверки."
+      },
+      {
+        "key": "marking",
+        "operationId": "rc09:scs-copper-existing-whole-operation-r5:marking",
+        "operationTitleRu": "Маркировка и исполнительный реестр линий",
+        "processOrdinal": 50,
+        "completionCriterionRu": "Метод и фактическое обеспечение документированы; количества, норма и приёмка проходят самостоятельные проверки."
+      },
+      {
+        "key": "qa",
+        "operationId": "rc09:scs-copper-existing-whole-operation-r5:qa",
+        "operationTitleRu": "Сертификация и передача медных линий",
+        "processOrdinal": 60,
+        "completionCriterionRu": "Метод и фактическое обеспечение документированы; количества, норма и приёмка проходят самостоятельные проверки."
+      }
+    ],
+    "existingResourceOperations": [
+      {
+        "rowId": "rc09:lvs_system_install_certification",
+        "operationKeys": [
+          "copper-profile",
+          "route",
+          "outlet",
+          "panel",
+          "marking",
+          "qa"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_information_outlet",
+        "operationKeys": [
+          "outlet",
+          "copper-profile"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_patch_panel",
+        "operationKeys": [
+          "panel"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_copper_cable",
+        "operationKeys": [
+          "route",
+          "copper-profile"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_patch_cord",
+        "operationKeys": [
+          "outlet"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_cable_manager",
+        "operationKeys": [
+          "panel"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_faceplate_backbox",
+        "operationKeys": [
+          "outlet"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_containment",
+        "operationKeys": [
+          "route"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_firestop",
+        "operationKeys": [
+          "route"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_termination",
+        "operationKeys": [
+          "outlet"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_label",
+        "operationKeys": [
+          "marking"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_fastening",
+        "operationKeys": [
+          "route",
+          "outlet",
+          "panel"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_consumable",
+        "operationKeys": [
+          "route",
+          "outlet",
+          "panel"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_grounding_conductor",
+        "operationKeys": [
+          "panel"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_permanent_link_test",
+        "operationKeys": [
+          "qa"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_outlet_register",
+        "operationKeys": [
+          "marking"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs_test_report",
+        "operationKeys": [
+          "qa"
+        ]
+      },
+      {
+        "rowId": "rc09:labor:lvs-cable-component-install",
+        "operationKeys": [
+          "route",
+          "outlet",
+          "panel"
+        ]
+      },
+      {
+        "rowId": "rc09:labor:lvs-termination-labeling",
+        "operationKeys": [
+          "outlet",
+          "marking"
+        ]
+      },
+      {
+        "rowId": "rc09:labor:lvs-certification-documentation",
+        "operationKeys": [
+          "qa",
+          "marking"
+        ]
+      },
+      {
+        "rowId": "rc09:equipment:lvs-access",
+        "operationKeys": [
+          "route",
+          "outlet",
+          "panel"
+        ]
+      },
+      {
+        "rowId": "rc09:equipment:lvs-certification-tester",
+        "operationKeys": [
+          "qa"
+        ]
+      },
+      {
+        "rowId": "rc09:logistics:lvs-delivery",
+        "operationKeys": [
+          "route",
+          "outlet",
+          "panel",
+          "marking",
+          "qa"
+        ]
+      },
+      {
+        "rowId": "rc09:logistics:lvs-packaging-removal",
+        "operationKeys": [
+          "route",
+          "outlet",
+          "panel",
+          "marking",
+          "qa"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs-outlet-balance:installed-net",
+        "operationKeys": [
+          "outlet"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs-outlet-balance:retained-spare",
+        "operationKeys": [
+          "outlet"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs-outlet-balance:total-need",
+        "operationKeys": [
+          "outlet"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs-outlet-balance:package-count",
+        "operationKeys": [
+          "outlet"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs-outlet-balance:remainder",
+        "operationKeys": [
+          "outlet"
+        ]
+      },
+      {
+        "rowId": "rc09:lvs-outlet-balance:surplus-beyond-spare",
+        "operationKeys": [
+          "outlet"
+        ]
+      }
+    ],
+    "sourceEvidence": [
+      {
+        "sha256": "9147b08cc7c7b237dbd7addc2ac9371c5734a06520ee5c625791445e38e8cefd",
+        "locator": "Existing held NK688M specification111760186 physical page1: exact compatible module/tool scope, not general panel or installation norm."
+      },
+      {
+        "sha256": "e3e88655001ea5cb928e0bdf87553cc57f8f2adbffe79474962c4b81c7a78cf8",
+        "locator": "Existing held DSX-602 official datasheet: specified certification inventory and stated service calibration; not actual project calibration or report."
+      }
+    ],
+    "sourceBoundary": "Manufacturer primaries justify limited compatibility and operational requirements only. Actual cable/panel/route/label/project documents and applicable norms are missing; no manufactured acceptance, installation rate or physical stock.",
+    "documentAuthenticityAttested": false,
+    "newResourceRows": 0,
+    "newPaidOwners": 0,
+    "sourceAdmission": false,
+    "FULL": false
+  }
+}

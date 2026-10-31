@@ -7,7 +7,8 @@ import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimate
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 import type {PurchaseGroupRepresentative as Model} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
 type CoreInput=Parameters<typeof compileCanonicalEstimateCore>[0];
-const frozen=require('../../../../data/estimate-benchmarks/fixtures/pvc-floor-four-parents-s27-69.json') as {models:Model[]};
+const frozenAll=require('../../../../data/estimate-benchmarks/fixtures/pvc-floor-four-parents-s27-69.json') as {models:Model[]};
+const frozen={...frozenAll,models:frozenAll.models.filter(model=>pack.targets.some(target=>target.catalogId===model.definition.catalog_id))};
 const facts=()=>({floor_covering_area_m2:35.5,[pack.materialId]:true,[pack.barrierAreaId]:12,[pack.siteConditionId]:pack.ordinarySiteValue,[pack.siteConditionBasisId]:'Акт обследования ПВХ-1; участок осмотрен, специальные меры не требуются',[pack.conditionsId]:pack.conditionsValue});
 const decisions=(r:Awaited<ReturnType<typeof compile>>)=>r.preliminaryNeeds.map(n=>(n.calculation_trace as {resourceGraph:{scopeRequirementDecisionV1:{status:string;rowId:string}}}).resourceGraph.scopeRequirementDecisionV1).filter(Boolean);
 test.each(frozen.models)('complete selected ordinary branch, exact33/100 and no demolition machine: $definition.catalog_id',async p=>{

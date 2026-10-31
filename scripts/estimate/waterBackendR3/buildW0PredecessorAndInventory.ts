@@ -330,7 +330,7 @@ async function main(): Promise<void> {
   const duplicateCatalogId = membership.length - new Set(membership.map((row) => row.catalog_id)).size;
   const overlap = classificationCounts.UNRESOLVED_P0;
   if (
-    inventory.catalog_total !== 11_610 || membership.length !== 11_610 || duplicateCatalogId !== 0 ||
+    Number(inventory.catalog_total) !== 11_610 || membership.length !== 11_610 || duplicateCatalogId !== 0 ||
     overlap !== 0 || newlyAdmittedWater !== 845 || predecessorHead !== successorHead ||
     successorMergeBase !== predecessorHead || predecessorStatus !== "" ||
     predecessorManifest.status !== "GREEN" || activeRelease.id !== predecessorManifest.releaseLineage.r2ReleaseId ||

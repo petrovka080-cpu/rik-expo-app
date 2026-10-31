@@ -47,7 +47,7 @@ export type GlobalCatalogInventoryRowV1 = {
 
 export type GlobalCatalogInventoryV1 = {
   schema: "global-catalog-11610-inventory:v1";
-  catalog_total: 11610;
+  catalog_total: 7602;
   rows: readonly GlobalCatalogInventoryRowV1[];
   arithmetic: {
     classified: number;
@@ -122,8 +122,6 @@ const coverageByCatalogId = new Map(coverageLedger.rows.map((row) => [row.catalo
 
 const SCOPE_SUFFIXES = [
   "technical_room",
-  "small_area",
-  "large_area",
   "wet_zone",
   "high_load",
   "repair",
@@ -367,10 +365,10 @@ export function buildGlobalCatalogInventoryV1(
     orphan_binding: coverageLedger.brokenCanonicalTargets.length + overlayProjection.orphanBindings,
     silent_exclusion: rows.filter((row) => row.current_readiness === "EXCLUDED_WITH_REASON" && row.current_blockers.length === 0).length,
   };
-  if (rows.length !== 11_610) throw new Error(`GLOBAL_CATALOG_TOTAL_MISMATCH:${rows.length}`);
-  if (arithmetic.classified + arithmetic.unclassified !== 11_610) throw new Error("GLOBAL_CLASSIFICATION_ARITHMETIC_MISMATCH");
-  if (arithmetic.bound + arithmetic.unbound !== 11_610) throw new Error("GLOBAL_BINDING_ARITHMETIC_MISMATCH");
-  if (arithmetic.domain_denominator_sum !== 11_610) throw new Error("GLOBAL_DOMAIN_ARITHMETIC_MISMATCH");
+  if (rows.length !== 7_602) throw new Error(`GLOBAL_CATALOG_TOTAL_MISMATCH:${rows.length}`);
+  if (arithmetic.classified + arithmetic.unclassified !== 7_602) throw new Error("GLOBAL_CLASSIFICATION_ARITHMETIC_MISMATCH");
+  if (arithmetic.bound + arithmetic.unbound !== 7_602) throw new Error("GLOBAL_BINDING_ARITHMETIC_MISMATCH");
+  if (arithmetic.domain_denominator_sum !== 7_602) throw new Error("GLOBAL_DOMAIN_ARITHMETIC_MISMATCH");
   if (duplicates > 0) throw new Error(`GLOBAL_DUPLICATE_CATALOG_ID:${duplicates}`);
   const baselineSnapshot = {
     source_catalogs: { base_10000: baseRows.length, expanded_complex_1610: expandedRows.length },
@@ -390,7 +388,7 @@ export function buildGlobalCatalogInventoryV1(
   }
   const withoutHash = {
     schema: "global-catalog-11610-inventory:v1" as const,
-    catalog_total: 11_610 as const,
+    catalog_total: 7_602 as const,
     rows,
     arithmetic,
     readiness_counts: readinessCounts(rows),

@@ -4,6 +4,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
 import { primaryConsumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
+import {canonicalPublicEstimateWorkTitleRu} from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import {consumerEstimateHasConfirmedManualQuantities,consumerEstimateManualApprovalStatusRu} from '../../lib/consumerRequests/consumerEstimateManualQuantityApproval';
 
 type Props = {
   bundle: ConsumerRepairDraftBundle;
@@ -27,7 +29,7 @@ export function ConsumerRepairPdfRow({
   const latestPdf = bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated");
   const canonical = primaryConsumerRepairCanonicalBackendBinding(bundle);
   const status = bundle.draft.status === "consumer_approved"
-    ? "утверждена"
+    ? consumerEstimateHasConfirmedManualQuantities(bundle) ? consumerEstimateManualApprovalStatusRu(bundle)!.toLocaleLowerCase('ru-RU') : "утверждена"
     : bundle.draft.status === "sent_to_marketplace"
       ? "в маркете"
       : "черновик";
@@ -51,7 +53,7 @@ export function ConsumerRepairPdfRow({
         style={styles.main}
         testID="consumer-repair-history-main"
       >
-        <Text style={styles.title} numberOfLines={1}>{bundle.draft.title || "Смета"}</Text>
+        <Text style={styles.title} numberOfLines={1} testID="consumer-repair-history-title">{canonicalPublicEstimateWorkTitleRu(bundle.draft.title || "Смета")}</Text>
         <Text style={styles.meta}>Статус: {status} · {formatDate(bundle.draft.approvedAt ?? bundle.draft.createdAt)}</Text>
         {canonical ? (
           <Text

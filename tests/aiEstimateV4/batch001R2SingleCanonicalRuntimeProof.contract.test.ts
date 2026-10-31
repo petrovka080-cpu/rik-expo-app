@@ -4,10 +4,16 @@ import path from "node:path";
 
 import {
   buildCanonicalProcurementProjection,
+  canonicalArtifactPreliminaryNeeds,
   selectCanonicalArtifactRows,
 } from "../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
 import { canonicalEstimateStableJson } from "../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
 import { buildCanonicalProfessionalPdfProjection } from "../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf";
+import {
+  canonicalEstimateSavedOperationAcceptanceV1,
+  canonicalProfessionalPdfReviewAcknowledgmentV1,
+  assertCanonicalEstimateSavedArtifactStructureV1,
+} from "../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1";
 import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstimateDraftRevision";
 import type { EstimateDraftRevision } from "../../src/lib/estimate/estimateDraftRevisionContract";
 import {
@@ -98,9 +104,12 @@ function durableRowPayload(revision: EstimateDraftRevision) {
 }
 
 describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
-  test("proves one owner and one route across create/edit/recalculate/history/PDF/procurement for 16/16", async () => {
+  // Synthetic calculation/projection regression, not physical BATCH001 admission.
+  // Real 10/10 STANDARD/release remains OPEN: the source passport is DRAFT/RED.
+  // No independent composition, norm, equipment or approval is invented here.
+  test("keeps one calculation owner for 10/10 and reads saved reports while strict STANDARD remains blocked", async () => {
     const definitions = buildAllBatch001DrywallSuccessorsR3();
-    expect(definitions).toHaveLength(16);
+    expect(definitions).toHaveLength(10);
 
     for (const definition of definitions) {
       const bindings = INTERIOR_FINISHES_DOMAIN_CATALOG_BINDINGS
@@ -145,7 +154,7 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
         catalog_id: definition.catalogId,
         definition_version_id: definition.successorVersionId,
         checksum_sha256: sha256(initial.revisionProjection),
-        row_count: selected.estimateRows.length,
+        row_count: initial.rows.length,
         currency_code: initial.totals.currencyCode,
         totals: initial.totals,
         input_parameters: initial.parameters,
@@ -154,25 +163,74 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
         primary_measure_parameter_id: editedParameterId,
         primary_measure_value: initial.parameters[editedParameterId],
         primary_measure_unit_id: editRoute!.formula.outputUnitId,
+        amendment_contract: { parameterSources: { preliminaryNeeds: initial.preliminaryNeeds } },
       };
-      const pdf = buildCanonicalProfessionalPdfProjection({
+      // The shared adapter already supplies canonical SHA256 before Core. Keep
+      // its whole saved result, including unpaid rows and any real raw needs.
+      const preliminaryNeeds = canonicalArtifactPreliminaryNeeds(revision, { issuancePurpose: "PRELIMINARY_REVIEW" });
+      const resources = [...initial.rows, ...preliminaryNeeds];
+      const savedBytes = canonicalEstimateStableJson({ revision, rows: initial.rows, preliminaryNeeds });
+      const artifactInput = {
         revision,
-        rows: selected.estimateRows,
+        rows: initial.rows,
+        preliminaryNeeds,
         workTitleRu: definition.passport.titleRu,
         definitionVersionId: definition.successorVersionId,
+      };
+      expect(jest.isMockFunction(assertCanonicalEstimateSavedArtifactStructureV1)).toBe(false);
+      const audit = canonicalEstimateSavedOperationAcceptanceV1({ revision, resources });
+      expect(audit).toMatchObject({
+        status: "STRUCTURE_INVALID", pdfAllowed: false,
+        definitionAdmissionAllowed: false, completeClaimAllowed: false,
       });
+      expect(audit.issues).toEqual(expect.arrayContaining([
+        { code: "RESOURCE_OPERATION_MISSING", rowId: editRoute!.resource.rowId },
+        { code: "INDEPENDENT_OPERATION_COMPOSITION_UNVERIFIED" },
+      ]));
+      expect(() => buildCanonicalProfessionalPdfProjection(artifactInput))
+        .toThrow(expect.objectContaining({ code: "ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID" }));
+      expect(() => buildCanonicalProfessionalPdfProjection({ ...artifactInput, issuancePurpose: "STANDARD" }))
+        .toThrow(expect.objectContaining({ code: "ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID" }));
+      const reviewInput = { ...artifactInput, issuancePurpose: "PRELIMINARY_REVIEW" as const };
+      expect(() => buildCanonicalProfessionalPdfProjection(reviewInput))
+        .toThrow(expect.objectContaining({ code: "ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID" }));
+      const ack = canonicalProfessionalPdfReviewAcknowledgmentV1({
+        revision, resources,
+        request: {
+          revisionId: revision.id, releaseId: revision.release_id,
+          definitionVersionId: revision.definition_version_id,
+          checksumSha256: revision.checksum_sha256, acknowledgedPreliminaryReview: true,
+        },
+        actorUserId: "TEST_ONLY_batch001_saved_reader",
+        acknowledgedAt: "2026-10-31T00:00:00.000Z",
+      });
+      for (const field of ["revisionId", "releaseId", "definitionVersionId", "checksumSha256", "auditSha256"] as const) {
+        expect(() => buildCanonicalProfessionalPdfProjection({
+          ...reviewInput, reviewAcknowledgmentV1: { ...ack, [field]: "wrong-saved-binding" },
+        })).toThrow(expect.objectContaining({ code: "ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID" }));
+      }
+      const pdf = buildCanonicalProfessionalPdfProjection({ ...reviewInput, reviewAcknowledgmentV1: ack });
+      expect(pdf.grandTotalStatus).not.toBe("COMPLETE");
+      expect(pdf.html).toContain("Предварительная для проверки");
+      expect(pdf.html).toContain("Состав подработ и полнота обеспечения не подтверждены");
+      expect(pdf.html).not.toContain("Утвердил");
+      expect(canonicalEstimateSavedOperationAcceptanceV1({ revision, resources })).toEqual(audit);
+      expect(canonicalEstimateStableJson({ revision, rows: initial.rows, preliminaryNeeds })).toBe(savedBytes);
+      expect(canonicalEstimateStableJson(initial)).toBe(initialBytes);
+      // Pure mapper identity is retained; this is not procurement authorization.
       const procurement = buildCanonicalProcurementProjection({
         revision,
         procurementRows: selected.procurementRows,
       });
-      expect(pdf.rowCount).toBe(selected.estimateRows.length);
+      expect(pdf.rowCount).toBe(initial.rows.length + initial.preliminaryNeeds.length);
+      expect(new Set(procurement.rows.map((row) => row.rowId)).size).toBe(procurement.rows.length);
       expect(procurement.rows.map((row) => row.rowId)).toEqual(
         selected.procurementRows.map((row) => row.row_id),
       );
     }
   });
 
-  test("opens and migrates legacy revisions 16/16 without data loss or a reachable legacy calculation route", async () => {
+  test("opens and migrates legacy revisions 10/10 without data loss or a reachable legacy calculation route", async () => {
     const definitions = new Map(buildAllBatch001DrywallSuccessorsR3()
       .map((definition) => [definition.catalogId, definition] as const));
     for (const catalogId of DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3) {
@@ -205,11 +263,32 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
     }
   });
 
-  test("keeps the remaining 2234 interior records outside the professional overlay and has no batch runtime branch", () => {
+  test("retired bulkhead area identities have no active owner or legacy calculation entry", () => {
+    // The prior 16-owner cohort lost exactly six area identities; ten physical-work owners remain.
+    const standard = INTERIOR_FINISHES_DOMAIN_INVENTORY.find(
+      (item) => item.catalog_id === "drywall_ceiling_interior_bulkhead_frame_standard",
+    )!;
+    const retired = [
+      "drywall_ceiling_interior_bulkhead_frame_large_area",
+      "drywall_ceiling_interior_bulkhead_frame_small_area",
+      "drywall_ceiling_interior_bulkhead_align_large_area",
+      "drywall_ceiling_interior_bulkhead_align_small_area",
+      "drywall_ceiling_interior_bulkhead_clad_large_area",
+      "drywall_ceiling_interior_bulkhead_clad_small_area"
+] as const;
+    for (const catalogId of retired) {
+      expect(INTERIOR_FINISHES_DOMAIN_INVENTORY.some((item) => item.catalog_id === catalogId)).toBe(false);
+      expect(interiorFinishesDomainFactory.binding_by_catalog_id.has(catalogId)).toBe(false);
+      expect(buildDrywallCeilingBulkheadProfessionalPackagePartsV3({ ...standard, catalog_id: catalogId, work_key: catalogId })).toBeNull();
+    }
+  });
+
+  test("keeps the remaining 1472 interior records outside the professional overlay and has no batch runtime branch", () => {
     const authorized = new Set<string>(DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3);
     const unchanged = INTERIOR_FINISHES_DOMAIN_INVENTORY.filter((item) => !authorized.has(item.catalog_id));
-    expect(INTERIOR_FINISHES_COMPLETE_RECORD_COUNT).toBe(2250);
-    expect(unchanged).toHaveLength(2234);
+    // 2250 − 768 retired area records = 1482; 1482 − 10 surviving bulkhead owners = 1472.
+    expect(INTERIOR_FINISHES_COMPLETE_RECORD_COUNT).toBe(1482);
+    expect(unchanged).toHaveLength(1472);
     for (const inventory of unchanged) {
       expect(buildDrywallCeilingBulkheadProfessionalPackagePartsV3(inventory)).toBeNull();
       const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);

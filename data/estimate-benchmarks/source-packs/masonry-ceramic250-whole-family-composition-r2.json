@@ -1,0 +1,826 @@
+{
+  "contract": "gox-build.masonry-ceramic250-whole-family-composition/r2",
+  "sourceId": "source:masonry:ceramic250:whole-family-composition:r2",
+  "prefix": "masonry:ceramic250:whole-family:r2",
+  "titleRu": "Кирпичная кладка с готовым раствором и полным рабочим комплектом",
+  "status": "UNSEALED_SOURCE_ONLY_WHOLE_BRANCH_IMPLEMENTATION_NOT_FAMILY_ACCEPTED",
+  "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+  "parent": {
+    "definitionId": "9e2b5498-7b4d-5f82-ace7-6c6b822b4ef8",
+    "version": 9,
+    "definitionSha256": "f72f853aaffcab2b21cf172e7a3371dbe80a378a8f74b2b427d255c775166c6b"
+  },
+  "selectorId": "mcf2_whole_front",
+  "selectorValue": "Кладка внутренней стены 250 мм с готовым раствором и комплектом на восемь каменщиков",
+  "noValue": "Не выбран",
+  "heightBoundary": "The own KG scope is storey<=4m. Panel decks0.9/1.8m do not prove a fixed working-reach or completed wall height. Actual served wall height and full safe erection/reposition/guard/handling sequence come from the actual complete PPR. No1.2m working-reach coefficient is invented.",
+  "stock": [
+    {
+      "key": "receiving-box",
+      "titleRu": "Стационарный ящик для раствора 0,1 м³",
+      "quantity": "10",
+      "limit": "No filled hoisting by an unproved eye/handler; actual support, payload and placement required.",
+      "unitId": "piece",
+      "category": "equipment",
+      "operationKeys": [
+        "receive-front",
+        "lay-and-fit",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "portable-lamp",
+      "titleRu": "Переносной светильник на стойке высотой 3,57 м",
+      "quantity": "2",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ],
+      "sourceIdentity": "РЧ КТ-00-00-00; footprint0.9x0.5m,height3.57m",
+      "limit": "Exact source dimensions or a documented whole lighting-product substitution with actual mounting/room/light level,power and cable facts. A generic lamp name is not unconditional interchangeability."
+    },
+    {
+      "key": "straightedge",
+      "titleRu": "Рейка контрольная 2 м",
+      "quantity": "2",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "string-beacon",
+      "titleRu": "Маяк для причального шнура",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "corner-order",
+      "titleRu": "Порядовка угловая",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "intermediate-order",
+      "titleRu": "Порядовка промежуточная",
+      "quantity": "2",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "trowel",
+      "titleRu": "Кельма каменщика",
+      "quantity": "8",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "mortar-shovel",
+      "titleRu": "Лопата растворная",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "brick-hammer",
+      "titleRu": "Молоток-кирочка для подгонки кирпича",
+      "quantity": "6",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "hand-hammer",
+      "titleRu": "Молоток-кулачок",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "jointer-first",
+      "titleRu": "Расшивка швов кладки",
+      "quantity": "4",
+      "sourceIdentity": "РВ-1, shape not established by this table",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "jointer-second",
+      "titleRu": "Расшивка швов кладки",
+      "quantity": "4",
+      "sourceIdentity": "РВ-2, shape not established by this table",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "string-clamp-otu",
+      "titleRu": "Скоба для крепления причалки",
+      "quantity": "8",
+      "sourceIdentity": "ОТУ22-656-67",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "string-clamp-241",
+      "titleRu": "Скоба для крепления причалки",
+      "quantity": "8",
+      "sourceIdentity": "РЧ241, shape and interchangeability not established",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "string-clamp-240",
+      "titleRu": "Скоба для крепления причалки",
+      "quantity": "8",
+      "sourceIdentity": "РЧ240, shape and interchangeability not established",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "pincers",
+      "titleRu": "Клещи строительные",
+      "quantity": "8",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "carpenter-hammer",
+      "titleRu": "Молоток плотничный",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "handsaw",
+      "titleRu": "Ножовка для деревянной оснастки",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "tape",
+      "titleRu": "Рулетка металлическая 20 м",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "marking-cord",
+      "titleRu": "Шнур разметочный в корпусе",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "plumb",
+      "titleRu": "Отвес строительный",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "folding-rule",
+      "titleRu": "Метр складной металлический",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "intermediate-beacon",
+      "titleRu": "Маяк промежуточный для кладки",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "level",
+      "titleRu": "Уровень строительный",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "square",
+      "titleRu": "Угольник контрольный",
+      "quantity": "4",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    },
+    {
+      "key": "helmet",
+      "titleRu": "Каска защитная",
+      "quantity": "8",
+      "limit": "Source worker stock only; current certified product and other actual workers require KG5.12 assessment.",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "access",
+        "lay-and-fit",
+        "clean-return"
+      ],
+      "historicalProtectionStockIsNotCurrentCompletePpe": true
+    },
+    {
+      "key": "fall-protection",
+      "titleRu": "Средство индивидуальной защиты от падения",
+      "quantity": "8",
+      "limit": "Old belt alone is not a current complete harness/anchor/rescue system. Do not label complete without actual hazard-based BOM.",
+      "unitId": "piece",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "access",
+        "lay-and-fit",
+        "clean-return"
+      ],
+      "historicalProtectionStockIsNotCurrentCompletePpe": true
+    },
+    {
+      "key": "rubber-gloves",
+      "titleRu": "Перчатки резиновые технические",
+      "quantity": "8",
+      "limit": "Stock, not wear/replacement rate.",
+      "unitId": "pair",
+      "category": "tool",
+      "operationKeys": [
+        "prepare-front",
+        "access",
+        "lay-and-fit",
+        "clean-return"
+      ],
+      "historicalProtectionStockIsNotCurrentCompletePpe": true
+    },
+    {
+      "key": "masonry-line",
+      "titleRu": "Шнур причальный",
+      "quantity": "300",
+      "unitId": "m",
+      "category": "consumable",
+      "operationKeys": [
+        "prepare-front",
+        "lay-and-fit",
+        "control",
+        "clean-return"
+      ]
+    }
+  ],
+  "panelProduct": {
+    "sourceSha256": "63d78c98d0e7b55e148e812633d28e396f4b8a08473eb4cf0374857762a97ed1",
+    "internalIdentity": "METEL PK TU5225-004-90120475-2013",
+    "perCompletePanel": [
+      {
+        "key": "panel-support",
+        "titleRu": "Опора шарнирно-панельных подмостей",
+        "quantity": "2",
+        "unitId": "piece"
+      },
+      {
+        "key": "panel-deck",
+        "titleRu": "Деревянный настил подмостей 5,5 × 1,9 м",
+        "quantity": "1",
+        "unitId": "piece",
+        "separateSupply": true
+      },
+      {
+        "key": "panel-insert",
+        "titleRu": "Вставка опоры подмостей",
+        "quantity": "4",
+        "unitId": "piece"
+      },
+      {
+        "key": "panel-pin",
+        "titleRu": "Болт с гайкой М24 для опоры подмостей",
+        "quantity": "4",
+        "unitId": "set"
+      },
+      {
+        "key": "panel-stud",
+        "titleRu": "Шпилька М12 для опоры подмостей",
+        "quantity": "20",
+        "unitId": "piece"
+      },
+      {
+        "key": "panel-bracket",
+        "titleRu": "Скоба опоры подмостей",
+        "quantity": "4",
+        "unitId": "piece"
+      },
+      {
+        "key": "panel-suspension",
+        "titleRu": "Фиксатор опоры подмостей",
+        "quantity": "2",
+        "unitId": "piece"
+      },
+      {
+        "key": "panel-nut",
+        "titleRu": "Гайка М12 для опоры подмостей",
+        "quantity": "40",
+        "unitId": "piece"
+      },
+      {
+        "key": "panel-washer",
+        "titleRu": "Шайба М12 для опоры подмостей",
+        "quantity": "40",
+        "unitId": "piece"
+      }
+    ],
+    "metalMassKg": "240",
+    "deckMassKg": "500",
+    "permissibleDistributedLoadKgM2": "400",
+    "deckPositionsM": [
+      "0.9",
+      "1.8"
+    ],
+    "wholeBOMDoesNotInclude": [
+      "complete rated actual lifting rings and handling assembly",
+      "actual compatible complete guard/stair/anchor/grounding layout",
+      "actual concentrated and distributed deck/floor loads"
+    ]
+  },
+  "records": [
+    {
+      "key": "front-layout",
+      "titleRu": "ППР разбивки фронта для четырёх звеньев каменщиков"
+    },
+    {
+      "key": "receiving-container",
+      "titleRu": "Паспорт и схема размещения стационарных ящиков 0,1 м³"
+    },
+    {
+      "key": "panel-layout",
+      "titleRu": "ППР полного доступа, ограждений, лестниц и перемещения подмостей"
+    },
+    {
+      "key": "panel-lifting",
+      "titleRu": "Полный заводской подъёмный комплект и грузовая характеристика на месте подачи подмостей"
+    },
+    {
+      "key": "current-ppe",
+      "titleRu": "Ведомость сертифицированных СИЗ и защиты для всех фактических работников"
+    },
+    {
+      "key": "structural-scope",
+      "titleRu": "Проект опоры, отсечки влаги, связей, армирования и перемычек"
+    },
+    {
+      "key": "quality",
+      "titleRu": "План входного, операционного и приёмочного контроля кладки"
+    },
+    {
+      "key": "wash-waste",
+      "titleRu": "Фактическая схема очистки, сбора остатков, возврата и вывоза отходов"
+    },
+    {
+      "key": "whole-adaptation",
+      "titleRu": "Документ сравнения технологии и качества по пункту 4.2 Указаний КРЕР"
+    }
+  ],
+  "measurements": [
+    {
+      "key": "panel_count",
+      "titleRu": "Количество полных панелей по ведомости ППР",
+      "unitId": "piece",
+      "min": 0,
+      "integer": true
+    },
+    {
+      "key": "panel_extra_lifted_mass_kg",
+      "titleRu": "Фактическая дополнительная масса при подъёме одной панели",
+      "unitId": "kg",
+      "min": 0
+    },
+    {
+      "key": "panel_handler_mass_kg",
+      "titleRu": "Масса полного подъёмного комплекта панели",
+      "unitId": "kg",
+      "min": 0
+    },
+    {
+      "key": "panel_handler_allowable_kg",
+      "titleRu": "Допустимая масса панели для полного подъёмного комплекта",
+      "unitId": "kg",
+      "min": 1
+    },
+    {
+      "key": "panel_crane_available_kg",
+      "titleRu": "Допустимый груз крана на фактическом вылете подачи панели",
+      "unitId": "kg",
+      "min": 1
+    },
+    {
+      "key": "receiver_payload_kg",
+      "titleRu": "Допустимая загрузка стационарного ящика 0,1 м³",
+      "unitId": "kg",
+      "min": 1
+    },
+    {
+      "key": "actual_panel_loaded_kg_m2",
+      "titleRu": "Фактическая распределённая нагрузка на настил по ППР",
+      "unitId": "kg/m2",
+      "min": 0
+    },
+    {
+      "key": "actual_ppr_served_height_m",
+      "titleRu": "Максимальная высота стены, обеспеченная полным доступом по ППР",
+      "unitId": "m",
+      "min": 0
+    }
+  ],
+  "operationKeys": [
+    "prepare-front",
+    "access",
+    "receive-front",
+    "lay-and-fit",
+    "control",
+    "clean-return"
+  ],
+  "sources": [
+    {
+      "id": "kg08",
+      "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "locator": "PDF5-9 general part; PDF17-19, 08-02-001-07",
+      "role": "OWN_KG_QUANTITATIVE_NORM",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-wall-krer08-systems-r1/KRER08-2015-official.pdf"
+    },
+    {
+      "id": "kg-guide",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "locator": "PDF2,1.4/1.5; PDF6,2.8; PDF9,4.2; PDF10,4.11-4.14",
+      "role": "KG_NORM_APPLICATION_BOUNDARY",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-r2/kg-guide2015.pdf"
+    },
+    {
+      "id": "vpti1985",
+      "url": "https://meganorm.ru/Data1/56/56272/index.htm",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-r2/vpti1985.html",
+      "sha256": "5f0b4f1b17db92c254380e6f9886f2dd16b2ff92ba58ed36b882bf161e45d217",
+      "edition": "ВПТИтрансстрой, Москва 1985, authored original reproduction",
+      "locator": "masonry chapter, brigade table, figure7(a), whole normokit table, end-of-work cleaning",
+      "role": "WHOLE_PHYSICAL_KIT_AND_ACTIONS_NOT_KG_FINANCIAL_NORMS"
+    },
+    {
+      "id": "kg-safety",
+      "sha256": "a143d151e3bd6f36a24e789686f95d4445b3f6d0ae8c5bb66f5a433021be9529",
+      "locator": "PDF135,5.12; PDF192-194,15.1-15.3",
+      "role": "ACTUAL_KG_PPR_AND_HAZARD_PROVISION_BOUNDARY",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-r2/kg-safety2018.pdf"
+    },
+    {
+      "id": "metel-yar",
+      "sha256": "9f86c3fffc6471afcd249960e89e0cd4433ac4187098f04a21efd15fe0a4ad62",
+      "locator": "PDF1-2; exact YAR1 column",
+      "role": "WHOLE_BOX_ORIGINAL_MAKER_INSTRUCTION",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-whole-cycle-r2/METEL-YAR1-original.pdf"
+    },
+    {
+      "id": "metel-panel",
+      "sha256": "63d78c98d0e7b55e148e812633d28e396f4b8a08473eb4cf0374857762a97ed1",
+      "locator": "PDF1-2, TU5225-004-90120475-2013; deck separately supplied",
+      "role": "CANDIDATE_WHOLE_ACCESS_PRODUCT_NOT_ACCEPTED_LAYOUT",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-r2/panel-tu2013.pdf"
+    }
+  ],
+  "ownership": {
+    "singleLabourOwner": "masonry:wall:krer08-02-001-07:labour",
+    "singleCraneOwner": "retained exact own-or-hired crane row, mutually exclusive",
+    "noAddedPaidLabour": [
+      "mortar reception/remixing/feed",
+      "included access installation/reposition/dismantling up to 4 m",
+      "small accompanying preparation and closing cleaning"
+    ],
+    "notAutomaticallyIncluded": [
+      "new support/DPC",
+      "structural reinforcement/ties/lintels",
+      "separate central-store access haul",
+      "extra handling outside source routes",
+      "exceptional waste transport/disposal service"
+    ]
+  },
+  "boundary": {
+    "newPublicCards": 0,
+    "newPaidOwners": 0,
+    "newProcurementOwners": 0,
+    "parentNeedsClosed": 0,
+    "full": 0,
+    "allProductChecks": "UNRUN",
+    "wholeFamilyReady": false,
+    "scopeStillRequires": [
+      "actual structural subworks if applicable",
+      "actual complete rated brick-pallet handling unit",
+      "actual complete compatible access/guard/stair/anchor/floor BOM with all quantities visible",
+      "actual certified PPE/worker/hazard composition",
+      "actual supplier transport and waste quantities",
+      "AAC own coherent branch and remaining material branches"
+    ],
+    "notAllowed": [
+      "a signed yes/no declaration as an unknown source norm",
+      "source inventory as procurement or wear",
+      "old fall belt as complete modern fall-arrest system",
+      "generic top hook",
+      "double access erection or cleanup labour",
+      "reuse of this brick mortar or labour rate in another material"
+    ]
+  },
+  "maximumStoreyHeightM": "4",
+  "locatorKey": "masonry-ceramic250-whole-operation-source-composition-r2",
+  "components": [
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-ready-m50-whole-supply-cycle-r2.json",
+      "sha256": "205cfd61fd08a24586cd6a0058a4e513c12fc250832bdea1b342745085f4a773",
+      "decision": "REUSE_EXACT_PHYSICAL_COMPOSITION_WITH_COMPOSITE_REGISTRY_BINDING",
+      "originalEvidenceSourceId": "masonry_ready_m50_whole_supply_cycle_maker_kz2019_r2",
+      "quantityOrMethodChanged": false,
+      "historicalRowsRebound": false
+    }
+  ],
+  "operationGroup": {
+    "id": "masonry:wall:krer08-02-001-07",
+    "titleRu": "Кладка внутренней кирпичной стены 250 мм на готовом растворе М50 при высоте этажа до 4 м"
+  },
+  "sharedRetainedResourceUses": [
+    {
+      "rowKey": "labour",
+      "operations": [
+        "m50:receive",
+        "m50:prepare",
+        "m50:load",
+        "m50:feed",
+        "m50:receive-front",
+        "m50:remix",
+        "m50:clean",
+        "m50:inspect",
+        "whole:prepare-front",
+        "whole:access",
+        "whole:receive-front",
+        "whole:lay-and-fit",
+        "whole:control",
+        "whole:clean-return"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "operators",
+      "operations": [
+        "m50:feed",
+        "whole:access"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "tower-crane-consumed",
+      "operations": [
+        "m50:feed",
+        "whole:access"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "tower-crane-own",
+      "operations": [
+        "m50:feed",
+        "whole:access"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "tower-crane-hired",
+      "operations": [
+        "m50:feed",
+        "whole:access"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "water-consumed",
+      "operations": [
+        "whole:prepare-front",
+        "whole:lay-and-fit",
+        "whole:clean-return"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "water",
+      "operations": [
+        "whole:prepare-front",
+        "whole:lay-and-fit",
+        "whole:clean-return"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "brick-consumed",
+      "operations": [
+        "whole:prepare-front",
+        "whole:lay-and-fit",
+        "whole:control"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "brick",
+      "operations": [
+        "whole:prepare-front",
+        "whole:lay-and-fit",
+        "whole:control"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "timber-consumed",
+      "operations": [
+        "whole:access"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "timber",
+      "operations": [
+        "whole:access"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "mortar-consumed",
+      "operations": [
+        "m50:receive",
+        "m50:load",
+        "m50:feed",
+        "m50:receive-front",
+        "m50:remix",
+        "whole:receive-front",
+        "whole:lay-and-fit"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    },
+    {
+      "rowKey": "mortar",
+      "operations": [
+        "m50:receive",
+        "m50:load",
+        "m50:feed",
+        "m50:receive-front",
+        "m50:remix",
+        "whole:receive-front",
+        "whole:lay-and-fit"
+      ],
+      "quantityAndPaymentChanged": false,
+      "gate": "EACH_DECLARED_OPERATION_MARKER_PRESENT"
+    }
+  ],
+  "sharedResourcePolicy": "Existing row ID, unit, full quantity, saved price and single cost/procurement owner are retained. Additional operation references are gated by actual presence of their new scope marker. No allocation of the aggregate norm or additional payment is implied. Only operation graph metadata changes in the successor; historical revisions and source metadata stay immutable."
+}

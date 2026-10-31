@@ -9,8 +9,11 @@ import { adaptCanonicalRevisionToStructuredEstimate } from './canonicalEstimateF
 import { buildStructuredEstimateRequestDraft } from '../../estimateStructuredPipeline/structuredEstimateRequestBinding';
 import { ESTIMATE_PLATFORM_API_VERSION, type CanonicalEstimateRevisionView, type CanonicalEstimateCatalogItem } from './contracts';
 import { consumerRepairRowCostCoverageLabel, consumerRepairRowCommercialScopeLabel } from '../../../features/consumerRepair/consumerRepairRowMetadata';
-import { buildCanonicalProfessionalPdfProjection } from './canonicalProfessionalPdf';
+import { assertCanonicalProfessionalPdfMoneyCells, buildCanonicalProfessionalPdfProjection } from './canonicalProfessionalPdf';
 import { canonicalArtifactPreliminaryNeeds, type CanonicalArtifactRow } from './canonicalEstimateArtifactContract';
+import {canonicalEstimateOperationDescriptorOwnerV1} from './canonicalEstimateOperationComposition';
+import {canonicalEstimateSavedOperationAcceptanceV1,canonicalProfessionalPdfReportOriginalAuditV1,
+  canonicalProfessionalPdfReviewAcknowledgmentV1,canonicalProfessionalPdfReviewEligibilityV1} from './canonicalEstimateSavedOperationAcceptanceV1';
 
 // MASTER §20.43.6 arithmetic fixture only. These are not catalogue norms or prices.
 function fixture(mode = 'OPERATIONS'): CanonicalEstimateCompileCoreInput {
@@ -59,6 +62,93 @@ function fixture(mode = 'OPERATIONS'): CanonicalEstimateCompileCoreInput {
 const row = (result: Awaited<ReturnType<typeof compileCanonicalEstimateCore>>, id: string) => result.rows.find(r => r.row_id === id)!;
 const coverage = (input: CanonicalEstimateCompileCoreInput) => input.resourceDefinitions.find(r => r.row_id === 'lay')!
   .resource_graph.commercialCostCoverageV1 as CanonicalCommercialCostCoverageV1;
+
+
+const fixtureHash=(value:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex');
+const syntheticRevisionIdentity={id:'11111111-1111-4111-8111-111111111111',release_id:'22222222-2222-4222-8222-222222222222',
+  definition_version_id:'33333333-3333-4333-8333-333333333333'};
+/** Independently authored expectations for this arithmetic-only STANDARD case.
+ * These six rows and ten-class decisions describe a synthetic cost scenario,
+ * never a catalogue norm, approved project, source admission or engineering completeness. */
+function inactiveProfileStandardFixture(){
+  const input=fixture();coverage(input).when={kind:'equals',parameterId:'mode',value:'COMPLEX'};
+  const sourceId='TEST_ONLY_COMMERCIAL_COST_ARITHMETIC_EXPECTATIONS_NOT_ENGINEERING_SOURCE';
+  const operationRoster=([
+    ['prepare','Подготовка основания',1],['lay','Укладка плитки',2],['grout','Затирка швов',3],
+    ['cut','Подрезка плитки',4],['cleanup','Финальная уборка',5],
+  ] as const).map(([id,title,ordinal])=>({contractVersion:'canonical-operation-resource/v1' as const,
+    groupId:'TEST_ONLY_COMMERCIAL_COST',groupTitleRu:'Синтетическая проверка стоимости',operationId:id,
+    operationTitleRu:title,completionCriterionRu:'Завершён только синтетический арифметический этап '+id,
+    processOrdinal:ordinal,processRole:'PROCESS' as const}));
+  // Static expected rows, not a roster generated from compiled/current resources.
+  const expectedResources=[
+    {rowId:'prepare',operationId:'prepare',publicNameRu:'Подготовка основания',resourceKind:'LABOR'},
+    {rowId:'lay',operationId:'lay',publicNameRu:'Укладка плитки',resourceKind:'LABOR'},
+    {rowId:'grout',operationId:'grout',publicNameRu:'Затирка швов',resourceKind:'LABOR'},
+    {rowId:'cut',operationId:'cut',publicNameRu:'Подрезка плитки',resourceKind:'LABOR'},
+    {rowId:'cleanup',operationId:'cleanup',publicNameRu:'Финальная уборка',resourceKind:'LABOR'},
+    {rowId:'tile',operationId:'lay',publicNameRu:'Плитка',resourceKind:'MATERIAL'},
+  ] as const;
+  const absent={status:'NOT_APPLICABLE',reasonRu:'TEST_ONLY: класс вне границ синтетического арифметического сценария; это не утверждение о реальной работе.'};
+  const independentComposition={contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'TECHNOLOGY_MAP',
+    generatedFromCurrentRows:false,evidenceSha256:fixtureHash({testOnly:true,sourceId,operationRoster,expectedResources}),
+    testOnlyArithmeticFixture:true,engineeringAcceptance:false,
+    operationRoster,entries:expectedResources.map(expected=>({operationId:expected.operationId,expectedResourceId:'TEST_ONLY_EXPECTED_'+expected.rowId,
+      condition:'SYNTHETIC_ARITHMETIC_ONLY',sourceId,requiredOperationIds:[expected.operationId],
+      publicNameRu:expected.publicNameRu,resourceKind:expected.resourceKind,resolution:{kind:'ROW',rowId:expected.rowId}})),
+    operationRequirements:operationRoster.map(operation=>({operationId:operation.operationId,sourceId,requirements:{
+      LABOR:{status:'REQUIRED',rowIds:[operation.operationId]},
+      MATERIAL:operation.operationId==='lay'?{status:'REQUIRED',rowIds:['tile']}:absent,
+      CONSUMABLE:absent,TOOL:absent,ACCESSORY:absent,EQUIPMENT:absent,MECHANISM:absent,SERVICE:absent,TRANSPORT:absent,PPE:absent,
+    }}))};
+  const descriptor=canonicalEstimateOperationDescriptorOwnerV1(operationRoster);
+  input.formulaDefinitions=input.formulaDefinitions.map(formula=>({...formula,ast_sha256:fixtureHash(formula.ast)}));
+  input.resourceDefinitions=input.resourceDefinitions.map(resource=>{
+    const expected=expectedResources.find(row=>row.rowId===resource.row_id);if(!expected)throw Error('TEST_ONLY_EXPECTED_ROW_REQUIRED');
+    const{row_sha256:_old,...original}=resource;
+    const body={...original,source_metadata:{testOnlyArithmeticFixture:true,sourceAuthorityPromoted:false},resource_graph:{...resource.resource_graph,
+      operationCompositionV1:descriptor('TEST_ONLY_COMMERCIAL_COST',expected.operationId),
+      publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:resource.title_ru,
+        nameRu:expected.publicNameRu,brandAndModelRu:null,specificationRu:null,detailsRu:[],resourceKind:expected.resourceKind}}};
+    return{...body,row_sha256:fixtureHash(body)};
+  });
+  // Bound before Core; neither compiled rows nor saved outputs are repaired/rehased.
+  const evidence={contractVersion:'canonical-operation-composition-evidence/v1',releaseId:syntheticRevisionIdentity.release_id,
+    definitionVersionId:syntheticRevisionIdentity.definition_version_id,independentComposition,mapSha256:fixtureHash(independentComposition),
+    sourcePassportPayloadSha256:fixtureHash({testOnlyArithmeticFixture:true,sourceId,expectedResources})};
+  return{input,evidence};
+}
+/** Existing ordinary PDF readability of an exact synthetic saved version.
+ * The production read acknowledgment binds identity and the unchanged snapshot;
+ * it grants no STANDARD/source/engineering/approval or procurement admission. */
+function preliminarySavedFixturePdf(input:Pick<Parameters<typeof buildCanonicalProfessionalPdfProjection>[0],
+  'revision'|'rows'|'expectedProjectedRowCount'|'workTitleRu'>){
+  const preliminaryNeeds=canonicalArtifactPreliminaryNeeds(input.revision,{issuancePurpose:'PRELIMINARY_REVIEW'}),
+    resources=[...input.rows,...preliminaryNeeds],snapshot=canonicalEstimateStableJson({revision:input.revision,rows:input.rows,preliminaryNeeds});
+  const originalAudit=canonicalProfessionalPdfReportOriginalAuditV1({revision:input.revision,resources});
+  expect(originalAudit).toMatchObject({status:'STRUCTURE_INVALID',pdfAllowed:false,definitionAdmissionAllowed:false,completeClaimAllowed:false});
+  expect(originalAudit.issues.filter(issue=>issue.code==='RESOURCE_OPERATION_MISSING').map(issue=>issue.rowId).sort())
+    .toEqual(['prepare','lay','grout','cut','cleanup','tile'].sort());
+  expect(originalAudit.issues.filter(issue=>issue.code==='INDEPENDENT_OPERATION_COMPOSITION_UNVERIFIED')).toHaveLength(1);
+  expect(originalAudit.issues.filter(issue=>issue.code==='RESOURCE_QUANTITY_UNRESOLVED')).toHaveLength(1);
+  expect(()=>buildCanonicalProfessionalPdfProjection({...input,preliminaryNeeds:canonicalArtifactPreliminaryNeeds(input.revision)}))
+    .toThrow(expect.objectContaining({code:'ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID'}));
+  expect(canonicalProfessionalPdfReviewEligibilityV1({revision:input.revision,resources})).toMatchObject({eligible:true,status:'ELIGIBLE'});
+  const reportInput={...input,preliminaryNeeds,issuancePurpose:'PRELIMINARY_REVIEW' as const};
+  expect(()=>buildCanonicalProfessionalPdfProjection(reportInput)).toThrow(expect.objectContaining({code:'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID'}));
+  const readAcknowledgment=canonicalProfessionalPdfReviewAcknowledgmentV1({revision:input.revision,resources,
+    request:{revisionId:input.revision.id,releaseId:input.revision.release_id,definitionVersionId:input.revision.definition_version_id,
+      checksumSha256:input.revision.checksum_sha256,acknowledgedPreliminaryReview:true},
+    actorUserId:'TEST_ONLY_SAVED_COMMERCIAL_READER',acknowledgedAt:'2026-10-30T00:00:00.000Z'});
+  expect(()=>buildCanonicalProfessionalPdfProjection({...reportInput,reviewAcknowledgmentV1:{...readAcknowledgment,auditSha256:'0'.repeat(64)}}))
+    .toThrow(expect.objectContaining({code:'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID'}));
+  const projection=buildCanonicalProfessionalPdfProjection({...reportInput,reviewAcknowledgmentV1:readAcknowledgment});
+  expect(projection.html).toContain('saved-report-warnings');expect(projection.html).toContain('Что требует проверки');
+  expect(projection.html).not.toContain('class="approval-block"');expect(projection.html).not.toContain('Утвердил');
+  expect(canonicalEstimateStableJson({revision:input.revision,rows:input.rows,preliminaryNeeds})).toBe(snapshot);
+  expect(canonicalProfessionalPdfReportOriginalAuditV1({revision:input.revision,resources})).toEqual(originalAudit);
+  return projection;
+}
 
 describe('canonical server commercial coverage', () => {
   test('an optional package defers only a necessary enum decision also required by every covered physical row',async()=>{
@@ -131,14 +221,23 @@ describe('canonical server commercial coverage', () => {
       calculation_trace: expect.objectContaining({ resourceGraph: expect.objectContaining({ costTreatment: 'INCLUDED_IN_RESOURCE_ROWS' }) }) })]);
   });
   test.each([
-    ['separate price', { unitPrice: '150', provenance: { kind: 'manual' } }],
     ['explicit separate selection', { includedInEstimate: true, provenance: { kind: 'manual' } }],
-    ['unsupported quantity change', { quantity: '21', provenance: { kind: 'manual' } }],
+    ['explicit separate procurement', { includedInProcurement: true, provenance: { kind: 'manual' } }],
   ])('direct compiler rejects %s on a covered child and does not mutate the submitted values', async (_name, override) => {
     const input = fixture('COMPLEX'); input.rowOverrides!.prepare = override;
     const before = JSON.stringify(input);
     await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({ code: 'COMMERCIAL_COST_COVERAGE_CONFLICT' });
     expect(JSON.stringify(input)).toBe(before);
+  });
+  test('saves child quantity and reference price without changing the payable owner or charging twice',async()=>{
+    const input=fixture('COMPLEX'),before=await compileCanonicalEstimateCore(input);
+    input.rowOverrides!.prepare={quantity:'21',unitPrice:'150',provenance:{kind:'manual'}};
+    const snapshot=JSON.stringify(input),result=await compileCanonicalEstimateCore(input);
+    expect(row(result,'prepare')).toMatchObject({quantity:'21',unit_price:'150',included_in_estimate:false,
+      included_in_procurement:false,calculation_trace:{manualQuantityOverride:true,calculatedQuantityBeforeOverride:'20'}});
+    expect(result.totals).toEqual(before.totals);
+    expect(row(result,'lay')).toEqual(row(before,'lay'));
+    expect(JSON.stringify(input)).toBe(snapshot);
   });
   test.each(['missing', 'unit', 'duplicate', 'overlap', 'cycle', 'source', 'basis', 'provider', 'labor_material', 'owner_excluded'])('rejects invalid %s coverage before a false total is produced', async kind => {
     const input = fixture('COMPLEX'); const descriptor = coverage(input);
@@ -169,15 +268,20 @@ describe('canonical server commercial coverage', () => {
     expect((await compileCanonicalEstimateCore(input)).totals).toMatchObject({ amount: '17000', unpricedRowCount: 1 });
   });
   test('inactive commercial profile keeps the existing resource charges', async () => {
-    const input = fixture(); coverage(input).when = { kind: 'equals', parameterId: 'mode', value: 'COMPLEX' };
+    const {input,evidence}=inactiveProfileStandardFixture();
     const result = await compileCanonicalEstimateCore(input);
     expect(row(result, 'cut').included_in_estimate).toBe(true);
     expect(result.totals.unpricedRowCount).toBe(3);
     expect((row(result, 'lay').calculation_trace as { resourceGraph: Record<string, unknown> }).resourceGraph)
       .not.toHaveProperty('commercialCostCoverageOwnerDecisionV1');
-    const html = buildCanonicalProfessionalPdfProjection({ revision: { id: 'coverage-fixture', release_id: 'fixture-release',
-      catalog_id: input.catalogId, checksum_sha256: 'a'.repeat(64), row_count: result.rows.length, totals: result.totals, currency_code: 'KGS' },
-      rows: result.rows as CanonicalArtifactRow[], expectedProjectedRowCount: result.rows.length, workTitleRu: 'Контрольная смета' }).html;
+    const revision={...syntheticRevisionIdentity,catalog_id:input.catalogId,checksum_sha256:fixtureHash(result.revisionProjection),
+      row_count:result.rows.length,totals:result.totals,currency_code:'KGS',definition_withdrawal_reason:null,input_parameters:result.parameters,
+      amendment_contract:{parameterSources:{preliminaryNeeds:[],operationCompositionEvidenceV1:evidence}}};
+    const accepted=canonicalEstimateSavedOperationAcceptanceV1({revision,resources:result.rows});
+    expect(accepted).toMatchObject({status:'ACCEPTED',pdfAllowed:true,definitionAdmissionAllowed:true,completeClaimAllowed:true});
+    expect(accepted.issues).toEqual([]);
+    const html = buildCanonicalProfessionalPdfProjection({revision,rows:result.rows as CanonicalArtifactRow[],
+      expectedProjectedRowCount:result.rows.length,workTitleRu:'Контрольная смета'}).html;
     expect(html).not.toContain(coverage(input).scopeRu);
   });
   test('fixed whole-scope price is one service and retains the measured technical boundary', async () => {
@@ -235,11 +339,37 @@ describe('canonical server commercial coverage', () => {
     expect(tile).toMatchObject({ quantity: null, sourceParameters: { includedInEstimate: true, includedInProcurement: false } });
     expect(consumerRepairRowCostCoverageLabel(tile)).toContain('Труд по предложению №7');
     expect(consumerRepairRowCostCoverageLabel(tile)).toContain('исполнитель');
-    const html = buildCanonicalProfessionalPdfProjection({ revision: stored, rows: result.rows as CanonicalArtifactRow[],
-      preliminaryNeeds: canonicalArtifactPreliminaryNeeds(stored), expectedProjectedRowCount: result.rows.length, workTitleRu: catalog.titleRu }).html;
-    expect(html).toContain('Включено в стоимость «Труд по предложению №7»');
-    expect(html).toContain('Ресурс предоставляет исполнитель этой расценки.');
-    expect(html).toContain('Количество нужно уточнить');
+    const beforeReport=canonicalEstimateStableJson({stored,result});
+    const projection = preliminarySavedFixturePdf({revision:stored,rows:result.rows as CanonicalArtifactRow[],
+      expectedProjectedRowCount:result.rows.length,workTitleRu:catalog.titleRu});
+    expect(canonicalEstimateStableJson({stored,result})).toBe(beforeReport);
+    const html = projection.html;
+    expect(() => assertCanonicalProfessionalPdfMoneyCells(html)).not.toThrow();
+    expect(html).not.toMatch(/Включено в стоимость|Ресурс предоставляет|Без доплаты|Уточнить цену/u);
+    // This synthetic Core DTO has a price binding, but no saved financial-owner identity.
+    // PRELIMINARY_REVIEW keeps its entered price and blanks the unconfirmed amount;
+    // that owner amount is the eleventh blank money cell, not an extra footer cell.
+    const savedOwner = row(result, 'lay');
+    expect(savedOwner).not.toHaveProperty('cost_owner_id');expect(savedOwner).not.toHaveProperty('semantic_owner');
+    expect(savedOwner.calculation_trace).not.toHaveProperty('resourceGraph.costOwnerId');
+    expect(savedOwner.calculation_trace).not.toHaveProperty('resourceGraph.costOwner');
+    expect(savedOwner.calculation_trace).not.toHaveProperty('resourceGraph.semanticOwner');
+    const ownerHtmlRows = [...html.matchAll(/<tr(?:\s[^>]*)?>[\s\S]*?<\/tr>/gu)].map(match => match[0])
+      .filter(fragment => fragment.includes('<strong>Труд по предложению №7</strong>'));
+    expect(ownerHtmlRows).toHaveLength(1);
+    expect([...ownerHtmlRows[0]!.matchAll(/<td class="money">([^<]*)<\/td>/gu)].map(match => match[1]))
+      .toEqual(['850,00 сом', '']);
+    expect(html.match(/<td class="money"><\/td>/gu)).toHaveLength(11);
+    expect([...html.matchAll(/<td class="money">([^<]+)<\/td>/gu)].map(match => match[1])).toEqual(['850,00 сом']);
+    expect(html).toContain('Владелец оплаты или валюта части позиций не подтверждены.');
+    expect(html).toContain('Итог не подтверждён');expect(html).not.toContain('17\u00a0000,00 сом');
+    expect(savedOwner).toMatchObject({ quantity: '20', unit_id: 'm2', unit_price: '850', amount: '17000' });
+    expect(result.totals.amount).toBe('17000');
+    expect(projection).toMatchObject({ rowCount: 6, preliminaryNeedCount: 1, pricedRowCount: 0, missingPriceRowCount: 1,
+      nonPayableRowCount: 4, grandTotalStatus: 'PARTIAL_NEEDS_PRICE', categoryTotals: { work: 0, material: 0 } });
+    expect(result.preliminaryNeeds.find(need => need.row_id === 'tile')).toMatchObject({ category: 'material', unit_id: 'm2', quantity: null });
+    expect(html).toContain('<strong>Плитка</strong>');expect(html).toContain('<td class="numeric">20</td>');
+    expect(html).toContain('<td class="numeric">Не рассчитано</td>');
     const owner = draft.items.find(item => item.sourceParameters?.rowCode === 'lay')!;
     expect(consumerRepairRowCommercialScopeLabel(owner)).toContain('Состав расценки');
   });
@@ -247,8 +377,11 @@ describe('canonical server commercial coverage', () => {
     const result = await compileCanonicalEstimateCore(fixture('COMPLEX'));
     const owner = row(result, 'lay');
     const sourceRows = result.rows.filter(r => r.row_id !== 'lay') as CanonicalArtifactRow[];
-    const need = { ...owner, title_ru: 'Комплекс исполнителя', quantity: null, selected: true, need_state: 'QUANTITY_REQUIRED',
-      missing_parameter_ids: ['scope_measure'], need_sha256: 'b'.repeat(64) };
+    // Authored synthetic stored-need shape, not a second Core result. Hash this
+    // new saved fixture record once; do not alter/re-hash the original Core rows.
+    const needPayload={...owner,title_ru:'Комплекс исполнителя',quantity:null,selected:true,need_state:'QUANTITY_REQUIRED',
+      missing_parameter_ids:['scope_measure']};
+    const need={...needPayload,need_sha256:fixtureHash(needPayload)};
     const stored = { id: '11111111-1111-4111-8111-111111111111', release_id: '22222222-2222-4222-8222-222222222222',
       catalog_id: 'coverage-fixture', definition_version_id: '33333333-3333-4333-8333-333333333333', checksum_sha256: 'a'.repeat(64),
       row_count: sourceRows.length, totals: { amount: '0' }, currency_code: 'KGS', input_parameters: result.parameters,
@@ -267,11 +400,22 @@ describe('canonical server commercial coverage', () => {
       rows: sourceRows.map(r => canonicalEstimateRevisionRowFromStorage(r, null)) }));
     const included = draft.items.find(item => item.sourceParameters?.rowCode === 'prepare')!;
     expect(consumerRepairRowCostCoverageLabel(included)).toContain('Комплекс исполнителя');
-    const projection = buildCanonicalProfessionalPdfProjection({ revision: stored,
-      rows: sourceRows, preliminaryNeeds: canonicalArtifactPreliminaryNeeds(stored), expectedProjectedRowCount: sourceRows.length, workTitleRu: 'Контрольная смета' });
-    expect(projection.html).toContain('стоимость включена в позицию «Комплекс исполнителя»');
-    expect(projection.html).toContain('Состав расценки: Труд подготовки');
-    expect(projection.html).toContain('Количество нужно уточнить');
+    const beforeReport=canonicalEstimateStableJson({stored,result});
+    const projection = preliminarySavedFixturePdf({revision:stored,rows:sourceRows,
+      expectedProjectedRowCount:sourceRows.length,workTitleRu:'Контрольная смета'});
+    expect(canonicalEstimateStableJson({stored,result})).toBe(beforeReport);
+    expect(row(result,'lay')).toEqual(owner);
+    expect(() => assertCanonicalProfessionalPdfMoneyCells(projection.html)).not.toThrow();
+    expect(projection.html).not.toMatch(/Включено в №|Без доплаты|Состав расценки:|Уточнить цену/u);
+    expect(projection.html.match(/<td class="money"><\/td>/gu)).toHaveLength(11);
+    expect([...projection.html.matchAll(/<td class="money">([^<]+)<\/td>/gu)].map(match => match[1])).toEqual(['850,00 сом']);
+    expect(projection).toMatchObject({ pricedRowCount: 0, categoryTotals: { work: 0, material: 0 } });
+    expect(row(result, 'prepare')).toMatchObject({ quantity: '20', unit_id: 'm2', unit_price: null, amount: null, included_in_estimate: false, included_in_procurement: false });
+    expect(row(result, 'prepare').calculation_trace).toMatchObject({ resourceGraph: { includedInResourceOwnerRowId: 'lay' } });
+    expect(projection.html).toContain('<strong>Комплекс исполнителя</strong>');
+    expect(projection.html).toContain('<strong>Подготовка основания</strong>');expect(projection.html).toContain('<td class="numeric">20</td>');
+    expect(consumerRepairRowCommercialScopeLabel(draft.items.find(item => item.sourceParameters?.rowCode === 'lay')!)).toContain('Состав расценки');
+    expect(projection.html).toContain('<td class="numeric">Не рассчитано</td>');
   });
   test('a strict labour-only quote cannot silently cover equipment already included through the original worker owner', async () => {
     const input = fixture('COMPLEX');

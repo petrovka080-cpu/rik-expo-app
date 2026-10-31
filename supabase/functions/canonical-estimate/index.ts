@@ -1,6 +1,11 @@
 /* eslint-disable import/no-unresolved */
 // @ts-nocheck
 
+import { attachCanonicalPhysicalNormEvidenceV1, canonicalPhysicalNormRevisionFromStorageV1 } from '../../../src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts';
+
+import {deriveCanonicalCatalogPromptExtractionV1} from '../../../src/lib/estimate/backendPlatform/canonicalConcretePlacementPromptServerR1.ts';
+import {parseCanonicalCatalogPromptRequestV1,readCanonicalCatalogPromptJsonV1,assertCanonicalCatalogPromptBytesV1,
+  MAX_CANONICAL_CATALOG_PROMPT_RESPONSE_BYTES_V1} from '../../../src/lib/estimate/backendPlatform/canonicalCatalogPromptExtractionV1.ts';
 import {parseCanonicalCompositionSelectionV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts';
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
@@ -30,6 +35,7 @@ import { canonicalPreliminaryNeedEvidenceFromStorage, decodeCanonicalPreliminary
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts";
 import { canonicalManualPriceMigrationBindings } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration.ts";
 import { canonicalOrderedSpecificationBindings } from '../../../src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings.ts';
+import { canonicalCatalogParameterStorageViewV1 } from '../../../src/lib/estimate/backendPlatform/canonicalCatalogParameterStorageMapperV1.ts';
 
 const FUNCTION_NAME = "canonical-estimate";
 const MAX_ROWS_PAGE = 500;
@@ -50,8 +56,11 @@ function corsHeaders(request: Request): Record<string, string> {
   return allowed.has(origin) ? { ...base, "Access-Control-Allow-Origin": origin } : base;
 }
 
-const json = (status: number, body: Record<string, unknown>, requestId: string, request: Request) => new Response(
-  JSON.stringify({ ...body, requestId }),
+const json = (status: number, body: Record<string, unknown>, requestId: string, request: Request,maximumBytes?:number) => {
+  const serialized=JSON.stringify({ ...body, requestId });
+  if(maximumBytes!==undefined)assertCanonicalCatalogPromptBytesV1(serialized,maximumBytes,"response");
+  return new Response(
+  serialized,
   {
     status,
     headers: {
@@ -63,6 +72,7 @@ const json = (status: number, body: Record<string, unknown>, requestId: string, 
     },
   },
 );
+};
 
 function env(name: string): string {
   return String(Deno.env.get(name) ?? "").trim();
@@ -198,37 +208,6 @@ function normalizeSearchQuery(value: string): string {
 
 function significantSearchLength(value: string): number {
   return (value.match(/[\p{L}\p{N}]/gu) ?? []).length;
-}
-
-function parameterGuideView(source: unknown) {
-  if (!source || typeof source !== "object" || Array.isArray(source)) return undefined;
-  const guide = source as Record<string, unknown>;
-  return {
-    guideKind: guide.guide_kind,
-    guideShortRu: guide.guide_short_ru,
-    guideMin: guide.guide_min,
-    guideMax: guide.guide_max,
-    guideTarget: guide.guide_target,
-    minInclusive: guide.min_inclusive,
-    maxInclusive: guide.max_inclusive,
-    guideOptions: guide.guide_options,
-    canonicalUnit: guide.canonical_unit,
-    displayUnit: guide.display_unit,
-    guideBasis: guide.guide_basis,
-    precision: guide.precision,
-    step: guide.step,
-    guideCondition: guide.guide_condition,
-    guideValidationPolicy: guide.guide_validation_policy,
-    sourceRole: guide.source_role,
-    sourceDocument: guide.source_document,
-    sourceEditionStatus: guide.source_edition_status,
-    sourceLocator: guide.source_locator,
-    guideVersion: guide.guide_version,
-    sourceSnapshotHash: guide.source_snapshot_hash,
-    applicability: guide.applicability,
-    exclusions: guide.exclusions,
-    verifiedAt: guide.verified_at,
-  };
 }
 
 function normalizeDbError(error: { code?: string; message?: string } | null): never {
@@ -551,6 +530,8 @@ async function createArtifactJob(
 ) {
   assertUuid(revisionId, "revisionId");
   const body = await request.json().catch(() => ({}));
+  if(Object.hasOwn(body??{},'issuancePurpose')&&body.issuancePurpose!=='STANDARD' || Object.hasOwn(body??{},'reviewRequest'))
+    throw new CanonicalEstimateApiError('This adapter does not support preliminary review PDF.',{code:'ARTIFACT_PURPOSE_UNSUPPORTED',httpStatus:409});
   const documentProfile = String(body?.documentProfile ?? "").trim();
   if (documentProfile && documentProfile !== "professional_v1") {
     throw new CanonicalEstimateApiError("unsupported PDF document profile", { code: "INVALID_ARGUMENT", httpStatus: 400 });
@@ -749,8 +730,7 @@ async function finalizeRevisionPhotoUpload(
   if (reservationError) normalizeDbError(reservationError);
   if (reservation.status === "committed") {
     const projection = await listRevisionPhotoAttachments(requester, revisionId, false);
-    const attachment = projection.attachments.find((candidate) => candidate.attachmentId === reservation.attachment_id)
-      ?? projection.attachments.find((candidate) => candidate.parentRevisionId === revisionId);
+    const attachment = projection.attachments.find((candidate) => candidate.attachmentId === reservation.attachment_id);
     if (!attachment) throw new CanonicalEstimateApiError("committed photo projection is missing", {
       code: "PHOTO_ATTACHMENT_PROJECTION_MISSING",
       httpStatus: 409,
@@ -867,6 +847,8 @@ async function readArtifact(
   publicKind: "pdf" | "professional_pdf" | "procurement",
 ) {
   assertUuid(revisionId, "revisionId");
+  const purpose=new URL(request.url).searchParams.get('issuancePurpose');
+  if(purpose!==null&&purpose!=='STANDARD')throw new CanonicalEstimateApiError('This adapter does not support preliminary review PDF.',{code:'ARTIFACT_PURPOSE_UNSUPPORTED',httpStatus:409});
   const documentProfile = String(new URL(request.url).searchParams.get("documentProfile") ?? "").trim();
   if (documentProfile && documentProfile !== "professional_v1") {
     throw new CanonicalEstimateApiError("unsupported PDF document profile", { code: "INVALID_ARGUMENT", httpStatus: 400 });
@@ -898,6 +880,8 @@ async function readArtifact(
     });
   }
   const sourceMetadata = data.metadata ?? {};
+  if(Object.hasOwn(sourceMetadata,'issuancePurpose')&&sourceMetadata.issuancePurpose!=='STANDARD')
+    throw new CanonicalEstimateApiError('This adapter does not support preliminary review PDF.',{code:'ARTIFACT_PURPOSE_UNSUPPORTED',httpStatus:409});
   if (data.status === "ready" && (
     (sourceMetadata.sourceReleaseId != null && sourceMetadata.sourceReleaseId !== revision.release_id)
     || (sourceMetadata.sourceRevisionChecksumSha256 != null && sourceMetadata.sourceRevisionChecksumSha256 !== revision.checksum_sha256)
@@ -1102,7 +1086,7 @@ async function readRevisionRows(request: Request, requester: ReturnType<typeof c
   const limit = Number.isInteger(requestedLimit) ? Math.min(MAX_ROWS_PAGE, Math.max(1, requestedLimit)) : 100;
   const { data: revision, error: revisionError } = await requester
     .from("estimate_revision")
-    .select("id,release_id,catalog_id,definition_version_id")
+    .select("id,release_id,catalog_id,definition_version_id,input_parameters,checksum_sha256,created_at,amendment_contract")
     .eq("id", revisionId)
     .single();
   if (revisionError) normalizeDbError(revisionError);
@@ -1177,10 +1161,10 @@ async function readRevisionRows(request: Request, requester: ReturnType<typeof c
         : snapshotById.get(String(price.price_snapshot_id)) ?? null;
       const routeId = price?.route_id ?? snapshot?.route_id;
       const route = routeId == null ? null : routeById.get(String(routeId)) ?? null;
-      return canonicalEstimateRevisionRowFromStorage(row, price, {
+      return attachCanonicalPhysicalNormEvidenceV1(canonicalPhysicalNormRevisionFromStorageV1(revision),canonicalEstimateRevisionRowFromStorage(row, price, {
         snapshot_captured_at: snapshot?.captured_at ?? null,
         route_source_kind: route?.source_kind ?? null,
-      });
+      },revision.amendment_contract));
     }),
     nextCursor: hasMore ? createCursor(page[page.length - 1].ordinal) : null,
   };
@@ -1626,58 +1610,7 @@ async function readCatalogItem(requester: ReturnType<typeof createClient>, rawCa
       manualPriceMigrationBindings: canonicalManualPriceMigrationBindings({resources: resources.data ?? [], formulas: formulas.data ?? [], parameters}),
       orderedSpecificationBindings: canonicalOrderedSpecificationBindings(resources.data ?? []),
       contentAdmission,
-      parameterSchema: parameters.map((parameter) => {
-        const truth = parameter.truth_metadata && typeof parameter.truth_metadata === "object"
-          ? parameter.truth_metadata as Record<string, unknown>
-          : {};
-        return {
-          parameterId: parameter.parameter_id,
-          ordinal: parameter.ordinal,
-          valueType: parameter.value_type,
-          unitId: parameter.unit_id,
-          titleRu: parameter.title_ru,
-          required: parameter.required,
-          preliminaryCompilationAllowed: truth.preliminary_compilation_allowed === true,
-          defaultValue: parameter.default_value,
-          constraints: parameter.constraints_json,
-          semanticParameterKey: truth.semantic_parameter_key,
-          visibilityRole: truth.visibility_role,
-          descriptionRu: truth.description_ru,
-          requiredWhen: truth.required_when,
-          visibleWhen: truth.visible_when,
-          allowedRangeOrOptions: truth.allowed_range_or_options,
-          defaultPolicy: truth.default_policy,
-          valueSourceRole: truth.value_source_role,
-          guide: parameterGuideView(truth.guide),
-          compositeItemSchema: truth.composite_item_schema && typeof truth.composite_item_schema === "object" ? {
-            itemLabelRu: truth.composite_item_schema.item_label_ru,
-            minimumItems: truth.composite_item_schema.minimum_items,
-            maximumItems: truth.composite_item_schema.maximum_items,
-            reorderable: truth.composite_item_schema.reorderable === true,
-            subfields: Array.isArray(truth.composite_item_schema.subfields)
-              ? truth.composite_item_schema.subfields.map((subfield: Record<string, unknown>) => ({
-                subfieldId: subfield.subfield_id,
-                labelRu: subfield.label_ru,
-                valueType: subfield.value_type,
-                unitId: subfield.unit_id,
-                required: subfield.required === true,
-                constraints: subfield.constraints ?? {},
-                guide: parameterGuideView(subfield.guide),
-                formulaConsumers: subfield.formula_consumers ?? [],
-                resourceBranchConsumers: subfield.resource_branch_consumers ?? [],
-              }))
-              : [],
-          } : undefined,
-          sharedInputBindingPolicy: truth.shared_input_binding_policy,
-          derivedFrom: truth.derived_from,
-          normativeLinks: truth.normative_links,
-          formulaConsumers: truth.formula_consumers,
-          resourceBranchConsumers: truth.resource_branch_consumers,
-          validationRules: truth.validation_rules,
-          conflictsWith: truth.conflicts_with,
-          provenance: truth.provenance,
-        };
-      }),
+      parameterSchema: parameters.map(canonicalCatalogParameterStorageViewV1),
     },
   };
 }
@@ -1764,6 +1697,13 @@ export async function handleCanonicalEstimateRequest(request: Request): Promise<
     }
     if (request.method === "GET" && path.length === 2 && path[0] === "catalog") {
       return json(200, await readCatalogItem(requester, path[1]), requestId, request);
+    }
+    if (request.method === "POST" && path.length === 2 && path[0] === "catalog") {
+      const body=parseCanonicalCatalogPromptRequestV1(await readCanonicalCatalogPromptJsonV1(request,"request"));
+      const result=await readCatalogItem(requester,path[1]);
+      if(body.releaseId!==undefined&&body.releaseId!==result.item.releaseId)throw new CanonicalEstimateApiError(
+        "Запрошенная версия работы больше недоступна.",{code:"CATALOG_PROMPT_BINDING_INVALID",httpStatus:409});
+      return json(200,{...result,promptExtraction:deriveCanonicalCatalogPromptExtractionV1(result.item,body.prompt)},requestId,request,MAX_CANONICAL_CATALOG_PROMPT_RESPONSE_BYTES_V1);
     }
     return json(404, { error: { code: "ROUTE_NOT_FOUND", message: "canonical estimate route not found" } }, requestId, request);
   } catch (error) {

@@ -1,0 +1,30 @@
+{
+  "contract": "gox-build.masonry-aac-kz250-exact-current-continuation/r4",
+  "status": "FINITE_CURRENT_PARENT_HISTORY_REGISTRATION_NOT_TECHNICAL_ACCEPTANCE",
+  "storageKey": "retainedParentBindingContinuationV2",
+  "rawCaptureSha256": "bc54b0986f53bf4f560683abaecb41b65a305d1b70af50fc98a8d085e9259004",
+  "quantityOrPriceTransferPermission": false,
+  "anchor": {
+    "catalogId": "canonical-work:base:masonry_interior_gas_block_lay_standard",
+    "definitionId": "79c63634-3fa6-513a-87ed-f2e3c7807835",
+    "definitionVersion": 5,
+    "definitionSha256": "bfbe5869280540c0c009825d091504faa7d6813ff2e63b2c34a3434e8b524f0d",
+    "baselineId": "7f3e14b0-cd70-50bc-b94f-c999b9a5e7e2",
+    "capturedParentSha256": "a028d110d1b85d9f8e77f2891ae17bff244e5b928566bb802157b784ce4f7057",
+    "capturedSourceMetadataSha256": "9eb3caaeab8c665825ad7e54c18726672aab9451a404017069850f83f1aadb86",
+    "latestPreviousSuccessorSha256": "9b49767780525d838bafb31bf7228b443ac7a27358166625d30eb5ef6aefb9bc",
+    "previousContinuationSha256": "20967e2ad4bffe47a6c7122db4ea2913de9baf7877fe67f69b68737ce244bd34",
+    "originalSuccessorSha256": "6db588596567fc041f7b900f1b29000824d29a03272505b57222b15ad0bf5adc",
+    "previousDefinitionId": "ed7c9ce8-4a27-5c14-ba5f-61d7d13d16db",
+    "previousBaselineId": "7be5beb9-19d8-5300-acec-783ed3b4451c"
+  },
+  "sourceGuard": {
+    "sourceKey": "source:masonry:aac:kz250-m150-whole-cycle2019:r4",
+    "contract": "gox-build.masonry-aac-kz250-own-whole-cycle/r4",
+    "artifactSha256": "73a1f7128836405b19ae8c17a12ef711a05c86eeef6ad21e5809c3b3c370442e",
+    "locatorKey": "masonry-aac-kz250-current-card-composite-r4",
+    "locatorPayloadSha256": "65407f310635c6aae7a04e8494edbd7fa9abfb20b8e36470c44adb81d7d6fe96"
+  },
+  "explicitRootDispatchRequired": true,
+  "sharedBinderOverwritten": false
+}

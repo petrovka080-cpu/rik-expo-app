@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   beltRepairPromptDetailsR1,
@@ -91,8 +91,7 @@ describe("monolithic-belt concrete repair canonical family", () => {
     ]));
   });
 
-  it("round-trips through the ordinary shared parameter screen", () => {
-    const target = BELT_REPAIR_TARGETS[6];
+  it.each(BELT_REPAIR_TARGETS)("round-trips through the ordinary shared parameter screen: $contextKey", (target) => {
     const input = beltRepairAcceptanceInputR1(target.contextKey);
     const prompt = [target.titleRu, ...beltRepairPromptDetailsR1(input)].join("\n");
     expect(extractConcretePlacementCanonicalParametersR1({ catalogId: target.catalogId, text: prompt }))

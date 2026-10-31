@@ -138,6 +138,7 @@ async function verifyCore(): Promise<Json> {
   };
 }
 
+if(require.main===module){
 void runMasterSingleDefinitionSuccessorR1({
   contract: "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
   stopCode: "S27_24_ACCESS_CONTROL_SYSTEM_BALANCED",
@@ -313,3 +314,185 @@ void runMasterSingleDefinitionSuccessorR1({
   process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
   process.exitCode = 1;
 });
+
+}
+
+import {readFileSync}from'node:fs';
+import {ACCESS_CONTROL_WHOLE_DOOR_SOURCE_R2 as acsSourceR3,accessControlWholeDoorOrdinaryModelR3,accessControlWholePassageMeasuredModelR5}from'../../../src/lib/estimate/v4/accessControlSystemR1';
+import {compileCanonicalEstimateCore}from'../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore';
+import {estimateDeterministicHash}from'../../../src/lib/estimate/estimateDeterministicHash';
+import type{MasterSingleDefinitionSuccessorConfig}from'./prepareMasterSingleDefinitionSuccessorR1';
+
+type AcsQuantityContextR3=Readonly<{
+ parentReleaseId:string;parentSearchReleaseId:string;currentReleasePath:string;selectedCurrentReleasePath:string;
+ referencePointerMode:'PREPARED_NOT_ACTIVE_COPY';outputRoot:string;expectedBranch:string;masterPath:string;masterSha256:string;
+ sourceRoot:string;capturedParentPath:string;capturedParentByteSha256:string;
+ verifyTargetPrecondition:NonNullable<MasterSingleDefinitionSuccessorConfig['verifyTargetPrecondition']>;
+ capturedScopedNormativeRegistry?:MasterSingleDefinitionSuccessorConfig['capturedScopedNormativeRegistry'];
+}>;
+const acsRequireR3=(ok:unknown,message:string)=>{if(!ok)throw Error('STOP_ACS_WHOLE_QUANTITY_R3_'+message);};
+const acsByteShaR3=(path:string)=>createHash('sha256').update(readFileSync(path)).digest('hex');
+/** Test fixture only. No value here is an actual door fact, default or source admission. */
+export function accessControlWholeDoorValidationFixtureR3(){
+ const s=acsSourceR3,q=s.quantityForwardR3;
+ return{...ACCESS_CONTROL_SYSTEM_ACCEPTANCE_INPUT,acs_system_count:1,acs_controlled_door_count:1,acs_controller_count:1,acs_reader_count:2,acs_lock_count:1,acs_exit_device_count:1,
+  acs_door_contact_quantity_piece:1,acs_emergency_release_quantity_piece:1,acs_power_supply_quantity_piece:1,acs_standby_battery_quantity_piece:1,acs_controller_retained_spare_piece:0,acs_controller_supplier_pack_size_piece:1,
+  ...Object.fromEntries(s.currentParentModel.parameters.filter(x=>x.parameter_id.endsWith('_record_r5')).map(x=>[x.parameter_id,'SOURCE_TEST_ONLY_NOT_ACTUAL:'+x.parameter_id])),
+  acs_whole_operation_review_decision_r5:'Фактические методы и обеспечение подтверждены документами',
+  ...Object.fromEntries(s.actualRecords.map(x=>[x.id,'SOURCE_TEST_ONLY_NOT_ACTUAL:'+x.id])),...Object.fromEntries(s.organisationalInputs.map(x=>[x.id,x.min])),
+  [s.decisionId]:'DOCUMENTED_COMPATIBLE',[s.retentionId]:'THREAD_LOCKER',[s.markingId]:'HANDWRITTEN',[q.mountMethodId]:'FACTORY_WALL_VARIANT_1'}as Record<string,unknown>;
+}
+export function compileAccessControlWholeDoorValidationR3(input=accessControlWholeDoorValidationFixtureR3(),rowOverrides:Parameters<typeof compileCanonicalEstimateCore>[0]['rowOverrides']={}){
+ const s=acsSourceR3,model=accessControlWholeDoorOrdinaryModelR3(s.profileId);
+ return compileCanonicalEstimateCore({operation:Object.keys(rowOverrides??{}).length?'recalculate':'compile',compilerVersion:s.quantityForwardR3.contract,
+  catalogId:s.catalogId,primaryMeasureParameterId:'acs_system_count',parameterDefinitions:[...model.parameters],formulaDefinitions:[...model.formulas],resourceDefinitions:[...model.resources],
+  submittedParameters:{acs_system_count:1,acs_controlled_door_count:1,acs_controller_count:1,acs_reader_count:2,acs_lock_count:1,acs_exit_device_count:1},confirmedParameters:input,rowOverrides,
+  currencyCode:'KGS',priceItems:[],maximumResourceRows:model.resources.length,hashJson:estimateDeterministicHash});
+}
+/** Pure existing Master config. ROOT supplies normal/locked current+registry
+ * guards; importing this producer no longer launches its historic fixture. */
+export function prepareAccessControlWholeDoorQuantityConfigR3(ctx:AcsQuantityContextR3):MasterSingleDefinitionSuccessorConfig{
+ const s=acsSourceR3,q=s.quantityForwardR3;
+ acsRequireR3(ctx.referencePointerMode==='PREPARED_NOT_ACTIVE_COPY'&&resolve(ctx.currentReleasePath).toLowerCase()!==resolve(ctx.selectedCurrentReleasePath).toLowerCase(),'PREPARED_POINTER_MUST_DIFFER_FROM_SELECTED');
+ acsRequireR3(ctx.capturedParentByteSha256===q.actualCurrentParent.sha256&&acsByteShaR3(ctx.capturedParentPath)===q.actualCurrentParent.sha256,'EXACT_R794_PARENT_REQUIRED');
+ const captured=JSON.parse(readFileSync(ctx.capturedParentPath,'utf8')),target=captured.results.find((x:Json)=>x.target?.catalogId===s.catalogId);
+ acsRequireR3(target&&JSON.stringify(target.current.header)===JSON.stringify(q.actualHeader)&&target.currentBodyMatchesExistingReaderDigests===true&&captured.transactionRolledBack===true&&captured.connectionClosed===true,'CURRENT_HEADER_BODY_AND_READONLY_RECEIPT');
+ acsRequireR3(ctx.parentReleaseId===captured.selectedReleaseId&&target.currentBody.parameters.length===61&&target.currentBody.formulas.length===36&&target.currentBody.resources.length===36,'EXACT_SELECTED_PARENT_SHAPE');
+ const methodPath=resolve(ctx.sourceRoot,q.projectMethod.logicalPath);
+ const verifyBytes=()=>{acsRequireR3(acsByteShaR3(methodPath)===q.projectMethod.sha256,'PROJECT_METHOD_BYTES');for(const p of q.primaryPins)acsRequireR3(acsByteShaR3(p.path)===p.sha256,'PRIMARY_BYTES:'+p.path);};verifyBytes();
+ const model=accessControlWholeDoorOrdinaryModelR3(s.profileId),rows=model.resources,fixture=accessControlWholeDoorValidationFixtureR3();
+ const sourcePaths=['src/lib/estimate/v4/accessControlSystemR1.ts','tests/estimateNorms/accessControlSystemR1.contract.test.ts','scripts/estimate/r4a13/prepareS2724AccessControlSystemBalancedSuccessor.ts',
+  'data/estimate-benchmarks/source-packs/access-control-single-door-method-r1.json',q.projectMethod.logicalPath,
+  'data/estimate-benchmarks/source-packs/access-control-system-balanced-s27-24.json','data/estimate-benchmarks/source-packs/access-control-six-whole-operation-references-r1.json'];
+ return{contract:q.contract,stopCode:'ACS_WHOLE_QUANTITY_R3',applicationName:'acs-existing-whole-door-quantity-source',expectedBranch:ctx.expectedBranch,masterPath:ctx.masterPath,masterSha256:ctx.masterSha256,
+  parentReleaseId:ctx.parentReleaseId,parentSearchReleaseId:ctx.parentSearchReleaseId,currentReleasePath:ctx.currentReleasePath,outputRoot:ctx.outputRoot,sourcePaths,catalogId:s.catalogId,sourceId:s.sourceId,
+  normId:'PROJECT_SYSTEM:ACS_WHOLE_DOOR_EXACT_QUANTITY_R3',sourceMetadata:{source_title:'Состав и количественные основания выбранного дверного прохода',source_authority:'PROJECT_SYSTEM с точными первичными документами; не проект безопасности и не норма труда',source_kind:'PROJECT_SYSTEM',artifact_sha256:q.projectMethod.sha256,official_url:null,exact_locator:'acs-whole-door-r2-r752-quantity-r3:factory-wall-and-full-power-holds',use_restriction:'Только фактически выбранный полный internal profile; питание/аварийное освобождение/состав/source registry и 49 прежних needs не приняты.'},
+  ...(ctx.capturedScopedNormativeRegistry===undefined?{}:{capturedScopedNormativeRegistry:ctx.capturedScopedNormativeRegistry}),
+  parameterDefinitions:model.parameters,formulaDefinitions:model.formulas,resourceDefinitions:rows,shortInput:fixture,acceptanceInput:fixture,
+  runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},expectedParentShape:[61,36,36],benchmarkOrdinal:36,validationScenario:'EXISTING_ACS_WHOLE_SOURCE_QUANTITIES_WITH_VISIBLE_SOURCE_OBJECT_AND_CLASS_HOLDS',
+  verifyTargetPrecondition:async(client,phase)=>{verifyBytes();await ctx.verifyTargetPrecondition(client,phase);verifyBytes();},
+  verifyCore:async()=>{const result=await compileAccessControlWholeDoorValidationR3(),all=[...result.rows,...result.preliminaryNeeds];
+   acsRequireR3(all.find(r=>r.row_id==='reference:acs:whole-door:r3:psu-ph1-driver')?.quantity==='1','DEFINED_ACTUAL_POST_STOCK');
+   acsRequireR3(!all.some(r=>r.row_id==='reference:acs:whole-door:r2:controller-mount-fix'),'NO_EXTRA_FIXING_FOR_EXACT_FACTORY_WALL');
+   return{status:'SOURCE_CONTRACT_ONLY_NOT_ORDINARY_OR_PHYSICAL_ACCEPTANCE',rowCount:result.rows.length,needCount:result.preliminaryNeeds.length,physicalClosures:0,sourceAdmission:false,FULL:false};},
+  passport:{canonicalRuName:'Монтаж и наладка системы контроля доступа',workKey:'access_control_system',physicalResultRu:'Выбранный контролируемый проход установлен и представлен к полной проверке; выполнение и допуск подтверждаются отдельными фактическими результатами.',
+   includedScopeRu:s.operationRoster.map(x=>x.operationTitleRu),excludedScopeRu:['CCTV, общая LAN, общая UPS и монтаж стойки остаются их владельцам.','Источник не проектирует эвакуацию и не подтверждает фактическую автономию.'],
+   independentCompletenessMap:q.independentComposition,unresolvedApplicableResourceRowIds:q.resourceDeclarations.filter(x=>x.rowKind==='RESOURCE').map(x=>x.rowId)},
+  applicability:{internalProfileId:s.profileId,quantityMethodId:q.methodId,currentParent:q.actualHeader,activationAllowed:false,productionEligible:false,automaticMigrationAllowed:false,fullTechnicalAcceptance:false},
+  binding:{rowId:rows[0]!.row_id,additionalRowIds:rows.slice(1).map(r=>r.row_id),ordinaryCompositeSourceV1:{contract:'master-ordinary-composite-source/v1',capturedSourcePreimage:{sourceKey:s.sourceId,expected:null}},
+   applicability:{sourceReference:q.contract,internalProfileId:s.profileId,sourceAdmission:false},applicabilityByRowId:Object.fromEntries(q.resourceDeclarations.map(x=>[x.rowId,{formulaId:x.formulaId,operationIds:x.operationIds,sourceRole:'EXACT_SOURCE_WITH_VISIBLE_COMPOSITION_HOLDS'}]))},
+  locator:{key:'acs-whole-door-r2-r752-quantity-r3:factory-wall-and-full-power-holds',payload:{contract:q.contract,independentCompletenessMap:q.independentComposition,sourceOwnedResourceDeclarations:q.resourceDeclarations,projectMethodSha256:q.projectMethod.sha256,sourceAdmission:false}},
+  search:{primaryUom:'system',canonicalNameRu:'Монтаж и наладка системы контроля доступа',aliases:['СКУД контролируемый проход'],shortScopeRu:'Явно выбранный полный дверной метод с точными количественными основаниями и сохранёнными потребностями.',
+   keyDistinguishingParameters:[s.decisionId,q.mountMethodId],clarificationFields:model.parameters.filter(p=>p.truth_metadata.value_source_role==='PROJECT_SPECIFIC_INPUT').map(p=>p.parameter_id),
+   includedBoundaries:s.operationRoster.map(x=>x.operationTitleRu),excludedBoundaries:['Общая LAN/UPS, стойка и неподтверждённые технологии двери.'],extraSearchTermsRu:'СКУД дверь питание замок считыватель аварийное открытие проверка',sourceProvenance:{sourceId:s.sourceId,artifactSha256:q.projectMethod.sha256,preparedInternalReferenceOnly:true,sourceAdmission:false}},
+  forbiddenAdjacentMatchers:[/cctv.system|видеонаблюден/iu,/general.lan|общ.*lan/iu,/general.ups|общ.*ups/iu],owner:'ACS_WHOLE_DOOR_QUANTITY_SOURCE_R3',receiptFileStem:'ACS_WHOLE_DOOR_QUANTITY_SOURCE_R3'};
+}
+
+/** Synthetic validation only. Every figure below is an explicit TEST_ONLY
+ * source record; none is a production quantity, safe egress or autonomy fact. */
+export function accessControlWholePassageValidationFixtureR5():Record<string,unknown>{
+ const s=acsSourceR3,q=s.passageForwardR5,prior=accessControlWholeDoorValidationFixtureR3(),primary=['acs_system_count','acs_controlled_door_count','acs_controller_count','acs_reader_count','acs_lock_count','acs_exit_device_count','acs_door_contact_quantity_piece','acs_emergency_release_quantity_piece','acs_power_supply_quantity_piece','acs_standby_battery_quantity_piece','acs_controller_retained_spare_piece','acs_controller_supplier_pack_size_piece'],schema=accessControlWholePassageMeasuredModelR5(s.profileId),numeric=new Set(schema.parameters.filter(p=>['integer','decimal'].includes(p.value_type)).map(p=>p.parameter_id));
+ const fixture:Record<string,unknown>=Object.fromEntries(Object.entries(prior).filter(([id])=>!numeric.has(id)||primary.includes(id)||s.organisationalInputs.some(p=>p.id===id)));
+ return{...fixture,acs_controller_designation:'C2000-2 v2.75 TEST_ONLY',acs_reader_designation:'Proxy-3M rev6 TEST_ONLY',acs_lock_designation:'AL300 PRemium12V TEST_ONLY',acs_exit_device_designation:'AT-H805A TEST_ONLY',[q.quantityRecordId]:'TEST_ONLY reviewed same-batch netkg issue/return and actual cable route/service/end journal',[q.emergencyDecisionId]:'INDEPENDENT_RELEASE_AND_RESIDUAL_REVIEWED',acs_passage_actual_thread_locker_issued_kg_r5:'0.012',acs_passage_actual_thread_locker_returned_kg_r5:'0.007',acs_passage_actual_protective_paint_issued_kg_r5:'0.020',acs_passage_actual_protective_paint_returned_kg_r5:'0.005',acs_passage_actual_monitor_route_measured_m_r5:'17.4',acs_passage_actual_monitor_service_allowance_m_r5:'0.6',acs_passage_actual_monitor_end_allowance_m_r5:'0.3'};
+}
+export function compileAccessControlWholePassageValidationR5(input:Record<string,unknown>=accessControlWholePassageValidationFixtureR5(),rowOverrides:Parameters<typeof compileCanonicalEstimateCore>[0]['rowOverrides']={}){
+ const s=acsSourceR3,m=accessControlWholePassageMeasuredModelR5(s.profileId);return compileCanonicalEstimateCore({operation:Object.keys(rowOverrides??{}).length?'recalculate':'compile',compilerVersion:s.passageForwardR5.contract,catalogId:s.catalogId,primaryMeasureParameterId:'acs_system_count',parameterDefinitions:[...m.parameters],formulaDefinitions:[...m.formulas],resourceDefinitions:[...m.resources],submittedParameters:Object.fromEntries(m.ordinaryParameterIds.map(id=>[id,input[id]])),confirmedParameters:input,rowOverrides,currencyCode:'KGS',priceItems:[],maximumResourceRows:m.resources.length,hashJson:estimateDeterministicHash});
+}
+
+export function prepareAccessControlWholePassageConfigR5(ctx:AcsQuantityContextR3):MasterSingleDefinitionSuccessorConfig{
+ const s=acsSourceR3,q=s.passageForwardR5;
+ acsRequireR3(ctx.referencePointerMode==='PREPARED_NOT_ACTIVE_COPY'&&resolve(ctx.currentReleasePath).toLowerCase()!==resolve(ctx.selectedCurrentReleasePath).toLowerCase(),'PREPARED_POINTER_MUST_DIFFER_FROM_SELECTED');
+ acsRequireR3(ctx.capturedParentByteSha256===q.actualCurrentParent.sha256&&acsByteShaR3(ctx.capturedParentPath)===q.actualCurrentParent.sha256,'EXACT_R867_PARENT_REQUIRED');
+ const captured=JSON.parse(readFileSync(ctx.capturedParentPath,'utf8')),target=captured.results.find((x:Json)=>x.target?.catalogId===s.catalogId);
+ acsRequireR3(target&&JSON.stringify(target.current.header)===JSON.stringify(q.actualHeader)&&target.currentBodyMatchesExistingReaderDigests===true&&captured.transactionRolledBack===true&&captured.connectionClosed===true,'CURRENT_HEADER_BODY_AND_READONLY_RECEIPT');
+ acsRequireR3(ctx.parentReleaseId===captured.selectedReleaseId&&target.currentBody.parameters.length===61&&target.currentBody.formulas.length===36&&target.currentBody.resources.length===36,'EXACT_SELECTED_PARENT_SHAPE');
+ const methodPath=resolve(ctx.sourceRoot,q.projectMethod.logicalPath);
+ const verifyBytes=()=>{acsRequireR3(acsByteShaR3(methodPath)===q.projectMethod.sha256,'PROJECT_METHOD_BYTES');for(const p of q.primaryPins)acsRequireR3(acsByteShaR3(p.path)===p.sha256,'PRIMARY_BYTES:'+p.path);};verifyBytes();
+ const model=accessControlWholePassageMeasuredModelR5(s.profileId),rows=model.resources,fixture=accessControlWholePassageValidationFixtureR5();
+ const sourcePaths=['src/lib/estimate/v4/accessControlSystemR1.ts','tests/estimateNorms/accessControlSystemR1.contract.test.ts','scripts/estimate/r4a13/prepareS2724AccessControlSystemBalancedSuccessor.ts',
+  'data/estimate-benchmarks/source-packs/access-control-single-door-method-r1.json',q.projectMethod.logicalPath,
+  'data/estimate-benchmarks/source-packs/access-control-system-balanced-s27-24.json','data/estimate-benchmarks/source-packs/access-control-six-whole-operation-references-r1.json'];
+ return{contract:q.contract,stopCode:'ACS_WHOLE_PASSAGE_MEASURED_R5',applicationName:'acs-existing-whole-passage-measured-source',expectedBranch:ctx.expectedBranch,masterPath:ctx.masterPath,masterSha256:ctx.masterSha256,
+  parentReleaseId:ctx.parentReleaseId,parentSearchReleaseId:ctx.parentSearchReleaseId,currentReleasePath:ctx.currentReleasePath,outputRoot:ctx.outputRoot,sourcePaths,catalogId:s.catalogId,sourceId:s.sourceId,
+  normId:'PROJECT_SYSTEM:ACS_WHOLE_PASSAGE_MEASURED_R5',sourceMetadata:{source_title:'Состав и количественные основания выбранного дверного прохода',source_authority:'PROJECT_SYSTEM с точными первичными документами; не проект безопасности и не норма труда',source_kind:'PROJECT_SYSTEM',artifact_sha256:q.projectMethod.sha256,official_url:null,exact_locator:'acs-whole-passage-r5:measured-mass-cable-and-independent-release',use_restriction:'Только фактически выбранный полный internal profile; питание/аварийное освобождение/состав/source registry и 49 прежних needs не приняты.'},
+  ...(ctx.capturedScopedNormativeRegistry===undefined?{}:{capturedScopedNormativeRegistry:ctx.capturedScopedNormativeRegistry}),
+  parameterDefinitions:model.parameters,formulaDefinitions:model.formulas,resourceDefinitions:rows,shortInput:fixture,acceptanceInput:fixture,
+  runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},expectedParentShape:[61,36,36],benchmarkOrdinal:36,validationScenario:'EXISTING_ACS_WHOLE_SOURCE_QUANTITIES_WITH_VISIBLE_SOURCE_OBJECT_AND_CLASS_HOLDS',
+  verifyTargetPrecondition:async(client,phase)=>{verifyBytes();await ctx.verifyTargetPrecondition(client,phase);verifyBytes();},
+  verifyCore:async()=>{const result=await compileAccessControlWholePassageValidationR5(),all=[...result.rows,...result.preliminaryNeeds];
+   acsRequireR3(all.find(r=>r.row_id==='reference:acs:whole-door:r3:psu-ph1-driver')?.quantity==='1','DEFINED_ACTUAL_POST_STOCK');
+   acsRequireR3(!all.some(r=>r.row_id==='reference:acs:whole-door:r2:controller-mount-fix'),'NO_EXTRA_FIXING_FOR_EXACT_FACTORY_WALL');
+   acsRequireR3(all.find(r=>r.row_id==='reference:acs:whole-door:r2:monitor-field-cable')?.quantity==='18.3','ACTUAL_MEASURED_ROUTE_BALANCE');acsRequireR3(all.find(r=>r.row_id==='low-current:expanded-roster:r1:acs:thread-locker')?.quantity==='0.005','ACTUAL_SAME_BATCH_MASS_BALANCE');return{status:'SOURCE_CONTRACT_ONLY_NOT_ORDINARY_OR_PHYSICAL_ACCEPTANCE',rowCount:result.rows.length,needCount:result.preliminaryNeeds.length,physicalClosures:0,sourceAdmission:false,FULL:false};},
+  passport:{canonicalRuName:'Монтаж и наладка системы контроля доступа',workKey:'access_control_system',physicalResultRu:'Выбранный контролируемый проход установлен и представлен к полной проверке; выполнение и допуск подтверждаются отдельными фактическими результатами.',
+   includedScopeRu:s.operationRoster.map(x=>x.operationTitleRu),excludedScopeRu:['CCTV, общая LAN, общая UPS и монтаж стойки остаются их владельцам.','Источник не проектирует эвакуацию и не подтверждает фактическую автономию.'],
+   independentCompletenessMap:q.independentComposition,unresolvedApplicableResourceRowIds:q.resourceDeclarations.filter(x=>x.rowKind==='RESOURCE').map(x=>x.rowId)},
+  applicability:{internalProfileId:s.profileId,quantityMethodId:q.methodId,currentParent:q.actualHeader,activationAllowed:false,productionEligible:false,automaticMigrationAllowed:false,fullTechnicalAcceptance:false},
+  binding:{rowId:rows[0]!.row_id,additionalRowIds:rows.slice(1).map(r=>r.row_id),ordinaryCompositeSourceV1:{contract:'master-ordinary-composite-source/v1',capturedSourcePreimage:{sourceKey:s.sourceId,expected:null}},
+   applicability:{sourceReference:q.contract,internalProfileId:s.profileId,sourceAdmission:false},applicabilityByRowId:Object.fromEntries(q.resourceDeclarations.map(x=>[x.rowId,{formulaId:x.formulaId,operationIds:x.operationIds,sourceRole:'EXACT_SOURCE_WITH_VISIBLE_COMPOSITION_HOLDS'}]))},
+  locator:{key:'acs-whole-passage-r5:measured-mass-cable-and-independent-release',payload:{contract:q.contract,independentCompletenessMap:q.independentComposition,sourceOwnedResourceDeclarations:q.resourceDeclarations,projectMethodSha256:q.projectMethod.sha256,sourceAdmission:false}},
+  search:{primaryUom:'system',canonicalNameRu:'Монтаж и наладка системы контроля доступа',aliases:['СКУД контролируемый проход'],shortScopeRu:'Явно выбранный полный дверной метод с точными количественными основаниями и сохранёнными потребностями.',
+   keyDistinguishingParameters:[s.decisionId,q.mountMethodId],clarificationFields:model.parameters.filter(p=>p.truth_metadata.value_source_role==='PROJECT_SPECIFIC_INPUT').map(p=>p.parameter_id),
+   includedBoundaries:s.operationRoster.map(x=>x.operationTitleRu),excludedBoundaries:['Общая LAN/UPS, стойка и неподтверждённые технологии двери.'],extraSearchTermsRu:'СКУД дверь питание замок считыватель аварийное открытие проверка',sourceProvenance:{sourceId:s.sourceId,artifactSha256:q.projectMethod.sha256,preparedInternalReferenceOnly:true,sourceAdmission:false}},
+  forbiddenAdjacentMatchers:[/cctv.system|видеонаблюден/iu,/general.lan|общ.*lan/iu,/general.ups|общ.*ups/iu],owner:'ACS_WHOLE_PASSAGE_MEASURED_SOURCE_R5',receiptFileStem:'ACS_WHOLE_PASSAGE_MEASURED_SOURCE_R5'};
+}
+
+
+import{ACS_WHOLE_KIT_MEASUREMENT_SOURCE_R6,accessControlWholePassageKitMeasuredModelR6}from'../../../src/lib/estimate/v4/accessControlSystemR1';
+/** Explicit TEST_ONLY measured journal; no value is an actual object default. */
+export function accessControlWholePassageKitValidationFixtureR6():Record<string,unknown>{
+ return{...accessControlWholePassageValidationFixtureR5(),
+  acs_passage_actual_mains_route_m_r6:'15.2',acs_passage_actual_mains_service_m_r6:'0.4',
+  acs_passage_actual_mains_ends_m_r6:'0.6',acs_passage_actual_insulation_cut_total_mm_r6:'347.5'};
+}
+export function compileAccessControlWholePassageKitValidationR6(
+ input:Record<string,unknown>=accessControlWholePassageKitValidationFixtureR6(),
+ rowOverrides:Parameters<typeof compileCanonicalEstimateCore>[0]['rowOverrides']={}){
+ const s=acsSourceR3,q=ACS_WHOLE_KIT_MEASUREMENT_SOURCE_R6,m=accessControlWholePassageKitMeasuredModelR6(s.profileId);
+ return compileCanonicalEstimateCore({operation:Object.keys(rowOverrides??{}).length?'recalculate':'compile',
+  compilerVersion:q.contract,catalogId:s.catalogId,primaryMeasureParameterId:'acs_system_count',
+  parameterDefinitions:[...m.parameters],formulaDefinitions:[...m.formulas],resourceDefinitions:[...m.resources],
+  submittedParameters:Object.fromEntries(m.ordinaryParameterIds.filter(id=>input[id]!==undefined).map(id=>[id,input[id]])),
+  confirmedParameters:input,rowOverrides,currencyCode:'KGS',priceItems:[],maximumResourceRows:m.resources.length,
+  hashJson:estimateDeterministicHash});
+}
+
+
+/** Same existing Master publisher; actual R977 prepared-reference parent and
+ * untouched normal/locked/scoped-registry authority checks are required. */
+export function prepareAccessControlWholePassageKitConfigR6(ctx:AcsQuantityContextR3):MasterSingleDefinitionSuccessorConfig{
+ const s=acsSourceR3,q=s.kitForwardR6;
+ acsRequireR3(ctx.referencePointerMode==='PREPARED_NOT_ACTIVE_COPY'&&resolve(ctx.currentReleasePath).toLowerCase()!==resolve(ctx.selectedCurrentReleasePath).toLowerCase(),'PREPARED_POINTER_MUST_DIFFER_FROM_SELECTED');
+ acsRequireR3(ctx.capturedParentByteSha256===q.actualCurrentParent.sha256&&acsByteShaR3(ctx.capturedParentPath)===q.actualCurrentParent.sha256,'EXACT_R977_PARENT_REQUIRED');
+ const captured=JSON.parse(readFileSync(ctx.capturedParentPath,'utf8')),target=captured.results.find((x:Json)=>x.target?.catalogId===s.catalogId&&x.target?.sourceId===q.actualPublishedSourceId);
+ acsRequireR3(target&&JSON.stringify(target.reference.header)===JSON.stringify(q.actualHeader)&&JSON.stringify(target.current.header)===JSON.stringify(q.actualHeader)&&target.currentBodyMatchesExistingReaderDigests===true&&(['parameters','formulas','resources']as const).every(k=>JSON.stringify(target.referenceBody[k])===JSON.stringify(q.nativeParentModel[k]))&&captured.transactionRolledBack===true&&captured.connectionClosed===true,'CURRENT_HEADER_BODY_AND_READONLY_RECEIPT');
+ acsRequireR3(ctx.parentReleaseId===captured.referenceReleaseId&&ctx.parentReleaseId===q.actualReferenceReleaseId&&captured.selectedReleaseId===q.actualSelectedReleaseId&&captured.referenceReleaseId!==captured.selectedReleaseId&&target.referenceBody.parameters.length===61&&target.referenceBody.formulas.length===36&&target.referenceBody.resources.length===36,'EXACT_PREPARED_REFERENCE_R977_PARENT_SHAPE');
+ acsRequireR3(typeof ctx.verifyTargetPrecondition==='function','ACTUAL_NORMAL_LOCKED_AUTHORITY_GUARD_REQUIRED');
+ const methodPath=resolve(ctx.sourceRoot,q.projectMethod.logicalPath),priorMethodPath=resolve(ctx.sourceRoot,q.priorMethodPath);
+ const verifyBytes=()=>{acsRequireR3(acsByteShaR3(methodPath)===q.projectMethod.sha256,'PROJECT_METHOD_BYTES');acsRequireR3(acsByteShaR3(priorMethodPath)===s.passageForwardR5.projectMethod.sha256,'PRIOR_R5_METHOD_BYTES');for(const p of q.primaryPins)acsRequireR3(acsByteShaR3(p.path)===p.sha256,'PRIMARY_BYTES:'+p.path);};verifyBytes();
+ const model=accessControlWholePassageKitMeasuredModelR6(s.profileId),rows=model.resources,fixture=accessControlWholePassageKitValidationFixtureR6();
+ const sourcePaths=['src/lib/estimate/v4/accessControlSystemR1.ts','tests/estimateNorms/accessControlSystemR1.contract.test.ts','scripts/estimate/r4a13/prepareS2724AccessControlSystemBalancedSuccessor.ts',
+  'data/estimate-benchmarks/source-packs/access-control-single-door-method-r1.json',q.projectMethod.logicalPath,q.priorMethodPath,
+  'data/estimate-benchmarks/source-packs/access-control-system-balanced-s27-24.json','data/estimate-benchmarks/source-packs/access-control-six-whole-operation-references-r1.json'];
+ return{contract:q.contract,stopCode:'ACS_WHOLE_PASSAGE_KIT_MEASURED_R6',applicationName:'acs-existing-whole-passage-kit-measured-source',expectedBranch:ctx.expectedBranch,masterPath:ctx.masterPath,masterSha256:ctx.masterSha256,
+  parentReleaseId:ctx.parentReleaseId,parentSearchReleaseId:ctx.parentSearchReleaseId,currentReleasePath:ctx.currentReleasePath,outputRoot:ctx.outputRoot,sourcePaths,catalogId:s.catalogId,sourceId:s.sourceId,
+  normId:'PROJECT_SYSTEM:ACS_WHOLE_PASSAGE_KIT_MEASURED_R6',sourceMetadata:{source_title:'Состав и количественные основания выбранного дверного прохода',source_authority:'PROJECT_SYSTEM с точными первичными документами; не проект безопасности и не норма труда',source_kind:'PROJECT_SYSTEM',artifact_sha256:q.projectMethod.sha256,official_url:null,exact_locator:'acs-whole-passage-r6:exact-optional-kit-and-measured-route-cuts',use_restriction:'Только фактически выбранный полный internal profile; питание/аварийное освобождение/состав/source registry и 49 прежних needs не приняты.'},
+  ...(ctx.capturedScopedNormativeRegistry===undefined?{}:{capturedScopedNormativeRegistry:ctx.capturedScopedNormativeRegistry}),
+  parameterDefinitions:model.parameters,formulaDefinitions:model.formulas,resourceDefinitions:rows,shortInput:fixture,acceptanceInput:fixture,
+  runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},expectedParentShape:[61,36,36],benchmarkOrdinal:36,validationScenario:'EXISTING_ACS_WHOLE_SOURCE_QUANTITIES_WITH_VISIBLE_SOURCE_OBJECT_AND_CLASS_HOLDS',
+  verifyTargetPrecondition:async(client,phase)=>{verifyBytes();await ctx.verifyTargetPrecondition(client,phase);verifyBytes();},
+  verifyCore:async()=>{const result=await compileAccessControlWholePassageKitValidationR6(),all=[...result.rows,...result.preliminaryNeeds];
+   acsRequireR3(all.find(r=>r.row_id==='reference:acs:whole-door:r3:psu-ph1-driver')?.quantity==='1','DEFINED_ACTUAL_POST_STOCK');
+   acsRequireR3(!all.some(r=>r.row_id==='reference:acs:whole-door:r2:controller-mount-fix'),'NO_EXTRA_FIXING_FOR_EXACT_FACTORY_WALL');
+   acsRequireR3(all.find(r=>r.row_id==='reference:acs:whole-door:r2:mains-cable')?.quantity==='16.2','ACTUAL_MAINS_MEASURED_ROUTE');acsRequireR3(all.find(r=>r.row_id==='reference:acs:whole-door:r2:heatshrink')?.quantity==='0.3475','ACTUAL_TUBE_CUT_SUM_MM_TO_M');acsRequireR3(all.find(r=>r.row_id==='low-current:expanded-roster:r1:acs:thread-locker')?.quantity==='0.005','ACTUAL_SAME_BATCH_MASS_BALANCE');return{status:'SOURCE_CONTRACT_ONLY_NOT_ORDINARY_OR_PHYSICAL_ACCEPTANCE',rowCount:result.rows.length,needCount:result.preliminaryNeeds.length,physicalClosures:0,sourceAdmission:false,FULL:false};},
+  passport:{canonicalRuName:'Монтаж и наладка системы контроля доступа',workKey:'access_control_system',physicalResultRu:'Выбранный контролируемый проход установлен и представлен к полной проверке; выполнение и допуск подтверждаются отдельными фактическими результатами.',
+   includedScopeRu:s.operationRoster.map(x=>x.operationTitleRu),excludedScopeRu:['CCTV, общая LAN, общая UPS и монтаж стойки остаются их владельцам.','Источник не проектирует эвакуацию и не подтверждает фактическую автономию.'],
+   independentCompletenessMap:q.independentComposition,unresolvedApplicableResourceRowIds:q.resourceDeclarations.filter(x=>x.rowKind==='RESOURCE').map(x=>x.rowId)},
+  applicability:{internalProfileId:s.profileId,quantityMethodId:q.methodId,currentParent:q.actualHeader,activationAllowed:false,productionEligible:false,automaticMigrationAllowed:false,fullTechnicalAcceptance:false},
+  binding:{rowId:rows[0]!.row_id,additionalRowIds:rows.slice(1).map(r=>r.row_id),ordinaryCompositeSourceV1:{contract:'master-ordinary-composite-source/v1',capturedSourcePreimage:{sourceKey:s.sourceId,expected:null}},
+   applicability:{sourceReference:q.contract,internalProfileId:s.profileId,sourceAdmission:false},applicabilityByRowId:Object.fromEntries(q.resourceDeclarations.map(x=>[x.rowId,{formulaId:x.formulaId,operationIds:x.operationIds,sourceRole:'EXACT_SOURCE_WITH_VISIBLE_COMPOSITION_HOLDS'}]))},
+  locator:{key:'acs-whole-passage-r6:exact-optional-kit-and-measured-route-cuts',payload:{contract:q.contract,independentCompletenessMap:q.independentComposition,sourceOwnedResourceDeclarations:q.resourceDeclarations,projectMethodSha256:q.projectMethod.sha256,sourceOrigin:{source_document_version:q.contract,definition_hash:q.projectMethod.sha256},actualReferenceParent:q.actualHeader,actualProof:q.actualCurrentParent,registryCaptureRequired:true,sourceAdmission:false}},
+  search:{primaryUom:'system',canonicalNameRu:'Монтаж и наладка системы контроля доступа',aliases:['СКУД контролируемый проход'],shortScopeRu:'Явно выбранный полный дверной метод с точными количественными основаниями и сохранёнными потребностями.',
+   keyDistinguishingParameters:[s.decisionId,s.quantityForwardR3.mountMethodId],clarificationFields:model.parameters.filter(p=>p.truth_metadata.value_source_role==='PROJECT_SPECIFIC_INPUT').map(p=>p.parameter_id),
+   includedBoundaries:s.operationRoster.map(x=>x.operationTitleRu),excludedBoundaries:['Общая LAN/UPS, стойка и неподтверждённые технологии двери.'],extraSearchTermsRu:'СКУД дверь питание замок считыватель аварийное открытие проверка',sourceProvenance:{sourceId:s.sourceId,artifactSha256:q.projectMethod.sha256,preparedInternalReferenceOnly:true,sourceAdmission:false}},
+  forbiddenAdjacentMatchers:[/cctv.system|видеонаблюден/iu,/general.lan|общ.*lan/iu,/general.ups|общ.*ups/iu],owner:'ACS_WHOLE_PASSAGE_KIT_MEASURED_SOURCE_R6',receiptFileStem:'ACS_WHOLE_PASSAGE_KIT_MEASURED_SOURCE_R6'};
+}

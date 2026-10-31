@@ -1,0 +1,2019 @@
+{
+  "contract": "master30-independent-current29-expectation-matrix/r1",
+  "status": "SOURCE_ONLY_PREBOUND_EXPECTATIONS_NOT_EXECUTABLE_READY",
+  "selection": {
+    "pointerRef": "r003",
+    "definitionReleaseId": "01417cef-3091-5012-844d-1bbd9e75cee1",
+    "expectedSnapshotRoot": "4cf91ce6b6ee188e28f7130cc4374a09cf11853f4e1ea501d6ebbf01fdf219d6",
+    "sameRepeatableReadRequired": true,
+    "offlineCompleteAncestryPrerequisite": false,
+    "actualSelectedRetention": "FUTURE_EXACT_SAME_RR_QUERY",
+    "queryOriginalSelectors": 30,
+    "expectedPositiveBindings": 29,
+    "negativeOriginalOrdinal": 14
+  },
+  "partition": {
+    "retainedHistoricalIdentities": 13,
+    "changedIndependentIdentities": 16,
+    "archivedCompleteDtoCases": [
+      1,
+      2,
+      9
+    ],
+    "originalPublishedOrPriorReadbackCases": [
+      5,
+      8,
+      10,
+      13,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "historicalParameterTotalUnchanged": 717,
+    "allOriginalPrompts": "Exact immutable map pointer refs, no rewrite or tray/area substitution"
+  },
+  "hashDomains": "Definition SHA, publisher payload SHA, stored passport payload SHA, complete27 DTO Node JSON.stringify SHA, orderedID SHA and PG full-source SHA are distinct. Null is never filled from another domain.",
+  "evidenceLevels": {
+    "ARCHIVED_COMPLETE_DTO": "Prior complete storage plus ROOT complete27 mapper hash/IDs; actual equality still required",
+    "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS": "Original publication/readback UUID/count; no complete27 physical oracle, scoped ingress only",
+    "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS": "Immutable historical map UUID/literal counts; actual selected retention still required"
+  },
+  "positiveCases": [
+    {
+      "ordinal": 1,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+      "titleRu": "Бетонирование ленточного фундамента",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ARCHIVED_COMPLETE_DTO",
+      "bindingKind": "INDEPENDENT_PRE_A21_COMPLETE_STORAGE_PLUS_ROOT_COMPLETE27_MAPPER_COMPANION",
+      "historical": {
+        "definitionVersionId": "9288d9d9-bfda-588b-b19c-2c0982f44281",
+        "parameterCount": 36,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/0/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/0/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "703e6b9b-8325-544b-b4dd-a3fb14345edb",
+        "definitionVersion": 17,
+        "definitionVersionBasis": "INDEPENDENT_ARCHIVE_LITERAL",
+        "definitionSha256": "f1501007dc44656c722ffb24c45dcb4b63944f468b31371c7804f9d15b215ad9",
+        "parameterCount": 795,
+        "formulaCount": 411,
+        "resourceCount": 415,
+        "normativeBindingCount": 257,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": {
+          "jsonSha256": "7b730bbd317918d60c05acf3b52c04f4af9e98c1658c9a5cc9ead3480b716526",
+          "jsonBytes": 2938355,
+          "hashDomain": "SHA256_UTF8_NODE_JSON_STRINGIFY_COMPLETE27DTO_IN_SOURCE_ORDINAL_ORDER",
+          "mapperSha256": "1fe91d3ec15541dbcd2d3baa74dd00710136add16003955a877b134145549f24",
+          "orderedParameterIdsSha256": "e03dacf0590e863266c9eb26264150f87cac042a3ef153e773d74c781765169c",
+          "orderedIdsFile": "ARCHIVE_ORDERED_PARAMETER_IDS.json",
+          "orderedIdsFileSha256": "7f80b1a2caa84231b4e076b1c28828c21bf9af71488ffe109c2631231400fb5c",
+          "orderedIdsJsonPointer": "/cases/case1",
+          "expectedParameterFieldCoverage": "ALL27_EXPORTED_STORAGE_DTO_FIELDS",
+          "pgFullSourceHash": false
+        }
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/0"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "9288d9d9-bfda-588b-b19c-2c0982f44281"
+        },
+        {
+          "ref": "r007",
+          "jsonPointer": "/expected"
+        },
+        {
+          "ref": "r006",
+          "companionOrdinal": 1
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": "m212_concrete_net_volume_m3",
+        "sourceDeclaredUnitId": "m3",
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false,
+        "sourceDeclarationRef": "r007",
+        "sourceDeclarationPointer": "/physicalScope",
+        "sourceProfileControllerId": "m212_foundation_cycle_profile",
+        "sourceControllerDefault": null,
+        "sourceCapturedAcceptedProfile": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+        "currentPromptPhysicalEquivalenceApproved": false
+      },
+      "exactGaps": [
+        "Complete27 archived DTO hash is not a PG full-source hash or source/physical admission; actual selected membership/DTO equality remains UNRUN."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 2,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "titleRu": "Укладка и виброуплотнение бетона плиты",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ARCHIVED_COMPLETE_DTO",
+      "bindingKind": "INDEPENDENT_PRE_A21_COMPLETE_STORAGE_PLUS_ROOT_COMPLETE27_MAPPER_COMPANION",
+      "historical": {
+        "definitionVersionId": "93c4aa39-b667-5e27-9dbb-103221771a82",
+        "parameterCount": 36,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/1/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/1/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "f6dc5e31-677c-559b-ba47-94fbba4393e0",
+        "definitionVersion": 15,
+        "definitionVersionBasis": "INDEPENDENT_ARCHIVE_LITERAL",
+        "definitionSha256": "735b8ac8196d7510c3ff9605f5014210708504b3d11a003d1ccc77f86b2874d9",
+        "parameterCount": 670,
+        "formulaCount": 546,
+        "resourceCount": 531,
+        "normativeBindingCount": 285,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": {
+          "jsonSha256": "ebb1e89e9a83e54f80a89c31e853986a515f2c013eb5b959e82f2f44eee87bc7",
+          "jsonBytes": 2335842,
+          "hashDomain": "SHA256_UTF8_NODE_JSON_STRINGIFY_COMPLETE27DTO_IN_SOURCE_ORDINAL_ORDER",
+          "mapperSha256": "1fe91d3ec15541dbcd2d3baa74dd00710136add16003955a877b134145549f24",
+          "orderedParameterIdsSha256": "62746985a1b07a578a73a3e7e29add89840b6a0823bb9209e564e3e95334b279",
+          "orderedIdsFile": "ARCHIVE_ORDERED_PARAMETER_IDS.json",
+          "orderedIdsFileSha256": "7f80b1a2caa84231b4e076b1c28828c21bf9af71488ffe109c2631231400fb5c",
+          "orderedIdsJsonPointer": "/cases/case2",
+          "expectedParameterFieldCoverage": "ALL27_EXPORTED_STORAGE_DTO_FIELDS",
+          "pgFullSourceHash": false
+        }
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/1"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "93c4aa39-b667-5e27-9dbb-103221771a82"
+        },
+        {
+          "ref": "r010",
+          "jsonPointer": "/expected"
+        },
+        {
+          "ref": "r006",
+          "companionOrdinal": 2
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": "m212_concrete_net_volume_m3",
+        "sourceDeclaredUnitId": "m3",
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false,
+        "sourceDeclarationRef": "r010",
+        "sourceDeclarationPointer": "/physicalScope",
+        "sourceProfileControllerId": "m212_foundation_cycle_profile",
+        "sourceControllerDefault": null,
+        "sourceCapturedAcceptedProfile": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+        "currentPromptPhysicalEquivalenceApproved": false
+      },
+      "exactGaps": [
+        "Complete27 archived DTO hash is not a PG full-source hash or source/physical admission; actual selected membership/DTO equality remains UNRUN."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 3,
+      "catalogId": "canonical-work:expanded:foundation_pile_field",
+      "titleRu": "Буронабивная ж/б свая",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "8c6ac868-557f-5856-8894-632ece8e8502",
+        "parameterCount": 30,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/2/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/2/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "8c6ac868-557f-5856-8894-632ece8e8502",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 30,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/2"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "8c6ac868-557f-5856-8894-632ece8e8502"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 4,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_anchor_standard",
+      "titleRu": "Установка анкерной группы",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "e4a464fb-7384-529c-9cdf-663095fd6bfd",
+        "parameterCount": 51,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/3/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/3/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "e4a464fb-7384-529c-9cdf-663095fd6bfd",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 51,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/3"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "e4a464fb-7384-529c-9cdf-663095fd6bfd"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 5,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_standard",
+      "titleRu": "Монтаж арматурного каркаса",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "EXPLICIT_PUBLISHED_TRANSITION_AND_PERSISTED_PAYLOAD_SELF_AUDIT",
+      "historical": {
+        "definitionVersionId": "1777e9d5-79d8-595d-8c54-9cfa9f4669dd",
+        "parameterCount": 21,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/4/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/4/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "6a1fc446-f248-5890-869b-a95577a94a74",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 34,
+        "formulaCount": 14,
+        "resourceCount": 14,
+        "normativeBindingCount": 6,
+        "canonicalPublisherPayloadSha256": "b966adc6404a98cecaa565e2a1fcd8ae1ae30b595b0a65c04e949a26468a64e1",
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/4"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "1777e9d5-79d8-595d-8c54-9cfa9f4669dd"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 5,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r017",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "Receipt records successor UUID/counts/payload but not exact successor definition_version. Do not fill from A21.",
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 6,
+      "catalogId": "canonical-work:base:masonry_interior_block_wall_lay_standard",
+      "titleRu": "Кладка керамических блоков",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "0407f63e-0b06-5ae6-ba4f-2d60aca86bc1",
+        "parameterCount": 22,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/5/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/5/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "0407f63e-0b06-5ae6-ba4f-2d60aca86bc1",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 22,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/5"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "0407f63e-0b06-5ae6-ba4f-2d60aca86bc1"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 7,
+      "catalogId": "canonical-work:expanded:steel_frame_building",
+      "titleRu": "Монтаж стальных колонн и балок",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "d35e4aff-1150-576d-a141-86ad4db0723a",
+        "parameterCount": 21,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/6/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/6/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "d35e4aff-1150-576d-a141-86ad4db0723a",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 21,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/6"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "d35e4aff-1150-576d-a141-86ad4db0723a"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 8,
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_standard",
+      "titleRu": "Кровельная ПВХ-мембрана",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "ORIGINAL_PUBLISHED_TRANSITION_PERSISTED_SELF_AUDIT_AND_PARENT8_SOURCE",
+      "historical": {
+        "definitionVersionId": "5d08b22a-d141-53a4-b7b3-9ca59dcd3514",
+        "parameterCount": 19,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/7/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/7/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "c007f3fc-8dc5-5c8d-8997-c46f99eaf93a",
+        "definitionVersion": 9,
+        "definitionVersionBasis": "SOURCE_DERIVED_PARENT8_PLUS_EXACT_RECEIPT_PINNED_PRODUCER_INCREMENT",
+        "definitionSha256": null,
+        "parameterCount": 298,
+        "formulaCount": 120,
+        "resourceCount": 120,
+        "normativeBindingCount": 8,
+        "canonicalPublisherPayloadSha256": "e6da2427c3101df7519c7291b55bcd627423ecfbf436a4fec4b79a40e056b8b2",
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/7"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "5d08b22a-d141-53a4-b7b3-9ca59dcd3514"
+        },
+        {
+          "ref": "r014",
+          "jsonPointer": "/originalPublication"
+        },
+        {
+          "ref": "r018",
+          "role": "ORIGINAL_PUBLISHER_RECEIPT"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": "area_m2",
+        "sourceDeclaredUnitId": "m2",
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false,
+        "sourceDeclarationRef": "r014",
+        "sourceDeclarationPointer": "/physicalDeclaration",
+        "scopeQualification": "Parent8 physical declaration carried by exact pinned publisher; V9 complete truth/DTO not supplied"
+      },
+      "exactGaps": [
+        "No complete persisted V9 storage body is present in the declared output directory: it contains acceptance.json and dry-run.json only. Parent V8 must not be substituted for V9 truth metadata.",
+        "Published V9 definition_sha256 and baseline.parameter_schema_sha256 are not printed in these receipts; do not substitute parent ca255/df0f or canonicalPublisherPayloadSha256 for them.",
+        "Any future exact V9 physical/storage fixture must be independently materialized from this frozen parent plus receipt-pinned pure repair/clone source or supplied as original persisted capture, with its own honest hash-domain proof. No such function was executed here.",
+        "Current01417 membership/retention is not proven by this source lookup; it must be verified in the owned same-RR current-ingress check against the prebound publication declaration.",
+        "SourceOrigin/completeness/normal admission/physicalFULL remain OPEN.",
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 9,
+      "catalogId": "canonical-work:base:insulation_interior_facade_install_standard",
+      "titleRu": "Фасадный минераловатный утеплитель",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ARCHIVED_COMPLETE_DTO",
+      "bindingKind": "INDEPENDENT_PRE_A21_COMPLETE_STORAGE_PLUS_ROOT_COMPLETE27_MAPPER_COMPANION",
+      "historical": {
+        "definitionVersionId": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameterCount": 17,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/8/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/8/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "fa865ca3-6803-5aec-af67-10ee42edece2",
+        "definitionVersion": 8,
+        "definitionVersionBasis": "INDEPENDENT_ARCHIVE_LITERAL",
+        "definitionSha256": "54b516c27b762d95f09f4317678ef24a29971af33fb2c22a38f2cc552404819e",
+        "parameterCount": 357,
+        "formulaCount": 359,
+        "resourceCount": 359,
+        "normativeBindingCount": 243,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": {
+          "jsonSha256": "8dae443590484a209f3cd17fb9656deeadb5dca4fdd729177500932e71b790a3",
+          "jsonBytes": 1332528,
+          "hashDomain": "SHA256_UTF8_NODE_JSON_STRINGIFY_COMPLETE27DTO_IN_SOURCE_ORDINAL_ORDER",
+          "mapperSha256": "1fe91d3ec15541dbcd2d3baa74dd00710136add16003955a877b134145549f24",
+          "orderedParameterIdsSha256": "1be405c2d413c0367557c1a54162453b53622de22f79acae581e801d0f2c36a9",
+          "orderedIdsFile": "ARCHIVE_ORDERED_PARAMETER_IDS.json",
+          "orderedIdsFileSha256": "7f80b1a2caa84231b4e076b1c28828c21bf9af71488ffe109c2631231400fb5c",
+          "orderedIdsJsonPointer": "/cases/case9",
+          "expectedParameterFieldCoverage": "ALL27_EXPORTED_STORAGE_DTO_FIELDS",
+          "pgFullSourceHash": false
+        }
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/8"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "b81c1af8-53a6-5be6-86b9-3d2396734e99"
+        },
+        {
+          "ref": "r012",
+          "jsonPointer": "/expected"
+        },
+        {
+          "ref": "r006",
+          "companionOrdinal": 9
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false,
+        "sourceDeclarationRef": "r012",
+        "sourceDeclarationPointer": "/physicalScope",
+        "sourcePrimarySelection": {
+          "contract": "canonical-primary-measure-selection/v1",
+          "selections": [
+            {
+              "unitId": "m2",
+              "selectorValue": "Прежняя проектная система и отдельная ветвь клея KZ",
+              "primaryMeasureParameterId": "area_m2"
+            },
+            {
+              "unitId": "m",
+              "selectorValue": "Точная система минваты120мм по КРЕР15-2015,080-03",
+              "primaryMeasureParameterId": "m35_facade_facade_length_m"
+            },
+            {
+              "unitId": "m2",
+              "selectorValue": "Минераловатный фасад с базовым слоем 4 мм и цветной силиконовой штукатуркой 2 мм",
+              "primaryMeasureParameterId": "facade_r3_current_wet_area_m2"
+            }
+          ],
+          "selectorParameterId": "m35_facade_source_system"
+        },
+        "sourceControllerDefault": null,
+        "currentPromptPhysicalEquivalenceApproved": false
+      },
+      "exactGaps": [
+        "Complete27 archived DTO hash is not a PG full-source hash or source/physical admission; actual selected membership/DTO equality remains UNRUN."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 10,
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_plaster_apply_standard",
+      "titleRu": "Механизированная штукатурка",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "ORIGINAL_PUBLISHED_TRANSITION_PERSISTED_PAYLOAD_PARENT5_PHYSICAL_SOURCE_ONLY",
+      "historical": {
+        "definitionVersionId": "a65dc769-0d7f-5ea6-9de2-a8166fe9202d",
+        "parameterCount": 17,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/9/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/9/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "1b6d48d6-3e3d-57cc-8d3e-ba31bed48459",
+        "definitionVersion": 6,
+        "definitionVersionBasis": "SOURCE_DERIVED_PARENT5_PLUS_PINNED_PRODUCER_INCREMENT",
+        "definitionSha256": null,
+        "parameterCount": 27,
+        "formulaCount": 23,
+        "resourceCount": 23,
+        "normativeBindingCount": 14,
+        "canonicalPublisherPayloadSha256": "1d63611a756bc1c3ad325af2d4267450dd5c2fbf987eb3173e93e24c640c725b",
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/9"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "a65dc769-0d7f-5ea6-9de2-a8166fe9202d"
+        },
+        {
+          "ref": "r015",
+          "jsonPointer": "/expectedIdentity"
+        },
+        {
+          "ref": "r019",
+          "role": "ORIGINAL_PUBLISHER_RECEIPT"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": "area_m2",
+        "sourceDeclaredUnitId": "m2",
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false,
+        "sourceDeclarationRef": "r015",
+        "sourceDeclarationPointer": "/physicalSource",
+        "scopeQualification": "Original captured parent5 only, not exact V6 DTO or new physical norm/labour closure"
+      },
+      "exactGaps": [
+        "Original acceptance binds UUID/count/publisherPayload, but contains no complete v6parameter array or definitionSha column; observed e23 SHA is not promoted to expected.",
+        "Original overlay6c7329 and publisher receipt pin differ from current source hashes; current source reading cannot certify byteexact original transformation without archived original owner bodies.",
+        "No full successor rawschema/draftplan adjacent to original publication acceptance/dryrun; preDB v6orderedIDs/DTOcompanion remain unbound. Parent ordered list is labelled parent-only.",
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 11,
+      "catalogId": "canonical-work:base:tile_stone_interior_porcelain_tile_lay_standard",
+      "titleRu": "Укладка керамогранита",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "e53cd86c-5fcd-593c-857c-ad101bd90a59",
+        "parameterCount": 22,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/10/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/10/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "e53cd86c-5fcd-593c-857c-ad101bd90a59",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 22,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/10"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "e53cd86c-5fcd-593c-857c-ad101bd90a59"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 12,
+      "catalogId": "canonical-work:base:demolition_interior_screed_remove_standard",
+      "titleRu": "Демонтаж стяжки",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "8ed2ca11-16cd-57b2-b841-3ff4ad2953d5",
+        "parameterCount": 18,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/11/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/11/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "8ed2ca11-16cd-57b2-b841-3ff4ad2953d5",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 18,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/11"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "8ed2ca11-16cd-57b2-b841-3ff4ad2953d5"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 13,
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_lay_standard",
+      "titleRu": "Верхний слой асфальтобетона",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "INDEPENDENT_READBACK_ONLY_ORIGINAL_PUBLICATION_RECEIPT_GAP",
+      "historical": {
+        "definitionVersionId": "946f6b2f-5fb7-595c-8a51-4f7872886078",
+        "parameterCount": 16,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/12/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/12/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "221be398-b846-5378-99ce-169bafccf4c4",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 31,
+        "formulaCount": 23,
+        "resourceCount": 57,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/12"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "946f6b2f-5fb7-595c-8a51-4f7872886078"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 13,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r020",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "Readback binds catalog+UUID/counts/sourcepack/locator; original publication receipt, exact definition_version and published full payload hash are not supplied.",
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 15,
+      "catalogId": "canonical-work:base:plumbing_interior_pnd_pipe_connect_standard",
+      "titleRu": "Электромуфтовая сварка ПЭ Ø110",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "954ed824-569b-53ea-9827-c534818974b9",
+        "parameterCount": 25,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/14/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/14/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "954ed824-569b-53ea-9827-c534818974b9",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 25,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/14"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "954ed824-569b-53ea-9827-c534818974b9"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 16,
+      "catalogId": "canonical-work:base:plumbing_interior_sewer_route_standard",
+      "titleRu": "Канализационная труба SN8",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "8673b354-17a3-5980-93f0-44863b843dd3",
+        "parameterCount": 26,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/15/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/15/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "8673b354-17a3-5980-93f0-44863b843dd3",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 26,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/15"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "8673b354-17a3-5980-93f0-44863b843dd3"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 17,
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_drainage_lay_standard",
+      "titleRu": "Дренажная труба",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "3ede8c46-11b5-5484-b10b-f923ec8bd5b4",
+        "parameterCount": 24,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/16/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/16/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "3ede8c46-11b5-5484-b10b-f923ec8bd5b4",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 24,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/16"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "3ede8c46-11b5-5484-b10b-f923ec8bd5b4"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 18,
+      "catalogId": "canonical-work:base:heating_hvac_interior_radiator_install_standard",
+      "titleRu": "Панельный радиатор",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "d8b54bec-f7f8-52e6-ae91-b83938890315",
+        "parameterCount": 25,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/17/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/17/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "d8b54bec-f7f8-52e6-ae91-b83938890315",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 25,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/17"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "d8b54bec-f7f8-52e6-ae91-b83938890315"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 19,
+      "catalogId": "canonical-work:base:ventilation_interior_duct_install_standard",
+      "titleRu": "Оцинкованный воздуховод",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "e5e77d5f-4c76-5224-8ec9-1596e33c1658",
+        "parameterCount": 26,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/18/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/18/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "e5e77d5f-4c76-5224-8ec9-1596e33c1658",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 26,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/18"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "e5e77d5f-4c76-5224-8ec9-1596e33c1658"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 20,
+      "catalogId": "canonical-work:base:heating_hvac_interior_split_install_standard",
+      "titleRu": "Split-система",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "b563a34e-5819-5e43-94c7-e5c2969fb9ac",
+        "parameterCount": 16,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/19/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/19/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "b563a34e-5819-5e43-94c7-e5c2969fb9ac",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 16,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/19"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "b563a34e-5819-5e43-94c7-e5c2969fb9ac"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 21,
+      "catalogId": "canonical-work:expanded:sprinkler_system",
+      "titleRu": "Спринклерный ороситель",
+      "changeClass": "RETAINED_HISTORICAL_DEFINITION_IDENTITY",
+      "evidenceLevel": "HISTORICAL_RETAINED_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "RETAINED_ORIGINAL_ID_FROM_IMMUTABLE_HISTORICAL_MAP",
+      "historical": {
+        "definitionVersionId": "a663bdf7-d8ba-52e2-a3c8-895153cf95ea",
+        "parameterCount": 17,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/20/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/20/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "a663bdf7-d8ba-52e2-a3c8-895153cf95ea",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 17,
+        "formulaCount": null,
+        "resourceCount": null,
+        "normativeBindingCount": null,
+        "canonicalPublisherPayloadSha256": null,
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/20"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "a663bdf7-d8ba-52e2-a3c8-895153cf95ea"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 22,
+      "catalogId": "canonical-work:base:electrical_interior_vvg_cable_lay_standard",
+      "titleRu": "Силовой кабель",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "EXPLICIT_PUBLISHED_RECEIPT_PLUS_SEPARATE_INDEPENDENT_READBACK",
+      "historical": {
+        "definitionVersionId": "22952aff-a162-5e80-846f-85d7cf17a354",
+        "parameterCount": 25,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/21/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/21/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "8514861d-f7c6-5474-bc99-b32b8a062025",
+        "definitionVersion": 7,
+        "definitionVersionBasis": "INDEPENDENT_PRIOR_ARTIFACT_LITERAL",
+        "definitionSha256": null,
+        "parameterCount": 36,
+        "formulaCount": 25,
+        "resourceCount": 25,
+        "normativeBindingCount": 1,
+        "canonicalPublisherPayloadSha256": "ec560c157fcca360d176237486e72f18e59627224f5541340c7e7b9358c3ea76",
+        "contentPassportPayloadSha256": "8609443e72567ef438db1bca182486144e948bcc28e852841ba7bd17dd23cfb8",
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/21"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "22952aff-a162-5e80-846f-85d7cf17a354"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 22,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r021",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        },
+        {
+          "ref": "r022",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 23,
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_standard",
+      "titleRu": "LED-светильник",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "EXPLICIT_PUBLISHED_RECEIPT_PLUS_SEPARATE_INDEPENDENT_READBACK",
+      "historical": {
+        "definitionVersionId": "21b8df20-162b-5e57-adf9-b154c70837ec",
+        "parameterCount": 22,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/22/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/22/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "ffe05202-b951-552d-b499-e4a520910ed9",
+        "definitionVersion": 5,
+        "definitionVersionBasis": "INDEPENDENT_PRIOR_ARTIFACT_LITERAL",
+        "definitionSha256": null,
+        "parameterCount": 31,
+        "formulaCount": 23,
+        "resourceCount": 23,
+        "normativeBindingCount": 1,
+        "canonicalPublisherPayloadSha256": "c3599400e729ed352038216685b63f80e0fc47bac3d8c60414ad6235388d47e9",
+        "contentPassportPayloadSha256": "eb0791bc46e4aee63d6af0d34d4cb963e9c07797d044a3720c2f0350e3ff1735",
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/22"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "21b8df20-162b-5e57-adf9-b154c70837ec"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 23,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r023",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        },
+        {
+          "ref": "r024",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 24,
+      "catalogId": "canonical-work:expanded:site_telecom_connection",
+      "titleRu": "Кабель Cat.6",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "EXPLICIT_PUBLISHED_RECEIPT_PLUS_SEPARATE_INDEPENDENT_READBACK",
+      "historical": {
+        "definitionVersionId": "a426c7c8-0ed2-50eb-bed8-b351794da35b",
+        "parameterCount": 23,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/23/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/23/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "45c37cf3-e0a9-50f2-aef1-1a8664647bb7",
+        "definitionVersion": 5,
+        "definitionVersionBasis": "INDEPENDENT_PRIOR_ARTIFACT_LITERAL",
+        "definitionSha256": null,
+        "parameterCount": 33,
+        "formulaCount": 24,
+        "resourceCount": 24,
+        "normativeBindingCount": 1,
+        "canonicalPublisherPayloadSha256": "b4f4b46a388cf5ec8f2e3dc0be66dbcb2fcc5c9ebf6b52472039fefa23520b21",
+        "contentPassportPayloadSha256": "83ab19230cd62fd259896d911f19600d4d8eb402190fe64c990bc5679ed04af7",
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/23"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "a426c7c8-0ed2-50eb-bed8-b351794da35b"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 24,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r025",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        },
+        {
+          "ref": "r026",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 25,
+      "catalogId": "canonical-work:expanded:fiber_optic_connection",
+      "titleRu": "Сварка оптических волокон",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "EXPLICIT_PUBLISHED_RECEIPT_PLUS_SEPARATE_INDEPENDENT_READBACK",
+      "historical": {
+        "definitionVersionId": "f33a1e71-40ad-5424-9a7c-61161f7ff1d5",
+        "parameterCount": 20,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/24/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/24/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "8a87a295-34a2-5658-ae6c-1bcf09d69632",
+        "definitionVersion": 5,
+        "definitionVersionBasis": "INDEPENDENT_PRIOR_ARTIFACT_LITERAL",
+        "definitionSha256": null,
+        "parameterCount": 26,
+        "formulaCount": 21,
+        "resourceCount": 21,
+        "normativeBindingCount": 1,
+        "canonicalPublisherPayloadSha256": "c293bb8abc4e51966c62b16979994f3fa92d9d0d10b8647b4f990028c4e295ea",
+        "contentPassportPayloadSha256": "685b8e05fdcd44c7243be1711a725debffefc391c9e6513a321718612cd84f58",
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/24"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "f33a1e71-40ad-5424-9a7c-61161f7ff1d5"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 25,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r027",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        },
+        {
+          "ref": "r028",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 26,
+      "catalogId": "canonical-work:base:electrical_interior_fire_alarm_install_standard",
+      "titleRu": "Адресный дымовой извещатель",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "EXPLICIT_PUBLISHED_RECEIPT_PLUS_SEPARATE_INDEPENDENT_READBACK",
+      "historical": {
+        "definitionVersionId": "0b0e5c37-5c85-5a5d-8c35-49d08d441756",
+        "parameterCount": 17,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/25/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/25/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "4558f42e-5d4c-566a-913c-15c7473b423b",
+        "definitionVersion": 5,
+        "definitionVersionBasis": "INDEPENDENT_PRIOR_ARTIFACT_LITERAL",
+        "definitionSha256": null,
+        "parameterCount": 29,
+        "formulaCount": 28,
+        "resourceCount": 28,
+        "normativeBindingCount": 1,
+        "canonicalPublisherPayloadSha256": "4d3586193c7caee6e6cfb1d1554602e568c934c94f7a0f864054c54fa026fc79",
+        "contentPassportPayloadSha256": "435af3df8aa5f4424199f2855172fb8776fd53062437ddf7d21711f013570722",
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/25"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "0b0e5c37-5c85-5a5d-8c35-49d08d441756"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 26,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r029",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        },
+        {
+          "ref": "r030",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 27,
+      "catalogId": "canonical-work:base:plumbing_interior_pump_install_standard",
+      "titleRu": "Монтаж и центровка насосного агрегата",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "EXPLICIT_PUBLISHED_TRANSITION_AND_PERSISTED_PAYLOAD_SELF_AUDIT",
+      "historical": {
+        "definitionVersionId": "ced26855-f373-5907-8859-8212472e2f55",
+        "parameterCount": 20,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/26/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/26/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "6bf2d9f5-d66e-5715-8ff2-f3f6c9bdc3c9",
+        "definitionVersion": null,
+        "definitionVersionBasis": "UNKNOWN_NOT_FILLED_FROM_OBSERVATION",
+        "definitionSha256": null,
+        "parameterCount": 39,
+        "formulaCount": 32,
+        "resourceCount": 32,
+        "normativeBindingCount": 9,
+        "canonicalPublisherPayloadSha256": "c1bdc230ccca12079746596e16de342ee6ddb2687b6666bdf1ef7c973772d9db",
+        "contentPassportPayloadSha256": null,
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/26"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "ced26855-f373-5907-8859-8212472e2f55"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 27,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r031",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "Receipt records successor UUID/counts/payload but not exact successor definition_version. Do not fill from A21.",
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 28,
+      "catalogId": "canonical-work:expanded:boiler_installation",
+      "titleRu": "Монтаж и обвязка котла",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "EXPLICIT_PUBLISHED_RECEIPT_PLUS_SEPARATE_INDEPENDENT_READBACK",
+      "historical": {
+        "definitionVersionId": "f382aeed-dcd2-5b02-a387-4fea76d49178",
+        "parameterCount": 29,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/27/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/27/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "8e1195ae-bef9-57c8-b0be-6d114999ae3d",
+        "definitionVersion": 7,
+        "definitionVersionBasis": "INDEPENDENT_PRIOR_ARTIFACT_LITERAL",
+        "definitionSha256": null,
+        "parameterCount": 45,
+        "formulaCount": 35,
+        "resourceCount": 35,
+        "normativeBindingCount": 1,
+        "canonicalPublisherPayloadSha256": "219a1437100debc46d38f4c424ef07640d2fff8072be5e8d786fc2a1c760b69d",
+        "contentPassportPayloadSha256": "7d148acbba9dd463bc18ddf2172acefc56675a6ae0942790124707e90cff837d",
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/27"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "f382aeed-dcd2-5b02-a387-4fea76d49178"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 28,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r032",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        },
+        {
+          "ref": "r033",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 29,
+      "catalogId": "canonical-work:expanded:pipeline_welding",
+      "titleRu": "Сварка стыка технологического трубопровода",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "EXPLICIT_PUBLISHED_RECEIPT_PLUS_SEPARATE_INDEPENDENT_READBACK",
+      "historical": {
+        "definitionVersionId": "32c375c6-cb11-5e1c-9834-1eda234f12bf",
+        "parameterCount": 25,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/28/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/28/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "5ae2dcdf-f7f9-5696-bafc-0c3091870137",
+        "definitionVersion": 5,
+        "definitionVersionBasis": "INDEPENDENT_PRIOR_ARTIFACT_LITERAL",
+        "definitionSha256": null,
+        "parameterCount": 38,
+        "formulaCount": 31,
+        "resourceCount": 31,
+        "normativeBindingCount": 1,
+        "canonicalPublisherPayloadSha256": "b8b61d20c05e25ba04e891413f5a579782dda41b37b1aef0c83f4339dec4440c",
+        "contentPassportPayloadSha256": "1c976d48b88e7c47a63e5ff472120f08fe8038e9a147b52bb45c8b289842a5d5",
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/28"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "32c375c6-cb11-5e1c-9834-1eda234f12bf"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 29,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r034",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        },
+        {
+          "ref": "r035",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    },
+    {
+      "ordinal": 30,
+      "catalogId": "canonical-work:expanded:data_center_mep",
+      "titleRu": "Монтаж и заземление шкафа 42U",
+      "changeClass": "CHANGED_DEFINITION_IDENTITY",
+      "evidenceLevel": "ORIGINAL_PUBLISHED_OR_PRIOR_READBACK_IDENTITY_AND_SCOPED_INGRESS",
+      "bindingKind": "EXPLICIT_PUBLISHED_RECEIPT_PLUS_SEPARATE_INDEPENDENT_READBACK",
+      "historical": {
+        "definitionVersionId": "47090350-6266-5045-ab9e-7ce865970f81",
+        "parameterCount": 26,
+        "mapRef": "r001",
+        "promptJsonPointer": "/mappedBenchmarks/29/historicalPromptRu",
+        "scopeBoundaryJsonPointer": "/mappedBenchmarks/29/masterCompositionBoundaryRu",
+        "historicalPositiveUnchanged": true
+      },
+      "expected": {
+        "definitionVersionId": "d4346bde-d262-55db-ace8-a88b7ced5e23",
+        "definitionVersion": 7,
+        "definitionVersionBasis": "INDEPENDENT_PRIOR_ARTIFACT_LITERAL",
+        "definitionSha256": null,
+        "parameterCount": 37,
+        "formulaCount": 26,
+        "resourceCount": 26,
+        "normativeBindingCount": 1,
+        "canonicalPublisherPayloadSha256": "2bf904a48c2bbc7f517e62b72a0e0f4fb634fea010827b9aff7f8ac9b13e6f8a",
+        "contentPassportPayloadSha256": "ec61956472e3f2af19e4980e79e8bb10354e7fe45064b9e82873f5a5f5343bc2",
+        "pgFullUnprojectedSourceTextSha256": null,
+        "completeDto": null
+      },
+      "evidence": [
+        {
+          "ref": "r001",
+          "jsonPointer": "/mappedBenchmarks/29"
+        },
+        {
+          "ref": "r002",
+          "sourceConstant": "HISTORICAL_PARAMETER_COUNTS",
+          "literalKey": "47090350-6266-5045-ab9e-7ce865970f81"
+        },
+        {
+          "ref": "r004",
+          "sourceOrdinal": 30,
+          "scopeErratum": "r005"
+        },
+        {
+          "ref": "r036",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        },
+        {
+          "ref": "r037",
+          "role": "INDEPENDENT_ORIGINAL_PUBLICATION_OR_PRIOR_READBACK"
+        }
+      ],
+      "physicalExpectation": {
+        "status": "PENDING_ROOT_PHYSICAL_REVIEW",
+        "sourceDeclaredPrimaryParameterId": null,
+        "sourceDeclaredUnitId": null,
+        "expectedPromptValue": null,
+        "expectedSelectedProfile": null,
+        "autoProfileOrFactInjected": false
+      },
+      "exactGaps": [
+        "No complete27 DTO oracle for this row; only prebound identity/count and explicitly scoped production DTO ingress can be claimed.",
+        "Unknown version/definition SHA/PG full-source hash stays null; never fill from A21/A23 observation or another hash domain."
+      ],
+      "actualCurrentVerification": "UNRUN_SAME_RR_SELECTED_MEMBERSHIP_AND_INGRESS_REQUIRED",
+      "sourceAdmission": false,
+      "runtimeAdmission": false,
+      "full": false
+    }
+  ],
+  "separateRetiredProductNegative": {
+    "ordinal": 14,
+    "originalCatalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
+    "expectedCurrentSelectedMembershipCount": 0,
+    "expectedPublicNewWorkSelectable": false,
+    "historicalPositive": {
+      "definitionVersionId": "44f781a1-9b84-5022-926a-d019d4103859",
+      "parameterCount": 25,
+      "mapRef": "r001",
+      "promptJsonPointer": "/mappedBenchmarks/13/historicalPromptRu",
+      "unchanged": true
+    },
+    "productPolicy": {
+      "ref": "r016",
+      "areaVariantPattern": "^canonical-work:[^:]+:.*_(small|medium|large)_area$",
+      "assertion": "CANONICAL_AREA_CATALOG_VARIANT_RETIRED",
+      "sourceLines": [
+        1,
+        3,
+        5,
+        162,
+        164
+      ],
+      "scope": "Public/newwork area variant retirement; historical source/definition/revision reads remain lawful"
+    },
+    "replacementExpectedDefinitionId": null,
+    "trayToAreaScopeConsolidationProven": false,
+    "historicalTrayMustNotBecomeNewAreaProfile": true,
+    "currentQueryMustStillIncludeOriginalSelector": true,
+    "authority": "ROOT explicit ingress-only product-negative decision; actual same-RR must verify, not retarget expected from live rows",
+    "sourceAdmission": false,
+    "full": false
+  },
+  "budget": {
+    "globalEvidenceChargeCurrentOrdinal": 20,
+    "globalUnitSourceParameterCount": 16,
+    "globalFiles": "Matrix, ref index, ID companion, original map, count-source ref, selectedpointer and shared inputs must be declared/metered in small current20 unit by ROOT, not archivecase1",
+    "noRawBodiesOrFullDtoCopies": true,
+    "rowsPerTableCap": 4096,
+    "perRawRowBytes": 524288,
+    "perWireBytes": 1048576,
+    "oneCumulativeParentBytesPerCurrentUnit": 3145728,
+    "noResetWithinUnit": true,
+    "knownCase1CompleteDtoJsonBytes": 2938355,
+    "case1RemainingBeforeWireAndControlOverhead": 207373,
+    "knownCase2CompleteDtoJsonBytes": 2335842,
+    "knownCase9CompleteDtoJsonBytes": 1332528,
+    "actualPgWireAndFileCharges": "UNMEASURED_ROOT_MUST_ENFORCE_OR_HOLD",
+    "sourceReferencesAreNotAutomaticRuntimeLoads": "Every file actually read must be declared/charged under reviewed profile, no implicit exemption",
+    "historical30Full51KernelAndOriginalSingle3MiB": "UNCHANGED"
+  },
+  "businessSemantics": "Prompt values/profile/whole-scope equivalence PENDING_ROOT_PHYSICAL_REVIEW. Source-declared primary/selector refs are evidence, not selected facts/defaults. Sol business plan separate.",
+  "authorActions": {
+    "candidateRuntimeOrTests": 0,
+    "sqlDb": 0,
+    "gitCp": 0,
+    "canonicalWrites": 0,
+    "privateSourceDataSynthesisOnly": true
+  },
+  "sourceAdmission": false,
+  "runtimeAdmission": false,
+  "full": false
+}

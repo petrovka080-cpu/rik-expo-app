@@ -15,13 +15,25 @@ import { buildCanonicalParameterCards } from '../../src/lib/estimatePresentation
 import { canonicalArtifactPurchaseRequirement } from '../../src/lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance';
 import { buildCanonicalProfessionalPdfProjection } from '../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf';
 import { canonicalArtifactPreliminaryNeeds } from '../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
+import { compileCanonicalEstimateCore } from '../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore';
+import { canonicalEstimateStableJson } from '../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism';
+import { canonicalEstimateSha256HexText } from '../../src/lib/estimate/backendPlatform/canonicalEstimateSha256';
+import { canonicalProfessionalPdfReportOriginalAuditV1, canonicalProfessionalPdfReviewAcknowledgmentV1 } from '../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
 
 const compile = (input: Record<string, unknown>) => compileAutomaticConstructionOwnerR1({ definition,
   catalogId: 'canonical-work:base:roofing_interior_flat_roof_install_standard', primaryMeasureParameterId: 'area_m2', compilerVersion: 'minimal-input-control', submittedParameters: input });
 describe('PVC15 size and object facts instead of a technical questionnaire', () => {
   test('preserves known consumption in the same saved need and PDF while leaving stock, packaging, order and cost unresolved', async () => {
-    const result = await compile({ area_m2: 75, pvc15_system_profile: PVC15_SYSTEM.verified, pvc15_base: PVC15_BASE.eps,
-      edge_rail_length_m: 36, detail_membrane_mode: 'NOT_REQUIRED', pvc15_joint_transition_scope: 'Переход ПВХ–битум вне выбранного участка' });
+    // TEST_ONLY saved-report fixture: same definition and Core inputs as the owner,
+    // with canonical transport hashing supplied before compilation.
+    const facts = { area_m2: 75, pvc15_system_profile: PVC15_SYSTEM.verified, pvc15_base: PVC15_BASE.eps,
+      edge_rail_length_m: 36, detail_membrane_mode: 'NOT_REQUIRED', pvc15_joint_transition_scope: 'Переход ПВХ–битум вне выбранного участка' };
+    const sourceBefore = canonicalEstimateStableJson({ definition, facts });
+    const result = await compileCanonicalEstimateCore({ operation: 'compile', compilerVersion: 'minimal-input-control',
+      catalogId: 'canonical-work:base:roofing_interior_flat_roof_install_standard', primaryMeasureParameterId: 'area_m2',
+      parameterDefinitions: [...definition.parameters], formulaDefinitions: [...definition.formulas], resourceDefinitions: [...definition.resources],
+      submittedParameters: facts, confirmedParameters: { ...definition.runtimeInput }, currencyCode: 'KGS', priceItems: [],
+      maximumResourceRows: definition.resources.length, hashJson: value => canonicalEstimateSha256HexText(canonicalEstimateStableJson(value)) });
     const demand = (id: string) => result.preliminaryNeeds.find(need => need.row_id === id)!;
     for (const [id, quantity] of [['rc09:reinforced_pvc_roof_membrane_1_5mm', '86.25'],
       ['rc09:pvc_membrane_telescopic_fastener', '300'], ['pvc15:separation:glass', '88.5']] as const) {
@@ -32,15 +44,59 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
       expect(requirement).not.toHaveProperty('stock');
       expect(requirement).not.toHaveProperty('effectiveOrder');
     }
-    const revision = { id: 'saved', release_id: 'current', catalog_id: 'PVC15',
-      checksum_sha256: 'a'.repeat(64), row_count: result.rows.length, totals: result.totals, currency_code: 'KGS', input_parameters: result.parameters,
+    const revision = { id: 'TEST_ONLY_PVC15_SAVED_REPORT', release_id: 'TEST_ONLY_PVC15_RELEASE',
+      definition_version_id: 'TEST_ONLY_PVC15_DEFINITION', catalog_id: 'canonical-work:base:roofing_interior_flat_roof_install_standard',
+      checksum_sha256: canonicalEstimateSha256HexText(canonicalEstimateStableJson(result.revisionProjection)),
+      row_count: result.rows.length, totals: result.totals, currency_code: 'KGS', input_parameters: result.parameters,
       amendment_contract: { parameterSources: { preliminaryNeeds: result.preliminaryNeeds } } };
-    const pdf = buildCanonicalProfessionalPdfProjection({ revision, expectedProjectedRowCount: result.rows.length,
-      rows: result.rows, preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision), workTitleRu: 'ПВХ-мембрана 75 м²' });
-    expect(pdf.html).toContain('Предварительный расход: 86,25 м²');
-    expect(pdf.html).toContain('Предварительный расход: 300 шт.');
-    expect(pdf.html).toContain('Предварительный расход: 88,5 м²');
-    expect(pdf.html).toContain('Точный заказ ещё не подтверждён');
+    const preliminaryNeeds = canonicalArtifactPreliminaryNeeds(revision, { issuancePurpose: 'PRELIMINARY_REVIEW' });
+    const snapshot = { revision, resources: [...result.rows, ...preliminaryNeeds] };
+    const savedBefore = canonicalEstimateStableJson({ result, snapshot });
+    const originalAudit = canonicalProfessionalPdfReportOriginalAuditV1(snapshot);
+    expect(originalAudit).toMatchObject({ status: 'STRUCTURE_INVALID', pdfAllowed: false, completeClaimAllowed: false });
+    expect(originalAudit.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'RESOURCE_CONDITION_UNRESOLVED', rowId: 'rc09:pvc_membrane_telescopic_fastener' }),
+      expect.objectContaining({ code: 'INDEPENDENT_OPERATION_COMPOSITION_UNVERIFIED' }),
+    ]));
+    const pdfInput = { revision, expectedProjectedRowCount: result.rows.length, rows: result.rows,
+      preliminaryNeeds, workTitleRu: 'ПВХ-мембрана 75 м²' };
+    // Source/object conditions remain a STANDARD stop before issuance.
+    for (const input of [pdfInput, { ...pdfInput, issuancePurpose: 'STANDARD' as const }])
+      expect(() => buildCanonicalProfessionalPdfProjection(input)).toThrow('Не подтверждены обязательные условия выполнения работы.');
+    const request = { revisionId: revision.id, releaseId: revision.release_id, definitionVersionId: revision.definition_version_id,
+      checksumSha256: revision.checksum_sha256, acknowledgedPreliminaryReview: true };
+    const ack = canonicalProfessionalPdfReviewAcknowledgmentV1({ ...snapshot, request,
+      actorUserId: 'TEST_ONLY_PVC15_READER', acknowledgedAt: '2026-10-31T00:00:00.000Z' });
+    expect(ack).toMatchObject({ revisionId: revision.id, releaseId: revision.release_id,
+      definitionVersionId: revision.definition_version_id, checksumSha256: revision.checksum_sha256 });
+    const reviewInput = { ...pdfInput, issuancePurpose: 'PRELIMINARY_REVIEW' as const };
+    try { buildCanonicalProfessionalPdfProjection(reviewInput); throw new Error('MISSING_ACK_ACCEPTED'); }
+    catch (error) { expect(error).toMatchObject({ code: 'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID' }); }
+    for (const mismatch of [{ revisionId: 'WRONG' }, { releaseId: 'WRONG' }, { definitionVersionId: 'WRONG' },
+      { checksumSha256: '0'.repeat(64) }, { auditSha256: '0'.repeat(64) }]) {
+      try { buildCanonicalProfessionalPdfProjection({ ...reviewInput, reviewAcknowledgmentV1: { ...ack, ...mismatch } });
+        throw new Error('WRONG_ACK_ACCEPTED');
+      } catch (error) { expect(error).toMatchObject({ code: 'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID' }); }
+    }
+    const pdf = buildCanonicalProfessionalPdfProjection({ ...reviewInput, reviewAcknowledgmentV1: ack });
+    expect(pdf.html).toContain('Не рассчитано');
+    expect(pdf.html).toContain('saved-report-warnings');
+    expect(pdf.html).toContain('отчёт не разрешает оплату или закупку');
+    expect(pdf.html).not.toContain('class="approval-block"');
+    expect(pdf.grandTotalStatus).not.toBe('COMPLETE');
+    // Current report keeps unknown order quantities; literal consumption is still
+    // readable from these exact immutable saved needs, never promoted to an order.
+    for (const [id, quantity] of [['rc09:reinforced_pvc_roof_membrane_1_5mm', '86.25'],
+      ['rc09:pvc_membrane_telescopic_fastener', '300'], ['pvc15:separation:glass', '88.5']] as const) {
+      const saved = preliminaryNeeds.find(need => need.row_id === id)!;
+      expect(saved.quantity).toBeNull();
+      expect(canonicalArtifactPurchaseRequirement(saved)).toMatchObject({ quantity, conditional: false, labelRu: 'Предварительный расход' });
+      expect(canonicalArtifactPurchaseRequirement(saved)).not.toHaveProperty('stock');
+      expect(canonicalArtifactPurchaseRequirement(saved)).not.toHaveProperty('effectiveOrder');
+    }
+    expect(canonicalEstimateStableJson({ result, snapshot })).toBe(savedBefore);
+    expect(canonicalProfessionalPdfReportOriginalAuditV1(snapshot)).toEqual(originalAudit);
+    expect(canonicalEstimateStableJson({ definition, facts })).toBe(sourceBefore);
     expect(result.rows.some(row => row.included_in_procurement)).toBe(false);
   });
   test('stores automatic quantities separately from facts and recomputes them after an area change', async () => {
@@ -127,7 +183,7 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
     const result = await compile({ area_m2: 75, pvc15_system_profile: PVC15_SYSTEM.verified });
     const consumers = buildMasterParameterCalculationConsumers({ parameters: definition.parameters, formulas: definition.formulas, resources: definition.resources });
     const catalog = { catalogId: 'canonical-work:base:roofing_interior_flat_roof_install_standard', releaseId: 'current',
-      workKey: 'roofing_interior_flat_roof_install_standard', definitionVersion: 5,
+      workKey: 'roofing_interior_flat_roof_install_standard', definitionVersion: 5, applicability: {},
       parameterSchema: definition.parameters.map(p => {
         const guide = p.truth_metadata.guide as Record<string, string>;
         return { parameterId: p.parameter_id, ordinal: p.ordinal, valueType: p.value_type, unitId: p.unit_id, titleRu: p.title_ru,
@@ -151,18 +207,25 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
       preliminaryNeeds: short.preliminaryNeeds.map(n => ({ rowId: n.row_id, selected: n.selected, missingParameterIds: n.missing_parameter_ids, quantity: n.quantity, needState: n.need_state })) }, draftId: 'size-only-request' });
     expect([...initialSession.blockingMissingParameterIds].sort()).toEqual(['detail_membrane_mode', 'edge_rail_length_m', 'pvc15_base', 'pvc15_system_profile', 'pvc15_joint_transition_scope'].sort());
     expect([...session.blockingMissingParameterIds].sort()).toEqual(['detail_membrane_mode', 'edge_rail_length_m', 'pvc15_base', 'pvc15_joint_transition_scope'].sort());
-    expect(session.parameters.find(p => p.parameterId === 'pvc15_membrane_consumption_m2')).toMatchObject({ value: 86.25, source: 'ASSUMED' });
-    expect(buildCanonicalParameterCards({ session, revision: null }).find(card => card.key === 'pvc15_membrane_consumption_m2'))
-      .toMatchObject({ value: 86.25, source: 'catalog_default', editable: true });
+    expect(session.parameters.find(p => p.parameterId === 'pvc15_membrane_consumption_m2')).toBeUndefined();
+    expect(session.applicationParameters?.find(p => p.parameterId === 'pvc15_membrane_consumption_m2'))
+      .toMatchObject({ value: 86.25, source: 'ASSUMED', inputOwnership: 'APPLICATION', consumerInputRole: 'APPLICATION_TECHNICAL' });
+    expect(buildCanonicalParameterCards({ session, revision: null }).find(card => card.key === 'pvc15_membrane_consumption_m2')).toBeUndefined();
     const changed = await compile({ area_m2: 154, pvc15_system_profile: PVC15_SYSTEM.verified });
     const changedSession = buildConsumerCanonicalParameterSession({ catalog, revision: { ...current, parameters: changed.parameters,
       userInputSnapshot: { area_m2: 154, pvc15_system_profile: PVC15_SYSTEM.verified }, parentRevisionId: current.revisionId },
       parent: { revisionId: current.revisionId, releaseId: current.releaseId, catalogId: current.catalogId, parameters: result.parameters }, draftId: 'size-only-request' });
     expect(changedSession.parameters.find(p => p.parameterId === 'telescopic_fastener_quantity_piece')).toMatchObject({ value: 616, source: 'ASSUMED' });
-    expect(changedSession.parameters.find(p => p.parameterId === 'pvc15_membrane_consumption_m2')).toMatchObject({ value: 177.1, source: 'ASSUMED' });
+    expect(changedSession.applicationParameters?.find(p => p.parameterId === 'pvc15_membrane_consumption_m2'))
+      .toMatchObject({ value: 177.1, source: 'ASSUMED', inputOwnership: 'APPLICATION', consumerInputRole: 'APPLICATION_TECHNICAL' });
+    expect(changedSession.parameters.find(p => p.parameterId === 'pvc15_membrane_consumption_m2')).toBeUndefined();
     const projectOverride = buildConsumerCanonicalParameterSession({ catalog, revision: { ...current, parameters: { ...changed.parameters, pvc15_membrane_consumption_m2: 180 },
       userInputSnapshot: { area_m2: 154, pvc15_membrane_consumption_m2: 180 } }, draftId: 'project-override' });
-    expect(projectOverride.parameters.find(p => p.parameterId === 'pvc15_membrane_consumption_m2')).toMatchObject({ value: 180, source: 'USER_EXPLICIT' });
+    // Preserve the stored fact/provenance without reopening a technical input.
+    expect(projectOverride.applicationParameters?.find(p => p.parameterId === 'pvc15_membrane_consumption_m2'))
+      .toMatchObject({ value: 180, source: 'USER_EXPLICIT', inputOwnership: 'APPLICATION', consumerInputRole: 'APPLICATION_TECHNICAL' });
+    expect(projectOverride.parameters.find(p => p.parameterId === 'pvc15_membrane_consumption_m2')).toBeUndefined();
+    expect(buildCanonicalParameterCards({ session: projectOverride, revision: null }).find(card => card.key === 'pvc15_membrane_consumption_m2')).toBeUndefined();
     expect(session.parameters).not.toEqual(expect.arrayContaining([expect.objectContaining({ parameterId: 'hot_air_welder_machine_h', value: null })]));
     const inherited = consumerCanonicalInheritedRecalculationInputs(current, catalog);
     expect(inherited).not.toHaveProperty('pvc15_membrane_consumption_m2');
@@ -172,11 +235,17 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
     expect(consumerCanonicalExplicitAutomaticParameters(catalog, { ...inherited, pvc15_membrane_consumption_m2: '86.25' }, inherited))
       .not.toHaveProperty('pvc15_membrane_consumption_m2');
   });
-  test.each(['standard', 'small_area', 'large_area'])('preflights the shared %s binding without publishing or treating the fixture as a default', async variant => {
+  test.each(['standard'])('preflights the shared %s binding without publishing or treating the fixture as a default', async variant => {
     const config = pvc15MinimalCustomerInputPublishConfigS2744({ definition: 'current', search: 'current-search' }, variant);
     expect(config.catalogAppend).toBeUndefined();
     expect(config.parameterDefinitions).toBe(definition.parameters);
     expect(config.runtimeProfileInput).toEqual(definition.runtimeInput);
     expect(await config.verifyCore()).toMatchObject({ completeRows: 26, fixturesAreNotDefaults: true, sourceGapsRetained: true, acceptedNewTypeDelta: 0 });
   });
+});
+
+
+test.each(['small_area', 'large_area', '__unsupported_variant__'])('minimal PVC15 factory rejects retired or unsupported selector before config creation: %s', variant => {
+  expect(() => pvc15MinimalCustomerInputPublishConfigS2744({definition:'current', search:'current-search'}, variant))
+    .toThrow('EXISTING_PVC15_MEMBER_REQUIRED');
 });

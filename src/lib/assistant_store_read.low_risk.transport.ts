@@ -1,6 +1,8 @@
 import { client, normalizePage } from "./api/_core";
 import {
   ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS,
+  normalizeChatMessageCursor,
+  type ChatMessageCursor,
   type AssistantStoreReadBffReadErrorDto,
   type AssistantStoreReadBffReadResultDto,
   type AssistantStoreReadBffRequestDto,
@@ -116,22 +118,28 @@ export async function loadChatActorContextRows(
 export async function loadListingChatMessageRows<T>(
   listingId: string,
   limit: number,
+  before?: ChatMessageCursor | null,
 ): Promise<LowRiskReadResult<T>> {
+  const cursor = before == null ? null : normalizeChatMessageCursor(before);
+  if (before != null && !cursor) throw new Error("CHAT_CURSOR_INVALID");
   return await loadAssistantStoreRowsViaBff<T>(
     {
       operation: "chat.listing.messages.list",
-      args: { listingId, pageSize: limit },
+      args: { listingId, pageSize: limit, ...(cursor ? { before: cursor } : {}) },
     },
     async () => {
       const page = normalizePage({ pageSize: limit }, ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS);
-      const result = await supabase
+      let query = supabase
         .from("chat_messages" as never)
         .select(CHAT_MESSAGE_SELECT)
         .eq("supplier_id", listingId)
         .eq("is_deleted", false)
-        .order("created_at", { ascending: true })
-        .order("id", { ascending: true })
-        .range(page.from, page.to);
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false });
+      if (cursor) {
+        query = query.or(`created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`);
+      }
+      const result = await query.range(page.from, page.to);
 
       return {
         data: Array.isArray(result.data) ? (result.data as T[]) : [],

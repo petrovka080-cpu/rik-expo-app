@@ -1,0 +1,77 @@
+{
+  "status": "PASS_SAVED_ACTUAL_CT190_CLOSURE_FIXED_PURE_FACTORY_OFFLINE_ONLY_R2",
+  "originalReadStatusPreserved": "NOT_ACCEPTED",
+  "originalReadFactoryCountFailurePreserved": true,
+  "newDatabaseRead": false,
+  "databaseWrites": false,
+  "publication": false,
+  "rootAdmissionCreated": false,
+  "actualReadPair": {
+    "definitionReleaseId": "15673048-71a2-514b-8e36-ca356e86401f",
+    "searchReleaseId": "3e982465-576e-5f93-92af-d3c829cf1619"
+  },
+  "actualReadSession": {
+    "db": "rik_r4_runtime_b5_v2",
+    "host": "127.0.0.1",
+    "port": 55432,
+    "read_only": "on",
+    "isolation": "repeatable read",
+    "snapshot": "538117:538117:"
+  },
+  "evidence": [
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-facade-ct190/owned-current-closure-read-r1/result.json",
+      "sha256": "67d3e8acc8b556540a4acc590a2f6514e97005b001b33c48311335e65eaf7dc2"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-facade-ct190/owned-current-closure-read-r1/raw-parent-closure.json",
+      "sha256": "b511830b3301ffced1ef4f46e97b264f584a5f954be3dd0b3e4b49e0dfac79bc"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-facade-ct190/owned-current-closure-read-r1/captured-parent-draft-input.json",
+      "sha256": "002b1e3e513a0c895fc0460f1bdb0a267b2cc568be093e3e06c6b364b830f062"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-facade-ct190/owned-current-closure-read-r1/raw-scoped-registry-capture.json",
+      "sha256": "f3df2bde12a02ef1144860519583ee056cee329f4292667c0f8f9c534a30dde8"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-facade-ct190/ct190-current-closure-guard-r1-receipt.json",
+      "sha256": "edf43bc938e979d72c5cfefd82ebfab5167f2e03923e05100d62815dfad512b5"
+    }
+  ],
+  "inventory": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-facade-ct190/ct190-explicit-parameter-inventory-r2.json",
+    "sha256": "f55e46f8ed1fcc7c37052592b1ce9c9a6bf94ffcc2e3034407be1887a6d05acd"
+  },
+  "factory": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-facade-ct190/prepareFacadeCt190RetainedWorkR1.ts",
+    "sha256": "d0a590d95b12d64b678209a2c9398df61ac8f0d71e80d8f0e64188b23af245b0"
+  },
+  "core": {
+    "status": "PASS_CT190_RETAINED_DRAFT_PURE_ONLY",
+    "shape": [
+      34,
+      29,
+      29
+    ],
+    "retainedShape": [
+      17,
+      8,
+      8
+    ],
+    "oldBindings": 1,
+    "newBindings": 5,
+    "oldSourceArrays": 17,
+    "newSourceArrays": 17,
+    "originalPriceBindingRows": 0,
+    "legacyManualQuantityPriceTitleExclusionPolicyPreserved": true,
+    "newGenericPriceInheritanceAllowed": false,
+    "unresolvedNeeds": 7,
+    "independentMapEntries": 29,
+    "fullTechnicalAcceptance": false,
+    "publicationPerformed": false
+  },
+  "runtimeAvailability": "NOT_CLAIMED",
+  "requiresActualRootContextBindingAndCommonNormalLockedRegisteredChecks": true
+}

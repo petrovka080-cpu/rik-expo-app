@@ -15,19 +15,13 @@ import type {
 import type { InteriorFinishesDomainInventoryRow } from "./inventory";
 
 export const DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3 = Object.freeze([
-  "drywall_ceiling_interior_bulkhead_frame_large_area",
-  "drywall_ceiling_interior_bulkhead_frame_small_area",
   "drywall_ceiling_interior_bulkhead_frame_standard",
   "drywall_ceiling_interior_bulkhead_frame_technical_room",
   "drywall_ceiling_interior_bulkhead_frame_wet_zone",
-  "drywall_ceiling_interior_bulkhead_align_large_area",
-  "drywall_ceiling_interior_bulkhead_align_small_area",
   "drywall_ceiling_interior_bulkhead_align_standard",
   "drywall_ceiling_interior_bulkhead_align_technical_room",
   "drywall_ceiling_interior_bulkhead_align_wet_zone",
   "drywall_ceiling_interior_bulkhead_clad_high_load",
-  "drywall_ceiling_interior_bulkhead_clad_large_area",
-  "drywall_ceiling_interior_bulkhead_clad_small_area",
   "drywall_ceiling_interior_bulkhead_clad_standard",
   "drywall_ceiling_interior_bulkhead_clad_technical_room",
   "drywall_ceiling_interior_bulkhead_clad_wet_zone",
@@ -35,12 +29,7 @@ export const DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3 = Object.freez
 
 export type DrywallCeilingBulkheadProfessionalGroupV3 = "FRAME" | "ALIGN" | "CLAD";
 export type DrywallCeilingBulkheadProfessionalVariantV3 =
-  | "standard"
-  | "large_area"
-  | "small_area"
-  | "technical_room"
-  | "wet_zone"
-  | "high_load";
+  "standard" | "technical_room" | "wet_zone" | "high_load";
 
 const AUTHORIZED = new Set<string>(DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3);
 const ALWAYS = { kind: "ALWAYS" } as const;
@@ -136,7 +125,7 @@ function groupOf(catalogId: string): DrywallCeilingBulkheadProfessionalGroupV3 {
 }
 
 function variantOf(catalogId: string): DrywallCeilingBulkheadProfessionalVariantV3 {
-  for (const variant of ["technical_room", "large_area", "small_area", "wet_zone", "high_load", "standard"] as const) {
+  for (const variant of ["technical_room", "wet_zone", "high_load", "standard"] as const) {
     if (catalogId.endsWith(`_${variant}`)) return variant;
   }
   throw new Error(`DRYWALL_CEILING_BULKHEAD_VARIANT_NOT_FOUND:${catalogId}`);
@@ -456,8 +445,8 @@ function frameDefinition(
     numeric("qa_interval_m2_per_test", "Площадь FRAME на одну приемочную проверку", "m2_per_test", "CONTROL_PLAN_VALUE", FULL_SCOPE),
     numeric("documentation_record_count", "Количество актов и записей FRAME", "item", "CONTROL_PLAN_VALUE", FULL_SCOPE, 1, 10_000),
   ];
-  const usesSuspendedFrame = variant !== "small_area";
-  const usesOneLevelConnectors = usesSuspendedFrame && variant !== "large_area";
+  const usesSuspendedFrame = true;
+  const usesOneLevelConnectors = usesSuspendedFrame && true;
   const primaryLength = usesSuspendedFrame ? `(${CLADDING_GEOMETRY_EXPRESSION}) ÷ primary_profile_spacing_m` : "0";
   const crossLength = usesSuspendedFrame ? `(${CLADDING_GEOMETRY_EXPRESSION}) ÷ cross_profile_spacing_m` : "0";
   const suspensionCount = usesSuspendedFrame ? `ceil((${primaryLength}) ÷ suspension_spacing_m)` : "0";
@@ -518,51 +507,7 @@ function frameDefinition(
   let massExpression = baseMassExpression;
   let massInputs = [...baseMassInputs];
   let massCalculate = baseMass;
-  if (variant === "large_area") {
-    rows.splice(rows.findIndex((item) => item.row_key === "profile_connectors"), 1);
-    parameters.push(
-      numeric("large_area_handling_productivity_kg_per_machine_hour", "Производительность механизированной подачи на большой площади", "kg_per_machine_hour", "NORM_RATE"),
-      numeric("large_area_staging_zone_count", "Количество зон складирования большой площади", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 1, 10_000),
-      numeric("large_area_staging_productivity_zone_per_machine_hour", "Производительность перестановки между зонами", "item_per_machine_hour", "NORM_RATE"),
-      numeric("large_area_control_joint_length_m", "Длина деформационных/контрольных швов большой площади", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0, 1_000_000),
-      numeric("large_area_control_joint_profile_mass_kg_m", "Масса профиля контрольного шва", "kg_per_m", "MATERIAL_PASSPORT_VALUE"),
-      numeric("large_area_two_level_connector_count", "Количество двухуровневых соединителей выбранной системы", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 0, 10_000_000),
-      numeric("large_area_two_level_connector_mass_kg_item", "Масса двухуровневого соединителя", "kg_per_item", "MATERIAL_PASSPORT_VALUE"),
-      numeric("large_area_structural_review_service_count", "Количество расчетов шага, прогиба и стыков большой площади", "service", "CONTROL_PLAN_VALUE", BOTH_SCOPES, 1, 100_000),
-    );
-    rows.push(
-      row(t, "large_area_material_handling", "Механизированная подача", "equipment", "Механизированная подача элементов FRAME между зонами складирования", `(${massExpression}) ÷ large_area_handling_productivity_kg_per_machine_hour + large_area_staging_zone_count ÷ large_area_staging_productivity_zone_per_machine_hour`, [...massInputs, "large_area_handling_productivity_kg_per_machine_hour", "large_area_staging_zone_count", "large_area_staging_productivity_zone_per_machine_hour"], "machine_hour", (v) => baseMass(v) / v.large_area_handling_productivity_kg_per_machine_hour + v.large_area_staging_zone_count / v.large_area_staging_productivity_zone_per_machine_hour, { krer_locator: "КРЕР 10-05-011-02, измеритель 100 м²; подача — отдельный проектный маршрут", resource_class: "large-area material handling" }),
-      row(t, "large_area_control_joint_profile", "Деформационные швы", "material", "Профиль деформационного/контрольного шва большой площади", "large_area_control_joint_length_m", ["large_area_control_joint_length_m"], "m", (v) => v.large_area_control_joint_length_m, { krer_locator: "КРЕР 10-05-011-01/02; длина и узел по проекту большой площади" }),
-      row(t, "large_area_two_level_connectors", "Соединители", "material", "Двухуровневые соединители exact system route большой площади", "large_area_two_level_connector_count", ["large_area_two_level_connector_count"], "item", (v) => v.large_area_two_level_connector_count, { krer_locator: "КРЕР 10-05-011-01, система П112; только при выбранном двухуровневом маршруте" }),
-      row(t, "large_area_structural_review", "Инженерные услуги", "subcontract_service", "Расчет шага, прогиба, стыков и контрольных швов большой площади", "large_area_structural_review_service_count", ["large_area_structural_review_service_count"], "service", (v) => v.large_area_structural_review_service_count, { procurement_eligible: false, krer_locator: "КРЕР 10-05-011-01/02 используется как benchmark; расчет выполняется по проектной системе" }),
-    );
-    massExpression += " + large_area_control_joint_length_m × large_area_control_joint_profile_mass_kg_m + large_area_two_level_connector_count × large_area_two_level_connector_mass_kg_item";
-    massInputs.push("large_area_control_joint_length_m", "large_area_control_joint_profile_mass_kg_m", "large_area_two_level_connector_count", "large_area_two_level_connector_mass_kg_item");
-    const previous = massCalculate;
-    massCalculate = (v) => previous(v) + v.large_area_control_joint_length_m * v.large_area_control_joint_profile_mass_kg_m + v.large_area_two_level_connector_count * v.large_area_two_level_connector_mass_kg_item;
-  } else if (variant === "small_area") {
-    for (const excludedRow of ["primary_profiles", "cross_profiles", "suspensions", "suspension_rods", "suspension_anchors", "profile_connectors", "suspension_install_labor"]) {
-      const index = rows.findIndex((item) => item.row_key === excludedRow);
-      if (index >= 0) rows.splice(index, 1);
-    }
-    parameters.push(
-      numeric("small_area_corner_count", "Количество углов и коротких возвратов", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 1, 100_000),
-      numeric("small_area_corner_productivity_item_per_man_hour", "Производительность деталировки углов", "item_per_man_hour", "NORM_RATE"),
-      numeric("small_area_self_supporting_profile_length_m", "Длина ПН/ПС профиля самонесущих участков", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0, 1_000_000),
-      numeric("small_area_self_supporting_profile_mass_kg_m", "Масса ПН/ПС профиля самонесущего участка", "kg_per_m", "MATERIAL_PASSPORT_VALUE"),
-      numeric("small_area_self_supporting_stud_length_m", "Длина стоечного ПС профиля самонесущих участков", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0, 1_000_000),
-      numeric("small_area_self_supporting_stud_mass_kg_m", "Масса стоечного ПС профиля", "kg_per_m", "MATERIAL_PASSPORT_VALUE"),
-    );
-    rows.push(
-      row(t, "small_area_corner_detail_labor", "Деталировка", "labor", "Подрезка и сборка каркаса в углах малой площади", "small_area_corner_count ÷ small_area_corner_productivity_item_per_man_hour", ["small_area_corner_count", "small_area_corner_productivity_item_per_man_hour"], "man_hour", (v) => v.small_area_corner_count / v.small_area_corner_productivity_item_per_man_hour, { krer_locator: "КРЕР 10-05-011-02, состав работ пп. 5–6; проектная деталировка углов" }),
-      row(t, "small_area_self_supporting_guide_profiles", "Самонесущие участки", "material", "Направляющие ПН профили самонесущих коробчатых участков", "small_area_self_supporting_profile_length_m", ["small_area_self_supporting_profile_length_m"], "m", (v) => v.small_area_self_supporting_profile_length_m, { krer_locator: "КРЕР 10-05-011 применяется по аналогии; exact П131/проектный маршрут подтверждается отдельно" }),
-      row(t, "small_area_self_supporting_stud_profiles", "Самонесущие участки", "material", "Стоечные ПС профили самонесущих коробчатых участков", "small_area_self_supporting_stud_length_m", ["small_area_self_supporting_stud_length_m"], "m", (v) => v.small_area_self_supporting_stud_length_m, { krer_locator: "КРЕР 10-05-011 применяется по аналогии; exact П131/проектный маршрут подтверждается отдельно" }),
-    );
-    massExpression += " + small_area_self_supporting_profile_length_m × small_area_self_supporting_profile_mass_kg_m + small_area_self_supporting_stud_length_m × small_area_self_supporting_stud_mass_kg_m";
-    massInputs.push("small_area_self_supporting_profile_length_m", "small_area_self_supporting_profile_mass_kg_m", "small_area_self_supporting_stud_length_m", "small_area_self_supporting_stud_mass_kg_m");
-    const previous = massCalculate;
-    massCalculate = (v) => previous(v) + v.small_area_self_supporting_profile_length_m * v.small_area_self_supporting_profile_mass_kg_m + v.small_area_self_supporting_stud_length_m * v.small_area_self_supporting_stud_mass_kg_m;
-  } else if (variant === "technical_room") {
+  if (variant === "technical_room") {
     parameters.push(
       numeric("technical_service_opening_count", "Количество инженерных проходов", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 1, 100_000),
       numeric("technical_opening_profile_m_per_opening", "Профиль усиления на один инженерный проход", "m_per_item", "MATERIAL_PASSPORT_VALUE"),
@@ -674,19 +619,7 @@ function alignDefinition(
     row(t, "plane_acceptance_tests", "Контроль качества", "testing", "Измерительная приемка плоскости ALIGN", `ceil((${CLADDING_GEOMETRY_EXPRESSION}) ÷ plane_qa_interval_m2_per_test)`, [...CLADDING_GEOMETRY_INPUTS, "plane_qa_interval_m2_per_test"], "test", (v) => Math.ceil(calculateCladdingGeometryArea(v) / v.plane_qa_interval_m2_per_test), { sp_locator: "СП КР 65-101:2025, пп. 7.7.4–7.7.5 и таблица 7.8" }),
     row(t, "alignment_executive_survey", "Инженерные услуги", "subcontract_service", "Независимая исполнительная геодезическая/лазерная съемка ALIGN", "executive_survey_service_count", ["executive_survey_service_count"], "service", (v) => v.executive_survey_service_count, { scopes: "FULL_ONLY", procurement_eligible: false, krer_locator: "КРЕР 10-05-011-01/02; внешняя услуга допускается только если не включена в труд ALIGN" }),
   ];
-  if (variant === "large_area") {
-    parameters.push(
-      numeric("large_area_instrument_zone_count", "Количество инструментальных зон большой площади", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 1, 100_000),
-      numeric("large_area_instrument_setup_productivity_zone_per_machine_hour", "Производительность перестановки прибора", "item_per_machine_hour", "NORM_RATE"),
-    );
-    rows.push(row(t, "large_area_instrument_relocation", "Большая площадь", "equipment", "Перестановка и повторная привязка нивелира по зонам", "large_area_instrument_zone_count ÷ large_area_instrument_setup_productivity_zone_per_machine_hour", ["large_area_instrument_zone_count", "large_area_instrument_setup_productivity_zone_per_machine_hour"], "machine_hour", (v) => v.large_area_instrument_zone_count / v.large_area_instrument_setup_productivity_zone_per_machine_hour, { sp_locator: "СП КР 65-101:2025, таблица 7.8; контроль отдельных участков 50–70 м²" }));
-  } else if (variant === "small_area") {
-    parameters.push(
-      numeric("small_area_corner_count", "Количество внутренних и наружных углов", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 1, 100_000),
-      numeric("small_area_corner_alignment_productivity_item_per_man_hour", "Производительность юстировки углов", "item_per_man_hour", "NORM_RATE"),
-    );
-    rows.push(row(t, "small_area_corner_alignment", "Малая площадь", "labor", "Юстировка коротких граней и углов короба", "small_area_corner_count ÷ small_area_corner_alignment_productivity_item_per_man_hour", ["small_area_corner_count", "small_area_corner_alignment_productivity_item_per_man_hour"], "man_hour", (v) => v.small_area_corner_count / v.small_area_corner_alignment_productivity_item_per_man_hour));
-  } else if (variant === "technical_room") {
+  if (variant === "technical_room") {
     parameters.push(
       numeric("technical_obstruction_count", "Количество инженерных препятствий", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 1, 100_000),
       numeric("technical_clearance_productivity_item_per_man_hour", "Производительность проверки зазоров", "item_per_man_hour", "NORM_RATE"),
@@ -850,38 +783,7 @@ function cladDefinition(
     row(t, "surface_quality_tests", "Контроль качества", "testing", "Контроль качества стыков и проектного уровня поверхности Q1–Q4", `ceil((${CLADDING_GEOMETRY_EXPRESSION}) ÷ surface_quality_interval_m2_per_test)`, [...CLADDING_GEOMETRY_INPUTS, "surface_quality_interval_m2_per_test"], "test", (v) => Math.ceil(calculateCladdingGeometryArea(v) / v.surface_quality_interval_m2_per_test), { sp_locator: "СП КР 65-101:2025, пп. 4.4–4.9 и таблица 7.8; уровень поверхности по проекту" }),
     row(t, "complex_node_mockup", "Инженерные услуги", "subcontract_service", "Изготовление и приемка образца сложного узла CLAD", "mockup_acceptance_service_count", ["mockup_acceptance_service_count"], "service", (v) => v.mockup_acceptance_service_count, { scopes: "FULL_ONLY", procurement_eligible: false, krer_locator: "КРЕР 10-05-011 используется как benchmark; применимость mock-up по проектному плану качества" }),
   ];
-  if (variant === "large_area") {
-    parameters.push(
-      numeric("large_area_staging_zone_count", "Количество зон подачи листов", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 1, 100_000),
-      numeric("large_area_staging_productivity_zone_per_machine_hour", "Производительность перестановки подъемника", "item_per_machine_hour", "NORM_RATE"),
-      numeric("large_area_clad_control_joint_length_m", "Длина контрольных швов листовой обшивки", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0, 1_000_000),
-      numeric("large_area_clad_control_joint_mass_kg_m", "Масса профиля контрольного шва CLAD", "kg_per_m", "MATERIAL_PASSPORT_VALUE"),
-      numeric("large_area_layout_service_count", "Количество разработок карты захваток и раскладки листов", "service", "CONTROL_PLAN_VALUE", BOTH_SCOPES, 1, 100_000),
-    );
-    rows.push(
-      row(t, "large_area_sheet_staging", "Большая площадь", "equipment", "Перестановка листового подъемника между зонами", "large_area_staging_zone_count ÷ large_area_staging_productivity_zone_per_machine_hour", ["large_area_staging_zone_count", "large_area_staging_productivity_zone_per_machine_hour"], "machine_hour", (v) => v.large_area_staging_zone_count / v.large_area_staging_productivity_zone_per_machine_hour),
-      row(t, "large_area_clad_control_joint", "Большая площадь", "material", "Профиль контрольного шва листовой обшивки большой площади", "large_area_clad_control_joint_length_m", ["large_area_clad_control_joint_length_m"], "m", (v) => v.large_area_clad_control_joint_length_m, { krer_locator: "КРЕР 10-05-011-01/02; exact расположение по проекту и карте захваток" }),
-      row(t, "large_area_layout_service", "Инженерные услуги", "subcontract_service", "Карта захваток, контрольных швов и раскладки листов большой площади", "large_area_layout_service_count", ["large_area_layout_service_count"], "service", (v) => v.large_area_layout_service_count, { procurement_eligible: false, krer_locator: "КРЕР 10-05-011-01/02 используется как benchmark; карта является проектным deliverable" }),
-    );
-    massExpression += " + large_area_clad_control_joint_length_m × large_area_clad_control_joint_mass_kg_m";
-    massInputs.push("large_area_clad_control_joint_length_m", "large_area_clad_control_joint_mass_kg_m");
-    const previous = massCalculate;
-    massCalculate = (v) => previous(v) + v.large_area_clad_control_joint_length_m * v.large_area_clad_control_joint_mass_kg_m;
-  } else if (variant === "small_area") {
-    parameters.push(
-      numeric("small_area_cut_edge_length_m", "Длина подрезаемых кромок малой площади", "m", "PROJECT_QUANTITY"),
-      numeric("small_area_edge_cutting_productivity_m_per_man_hour", "Производительность ручной подрезки кромок", "m_per_man_hour", "NORM_RATE"),
-      numeric("small_area_edge_fastener_spacing_m", "Шаг дополнительного крепежа подрезанных кромок", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0.01, 2),
-    );
-    rows.push(
-      row(t, "small_area_edge_cutting", "Малая площадь", "labor", "Ручная подрезка коротких кромок и возвратов", "small_area_cut_edge_length_m ÷ small_area_edge_cutting_productivity_m_per_man_hour", ["small_area_cut_edge_length_m", "small_area_edge_cutting_productivity_m_per_man_hour"], "man_hour", (v) => v.small_area_cut_edge_length_m / v.small_area_edge_cutting_productivity_m_per_man_hour),
-      row(t, "small_area_edge_screws", "Малая площадь", "material", "Дополнительные винты подрезанных кромок", "ceil(small_area_cut_edge_length_m ÷ small_area_edge_fastener_spacing_m)", ["small_area_cut_edge_length_m", "small_area_edge_fastener_spacing_m"], "item", (v) => Math.ceil(v.small_area_cut_edge_length_m / v.small_area_edge_fastener_spacing_m), { krer_locator: "КРЕР 10-05-011-02, ресурс С01-0505-0005; шаг по проектному узлу" }),
-    );
-    massExpression += " + ceil(small_area_cut_edge_length_m ÷ small_area_edge_fastener_spacing_m) × fastener_mass_kg_item";
-    massInputs.push("small_area_cut_edge_length_m", "small_area_edge_fastener_spacing_m");
-    const previous = massCalculate;
-    massCalculate = (v) => previous(v) + Math.ceil(v.small_area_cut_edge_length_m / v.small_area_edge_fastener_spacing_m) * v.fastener_mass_kg_item;
-  } else if (variant === "technical_room") {
+  if (variant === "technical_room") {
     parameters.push(
       numeric("technical_service_opening_count", "Количество вырезов инженерных проходов", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 1, 100_000),
       numeric("technical_opening_perimeter_m_item", "Периметр кромки одного прохода", "m_per_item", "PROJECT_QUANTITY"),

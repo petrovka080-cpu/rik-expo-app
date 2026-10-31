@@ -1,3 +1,4 @@
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
 import { buildCuringOperationCompletionS2733, CURING_COMPLETION_ROWS as ids } from "../../src/lib/estimate/v4/curingOperationCompletionS2733";
 import { ANCHOR_GROUP_CURING_FORMULAS, ANCHOR_GROUP_CURING_PARAMETERS, ANCHOR_GROUP_CURING_RESOURCES, anchorGroupCuringAcceptanceInputR1 } from "../../src/lib/estimate/v4/anchorGroupCuringR1";
 import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
@@ -80,7 +81,7 @@ describe("S27.33 standalone curing resource completion", () => {
     for (const quantity of ["1.5", "2"]) await expect(compile(facts, { [ids.delivery]: amendment(quantity) })).rejects.toMatchObject({ code: "ROW_AMENDMENT_INVALID" });
   });
   it("does not add water delivery or accessories to a sheet method with explicitly no equipment", async () => {
-    const result = await compile({ ...anchorGroupCuringAcceptanceInputR1("small_area") });
+    const result = await compile({ ...measuredConcreteProjectInputR533("anchorGroupCuringAcceptanceInputR1", "compact") });
     expect(result.preliminaryNeeds).toEqual([]);
     expect(result.rows.some(r => Object.values(ids).includes(r.row_id as typeof ids.water))).toBe(false);
   });

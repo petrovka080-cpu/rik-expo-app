@@ -1,6 +1,6 @@
 import type {CanonicalEstimateCatalogItem} from '../../lib/estimate/backendPlatform/contracts';
 import type {CanonicalEstimateParameterSessionRevision} from '../../lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot';
-import {buildCanonicalBaselinePlan} from './consumerCanonicalBaselineCompile';
+import {buildCanonicalBaselinePlan} from '../../lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1';
 import {canonicalPublicEstimateChoiceLabelRu as label,canonicalPublicEstimateParameterTitleRu as title} from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import {canonicalApprovedBaselineRuntimeDefaultValue as defaultValue} from '../../lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline';
 import {buildConsumerCanonicalParameterSession as saved,buildConsumerCanonicalPrecompileParameterSession as fresh} from './consumerCanonicalParameterEditor';

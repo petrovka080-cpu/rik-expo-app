@@ -5,7 +5,9 @@ import TestRenderer, { act } from "react-test-renderer";
 import { ConsumerRepairHistory } from "../../src/features/consumerRepair/ConsumerRepairHistory";
 import { primaryConsumerRepairCanonicalBackendBinding } from "../../src/features/consumerRepair/consumerRepairBackendOwnership";
 import { buildEmptyConsumerRepairApprovedHistoryPage } from "../../src/features/consumerRepair/requestEstimateScreenActions";
-import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
+import { flushTransactionalConsumerRepairWrites, setConsumerRepairTransactionalStoreForTests } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
+import {InMemoryEstimateRevisionDurableStore} from '../../src/lib/platform/estimateRevisionDurableStore.memory';
+import {hydrateNextTransactionalConsumerRepairHistoryPage} from '../../src/lib/consumerRequests/consumerRequestRepository';
 import {
   __resetConsumerRepairRequestStoreForTests,
   listConsumerRepairApprovedHistory,
@@ -22,8 +24,17 @@ jest.mock("@expo/vector-icons", () => {
   };
 });
 
+function visibleChildrenText(value: unknown): string {
+  if(typeof value==='string'||typeof value==='number')return String(value);
+  if(Array.isArray(value))return value.map(visibleChildrenText).join(' ');
+  return React.isValidElement<{children?:unknown}>(value)?visibleChildrenText(value.props.children):'';
+}
+
 describe("history click expands read-only snapshot only", () => {
-  beforeEach(() => __resetConsumerRepairRequestStoreForTests());
+  beforeEach(() => {
+    __resetConsumerRepairRequestStoreForTests();
+    setConsumerRepairTransactionalStoreForTests(new InMemoryEstimateRevisionDurableStore());
+  });
   afterEach(async () => {
     jest.useRealTimers();
     await flushTransactionalConsumerRepairWrites();
@@ -145,16 +156,19 @@ describe("history click expands read-only snapshot only", () => {
     ).toBe(`consumer-repair-history-snapshot-release-id|${canonical?.revisionId}|${canonical?.releaseId}`);
     expect(renderer.root.findAllByProps({ testID: "consumer-repair-history-readonly-item" }).length).toBeGreaterThan(0);
     expect(renderer.root.findAllByProps({ testID: "request-estimate-items-editor" })).toHaveLength(0);
-    expect(JSON.stringify(renderer.toJSON()).toLocaleLowerCase("ru-RU")).toContain("ламинат");
+    expect(renderer.root.findAllByProps({testID:'consumer-repair-history-readonly-item'})
+      .map(node=>visibleChildrenText(node.props.children)).join(' ').toLocaleLowerCase("ru-RU")).toContain("ламинат");
 
     act(() => {
       renderer.unmount();
     });
   });
 
-  it("opens all approved estimates from the history button with an approved count", () => {
+  it("opens all approved estimates from the history button with an approved count", async () => {
     createApprovedConsumerRepairRequest();
     createApprovedConsumerRepairRequest();
+    await flushTransactionalConsumerRepairWrites();
+    await hydrateNextTransactionalConsumerRepairHistoryPage();
     const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_REPAIR_TEST_USER_ID);
     const onOpenPdf = jest.fn();
     const onOpenDraft = jest.fn();
@@ -201,12 +215,14 @@ describe("history click expands read-only snapshot only", () => {
     });
   });
 
-  it("shows loaded versus total approved history and exposes paged loading", () => {
+  it("shows loaded versus total approved history and exposes paged loading", async () => {
     jest.useFakeTimers();
     for (let index = 0; index < 25; index += 1) {
       jest.setSystemTime(new Date(Date.UTC(2026, 5, 29, 8, 0, index)));
       createApprovedConsumerRepairRequest();
     }
+    await flushTransactionalConsumerRepairWrites();
+    for(let page=0;page<5;page++)await hydrateNextTransactionalConsumerRepairHistoryPage();
     const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_REPAIR_TEST_USER_ID, { limit: 20 });
     const onOpenPdf = jest.fn();
     const onOpenDraft = jest.fn();

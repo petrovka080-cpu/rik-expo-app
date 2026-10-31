@@ -23,18 +23,30 @@ describe("consumer estimate procurement presentation", () => {
       "utf8",
     );
     const preview = readFileSync(resolve(root, "src/features/consumerRepair/canonicalProcurementPreviewRows.ts"), "utf8");
+    const hydration = readFileSync(resolve(root, "src/features/consumerRepair/consumerCanonicalArtifactHydration.ts"), "utf8");
+    const artifactFlow = hydration.slice(hydration.indexOf("export async function loadConsumerCanonicalProcurementArtifact"),
+      hydration.indexOf("export type ConsumerCanonicalReadyArtifactBinding"));
+    const currentArtifactFlow = artifactFlow.slice(artifactFlow.indexOf("} else {"),
+      artifactFlow.indexOf("assertCanonicalEstimateArtifactIdentity"));
     const procurementFlow = screen.slice(
       screen.indexOf("private openProcurement"),
       screen.indexOf("private openParamEditor"),
     );
 
     expect(procurementFlow).toContain('kind: "procurement"');
-    expect(procurementFlow).toContain("assertCanonicalEstimateArtifactIdentity");
-    expect(procurementFlow).toContain("await buildCanonicalEstimateArtifact");
+    expect(procurementFlow).toContain("await loadConsumerCanonicalProcurementArtifact");
+    expect(artifactFlow).toContain("assertCanonicalEstimateArtifactIdentity");
+    expect(currentArtifactFlow).toContain("await buildCanonicalEstimateArtifact");
     expect(procurementFlow).not.toContain("procurementAlreadyCurrent");
     expect(procurementFlow).not.toContain("await getCanonicalEstimateArtifact");
+    expect(currentArtifactFlow).not.toContain("await getCanonicalEstimateArtifact");
+    expect(artifactFlow).toContain("input.currentCatalogReleaseId !== revision.releaseId");
+    expect(artifactFlow).toContain('expectedKind: "procurement"');
+    expect(artifactFlow).toContain("expectedRowCount: revision.rowCount");
     expect(procurementFlow).not.toContain("Linking.openURL");
     expect(procurementFlow).not.toContain("window.open");
+    expect(artifactFlow).not.toContain("Linking.openURL");
+    expect(artifactFlow).not.toContain("window.open");
     expect(procurementFlow).toContain("Список показан ниже в смете");
     expect(screen).not.toContain('import { Linking,');
     expect(panel).toContain('testID="consumer-estimate-procurement-list"');

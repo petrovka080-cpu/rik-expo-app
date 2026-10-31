@@ -1,0 +1,42 @@
+{
+  "contract": "gox-build.ceramic-m150-exact-format-branches.r1",
+  "status": "READY_SOURCE_FORMAT_SELECTORS_OVER_WHOLE_PROVISION_R3",
+  "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+  "existingDefinitionAtPreparation": {
+    "id": "b6e328f2-f34a-57b0-848a-7d31ed2bb94a",
+    "version": 2,
+    "shape": [177, 90, 90],
+    "note": "Current integration publishes R2 first; a later publication must capture the actual resulting version. This file is not a publication descriptor."
+  },
+  "sourceColumn": "KRER11-01-027-03",
+  "sharedSkirtingColumn": "KRER11-01-039-04",
+  "reuseClassification": "REUSE_EXACT",
+  "baseFactory": "ceramicFloorM150WholeProvisionDefinitionR3",
+  "baseSourcePack": "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-whole-provision-r3.json",
+  "wholeSubworksReused": true,
+  "newCatalogIdentity": false,
+  "newNumericalNorm": false,
+  "newResourceOwner": false,
+  "toolAndPpePositions": 44,
+  "qualityControls": 6,
+  "operations": 8,
+  "independentGeometry": ["net_ceramic_floor_area_m2", "ceramic_m150_skirting_length_m"],
+  "formats": [
+    {"id": "ceramic100x100", "tileEdgeMm": 100, "titleRu": "Керамическая плитка 100 × 100 мм на готовом М150", "specificationRu": "Плитка керамическая для пола гладкая неглазурованная одноцветная с красителем, 100 × 100 мм", "reuseClassification": "REUSE_EXACT"},
+    {"id": "ceramic150x150", "tileEdgeMm": 150, "titleRu": "Керамическая плитка 150 × 150 мм на готовом М150", "specificationRu": "Плитка керамическая для пола гладкая неглазурованная одноцветная с красителем, 150 × 150 мм", "reuseClassification": "REUSE_EXACT"}
+  ],
+  "primaryEvidence": [
+    {"path": ".release-runtime/r568/s27-69/cn69-krer11-labor-candidate/KRER-11-official.pdf", "sha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223", "locatorRu": "PDF33 состав норм01–03; PDF34 точная02703, одинаковые ставки не зависят от двух допустимых размеров; PDF46–47 самостоятельная03904"},
+    {"path": ".release-runtime/r568/next-wave/ceramic02703/r2-sources/tk36-03.pdf", "sha256": "49328bf7ab36d8a5ad073145a64a520d506f895e3ffa1e92a7c2aa92a365a3a7", "locatorRu": "PDF5 §1.1: одноцветная100×100/150×150 на цементном растворе≥М15010–15мм; §1.4 основание; PDF20–24 контроль; PDF28–29 табель; PDF30 бригада6человек"}
+  ],
+  "quantityBoundary": "Formats select existing geometry scope only. No piece count is inferred from area; 102m2/100m2 floor tile consumption remains the exact original column. No new waste percentage, reserve, supplier quantum, second tool purchase or second provision owner is introduced.",
+  "compatibleProfileConditionsInherited": true,
+  "actualRemainingInherited": ["deformation-junctions", "additional-logistics-waste", "r3:handwash-water", "r3:hand-cleanser", "r3:hand-drying-towels"],
+  "fullTechnicalAcceptance": false,
+  "finiteAdjacentDispositions": [
+    {"sourceColumn": "KRER11-01-027-02", "classification": "ADAPTATION", "reasonRu": "Многоцветная плитка выходит за буквальную область одноцветнойТК§1.1. Требуется предметная адаптация, не выдаётся за exactreuse."},
+    {"catalogId": "canonical-work:base:tile_stone_interior_tile_floor_lay_standard", "capturedVersion": 3, "capturedDefinitionId": "95322c6a-c7f8-5408-ad3c-cd6e81466680", "classification": "INCOMPATIBLE", "reasonRu": "Существующая ветвь содержит CM11/CE40 и иные операции смешивания/грунтования/швов. Полный М150-комплект44/6 не переносится без адаптации."},
+    {"catalogId": "canonical-work:master:ceramic_tile_up_to_10cm_cm11_ct17_indoor_cement_floor_standard", "capturedDefinitionId": "9aa2b934-057b-512c-98ef-dd177a145b59", "classification": "INCOMPATIBLE", "reasonRu": "Клеевая прослойкаCM11/грунтCT17/затиркаCE40 отличаются от готовогоМ150/цементныхшвов."}
+  ],
+  "published": false
+}

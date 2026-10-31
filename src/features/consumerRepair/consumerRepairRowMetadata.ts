@@ -1,7 +1,10 @@
+import {resolveProfessionalUnitDefinition} from '../../lib/estimate/professionalUnitRegistry';
 import { consumerCanonicalApplicationScopeRequirementNotice, consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import type { CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
+import {canonicalPublicResourceDisplayPresentationV1,canonicalPublicResourceRowKindV1} from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import { canonicalDerivedQuantityEditPolicyV1 } from '../../lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1';
 import { canonicalPublicEstimateParameterTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import {canonicalPublicHiddenResourceAlternativeIdsV1} from '../../lib/estimate/backendPlatform/canonicalPublicResourceAlternativesV1';
 
 type ConsumerRepairRowMetadataCarrier = {
   id?: string;
@@ -10,9 +13,12 @@ type ConsumerRepairRowMetadataCarrier = {
   unit?: string | null;
   category?: string | null;
   quantity?: number | null;
+  unitPrice?: number | null;
+  totalPrice?: unknown;
   formulaId?: string | null;
   quantityFormula?: string | null;
   normSourceTitle?: string | null;
+  calculationTrace?: unknown;
   sourceParameters?: Readonly<Record<string, unknown>> | null;
 };
 
@@ -26,6 +32,27 @@ function text(value: unknown): string {
 
 const verifiedDisplayPresentations = new WeakMap<object, CanonicalPublicResourcePresentationV1>();
 const verifiedSearchPresentations = new WeakMap<object, CanonicalPublicResourcePresentationV1>();
+const parsedRowGraphs = new WeakMap<object,{trace:string;graph:Readonly<Record<string,unknown>>|undefined}>();
+
+function rowGraph(item:ConsumerRepairRowMetadataCarrier|null|undefined):Readonly<Record<string,unknown>>|undefined {
+  if(!item||typeof item.calculationTrace!=='string'||item.calculationTrace.length>1_048_576)return undefined;
+  const cached=parsedRowGraphs.get(item);if(cached?.trace===item.calculationTrace)return cached.graph;
+  let graph:Readonly<Record<string,unknown>>|undefined;
+  try{const value=JSON.parse(item.calculationTrace)?.resourceGraph;
+    if(value&&typeof value==='object'&&!Array.isArray(value))graph=value;
+  }catch{/* A malformed trace has no authority to fold a visible resource. */}
+  parsedRowGraphs.set(item,{trace:item.calculationTrace,graph});return graph;
+}
+
+export function consumerRepairHiddenResourceAlternativeIds(items:readonly ConsumerRepairRowMetadataCarrier[]):Set<string>{
+  return canonicalPublicHiddenResourceAlternativeIdsV1(items.map(item=>{
+    const source=metadata(item);
+    return {id:item.id??'',sourceRowId:typeof source.rowCode==='string'?source.rowCode:'',scopeId:typeof source.canonicalBackendRevisionId==='string'?source.canonicalBackendRevisionId:'',
+      titleRu:item.titleRu??'',unitId:item.unit??'',quantity:item.quantity,preliminary:source.canonicalPreliminaryNeed===true,unitPrice:item.unitPrice,amount:item.totalPrice,
+      manual:source.canonicalManualTitleOverride===true||source.manualQuantityOverride===true,
+      graph:rowGraph(item)??{publicResourceAlternativesV1:source.canonicalPublicResourceAlternativesV1,costTreatment:source.canonicalCostTreatment}};
+  }));
+}
 
 /** View-only admission: never persisted in an item or trusted from raw metadata. */
 export function registerConsumerRepairRowVerifiedPresentation(item: object, presentation: CanonicalPublicResourcePresentationV1 | null,
@@ -112,7 +139,8 @@ export function consumerRepairRowMissingRequirementLabels(
   return [...new Set(requirements.flatMap((requirement) => {
     if (!requirement || typeof requirement !== "object" || Array.isArray(requirement)) return [];
     const source = requirement as Record<string, unknown>;
-    const label = canonicalPublicEstimateParameterTitleRu(text(source.parameterId),text(source.titleRu || source.labelRu || source.parameterTitleRu || source.parameterId));
+    const label = canonicalPublicEstimateParameterTitleRu(text(source.parameterId),text(source.titleRu || source.labelRu || source.parameterTitleRu || source.parameterId),
+      {catalogId:consumerRepairRowCanonicalCatalogId(item)});
     return label ? [label] : [];
   }))];
 }
@@ -128,7 +156,8 @@ export function consumerRepairRowRequirementNotice(
   for (const requirement of consumerCanonicalMissingRequirements(item, tables)) {
     const scope = consumerCanonicalApplicationScopeRequirementNotice(requirement);
     if (scope) { if (!scopes.includes(scope)) scopes.push(scope); continue; }
-    const label = canonicalPublicEstimateParameterTitleRu(text(requirement.parameterId),text(requirement.titleRu || requirement.labelRu || requirement.parameterTitleRu || requirement.parameterId));
+    const label = canonicalPublicEstimateParameterTitleRu(text(requirement.parameterId),text(requirement.titleRu || requirement.labelRu || requirement.parameterTitleRu || requirement.parameterId),
+      {catalogId:consumerRepairRowCanonicalCatalogId(item)});
     if (!label) continue;
     const sourceManaged = requirement.valueSourceRole === "UNRESOLVED_APPLICATION_NORM"
       || requirement.sourceConfirmationRequired === true;
@@ -137,7 +166,7 @@ export function consumerRepairRowRequirementNotice(
   }
   const messages = [
     item.quantity != null ? `Количество ${item.quantity} сохранено, но позиция ещё не подтверждена.` : null,
-    inputs.length ? `Заполните в исходных данных: ${inputs.join(", ")}.` : null,
+    inputs.length ? `Заполните в исходных данных: ${inputs.join(", ")}${/[.!?]$/u.test(inputs[inputs.length-1]!) ? '' : '.'}` : null,
     sources.length ? 'Приложение пока не рассчитало эту позицию. Вводить нормы и коэффициенты не требуется.' : null,
     ...scopes,
   ].filter(Boolean);
@@ -181,12 +210,49 @@ export function consumerRepairRowIsNonPayable(
     || VISIBLE_NON_PAYABLE_COST_TREATMENTS.has(text(source.canonicalCostTreatment));
 }
 
+/** Every visible estimate row accepts a saved manual price. Payment and cost
+ * coverage remain independent, so included resources are never charged twice. */
+export function consumerRepairRowPriceIsEditable(
+  item: ConsumerRepairRowMetadataCarrier | null | undefined,
+): boolean {
+  return item != null;
+}
+
 /** An unresolved physical need is visible even though it cannot yet be paid. */
 export function consumerRepairRowIsTechnicalDetail(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
 ): boolean {
-  return !consumerRepairRowIsCanonicalPreliminaryNeed(item)
-    && VISIBLE_NON_PAYABLE_COST_TREATMENTS.has(text(metadata(item).canonicalCostTreatment));
+  const source=metadata(item);
+  if(source.includedInEstimate===true||source.includedInProcurement===true
+    ||source.canonicalManualTitleOverride===true)return false;
+  const kind=consumerRepairRowPublicKind(item);
+  if(item?.unitPrice!=null && kind!=='CALCULATION_DETAIL')return false;
+  if(kind==='PROCESS_NOTE')return false;
+  const physicalHeadcount=text(source.canonicalCostTreatment)==='INFORMATIONAL_SCOPE'
+    &&resolveProfessionalUnitDefinition(item?.unit)?.dimension==='headcount';
+  const physicalCategory=physicalHeadcount||['material','materials','tool','equipment','service','transport','delivery'].includes(item?.category??item?.itemType??'');
+  return kind==='CALCULATION_DETAIL' || (!physicalCategory&&!consumerRepairRowPublicResourcePresentation(item??{})&&!consumerRepairRowIsCanonicalPreliminaryNeed(item)
+    && VISIBLE_NON_PAYABLE_COST_TREATMENTS.has(text(metadata(item).canonicalCostTreatment)));
+}
+
+function consumerRepairRowPublicKind(item:ConsumerRepairRowMetadataCarrier|null|undefined) {
+  const presentation=item?consumerRepairRowPublicResourcePresentation(item):null,source=metadata(item);
+  return canonicalPublicResourceRowKindV1({titleRu:presentation?.sourceTitleRu??item?.titleRu??'',descriptor:presentation,
+    manualTitleOverride:source.canonicalManualTitleOverride===true,costTreatment:source.canonicalCostTreatment,
+    includedInEstimate:source.includedInEstimate===true,includedInProcurement:source.includedInProcurement===true,
+    unitPrice:item?.unitPrice,category:item?.category??item?.itemType??undefined,
+    rowId:typeof source.rowCode==='string'?source.rowCode:undefined,graph:rowGraph(item)});
+}
+
+export function consumerRepairRowProcessNote(item:ConsumerRepairRowMetadataCarrier):string|null {
+  if(consumerRepairRowPublicKind(item)!=='PROCESS_NOTE')return null;
+  const registered=consumerRepairRowPublicResourcePresentation(item);
+  // Reopened objects have no transient registration. Resolve the same exact
+  // authored row binding used by the role classifier before reading its note.
+  const presentation=canonicalPublicResourceDisplayPresentationV1({
+    titleRu:registered?.sourceTitleRu??item.titleRu??'',descriptor:registered,rowId:consumerRepairRowCode(item),
+    manualTitleOverride:metadata(item).canonicalManualTitleOverride===true});
+  return presentation ? presentation.detailsRu.join(' ')||presentation.nameRu : null;
 }
 
 export function consumerRepairRowSourceManagedQuantityReason(

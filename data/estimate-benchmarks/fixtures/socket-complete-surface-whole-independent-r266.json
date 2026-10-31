@@ -1,0 +1,1972 @@
+{
+  "contract": "socket-complete-surface-independent-fixture/r266",
+  "basis": "Primary F03972EN PDF1 plus explicit TEST_ONLY actual project schedule; legacy63 inventory from immutable R266 capture only, not a physical source norm. Expectations fixed before implementation execution.",
+  "generatedFromImplementation": false,
+  "testOnly": true,
+  "actualProjectAuthentication": false,
+  "parentFileSha256": "aaa9033eaa4a0c416d180b4c086b88cef7e3ed5627ce89c38ed7728402ee36c7",
+  "expectedShape": [
+    29,
+    87,
+    87
+  ],
+  "expectedNewRows": 24,
+  "expectedNewParameters": 28,
+  "legacyRows": 63,
+  "legacySourceRegistryUnverified": 18,
+  "newPaidOwnerSuffixes": [
+    "assembly:order",
+    "screws:order",
+    "anchors:order",
+    "whole-labour",
+    "delivery",
+    "waste-removal"
+  ],
+  "newProcurementOwnerSuffixes": [
+    "assembly:order",
+    "screws:order",
+    "anchors:order",
+    "delivery",
+    "waste-removal"
+  ],
+  "testOnlyInput": {
+    "q": 100,
+    "socket_complete_surface_method": "Комплектная накладная розетка 2P+E по принятой ведомости и готовому основанию",
+    "socket_complete_surface_node_count": 3,
+    "socket_complete_surface_ppr_reference": "TEST_ONLY schedule S1, seven screws, five anchors; prepared circuit/base and QA; not a real project",
+    "socket_complete_surface_scope_accepted": "Принята ведомость одиночных комплектных розеток069730L; готовое основание и крепёж; подготовленный совместимый обесточенный ввод; проверены маркировка изделия, проводники и программа электроиспытаний; работы выполняет допущенный персонал",
+    "socket_complete_surface_fixing_mode": "Крепление с дюбелями по принятому основанию",
+    "socket_complete_surface_owned_toolkit_count": 1,
+    "socket_complete_surface_own_tools_accepted": "Собственный пригодный монтажный и электроизмерительный комплект по принятому ППР; аренда/оператор/спецтехника не включены",
+    "socket_complete_surface_total_labour_h": "2.5",
+    "socket_complete_surface_qa_count": 3,
+    "socket_complete_surface_delivery_trips": 1,
+    "socket_complete_surface_waste_trips": 0,
+    "socket_complete_surface_price_scope_reference": "TEST_ONLY separate factory product and fixing orders; onsite whole labour; external trip excludes that labour",
+    "socket_complete_surface_screw_piece_count": 7,
+    "socket_complete_surface_screw_specification": "TEST_ONLY actual accepted screw schedule; no dimension/norm inferred",
+    "socket_complete_surface_anchor_piece_count": 5,
+    "socket_complete_surface_anchor_specification": "TEST_ONLY actual accepted substrate anchor schedule; no dimension/norm inferred",
+    "socket_complete_surface_assembly_stock": 1,
+    "socket_complete_surface_assembly_reserve": 1,
+    "socket_complete_surface_assembly_supplier_multiple": 2,
+    "socket_complete_surface_screws_stock": 2,
+    "socket_complete_surface_screws_reserve": 1,
+    "socket_complete_surface_screws_supplier_multiple": 4,
+    "socket_complete_surface_anchors_stock": 1,
+    "socket_complete_surface_anchors_reserve": 0,
+    "socket_complete_surface_anchors_supplier_multiple": 3
+  },
+  "testOnlyPrices": {
+    "assembly:order": "500",
+    "screws:order": "2",
+    "anchors:order": "3",
+    "whole-labour": "800",
+    "delivery": "100",
+    "waste-removal": "50"
+  },
+  "independentMoneyArithmetic": {
+    "assembly": "4*500=2000",
+    "screws": "8*2=16",
+    "anchors": "6*3=18",
+    "whole-labour": "2.5*800=2000",
+    "delivery": "1*100=100",
+    "waste-removal": "0*50=0",
+    "total": "4134",
+    "directWithoutAnchors": "4116",
+    "scope": "TEST_ONLY not a quote/accepted labour rate"
+  },
+  "newProfileCompletenessMap": {
+    "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+    "sourceKind": "PROJECT_SYSTEM",
+    "generatedFromCurrentRows": false,
+    "evidenceSha256": "2393d3d995a30c345481b546237f1383ec43e5e7ff9367f1729c867a5e5a7b43",
+    "operationResourceBindingRequired": true,
+    "entries": [
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "assembly:consumed",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:consumed",
+        "resolution": {
+          "kind": "INCLUDED_COMPONENT_ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:consumed",
+          "parentRowId": "electrical:socket-complete-surface-r266:assembly:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix",
+          "electrical:socket-complete-surface-r266:mechanism-front",
+          "electrical:socket-complete-surface-r266:connection",
+          "electrical:socket-complete-surface-r266:qa-close"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "assembly:order",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "assembly:remaining",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:remaining",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:remaining"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "assembly:free",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:free",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:free"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "assembly:shortage",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:shortage",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:shortage"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "assembly:reserve-deficit",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:reserve-deficit",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:reserve-deficit"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "screws:consumed",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:consumed",
+        "resolution": {
+          "kind": "INCLUDED_COMPONENT_ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:consumed",
+          "parentRowId": "electrical:socket-complete-surface-r266:screws:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "screws:order",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "screws:remaining",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:remaining",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:remaining"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "screws:free",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:free",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:free"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "screws:shortage",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:shortage",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:shortage"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "screws:reserve-deficit",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:reserve-deficit",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:reserve-deficit"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "anchors:consumed",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:consumed",
+        "resolution": {
+          "kind": "INCLUDED_COMPONENT_ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:consumed",
+          "parentRowId": "electrical:socket-complete-surface-r266:anchors:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "anchors:order",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "anchors:remaining",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:remaining",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:remaining"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "anchors:free",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:free",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:free"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "anchors:shortage",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:shortage",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:shortage"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "anchors:reserve-deficit",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:reserve-deficit",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:reserve-deficit"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "measured-nodes",
+        "unitId": "pcs",
+        "category": "service",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:measured-nodes",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:measured-nodes"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix"
+        ]
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "owned-tools",
+        "unitId": "set",
+        "category": "equipment",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:owned-tools",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:owned-tools"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix",
+          "electrical:socket-complete-surface-r266:mechanism-front",
+          "electrical:socket-complete-surface-r266:connection",
+          "electrical:socket-complete-surface-r266:qa-close"
+        ]
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "whole-labour",
+        "unitId": "man_hour",
+        "category": "construction_work",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:whole-labour",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:whole-labour"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix",
+          "electrical:socket-complete-surface-r266:mechanism-front",
+          "electrical:socket-complete-surface-r266:connection",
+          "electrical:socket-complete-surface-r266:qa-close",
+          "electrical:socket-complete-surface-r266:delivery",
+          "electrical:socket-complete-surface-r266:cleanup"
+        ]
+      },
+      {
+        "operationId": "qa-close",
+        "expectedResourceId": "qa-included",
+        "unitId": "test",
+        "category": "service",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:qa-included",
+        "resolution": {
+          "kind": "INCLUDED_COMPONENT_ROW",
+          "rowId": "electrical:socket-complete-surface-r266:qa-included",
+          "parentRowId": "electrical:socket-complete-surface-r266:whole-labour"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:qa-close"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "delivery",
+        "unitId": "trip",
+        "category": "service",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:delivery",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:delivery"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "cleanup",
+        "expectedResourceId": "waste-removal",
+        "unitId": "trip",
+        "category": "service",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:waste-removal",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:waste-removal"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:cleanup"
+        ]
+      }
+    ]
+  },
+  "completenessMap": {
+    "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+    "sourceKind": "PROJECT_SYSTEM",
+    "generatedFromCurrentRows": false,
+    "evidenceSha256": "2393d3d995a30c345481b546237f1383ec43e5e7ff9367f1729c867a5e5a7b43",
+    "entries": [
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_materials_01",
+        "unitId": "linear_m",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_materials_linear_m_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_materials_quantity_formula_v1_electrical_interior_socket_install_standard_materials_01",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_materials_01"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_materials_02",
+        "unitId": "linear_m",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_materials_linear_m_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_materials_quantity_formula_v1_electrical_interior_socket_install_standard_materials_02",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_materials_02"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_materials_03",
+        "unitId": "linear_m",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_materials_linear_m_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_materials_quantity_formula_v1_electrical_interior_socket_install_standard_materials_03",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_materials_03"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_materials_04",
+        "unitId": "point",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_materials_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_materials_quantity_formula_v1_electrical_interior_socket_install_standard_materials_04",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_materials_04"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_materials_05",
+        "unitId": "point",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_materials_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_materials_quantity_formula_v1_electrical_interior_socket_install_standard_materials_05",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_materials_05"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_materials_06",
+        "unitId": "point",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_materials_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_materials_quantity_formula_v1_electrical_interior_socket_install_standard_materials_06",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_materials_06"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_materials_41",
+        "unitId": "point",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_materials_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_materials_quantity_formula_v1_electrical_interior_socket_install_standard_materials_41",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_materials_41"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_materials_42",
+        "unitId": "point",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_materials_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_materials_quantity_formula_v1_electrical_interior_socket_install_standard_materials_42",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_materials_42"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_materials_43",
+        "unitId": "point",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_materials_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_materials_quantity_formula_v1_electrical_interior_socket_install_standard_materials_43",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_materials_43"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_components_07",
+        "unitId": "piece",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_components_piece_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_components_quantity_formula_v1_electrical_interior_socket_install_standard_components_07",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_components_07"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_components_08",
+        "unitId": "piece",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_components_piece_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_components_quantity_formula_v1_electrical_interior_socket_install_standard_components_08",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_components_08"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_components_09",
+        "unitId": "piece",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_components_piece_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_components_quantity_formula_v1_electrical_interior_socket_install_standard_components_09",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_components_09"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_components_10",
+        "unitId": "piece",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_components_piece_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_components_quantity_formula_v1_electrical_interior_socket_install_standard_components_10",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_components_10"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_components_44",
+        "unitId": "piece",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_components_piece_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_components_quantity_formula_v1_electrical_interior_socket_install_standard_components_44",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_components_44"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_components_45",
+        "unitId": "piece",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_components_piece_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_components_quantity_formula_v1_electrical_interior_socket_install_standard_components_45",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_components_45"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_components_46",
+        "unitId": "piece",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_components_piece_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_components_quantity_formula_v1_electrical_interior_socket_install_standard_components_46",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_components_46"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_consumables_11",
+        "unitId": "set",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_consumables_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_consumables_quantity_formula_v1_electrical_interior_socket_install_standard_consumables_11",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_consumables_11"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_consumables_12",
+        "unitId": "set",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_consumables_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_consumables_quantity_formula_v1_electrical_interior_socket_install_standard_consumables_12",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_consumables_12"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_consumables_13",
+        "unitId": "linear_m",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_consumables_linear_m_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_consumables_quantity_formula_v1_electrical_interior_socket_install_standard_consumables_13",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_consumables_13"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_consumables_47",
+        "unitId": "set",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_consumables_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_consumables_quantity_formula_v1_electrical_interior_socket_install_standard_consumables_47",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_consumables_47"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_consumables_48",
+        "unitId": "point",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_material_consumables_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_consumables_quantity_formula_v1_electrical_interior_socket_install_standard_consumables_48",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_consumables_48"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_preparation_14",
+        "unitId": "linear_m",
+        "category": "work",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_preparation_linear_m_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_electrical_interior_socket_install_standard_preparation_14",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_preparation_14"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_preparation_15",
+        "unitId": "point",
+        "category": "work",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_preparation_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_electrical_interior_socket_install_standard_preparation_15",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_preparation_15"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_preparation_16",
+        "unitId": "set",
+        "category": "work",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_preparation_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_electrical_interior_socket_install_standard_preparation_16",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_preparation_16"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_preparation_17",
+        "unitId": "set",
+        "category": "work",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_preparation_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_electrical_interior_socket_install_standard_preparation_17",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_preparation_17"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_preparation_49",
+        "unitId": "set",
+        "category": "work",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_preparation_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_electrical_interior_socket_install_standard_preparation_49",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_preparation_49"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_preparation_50",
+        "unitId": "point",
+        "category": "work",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_preparation_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_electrical_interior_socket_install_standard_preparation_50",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_preparation_50"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_preparation_51",
+        "unitId": "set",
+        "category": "work",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_preparation_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_electrical_interior_socket_install_standard_preparation_51",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_preparation_51"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_labor_18",
+        "unitId": "point",
+        "category": "labor",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_labor_quantity_formula_v1_electrical_interior_socket_install_standard_labor_18",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_labor_18"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_labor_19",
+        "unitId": "point",
+        "category": "labor",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_labor_quantity_formula_v1_electrical_interior_socket_install_standard_labor_19",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_labor_19"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_labor_20",
+        "unitId": "point",
+        "category": "labor",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_labor_quantity_formula_v1_electrical_interior_socket_install_standard_labor_20",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_labor_20"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_labor_21",
+        "unitId": "point",
+        "category": "labor",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_labor_quantity_formula_v1_electrical_interior_socket_install_standard_labor_21",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_labor_21"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_labor_22",
+        "unitId": "point",
+        "category": "labor",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_labor_quantity_formula_v1_electrical_interior_socket_install_standard_labor_22",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_labor_22"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_labor_23",
+        "unitId": "point",
+        "category": "labor",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_labor_quantity_formula_v1_electrical_interior_socket_install_standard_labor_23",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_labor_23"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_labor_24",
+        "unitId": "point",
+        "category": "labor",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_labor_quantity_formula_v1_electrical_interior_socket_install_standard_labor_24",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_labor_24"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_labor_52",
+        "unitId": "point",
+        "category": "labor",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_labor_quantity_formula_v1_electrical_interior_socket_install_standard_labor_52",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_labor_52"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_labor_53",
+        "unitId": "point",
+        "category": "labor",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_labor_quantity_formula_v1_electrical_interior_socket_install_standard_labor_53",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_labor_53"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_labor_54",
+        "unitId": "point",
+        "category": "labor",
+        "sourceId": "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_labor_quantity_formula_v1_electrical_interior_socket_install_standard_labor_54",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_labor_54"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_equipment_25",
+        "unitId": "set",
+        "category": "equipment",
+        "sourceId": "src_professional_norm_pack_catalog_equipment_rent_equipment_equipment_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_equipment_quantity_formula_v1_electrical_interior_socket_install_standard_equipment_25",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_equipment_25"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_equipment_26",
+        "unitId": "set",
+        "category": "equipment",
+        "sourceId": "src_professional_norm_pack_catalog_equipment_rent_equipment_equipment_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_equipment_quantity_formula_v1_electrical_interior_socket_install_standard_equipment_26",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_equipment_26"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_equipment_27",
+        "unitId": "set",
+        "category": "equipment",
+        "sourceId": "src_professional_norm_pack_catalog_equipment_rent_equipment_equipment_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_equipment_quantity_formula_v1_electrical_interior_socket_install_standard_equipment_27",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_equipment_27"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_equipment_55",
+        "unitId": "set",
+        "category": "equipment",
+        "sourceId": "src_professional_norm_pack_catalog_equipment_rent_equipment_equipment_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_equipment_quantity_formula_v1_electrical_interior_socket_install_standard_equipment_55",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_equipment_55"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_equipment_56",
+        "unitId": "set",
+        "category": "equipment",
+        "sourceId": "src_professional_norm_pack_catalog_equipment_rent_equipment_equipment_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_equipment_quantity_formula_v1_electrical_interior_socket_install_standard_equipment_56",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_equipment_56"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_logistics_28",
+        "unitId": "set",
+        "category": "transport",
+        "sourceId": "src_professional_norm_pack_catalog_delivery_service_logistics_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_logistics_quantity_formula_v1_electrical_interior_socket_install_standard_logistics_28",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_logistics_28"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_logistics_29",
+        "unitId": "set",
+        "category": "transport",
+        "sourceId": "src_professional_norm_pack_catalog_delivery_service_logistics_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_logistics_quantity_formula_v1_electrical_interior_socket_install_standard_logistics_29",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_logistics_29"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_logistics_57",
+        "unitId": "set",
+        "category": "transport",
+        "sourceId": "src_professional_norm_pack_catalog_delivery_service_logistics_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_logistics_quantity_formula_v1_electrical_interior_socket_install_standard_logistics_57",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_logistics_57"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_logistics_58",
+        "unitId": "set",
+        "category": "transport",
+        "sourceId": "src_professional_norm_pack_catalog_delivery_service_logistics_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_logistics_quantity_formula_v1_electrical_interior_socket_install_standard_logistics_58",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_logistics_58"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_waste_30",
+        "unitId": "linear_m",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_waste_removal_material_waste_linear_m_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_waste_quantity_formula_v1_electrical_interior_socket_install_standard_waste_30",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_waste_30"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_waste_31",
+        "unitId": "point",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_waste_removal_material_waste_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_waste_quantity_formula_v1_electrical_interior_socket_install_standard_waste_31",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_waste_31"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_waste_59",
+        "unitId": "point",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_waste_removal_material_waste_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_waste_quantity_formula_v1_electrical_interior_socket_install_standard_waste_59",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_waste_59"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_waste_60",
+        "unitId": "point",
+        "category": "material",
+        "sourceId": "src_professional_norm_pack_catalog_waste_removal_material_waste_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_waste_quantity_formula_v1_electrical_interior_socket_install_standard_waste_60",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_waste_60"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_quality_control_32",
+        "unitId": "point",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_labor_quality_control_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_electrical_interior_socket_install_standard_quality_control_32",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_quality_control_32"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_quality_control_33",
+        "unitId": "point",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_labor_quality_control_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_electrical_interior_socket_install_standard_quality_control_33",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_quality_control_33"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_quality_control_34",
+        "unitId": "point",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_labor_quality_control_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_electrical_interior_socket_install_standard_quality_control_34",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_quality_control_34"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_quality_control_35",
+        "unitId": "point",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_labor_quality_control_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_electrical_interior_socket_install_standard_quality_control_35",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_quality_control_35"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_quality_control_36",
+        "unitId": "point",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_labor_quality_control_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_electrical_interior_socket_install_standard_quality_control_36",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_quality_control_36"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_quality_control_37",
+        "unitId": "point",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_labor_quality_control_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_electrical_interior_socket_install_standard_quality_control_37",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_quality_control_37"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_quality_control_38",
+        "unitId": "point",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_labor_quality_control_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_electrical_interior_socket_install_standard_quality_control_38",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_quality_control_38"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_quality_control_61",
+        "unitId": "set",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_labor_quality_control_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_electrical_interior_socket_install_standard_quality_control_61",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_quality_control_61"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_quality_control_62",
+        "unitId": "set",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_labor_quality_control_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_electrical_interior_socket_install_standard_quality_control_62",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_quality_control_62"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_quality_control_63",
+        "unitId": "point",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_labor_quality_control_point_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_electrical_interior_socket_install_standard_quality_control_63",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_quality_control_63"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_overhead_39",
+        "unitId": "set",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_service_overhead_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_overhead_quantity_formula_v1_electrical_interior_socket_install_standard_overhead_39",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_overhead_39"
+        }
+      },
+      {
+        "operationId": "legacy-unverified-scope",
+        "expectedResourceId": "retained:electrical_interior_socket_install_standard_tax_40",
+        "unitId": "set",
+        "category": "service",
+        "sourceId": "src_professional_norm_pack_catalog_documentation_service_tax_set_v1",
+        "condition": "LEGACY_SELECTOR_ABSENT_OR_LEGACY_ONLY; prior source claims remain unverified",
+        "quantityRule": "EXACT_CAPTURED_V3_FORMULA_NOT_NEW_SOURCE_RATE",
+        "formulaId": "electrical_interior_socket_install_standard_professional_expanded_v1_tax_quantity_formula_v1_electrical_interior_socket_install_standard_tax_40",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical_interior_socket_install_standard_tax_40"
+        }
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "assembly:consumed",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:consumed",
+        "resolution": {
+          "kind": "INCLUDED_COMPONENT_ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:consumed",
+          "parentRowId": "electrical:socket-complete-surface-r266:assembly:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix",
+          "electrical:socket-complete-surface-r266:mechanism-front",
+          "electrical:socket-complete-surface-r266:connection",
+          "electrical:socket-complete-surface-r266:qa-close"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "assembly:order",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "assembly:remaining",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:remaining",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:remaining"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "assembly:free",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:free",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:free"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "assembly:shortage",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:shortage",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:shortage"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "assembly:reserve-deficit",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:assembly:reserve-deficit",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:assembly:reserve-deficit"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "screws:consumed",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:consumed",
+        "resolution": {
+          "kind": "INCLUDED_COMPONENT_ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:consumed",
+          "parentRowId": "electrical:socket-complete-surface-r266:screws:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "screws:order",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "screws:remaining",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:remaining",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:remaining"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "screws:free",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:free",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:free"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "screws:shortage",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:shortage",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:shortage"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "screws:reserve-deficit",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:screws:reserve-deficit",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:screws:reserve-deficit"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "anchors:consumed",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:consumed",
+        "resolution": {
+          "kind": "INCLUDED_COMPONENT_ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:consumed",
+          "parentRowId": "electrical:socket-complete-surface-r266:anchors:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "anchors:order",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:order"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "anchors:remaining",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:remaining",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:remaining"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "anchors:free",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:free",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:free"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "anchors:shortage",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:shortage",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:shortage"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "anchors:reserve-deficit",
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE;DOWEL_METHOD_ONLY",
+        "quantityRule": "ACTUAL_ACCEPTED_SCHEDULE_AND_EXISTING_CANONICAL_PURCHASE_BALANCE_NO_Q_MULTIPLIER",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:anchors:reserve-deficit",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:anchors:reserve-deficit"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "measured-nodes",
+        "unitId": "pcs",
+        "category": "service",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:measured-nodes",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:measured-nodes"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix"
+        ]
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "owned-tools",
+        "unitId": "set",
+        "category": "equipment",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:owned-tools",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:owned-tools"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix",
+          "electrical:socket-complete-surface-r266:mechanism-front",
+          "electrical:socket-complete-surface-r266:connection",
+          "electrical:socket-complete-surface-r266:qa-close"
+        ]
+      },
+      {
+        "operationId": "housing-fix",
+        "expectedResourceId": "whole-labour",
+        "unitId": "man_hour",
+        "category": "construction_work",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:whole-labour",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:whole-labour"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:housing-fix",
+          "electrical:socket-complete-surface-r266:mechanism-front",
+          "electrical:socket-complete-surface-r266:connection",
+          "electrical:socket-complete-surface-r266:qa-close",
+          "electrical:socket-complete-surface-r266:delivery",
+          "electrical:socket-complete-surface-r266:cleanup"
+        ]
+      },
+      {
+        "operationId": "qa-close",
+        "expectedResourceId": "qa-included",
+        "unitId": "test",
+        "category": "service",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:qa-included",
+        "resolution": {
+          "kind": "INCLUDED_COMPONENT_ROW",
+          "rowId": "electrical:socket-complete-surface-r266:qa-included",
+          "parentRowId": "electrical:socket-complete-surface-r266:whole-labour"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:qa-close"
+        ]
+      },
+      {
+        "operationId": "delivery",
+        "expectedResourceId": "delivery",
+        "unitId": "trip",
+        "category": "service",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:delivery",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:delivery"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:delivery"
+        ]
+      },
+      {
+        "operationId": "cleanup",
+        "expectedResourceId": "waste-removal",
+        "unitId": "trip",
+        "category": "service",
+        "sourceId": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+        "condition": "EXACT_SELECTED_PROJECT_SOCKET_SCOPE",
+        "quantityRule": "ACTUAL_AGGREGATE_PROJECT_FACT_NOT_MANUFACTURER_RATE",
+        "formulaId": "electrical:socket-complete-surface-r266:formula:waste-removal",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:socket-complete-surface-r266:waste-removal"
+        },
+        "requiredOperationIds": [
+          "electrical:socket-complete-surface-r266:cleanup"
+        ]
+      }
+    ]
+  },
+  "entries": [
+    {
+      "id": "01-qualified-project-whole-priced",
+      "mode": "full",
+      "expectedTotal": "4134",
+      "expectedQuantities": {
+        "assembly:consumed": "3",
+        "assembly:order": "4",
+        "assembly:remaining": "2",
+        "assembly:free": "1",
+        "assembly:shortage": "0",
+        "assembly:reserve-deficit": "0",
+        "screws:consumed": "7",
+        "screws:order": "8",
+        "screws:remaining": "3",
+        "screws:free": "2",
+        "screws:shortage": "0",
+        "screws:reserve-deficit": "0",
+        "anchors:consumed": "5",
+        "anchors:order": "6",
+        "anchors:remaining": "2",
+        "anchors:free": "2",
+        "anchors:shortage": "0",
+        "anchors:reserve-deficit": "0",
+        "measured-nodes": "3",
+        "owned-tools": "1",
+        "whole-labour": "2.5",
+        "qa-included": "3",
+        "delivery": "1",
+        "waste-removal": "0"
+      }
+    },
+    {
+      "id": "02-direct-prepared-fixing-no-anchor-rows",
+      "mode": "direct",
+      "input": {
+        "socket_complete_surface_fixing_mode": "Прямое винтовое крепление по принятому основанию"
+      },
+      "remove": [
+        "socket_complete_surface_anchor_piece_count",
+        "socket_complete_surface_anchor_specification",
+        "socket_complete_surface_anchors_stock",
+        "socket_complete_surface_anchors_reserve",
+        "socket_complete_surface_anchors_supplier_multiple"
+      ],
+      "expectedTotal": "4116"
+    },
+    {
+      "id": "03-missing-new-count-never-copy-legacy100",
+      "mode": "missing",
+      "remove": [
+        "socket_complete_surface_node_count"
+      ],
+      "expectedNeedSuffix": "assembly:order",
+      "missingParameterId": "socket_complete_surface_node_count"
+    },
+    {
+      "id": "04-missing-real-project-reference",
+      "mode": "missing",
+      "remove": [
+        "socket_complete_surface_ppr_reference"
+      ],
+      "expectedNeedSuffix": "assembly:order",
+      "missingParameterId": "socket_complete_surface_ppr_reference"
+    },
+    {
+      "id": "05-missing-actual-aggregate-labour",
+      "mode": "missing",
+      "remove": [
+        "socket_complete_surface_total_labour_h"
+      ],
+      "expectedNeedSuffix": "whole-labour",
+      "missingParameterId": "socket_complete_surface_total_labour_h"
+    },
+    {
+      "id": "06-missing-price-scope-evidence",
+      "mode": "missing",
+      "remove": [
+        "socket_complete_surface_price_scope_reference"
+      ],
+      "expectedNeedSuffix": "assembly:order",
+      "missingParameterId": "socket_complete_surface_price_scope_reference"
+    },
+    {
+      "id": "07-missing-stock-never-assume-zero",
+      "mode": "missing-stock",
+      "remove": [
+        "socket_complete_surface_assembly_stock"
+      ],
+      "expectedNeedSuffix": "assembly:order",
+      "missingParameterId": "socket_complete_surface_assembly_stock"
+    },
+    {
+      "id": "08-manual-supply-quantum-honest-hold",
+      "mode": "quantum",
+      "manualOwnerQuantity": "3"
+    },
+    {
+      "id": "09-informational-reference-price-public-blank-amount",
+      "mode": "public-money",
+      "expectedTotal": "4134"
+    },
+    {
+      "id": "10-zero-new-node-count-reject",
+      "input": {
+        "socket_complete_surface_node_count": 0
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    },
+    {
+      "id": "11-fractional-complete-product-count-reject",
+      "input": {
+        "socket_complete_surface_node_count": "1.5"
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    },
+    {
+      "id": "12-zero-supplier-multiple-reject",
+      "input": {
+        "socket_complete_surface_assembly_supplier_multiple": 0
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    },
+    {
+      "id": "13-unqualified-physical-scope-reject",
+      "input": {
+        "socket_complete_surface_scope_accepted": "TEST_ONLY_UNCONFIRMED_SUBSTITUTION"
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    }
+  ],
+  "plannedCounters": {
+    "entries": 13,
+    "actualCorePlanned": 13,
+    "RESULT": 9,
+    "REJECT": 4,
+    "actualCoreRun": 0
+  },
+  "openSourceAndObjectNeeds": {
+    "installationNormHours": "SOURCE_GAP: no exact held KRERm08 table was found; generic source registry18 entries are not a norm. Actual whole PPR hours are an object input, no norm rate authored.",
+    "legacySourceAuthority": "QUALIFICATION: source-free current63/q approved-template metadata cannot be promoted to physical authority; existing retainer approved-template contract must be satisfied from actual evidence, not fabricated.",
+    "actualObjectFacts": "UNKNOWN until real PPR/schedule/fasteners/circuit/QA/stock/supplier/price evidence; enum text alone does not authenticate these facts.",
+    "newSourceRegistryPreimage": "UNKNOWN; R266 parent closure is not a global/exact new-source absence query."
+  },
+  "sourceRegistryPreimage": "UNKNOWN_NON_DISPATCHABLE",
+  "full": false,
+  "ready": false,
+  "newPublicCatalogs": 0
+}

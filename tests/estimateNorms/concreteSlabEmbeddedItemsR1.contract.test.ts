@@ -1,4 +1,5 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   concreteSlabEmbeddedItemsPromptDetailsR1,
@@ -18,7 +19,7 @@ import {
 } from "../../src/lib/estimate/v4/concreteSlabEmbeddedItemsR1";
 
 describe("concrete slab embedded-items canonical family", () => {
-  it("compiles six distinct project schedules through the shared core", async () => {
+  it("compiles four distinct project schedules through the shared core", async () => {
     const fixtures = new Set<string>();
     for (const target of CONCRETE_SLAB_EMBEDDED_ITEMS_TARGETS) {
       const input = concreteSlabEmbeddedItemsAcceptanceInputR1(target.contextKey);
@@ -35,7 +36,7 @@ describe("concrete slab embedded-items canonical family", () => {
       expect(compiled.rows.some((row) => row.row_id.includes("formwork"))).toBe(false);
       fixtures.add(JSON.stringify(input));
     }
-    expect(fixtures.size).toBe(6);
+    expect(fixtures.size).toBe(4);
   });
 
   it("includes only project-selected welding, supports, lifting, survey and coating", async () => {
@@ -103,9 +104,9 @@ describe("concrete slab embedded-items canonical family", () => {
     )).toBe(true);
 
     const smallTarget = CONCRETE_SLAB_EMBEDDED_ITEMS_TARGETS.find(
-      (candidate) => candidate.contextKey === "small_area",
+      (candidate) => candidate.contextKey === "standard",
     )!;
-    const smallInput = concreteSlabEmbeddedItemsAcceptanceInputR1(smallTarget.contextKey);
+    const smallInput = measuredConcreteProjectInputR533("concreteSlabEmbeddedItemsAcceptanceInputR1", "compact");
     await expect(compileConcreteSlabEmbeddedItemsR1({
       ...smallInput,
       welding_consumable_quantity_kg: 1,

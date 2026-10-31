@@ -1,0 +1,2942 @@
+{
+  "definition_version_id": "79c63634-3fa6-513a-87ed-f2e3c7807835",
+  "release_id": "2225f6aa-a74a-54eb-aaa3-ffbf4ad7d9c8",
+  "catalog_id": "canonical-work:base:masonry_interior_gas_block_lay_standard",
+  "contract_version": "real-professional-estimates-r3.content-passport.v1",
+  "identity_mode": "WORK",
+  "redirect_catalog_id": null,
+  "physical_result_ru": "Внутренняя стена по сохранённой прежней системе либо явно выбранной точной системе КРЕР08-2015; исходный количественный состав и новый заказ материалов рассчитываются от геометрии.",
+  "included_scope_ru": [
+    "кладка газоблочной кладки в стандартной зоне; профессиональная смета; 59 строк; нормативный пакет и закупочная ведомость включены",
+    "Точные исходные труд, материал, раствор/клей и машино-часы в пределах выбранной колонки КРЕР08-2015.",
+    "Отдельный один режущий узел: известные установленные части, полотно и один оператор; без новой нормы на м³, дополнительных часов или подмены исходного клея."
+  ],
+  "excluded_scope_ru": [
+    "Работы и ресурсы, отсутствующие в технологическом паспорте, не включены.",
+    "Legacy generic resource rows are excluded by Group50 remediation",
+    "Legacy generic resource rows are excluded by Group50 remediation",
+    "Опирание, отметки и применимая отсечная гидроизоляция",
+    "Перемычки, сопряжения, связи и армирование по проекту",
+    "Совместимость выбранного блока и растворной системы с проектом",
+    "Полный комплект приготовления клея и резки блоков",
+    "Оснастка подъёма, рабочие части и питание механизмов",
+    "Физические подмости, ручной инструмент и средства защиты",
+    "Контроль, защита кладки, уборка и отходы",
+    "Внешняя доставка и перемещение сверх исходной границы",
+    "Коммерческая комплектность, начальная поставка, неизвестные оси рабочей зоны, электрокомплект, пылеудаление, защита, очистка и обслуживание требуют отдельного обоснования."
+  ],
+  "capability_matrix": [
+    {
+      "status": "GREEN",
+      "capability": "PARAMETERS"
+    },
+    {
+      "status": "GREEN",
+      "capability": "FORMULAS_AND_PHYSICAL_PARITY"
+    },
+    {
+      "status": "NEEDS_SOURCE",
+      "capability": "FULL_APPLICABLE_SCOPE",
+      "unresolvedResourceRowIds": [
+        "masonry:wall:krer08-03-004-01:need:bearing-dpc",
+        "masonry:wall:krer08-03-004-01:need:lintels-ties-reinforcement",
+        "masonry:wall:krer08-03-004-01:need:source-system-fit",
+        "masonry:wall:krer08-03-004-01:need:mixing-cutting-equipment",
+        "masonry:wall:krer08-03-004-01:need:machine-physical-provision",
+        "masonry:wall:krer08-03-004-01:need:access-ppe",
+        "masonry:wall:krer08-03-004-01:need:quality-curing-cleanup",
+        "masonry:wall:krer08-03-004-01:need:external-logistics",
+        "masonry:wall:krer08-03-004-02:need:bearing-dpc",
+        "masonry:wall:krer08-03-004-02:need:lintels-ties-reinforcement",
+        "masonry:wall:krer08-03-004-02:need:source-system-fit",
+        "masonry:wall:krer08-03-004-02:need:mixing-cutting-equipment",
+        "masonry:wall:krer08-03-004-02:need:machine-physical-provision",
+        "masonry:wall:krer08-03-004-02:need:access-ppe",
+        "masonry:wall:krer08-03-004-02:need:quality-curing-cleanup",
+        "masonry:wall:krer08-03-004-02:need:external-logistics",
+        "masonry:wall:krer08-03-004-03:need:bearing-dpc",
+        "masonry:wall:krer08-03-004-03:need:lintels-ties-reinforcement",
+        "masonry:wall:krer08-03-004-03:need:source-system-fit",
+        "masonry:wall:krer08-03-004-03:need:mixing-cutting-equipment",
+        "masonry:wall:krer08-03-004-03:need:machine-physical-provision",
+        "masonry:wall:krer08-03-004-03:need:access-ppe",
+        "masonry:wall:krer08-03-004-03:need:quality-curing-cleanup",
+        "masonry:wall:krer08-03-004-03:need:external-logistics",
+        "masonry:wall:krer08-03-004-04:need:bearing-dpc",
+        "masonry:wall:krer08-03-004-04:need:lintels-ties-reinforcement",
+        "masonry:wall:krer08-03-004-04:need:source-system-fit",
+        "masonry:wall:krer08-03-004-04:need:mixing-cutting-equipment",
+        "masonry:wall:krer08-03-004-04:need:machine-physical-provision",
+        "masonry:wall:krer08-03-004-04:need:access-ppe",
+        "masonry:wall:krer08-03-004-04:need:quality-curing-cleanup",
+        "masonry:wall:krer08-03-004-04:need:external-logistics",
+        "masonry:aac:cut:mbs510:r1:need:workpiece-axis-authority",
+        "masonry:aac:cut:mbs510:r1:need:measuring",
+        "masonry:aac:cut:mbs510:r1:need:electrical-kit",
+        "masonry:aac:cut:mbs510:r1:need:dust-extraction",
+        "masonry:aac:cut:mbs510:r1:need:lifting-kit",
+        "masonry:aac:cut:mbs510:r1:need:lifting-operation",
+        "masonry:aac:cut:mbs510:r1:need:eye-protection",
+        "masonry:aac:cut:mbs510:r1:need:hearing-protection",
+        "masonry:aac:cut:mbs510:r1:need:hand-protection",
+        "masonry:aac:cut:mbs510:r1:need:workzone-protection",
+        "masonry:aac:cut:mbs510:r1:need:cleaning-tools",
+        "masonry:aac:cut:mbs510:r1:need:grease",
+        "masonry:aac:cut:mbs510:r1:need:spray-oil",
+        "masonry:aac:cut:mbs510:r1:need:waste",
+        "masonry:aac:cut:mbs510:r1:need:maintenance-service"
+      ],
+      "preliminaryCompositionOnly": true
+    },
+    {
+      "status": "GREEN_UNKNOWN_IS_NULL",
+      "capability": "PRICE"
+    }
+  ],
+  "parameter_count": 104,
+  "formula_count": 258,
+  "resource_count": 258,
+  "decision": {
+    "status": "GREEN",
+    "allowed": true,
+    "contract": "real-professional-estimates-r3.content-passport.v1",
+    "priceState": "PARTIAL_NEEDS_PRICE",
+    "waveContract": "gox-build.masonry-aac-mbs510-physical-unit/r1",
+    "quantityScope": "PARTIAL",
+    "activationAllowed": false,
+    "productionEligible": false,
+    "technicalScopeStatus": "NEEDS_SOURCE",
+    "unresolvedResourceRowIds": [
+      "masonry:wall:krer08-03-004-01:need:bearing-dpc",
+      "masonry:wall:krer08-03-004-01:need:lintels-ties-reinforcement",
+      "masonry:wall:krer08-03-004-01:need:source-system-fit",
+      "masonry:wall:krer08-03-004-01:need:mixing-cutting-equipment",
+      "masonry:wall:krer08-03-004-01:need:machine-physical-provision",
+      "masonry:wall:krer08-03-004-01:need:access-ppe",
+      "masonry:wall:krer08-03-004-01:need:quality-curing-cleanup",
+      "masonry:wall:krer08-03-004-01:need:external-logistics",
+      "masonry:wall:krer08-03-004-02:need:bearing-dpc",
+      "masonry:wall:krer08-03-004-02:need:lintels-ties-reinforcement",
+      "masonry:wall:krer08-03-004-02:need:source-system-fit",
+      "masonry:wall:krer08-03-004-02:need:mixing-cutting-equipment",
+      "masonry:wall:krer08-03-004-02:need:machine-physical-provision",
+      "masonry:wall:krer08-03-004-02:need:access-ppe",
+      "masonry:wall:krer08-03-004-02:need:quality-curing-cleanup",
+      "masonry:wall:krer08-03-004-02:need:external-logistics",
+      "masonry:wall:krer08-03-004-03:need:bearing-dpc",
+      "masonry:wall:krer08-03-004-03:need:lintels-ties-reinforcement",
+      "masonry:wall:krer08-03-004-03:need:source-system-fit",
+      "masonry:wall:krer08-03-004-03:need:mixing-cutting-equipment",
+      "masonry:wall:krer08-03-004-03:need:machine-physical-provision",
+      "masonry:wall:krer08-03-004-03:need:access-ppe",
+      "masonry:wall:krer08-03-004-03:need:quality-curing-cleanup",
+      "masonry:wall:krer08-03-004-03:need:external-logistics",
+      "masonry:wall:krer08-03-004-04:need:bearing-dpc",
+      "masonry:wall:krer08-03-004-04:need:lintels-ties-reinforcement",
+      "masonry:wall:krer08-03-004-04:need:source-system-fit",
+      "masonry:wall:krer08-03-004-04:need:mixing-cutting-equipment",
+      "masonry:wall:krer08-03-004-04:need:machine-physical-provision",
+      "masonry:wall:krer08-03-004-04:need:access-ppe",
+      "masonry:wall:krer08-03-004-04:need:quality-curing-cleanup",
+      "masonry:wall:krer08-03-004-04:need:external-logistics",
+      "masonry:aac:cut:mbs510:r1:need:workpiece-axis-authority",
+      "masonry:aac:cut:mbs510:r1:need:measuring",
+      "masonry:aac:cut:mbs510:r1:need:electrical-kit",
+      "masonry:aac:cut:mbs510:r1:need:dust-extraction",
+      "masonry:aac:cut:mbs510:r1:need:lifting-kit",
+      "masonry:aac:cut:mbs510:r1:need:lifting-operation",
+      "masonry:aac:cut:mbs510:r1:need:eye-protection",
+      "masonry:aac:cut:mbs510:r1:need:hearing-protection",
+      "masonry:aac:cut:mbs510:r1:need:hand-protection",
+      "masonry:aac:cut:mbs510:r1:need:workzone-protection",
+      "masonry:aac:cut:mbs510:r1:need:cleaning-tools",
+      "masonry:aac:cut:mbs510:r1:need:grease",
+      "masonry:aac:cut:mbs510:r1:need:spray-oil",
+      "masonry:aac:cut:mbs510:r1:need:waste",
+      "masonry:aac:cut:mbs510:r1:need:maintenance-service"
+    ],
+    "independentCompletenessMap": {
+      "entries": [
+        {
+          "unitId": "man_hour",
+          "category": "labor",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:labour",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:masonry",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Труд рабочих-строителей, разряд 3,1",
+          "expectedResourceId": "08-03-004-01:labour",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "man_hour",
+          "category": "labor",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operators",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operators"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Труд машинистов по исходной норме",
+          "expectedResourceId": "08-03-004-01:operators",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:tower-crane-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:tower-crane-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Кран башенный 5 т",
+          "expectedResourceId": "08-03-004-01:tower-crane",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:truck-crane-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:truck-crane-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Кран на автомобильном ходу 10 т",
+          "expectedResourceId": "08-03-004-01:truck-crane",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:perforator-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:perforator-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:anchors",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Перфоратор электрический",
+          "expectedResourceId": "08-03-004-01:perforator",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:flatbed-truck-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:flatbed-truck-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Автомобиль бортовой грузоподъёмностью до 5 т",
+          "expectedResourceId": "08-03-004-01:flatbed-truck",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:handling"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:water-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:water-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:adhesive",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Вода",
+          "expectedResourceId": "08-03-004-01:water",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:primer-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:primer-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:priming",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Грунтовка глифталевая красно-коричневая",
+          "expectedResourceId": "08-03-004-01:primer",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:priming"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:adhesive-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:adhesive-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:adhesive",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Клей монтажный для блоков из ячеистого бетона",
+          "expectedResourceId": "08-03-004-01:adhesive",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:anchor-steel-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:anchor-steel-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:anchors",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+          "expectedResourceId": "08-03-004-01:anchor-steel",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:aac-block-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:aac-block-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:masonry",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+          "expectedResourceId": "08-03-004-01:aac-block",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operation:handling",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operation:handling",
+            "parentRowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:handling",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51, composition01–03",
+          "expectedResourceId": "08-03-004-01:operation:handling",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:handling"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operation:access",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operation:access",
+            "parentRowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:access",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51, composition04 for01/03; no such item for02/04",
+          "expectedResourceId": "08-03-004-01:operation:access",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:access"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operation:preparation",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operation:preparation",
+            "parentRowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:preparation",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51, composition05 for01/03,04 for02/04",
+          "expectedResourceId": "08-03-004-01:operation:preparation",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:preparation"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operation:priming",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operation:priming",
+            "parentRowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:priming",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition06/05; GF021 is not silently replaced by block primer",
+          "expectedResourceId": "08-03-004-01:operation:priming",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:priming"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operation:layout",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operation:layout",
+            "parentRowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:layout",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition07/06",
+          "expectedResourceId": "08-03-004-01:operation:layout",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:layout"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operation:cutting",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operation:cutting",
+            "parentRowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:cutting",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition08/07",
+          "expectedResourceId": "08-03-004-01:operation:cutting",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:cutting"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operation:adhesive",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operation:adhesive",
+            "parentRowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:adhesive",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition09/08",
+          "expectedResourceId": "08-03-004-01:operation:adhesive",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operation:masonry",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operation:masonry",
+            "parentRowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:masonry",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition10/09",
+          "expectedResourceId": "08-03-004-01:operation:masonry",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operation:anchors",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operation:anchors",
+            "parentRowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:anchors",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition11/10",
+          "expectedResourceId": "08-03-004-01:operation:anchors",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:operation:joints",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:operation:joints",
+            "parentRowId": "masonry:wall:krer08-03-004-01:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:joints",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition12/11",
+          "expectedResourceId": "08-03-004-01:operation:joints",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:joints"
+          ]
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:need:bearing-dpc",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:need:bearing-dpc"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:need:bearing-dpc",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC.",
+          "expectedResourceId": "08-03-004-01:need:bearing-dpc",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:need:bearing-dpc"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:need:lintels-ties-reinforcement",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:need:lintels-ties-reinforcement"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:need:lintels-ties-reinforcement",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5.",
+          "expectedResourceId": "08-03-004-01:need:lintels-ties-reinforcement",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:need:lintels-ties-reinforcement"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:need:source-system-fit",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:need:source-system-fit"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:need:source-system-fit",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Фактическая спецификация блоков с исходной объёмной массой900кг/м³,В3,5,2категории и исходный клейAEROC либо документированная допустимая адаптация. D400/D500, клей другой марки и блок300мм сюда не подставляются.",
+          "expectedResourceId": "08-03-004-01:need:source-system-fit",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:need:source-system-fit"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:need:mixing-cutting-equipment",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:need:mixing-cutting-equipment"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:need:mixing-cutting-equipment",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Таблица подтверждает труд приготовления/распиловки, но не даёт полный физический roster миксера с насадкой, дозирования, ёмкостей, пилы с полотном и пылезащиты; не назначать1комплект/м³.",
+          "expectedResourceId": "08-03-004-01:need:mixing-cutting-equipment",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:need:mixing-cutting-equipment"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:need:machine-physical-provision",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:need:machine-physical-provision"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:need:machine-physical-provision",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся.",
+          "expectedResourceId": "08-03-004-01:need:machine-physical-provision",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:need:machine-physical-provision"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:need:access-ppe",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:need:access-ppe"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:need:access-ppe",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки.",
+          "expectedResourceId": "08-03-004-01:need:access-ppe",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:need:access-ppe"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:need:quality-curing-cleanup",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:need:quality-curing-cleanup"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:need:quality-curing-cleanup",
+          "quantityRule": "APPLICATION_NORM_AND_PROJECT_FACT",
+          "specification": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза.",
+          "expectedResourceId": "08-03-004-01:need:quality-curing-cleanup",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:need:quality-curing-cleanup"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-01:formula:need:external-logistics",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-01:need:external-logistics"
+          },
+          "operationId": "masonry:wall:krer08-03-004-01:operation:need:external-logistics",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи.",
+          "expectedResourceId": "08-03-004-01:need:external-logistics",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-01:operation:need:external-logistics"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": "man_hour",
+          "category": "labor",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:labour",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:masonry",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Труд рабочих-строителей, разряд 3,3",
+          "expectedResourceId": "08-03-004-02:labour",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "man_hour",
+          "category": "labor",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:operators",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:operators"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Труд машинистов по исходной норме",
+          "expectedResourceId": "08-03-004-02:operators",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:tower-crane-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:tower-crane-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Кран башенный 5 т",
+          "expectedResourceId": "08-03-004-02:tower-crane",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:truck-crane-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:truck-crane-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Кран на автомобильном ходу 10 т",
+          "expectedResourceId": "08-03-004-02:truck-crane",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:perforator-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:perforator-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:anchors",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Перфоратор электрический",
+          "expectedResourceId": "08-03-004-02:perforator",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:flatbed-truck-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:flatbed-truck-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Автомобиль бортовой грузоподъёмностью до 5 т",
+          "expectedResourceId": "08-03-004-02:flatbed-truck",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:handling"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:water-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:water-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:adhesive",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Вода",
+          "expectedResourceId": "08-03-004-02:water",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:primer-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:primer-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:priming",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Грунтовка глифталевая красно-коричневая",
+          "expectedResourceId": "08-03-004-02:primer",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:priming"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:adhesive-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:adhesive-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:adhesive",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Клей монтажный для блоков из ячеистого бетона",
+          "expectedResourceId": "08-03-004-02:adhesive",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:anchor-steel-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:anchor-steel-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:anchors",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+          "expectedResourceId": "08-03-004-02:anchor-steel",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:aac-block-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:aac-block-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:masonry",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+          "expectedResourceId": "08-03-004-02:aac-block",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:operation:handling",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:operation:handling",
+            "parentRowId": "masonry:wall:krer08-03-004-02:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:handling",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51, composition01–03",
+          "expectedResourceId": "08-03-004-02:operation:handling",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:handling"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:operation:preparation",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:operation:preparation",
+            "parentRowId": "masonry:wall:krer08-03-004-02:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:preparation",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51, composition05 for01/03,04 for02/04",
+          "expectedResourceId": "08-03-004-02:operation:preparation",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:preparation"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:operation:priming",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:operation:priming",
+            "parentRowId": "masonry:wall:krer08-03-004-02:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:priming",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition06/05; GF021 is not silently replaced by block primer",
+          "expectedResourceId": "08-03-004-02:operation:priming",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:priming"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:operation:layout",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:operation:layout",
+            "parentRowId": "masonry:wall:krer08-03-004-02:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:layout",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition07/06",
+          "expectedResourceId": "08-03-004-02:operation:layout",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:layout"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:operation:cutting",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:operation:cutting",
+            "parentRowId": "masonry:wall:krer08-03-004-02:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:cutting",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition08/07",
+          "expectedResourceId": "08-03-004-02:operation:cutting",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:cutting"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:operation:adhesive",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:operation:adhesive",
+            "parentRowId": "masonry:wall:krer08-03-004-02:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:adhesive",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition09/08",
+          "expectedResourceId": "08-03-004-02:operation:adhesive",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:operation:masonry",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:operation:masonry",
+            "parentRowId": "masonry:wall:krer08-03-004-02:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:masonry",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition10/09",
+          "expectedResourceId": "08-03-004-02:operation:masonry",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:operation:anchors",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:operation:anchors",
+            "parentRowId": "masonry:wall:krer08-03-004-02:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:anchors",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition11/10",
+          "expectedResourceId": "08-03-004-02:operation:anchors",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:operation:joints",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:operation:joints",
+            "parentRowId": "masonry:wall:krer08-03-004-02:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:joints",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition12/11",
+          "expectedResourceId": "08-03-004-02:operation:joints",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:joints"
+          ]
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:need:bearing-dpc",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:need:bearing-dpc"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:need:bearing-dpc",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC.",
+          "expectedResourceId": "08-03-004-02:need:bearing-dpc",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:need:bearing-dpc"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:need:lintels-ties-reinforcement",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:need:lintels-ties-reinforcement"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:need:lintels-ties-reinforcement",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5.",
+          "expectedResourceId": "08-03-004-02:need:lintels-ties-reinforcement",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:need:lintels-ties-reinforcement"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:need:source-system-fit",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:need:source-system-fit"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:need:source-system-fit",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Фактическая спецификация блоков с исходной объёмной массой900кг/м³,В3,5,2категории и исходный клейAEROC либо документированная допустимая адаптация. D400/D500, клей другой марки и блок300мм сюда не подставляются.",
+          "expectedResourceId": "08-03-004-02:need:source-system-fit",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:need:source-system-fit"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:need:mixing-cutting-equipment",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:need:mixing-cutting-equipment"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:need:mixing-cutting-equipment",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Таблица подтверждает труд приготовления/распиловки, но не даёт полный физический roster миксера с насадкой, дозирования, ёмкостей, пилы с полотном и пылезащиты; не назначать1комплект/м³.",
+          "expectedResourceId": "08-03-004-02:need:mixing-cutting-equipment",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:need:mixing-cutting-equipment"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:need:machine-physical-provision",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:need:machine-physical-provision"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:need:machine-physical-provision",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся.",
+          "expectedResourceId": "08-03-004-02:need:machine-physical-provision",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:need:machine-physical-provision"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:need:access-ppe",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:need:access-ppe"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:need:access-ppe",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки.",
+          "expectedResourceId": "08-03-004-02:need:access-ppe",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:need:access-ppe"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:need:quality-curing-cleanup",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:need:quality-curing-cleanup"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:need:quality-curing-cleanup",
+          "quantityRule": "APPLICATION_NORM_AND_PROJECT_FACT",
+          "specification": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза.",
+          "expectedResourceId": "08-03-004-02:need:quality-curing-cleanup",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:need:quality-curing-cleanup"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-400-above4",
+          "formulaId": "masonry:wall:krer08-03-004-02:formula:need:external-logistics",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-02:need:external-logistics"
+          },
+          "operationId": "masonry:wall:krer08-03-004-02:operation:need:external-logistics",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи.",
+          "expectedResourceId": "08-03-004-02:need:external-logistics",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-02:operation:need:external-logistics"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": "man_hour",
+          "category": "labor",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:labour",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:masonry",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Труд рабочих-строителей, разряд 3,1",
+          "expectedResourceId": "08-03-004-03:labour",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "man_hour",
+          "category": "labor",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operators",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operators"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Труд машинистов по исходной норме",
+          "expectedResourceId": "08-03-004-03:operators",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:tower-crane-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:tower-crane-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Кран башенный 5 т",
+          "expectedResourceId": "08-03-004-03:tower-crane",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:truck-crane-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:truck-crane-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Кран на автомобильном ходу 10 т",
+          "expectedResourceId": "08-03-004-03:truck-crane",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:perforator-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:perforator-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:anchors",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Перфоратор электрический",
+          "expectedResourceId": "08-03-004-03:perforator",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:flatbed-truck-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:flatbed-truck-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Автомобиль бортовой грузоподъёмностью до 5 т",
+          "expectedResourceId": "08-03-004-03:flatbed-truck",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:handling"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:water-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:water-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:adhesive",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Вода",
+          "expectedResourceId": "08-03-004-03:water",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:primer-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:primer-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:priming",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Грунтовка глифталевая красно-коричневая",
+          "expectedResourceId": "08-03-004-03:primer",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:priming"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:adhesive-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:adhesive-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:adhesive",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Клей монтажный для блоков из ячеистого бетона",
+          "expectedResourceId": "08-03-004-03:adhesive",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:anchor-steel-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:anchor-steel-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:anchors",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+          "expectedResourceId": "08-03-004-03:anchor-steel",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:aac-block-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:aac-block-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:masonry",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+          "expectedResourceId": "08-03-004-03:aac-block",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operation:handling",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operation:handling",
+            "parentRowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:handling",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51, composition01–03",
+          "expectedResourceId": "08-03-004-03:operation:handling",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:handling"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operation:access",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operation:access",
+            "parentRowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:access",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51, composition04 for01/03; no such item for02/04",
+          "expectedResourceId": "08-03-004-03:operation:access",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:access"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operation:preparation",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operation:preparation",
+            "parentRowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:preparation",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51, composition05 for01/03,04 for02/04",
+          "expectedResourceId": "08-03-004-03:operation:preparation",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:preparation"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operation:priming",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operation:priming",
+            "parentRowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:priming",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition06/05; GF021 is not silently replaced by block primer",
+          "expectedResourceId": "08-03-004-03:operation:priming",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:priming"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operation:layout",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operation:layout",
+            "parentRowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:layout",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition07/06",
+          "expectedResourceId": "08-03-004-03:operation:layout",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:layout"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operation:cutting",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operation:cutting",
+            "parentRowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:cutting",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition08/07",
+          "expectedResourceId": "08-03-004-03:operation:cutting",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:cutting"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operation:adhesive",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operation:adhesive",
+            "parentRowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:adhesive",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition09/08",
+          "expectedResourceId": "08-03-004-03:operation:adhesive",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operation:masonry",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operation:masonry",
+            "parentRowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:masonry",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition10/09",
+          "expectedResourceId": "08-03-004-03:operation:masonry",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operation:anchors",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operation:anchors",
+            "parentRowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:anchors",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition11/10",
+          "expectedResourceId": "08-03-004-03:operation:anchors",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:operation:joints",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:operation:joints",
+            "parentRowId": "masonry:wall:krer08-03-004-03:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:joints",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition12/11",
+          "expectedResourceId": "08-03-004-03:operation:joints",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:joints"
+          ]
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:need:bearing-dpc",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:need:bearing-dpc"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:need:bearing-dpc",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC.",
+          "expectedResourceId": "08-03-004-03:need:bearing-dpc",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:need:bearing-dpc"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:need:lintels-ties-reinforcement",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:need:lintels-ties-reinforcement"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:need:lintels-ties-reinforcement",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5.",
+          "expectedResourceId": "08-03-004-03:need:lintels-ties-reinforcement",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:need:lintels-ties-reinforcement"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:need:source-system-fit",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:need:source-system-fit"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:need:source-system-fit",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Фактическая спецификация блоков с исходной объёмной массой900кг/м³,В3,5,2категории и исходный клейAEROC либо документированная допустимая адаптация. D400/D500, клей другой марки и блок300мм сюда не подставляются.",
+          "expectedResourceId": "08-03-004-03:need:source-system-fit",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:need:source-system-fit"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:need:mixing-cutting-equipment",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:need:mixing-cutting-equipment"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:need:mixing-cutting-equipment",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Таблица подтверждает труд приготовления/распиловки, но не даёт полный физический roster миксера с насадкой, дозирования, ёмкостей, пилы с полотном и пылезащиты; не назначать1комплект/м³.",
+          "expectedResourceId": "08-03-004-03:need:mixing-cutting-equipment",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:need:mixing-cutting-equipment"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:need:machine-physical-provision",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:need:machine-physical-provision"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:need:machine-physical-provision",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся.",
+          "expectedResourceId": "08-03-004-03:need:machine-physical-provision",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:need:machine-physical-provision"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:need:access-ppe",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:need:access-ppe"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:need:access-ppe",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки.",
+          "expectedResourceId": "08-03-004-03:need:access-ppe",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:need:access-ppe"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:need:quality-curing-cleanup",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:need:quality-curing-cleanup"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:need:quality-curing-cleanup",
+          "quantityRule": "APPLICATION_NORM_AND_PROJECT_FACT",
+          "specification": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза.",
+          "expectedResourceId": "08-03-004-03:need:quality-curing-cleanup",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:need:quality-curing-cleanup"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-upto4",
+          "formulaId": "masonry:wall:krer08-03-004-03:formula:need:external-logistics",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-03:need:external-logistics"
+          },
+          "operationId": "masonry:wall:krer08-03-004-03:operation:need:external-logistics",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи.",
+          "expectedResourceId": "08-03-004-03:need:external-logistics",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-03:operation:need:external-logistics"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": "man_hour",
+          "category": "labor",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:labour",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:masonry",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Труд рабочих-строителей, разряд 3,3",
+          "expectedResourceId": "08-03-004-04:labour",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "man_hour",
+          "category": "labor",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:operators",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:operators"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Труд машинистов по исходной норме",
+          "expectedResourceId": "08-03-004-04:operators",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:tower-crane-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:tower-crane-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Кран башенный 5 т",
+          "expectedResourceId": "08-03-004-04:tower-crane",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:truck-crane-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:truck-crane-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Кран на автомобильном ходу 10 т",
+          "expectedResourceId": "08-03-004-04:truck-crane",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:handling"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:perforator-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:perforator-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:anchors",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Перфоратор электрический",
+          "expectedResourceId": "08-03-004-04:perforator",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:flatbed-truck-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:flatbed-truck-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:handling",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Автомобиль бортовой грузоподъёмностью до 5 т",
+          "expectedResourceId": "08-03-004-04:flatbed-truck",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:handling"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:water-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:water-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:adhesive",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Вода",
+          "expectedResourceId": "08-03-004-04:water",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:primer-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:primer-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:priming",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Грунтовка глифталевая красно-коричневая",
+          "expectedResourceId": "08-03-004-04:primer",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:priming"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:adhesive-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:adhesive-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:adhesive",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Клей монтажный для блоков из ячеистого бетона",
+          "expectedResourceId": "08-03-004-04:adhesive",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:anchor-steel-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:anchor-steel-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:anchors",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+          "expectedResourceId": "08-03-004-04:anchor-steel",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "material",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:aac-block-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:aac-block-consumed"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:masonry",
+          "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+          "specification": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+          "expectedResourceId": "08-03-004-04:aac-block",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:operation:handling",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:operation:handling",
+            "parentRowId": "masonry:wall:krer08-03-004-04:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:handling",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51, composition01–03",
+          "expectedResourceId": "08-03-004-04:operation:handling",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:handling"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:operation:preparation",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:operation:preparation",
+            "parentRowId": "masonry:wall:krer08-03-004-04:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:preparation",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51, composition05 for01/03,04 for02/04",
+          "expectedResourceId": "08-03-004-04:operation:preparation",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:preparation"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:operation:priming",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:operation:priming",
+            "parentRowId": "masonry:wall:krer08-03-004-04:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:priming",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition06/05; GF021 is not silently replaced by block primer",
+          "expectedResourceId": "08-03-004-04:operation:priming",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:priming"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:operation:layout",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:operation:layout",
+            "parentRowId": "masonry:wall:krer08-03-004-04:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:layout",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition07/06",
+          "expectedResourceId": "08-03-004-04:operation:layout",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:layout"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:operation:cutting",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:operation:cutting",
+            "parentRowId": "masonry:wall:krer08-03-004-04:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:cutting",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition08/07",
+          "expectedResourceId": "08-03-004-04:operation:cutting",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:cutting"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:operation:adhesive",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:operation:adhesive",
+            "parentRowId": "masonry:wall:krer08-03-004-04:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:adhesive",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition09/08",
+          "expectedResourceId": "08-03-004-04:operation:adhesive",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:adhesive"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:operation:masonry",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:operation:masonry",
+            "parentRowId": "masonry:wall:krer08-03-004-04:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:masonry",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition10/09",
+          "expectedResourceId": "08-03-004-04:operation:masonry",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:masonry"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:operation:anchors",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:operation:anchors",
+            "parentRowId": "masonry:wall:krer08-03-004-04:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:anchors",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition11/10",
+          "expectedResourceId": "08-03-004-04:operation:anchors",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:anchors"
+          ]
+        },
+        {
+          "unitId": "m3",
+          "category": "work",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:operation:joints",
+          "resolution": {
+            "kind": "INCLUDED_COMPONENT_ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:operation:joints",
+            "parentRowId": "masonry:wall:krer08-03-004-04:labour"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:joints",
+          "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+          "specification": "PDF51,composition12/11",
+          "expectedResourceId": "08-03-004-04:operation:joints",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:joints"
+          ]
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:need:bearing-dpc",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:need:bearing-dpc"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:need:bearing-dpc",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC.",
+          "expectedResourceId": "08-03-004-04:need:bearing-dpc",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:need:bearing-dpc"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:need:lintels-ties-reinforcement",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:need:lintels-ties-reinforcement"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:need:lintels-ties-reinforcement",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5.",
+          "expectedResourceId": "08-03-004-04:need:lintels-ties-reinforcement",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:need:lintels-ties-reinforcement"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:need:source-system-fit",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:need:source-system-fit"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:need:source-system-fit",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Фактическая спецификация блоков с исходной объёмной массой900кг/м³,В3,5,2категории и исходный клейAEROC либо документированная допустимая адаптация. D400/D500, клей другой марки и блок300мм сюда не подставляются.",
+          "expectedResourceId": "08-03-004-04:need:source-system-fit",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:need:source-system-fit"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:need:mixing-cutting-equipment",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:need:mixing-cutting-equipment"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:need:mixing-cutting-equipment",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Таблица подтверждает труд приготовления/распиловки, но не даёт полный физический roster миксера с насадкой, дозирования, ёмкостей, пилы с полотном и пылезащиты; не назначать1комплект/м³.",
+          "expectedResourceId": "08-03-004-04:need:mixing-cutting-equipment",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:need:mixing-cutting-equipment"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:need:machine-physical-provision",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:need:machine-physical-provision"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:need:machine-physical-provision",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся.",
+          "expectedResourceId": "08-03-004-04:need:machine-physical-provision",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:need:machine-physical-provision"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:need:access-ppe",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:need:access-ppe"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:need:access-ppe",
+          "quantityRule": "APPLICATION_NORM",
+          "specification": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки.",
+          "expectedResourceId": "08-03-004-04:need:access-ppe",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:need:access-ppe"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:need:quality-curing-cleanup",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:need:quality-curing-cleanup"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:need:quality-curing-cleanup",
+          "quantityRule": "APPLICATION_NORM_AND_PROJECT_FACT",
+          "specification": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза.",
+          "expectedResourceId": "08-03-004-04:need:quality-curing-cleanup",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:need:quality-curing-cleanup"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": null,
+          "category": "service",
+          "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+          "condition": "aac-500-above4",
+          "formulaId": "masonry:wall:krer08-03-004-04:formula:need:external-logistics",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:wall:krer08-03-004-04:need:external-logistics"
+          },
+          "operationId": "masonry:wall:krer08-03-004-04:operation:need:external-logistics",
+          "quantityRule": "PROJECT_FACT",
+          "specification": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи.",
+          "expectedResourceId": "08-03-004-04:need:external-logistics",
+          "requiredOperationIds": [
+            "masonry:wall:krer08-03-004-04:operation:need:external-logistics"
+          ],
+          "sourceNormQuantityAccepted": false
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:saw-unit",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:saw-unit"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Ленточный станок для сухой резки газобетона, высота до510мм",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:saw-unit",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:working-belt",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:working-belt"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Рабочее твердосплавное полотно3750×27мм",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:working-belt",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "person",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:operator",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:operator"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Оператор ленточного станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:operator",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:table",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:table"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Подвижный стол станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:table",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:stop",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:stop"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Боковой упор станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:stop",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:wheel-units",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:wheel-units"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Односторонние колёсные узлы станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:wheel-units",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:running-rollers",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:running-rollers"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Ходовые ролики станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:running-rollers",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:scale",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:scale"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Измерительная шкала станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:scale",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:lower-door",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:lower-door"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Нижняя защитная дверца станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:lower-door",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:upper-door",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:upper-door"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Верхняя защитная дверца станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:upper-door",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:hand-guard",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:hand-guard"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Защитный кожух рабочей зоны станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:hand-guard",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "equipment",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:crane-eye",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:crane-eye"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Подъёмная проушина станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:crane-eye",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "tool",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:drive-motor",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:drive-motor"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:source-physical-unit",
+          "quantityRule": "KNOWN_INSTALLED_COUNT_NOT_PURCHASE",
+          "specification": "Привод станка230В,1,5кВт",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:drive-motor",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:source-physical-unit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:actual-unit-gate",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:actual-unit-gate"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:actual-unit-gate",
+          "quantityRule": "ACTUAL_OBJECT_FACTS_NOT_INTERNAL_NORMS",
+          "specification": "Фактическое принятие режущего узла",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:actual-unit-gate",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:actual-unit-gate"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:workpiece-axis-authority",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:workpiece-axis-authority"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:workpiece-axis-authority",
+          "quantityRule": "INTERNAL_MANUFACTURER_GEOMETRY_SOURCE_REQUIRED",
+          "specification": "Допуск формы и ориентации заготовки в рабочей зоне станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:workpiece-axis-authority",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:workpiece-axis-authority"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:measuring",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:measuring"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:measuring",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Разметочный и проверочный инструмент для раскроя",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:measuring",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:measuring"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:electrical-kit",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:electrical-kit"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:electrical-kit",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Кабель подключения, соединения и устройство защитного отключения",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:electrical-kit",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:electrical-kit"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:dust-extraction",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:dust-extraction"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:dust-extraction",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Пылеудаление: совместимый пылесос, патрубок, шланг и сборник",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:dust-extraction",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:dust-extraction"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:lifting-kit",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:lifting-kit"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:lifting-kit",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Стропы и соединительные элементы для подъёма станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:lifting-kit",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:lifting-kit"
+          ]
+        },
+        {
+          "unitId": "machine_hour",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:lifting-operation",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:lifting-operation"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:lifting-operation",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Перевозка и крановый подъём станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:lifting-operation",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:lifting-operation"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:eye-protection",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:eye-protection"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:eye-protection",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Защита глаз оператора",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:eye-protection",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:eye-protection"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:hearing-protection",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:hearing-protection"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:hearing-protection",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Защита слуха оператора",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:hearing-protection",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:hearing-protection"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:hand-protection",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:hand-protection"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:hand-protection",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Защитные перчатки для смены полотна",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:hand-protection",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:hand-protection"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:workzone-protection",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:workzone-protection"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:workzone-protection",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Ограждение и обозначение зоны резки",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:workzone-protection",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:workzone-protection"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:cleaning-tools",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:cleaning-tools"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:cleaning-tools",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Щётка и скребок для остановленного станка",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:cleaning-tools",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:cleaning-tools"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:grease",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:grease"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:grease",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Термостойкая многоцелевая смазка и средство нанесения",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:grease",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:grease"
+          ]
+        },
+        {
+          "unitId": "kg",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:spray-oil",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:spray-oil"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:spray-oil",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Масло-спрей для автоматического натяжителя",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:spray-oil",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:spray-oil"
+          ]
+        },
+        {
+          "unitId": "piece",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:waste",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:waste"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:waste",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Сборники обрезков, пыли, упаковки и изношенных полотен",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:waste",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:waste"
+          ]
+        },
+        {
+          "unitId": "man_hour",
+          "category": "service",
+          "sourceId": "aeroc_mbs510_physical_cutting_unit_r1",
+          "condition": "Один ленточный станок для газобетона с подачей столом; точный физический узел по руководству изготовителя",
+          "formulaId": "masonry:aac:cut:mbs510:r1:formula:need:maintenance-service",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "masonry:aac:cut:mbs510:r1:need:maintenance-service"
+          },
+          "operationId": "masonry:aac:cut:mbs510:r1:operation:maintenance-service",
+          "quantityRule": "INTERNAL_SOURCE_QUANTITY_REQUIRED",
+          "specification": "Осмотр, обслуживание и допуск режущего узла",
+          "expectedResourceId": "masonry:aac:cut:mbs510:r1:expected:need:maintenance-service",
+          "requiredOperationIds": [
+            "masonry:aac:cut:mbs510:r1:operation:maintenance-service"
+          ]
+        }
+      ],
+      "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+      "sourceKind": "NORMATIVE_OPERATION_MAP",
+      "evidenceSha256": "67ba30f5c89a62af6d06af6ffabb84d96c84f0b16851af0bab761b9830183f44",
+      "categoryCoverage": [
+        {
+          "key": "materials",
+          "knownSourcePart": [],
+          "unresolvedLeafIds": [],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "consumables",
+          "knownSourcePart": [],
+          "unresolvedLeafIds": [
+            "masonry:aac:cut:mbs510:r1:need:grease",
+            "masonry:aac:cut:mbs510:r1:need:spray-oil"
+          ],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "fasteners",
+          "knownSourcePart": [],
+          "unresolvedLeafIds": [
+            "masonry:aac:cut:mbs510:r1:need:electrical-kit"
+          ],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "tools",
+          "knownSourcePart": [
+            "masonry:aac:cut:mbs510:r1:saw-unit",
+            "masonry:aac:cut:mbs510:r1:working-belt",
+            "masonry:aac:cut:mbs510:r1:table",
+            "masonry:aac:cut:mbs510:r1:stop",
+            "masonry:aac:cut:mbs510:r1:wheel-units",
+            "masonry:aac:cut:mbs510:r1:running-rollers",
+            "masonry:aac:cut:mbs510:r1:scale",
+            "masonry:aac:cut:mbs510:r1:lower-door",
+            "masonry:aac:cut:mbs510:r1:upper-door",
+            "masonry:aac:cut:mbs510:r1:hand-guard",
+            "masonry:aac:cut:mbs510:r1:drive-motor"
+          ],
+          "unresolvedLeafIds": [
+            "masonry:aac:cut:mbs510:r1:need:cleaning-tools"
+          ],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "rigging",
+          "knownSourcePart": [
+            "masonry:aac:cut:mbs510:r1:crane-eye"
+          ],
+          "unresolvedLeafIds": [
+            "masonry:aac:cut:mbs510:r1:need:lifting-kit"
+          ],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "machines_and_operators",
+          "knownSourcePart": [
+            "masonry:aac:cut:mbs510:r1:operator"
+          ],
+          "unresolvedLeafIds": [
+            "masonry:aac:cut:mbs510:r1:need:dust-extraction"
+          ],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "labor",
+          "knownSourcePart": [],
+          "unresolvedLeafIds": [],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "services",
+          "knownSourcePart": [],
+          "unresolvedLeafIds": [
+            "masonry:aac:cut:mbs510:r1:need:maintenance-service"
+          ],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "delivery_feed",
+          "knownSourcePart": [],
+          "unresolvedLeafIds": [
+            "masonry:aac:cut:mbs510:r1:need:lifting-operation"
+          ],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "access_protection",
+          "knownSourcePart": [],
+          "unresolvedLeafIds": [
+            "masonry:aac:cut:mbs510:r1:need:eye-protection",
+            "masonry:aac:cut:mbs510:r1:need:hearing-protection",
+            "masonry:aac:cut:mbs510:r1:need:hand-protection",
+            "masonry:aac:cut:mbs510:r1:need:workzone-protection"
+          ],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "control",
+          "knownSourcePart": [],
+          "unresolvedLeafIds": [
+            "masonry:aac:cut:mbs510:r1:need:workpiece-axis-authority",
+            "masonry:aac:cut:mbs510:r1:need:measuring"
+          ],
+          "retainedOriginalWholeWallScope": true
+        },
+        {
+          "key": "cleaning_waste",
+          "knownSourcePart": [],
+          "unresolvedLeafIds": [
+            "masonry:aac:cut:mbs510:r1:need:waste"
+          ],
+          "retainedOriginalWholeWallScope": true
+        }
+      ],
+      "evidenceReferences": [
+        "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+        "data/estimate-benchmarks/source-artifacts/masonry-aac-cutting-mbs510-r1/lissmac-mbs-08-2025-en.pdf",
+        "data/estimate-benchmarks/source-artifacts/masonry-aac-cutting-mbs510-r1/aeroc-manual-2016-official.pdf"
+      ],
+      "closedPhysicalNeeds": 0,
+      "newFullTechnologies": 0,
+      "sourceAxisUnresolved": true,
+      "fullTechnicalAcceptance": false,
+      "generatedFromCurrentRows": false,
+      "operationResourceBindingRequired": true,
+      "parentWholeMasonryBoundaryRetained": true
+    },
+    "preliminaryCompositionOnly": true
+  },
+  "payload_sha256": "72861d8cb9da45e6035e6bc504b94552b0df491359a0af443183f4cdf0be30de",
+  "source_head": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+  "source_tree": "2ace8684ea59bf6a68da635fc86ba2deea560da7",
+  "created_at": "2026-10-22T20:17:48.806138+00:00"
+}

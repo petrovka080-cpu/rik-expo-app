@@ -31,9 +31,13 @@ function setup(){
 }
 async function createChild(extraOverride:Record<string,unknown>={},customRows:Record<string,unknown>[]=[]){
  const current=setup(),admission=admit(current),overrides={...current.saved.revision.amendment_contract.rowOverrides,...(Object.keys(extraOverride).length?{[rowId]:extraOverride}:{})};
+ const userInputBefore=JSON.stringify(current.parameters);
+ expect(current.parameters).not.toHaveProperty(prefix+'admitted_trip_count');
  const compiled=await compile({operation:'recalculate',compilerVersion:'delivery16-recorded-source-integration',catalogId:current.parent.entry.catalog_id,primaryMeasureParameterId:'q',
   parameterDefinitions:current.model.parameters,formulaDefinitions:current.model.formulas,resourceDefinitions:current.model.resources,
-  submittedParameters:{...current.parameters,...admission.confirmedParameters},confirmedParameters:{},currencyCode:'KGS',rowOverrides:overrides,customRows,maximumResourceRows:1000,hashJson:hash});
+  submittedParameters:current.parameters,confirmedParameters:admission.confirmedParameters,currencyCode:'KGS',rowOverrides:overrides,customRows,maximumResourceRows:1000,hashJson:hash});
+ expect(JSON.stringify(current.parameters)).toBe(userInputBefore);
+ expect(compiled.parameters[prefix+'admitted_trip_count']).toBe(admission.confirmedParameters[prefix+'admitted_trip_count']);
  const receipt=finish(admission,compiled.rows),childId='synthetic-child-of-actual-saved-revision';
  const revision={...current.saved.revision,id:childId,parent_revision_id:current.saved.revision.id,definition_version_id:current.target.definition.id,
   input_parameters:compiled.parameters,checksum_sha256:hash({...compiled.revisionProjection,selectedMaterialDeliveryV1:receipt}),row_count:compiled.rows.length,
@@ -61,6 +65,29 @@ test('the actual compiler admission input is saved separately and stripped befor
  expect({...parameters,...derived}).toEqual(child.compiled.parameters);
  expect(canonicalInheritedConfirmedParameters(child.compiled.parameters,derived)).not.toHaveProperty(key);
  expect(child.compiled.derivedParameters).not.toHaveProperty(key);
+});
+
+test('a retained Master publication keeps the server derivation after normalizing the outer release contract',async()=>{
+ const child=await createChild(),key=prefix+'admitted_trip_count',parameters={...child.parameters};delete parameters[key];
+ const parameterDefinitions=structuredClone(child.model.parameters);
+ const definition=parameterDefinitions.find((p:any)=>p.parameter_id===key);
+ expect(definition.truth_metadata.guide.guide_version).toBe('rik-expo-app.selected-material-delivery-forward.r1');
+ // The shared Master replaces this publication envelope; the semantic guide,
+ // internal role and backend ownership survive unchanged in the stored row.
+ definition.truth_metadata.contract='gox-build.brick-partition-selected-delivery-master-retained/r1';
+ const input={admission:child.admission,parameterDefinitions,parameters:child.compiled.parameters,
+  derivedParameters:child.compiled.derivedParameters,submittedParameters:parameters,userParameters:parameters,baselineParameters:{}};
+ expect(provenance(input)[key]).toBe(child.compiled.parameters[key]);
+ for(const change of [
+  {guide:{...definition.truth_metadata.guide,guide_version:'unreviewed-other-quantity'}},
+  {visibility_role:'USER_INPUT'},{value_source_role:'USER_INPUT'},
+  {provenance:{consumer_input_role_v1:'OBJECT_FACT'}},{hidden_default_forbidden:false},
+ ]){
+  const changed=parameterDefinitions.map((p:any)=>p.parameter_id===key?{...p,truth_metadata:{...p.truth_metadata,...change}}:p);
+  expect(()=>provenance({...input,parameterDefinitions:changed})).toThrow(expect.objectContaining({reason:'compiled-delivery-provenance-invalid'}));
+ }
+ expect(()=>provenance({...input,parameterDefinitions:parameterDefinitions.map((p:any)=>p.parameter_id===key?{...p,default_value:3}:p)}))
+  .toThrow(expect.objectContaining({reason:'compiled-delivery-provenance-invalid'}));
 });
 
 test.each(['submittedParameters','userParameters','baselineParameters','parameters','derivedParameters','parameterDefinitions'])(

@@ -1,0 +1,61 @@
+{
+  "contract": "gox-build.facade-current-family-whole-systems/r3",
+  "generatedFromImplementation": false,
+  "execution": "UNRUN",
+  "cases": [
+    {
+      "caseId": "PORCELAIN100_SOURCE_SCOPE",
+      "inputs": {
+        "area": "100",
+        "brackets": "200",
+        "insulationThicknessMm": "100",
+        "sourceLinkCount": "1",
+        "panelSupplyPiece": "280"
+      },
+      "expected": {
+        "laborLayout": "1.5",
+        "laborBrackets": "6.4",
+        "laborGuides": "13",
+        "laborCladding": "84",
+        "laborInsulation": "30",
+        "singleLayerInsulationM3": "11",
+        "panelSupplyPiece": "280",
+        "noScaffoldHoursInReadyPlatformMethod": true,
+        "selectedStockTypes": 16,
+        "visibleNeeds": 5
+      }
+    },
+    {
+      "caseId": "PORCELAIN50_SAME_REAL_BOM",
+      "inputs": {
+        "area": "50",
+        "brackets": "200",
+        "sourceLinkCount": "1"
+      },
+      "expected": {
+        "laborBrackets": "6.4",
+        "projectComponentQuantitiesUnchanged": true,
+        "stockQuantitiesUnchanged": true,
+        "insulationM3": "5.5"
+      }
+    }
+  ],
+  "negatives": [
+    "wrongsubsystem",
+    "hiddenclampwithvisibleprofile",
+    "fiberpanelintoporcelainprofile",
+    "panelthickness8",
+    "productionheight50.001",
+    "inherit150mplatformcapacity",
+    "insulationthickness120",
+    "fractionalprojectanchor",
+    "internalneed0",
+    "internalneed1",
+    "internalneed77",
+    "sourceLinkFractional",
+    "steel-shearsasporcelaincutter",
+    "sourcepreparatoryhoursassumedzero",
+    "oldmanualINFObecomespaid",
+    "useRFregionalTDSasKGlegalapproval"
+  ]
+}

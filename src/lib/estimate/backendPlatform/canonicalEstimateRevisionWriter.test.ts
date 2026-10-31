@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import {
   CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
   buildCanonicalRevisionCommitPayload,
+  assertCanonicalRevisionHasContent,
   buildCanonicalRevisionIdentity,
 } from "./canonicalEstimateRevisionWriter";
 
@@ -64,6 +65,26 @@ describe("canonicalEstimateRevisionWriter", () => {
 
     expect(identity.displayTitleRu).toBe("Монтаж закладных — 28 шт.");
   });
+
+  it.each([['set', 'компл.'], ['pcs', 'шт.'], ['piece', 'шт.'], ['item', 'шт.'], ['unregistered-set', 'unregistered-set']])(
+    "localizes the registered primary unit %s without changing physical identity", async (unitId, label) => {
+      const sourceRequestText = 'Проверочный монтаж комплекта, исходная единица set';
+      const identity = await buildCanonicalRevisionIdentity({
+        catalogId: 'generic-kit-work', parentRevisionId: null,
+        requestIdentity: { sourceRequestText, primaryMeasureParameterId: 'count' },
+        definition: { id: 'definition-kit', title_ru: 'Монтаж комплекта', domain: 'INTERIOR' },
+        parameterDefinitions: [{ parameter_id: 'count', unit_id: unitId }],
+        parameters: { count: 5 }, effectiveUserParameters: { count: 5 }, baselineAssumptions: {},
+        parent: null, searchReleaseId: 'search-kit', compilerVersion: 'compiler.r1', hashText,
+      });
+      expect(identity.displayTitleRu).toBe(`Монтаж комплекта — 5 ${label}`);
+      expect(identity.primaryMeasureUnitId).toBe(unitId);
+      expect(identity.primaryMeasureValue).toBe('5');
+      expect(identity.userInputSnapshot).toEqual({ count: 5 });
+      expect(identity.sourceRequestText).toBe(sourceRequestText);
+      expect(identity.sourceRequestHash).toBe(hashText(sourceRequestText));
+    },
+  );
 
   it("keeps a missing primary measure explicit for a preliminary revision", async () => {
     const identity = await buildCanonicalRevisionIdentity({
@@ -165,5 +186,32 @@ describe("canonicalEstimateRevisionWriter", () => {
         preliminaryNeeds: [],
       },
     });
+  });
+});
+
+
+describe("empty revision admission", () => {
+  const base = {
+    rowCount: 0, currencyCode: "KGS", totals: {}, checksumSha256: "immutable",
+    compilerVersion: "test", parameters: { count: 0 }, approvedTemplateBaselineId: null,
+    baselineAssumptions: {}, effectiveUserParameters: { count: 0 }, parentRevisionId: null,
+    identityContract: {},
+  };
+  it.each([undefined, []])("rejects no rows and no needs before database commit: %s", preliminaryNeeds => {
+    expect(() => assertCanonicalRevisionHasContent({...base, preliminaryNeeds})).toThrow(
+      expect.objectContaining({code: "EMPTY_ESTIMATE_COMPOSITION"}),
+    );
+    expect(base.parameters.count).toBe(0);
+  });
+  it("retains an unresolved real need without inventing a known row or quantity", () => {
+    const need = {row_id: "tool-needed", quantity: null, unit_id: "piece", needState: "QUANTITY_REQUIRED"};
+    expect(() => assertCanonicalRevisionHasContent({...base, preliminaryNeeds: [need]})).not.toThrow();
+    const payload = buildCanonicalRevisionCommitPayload({...base, preliminaryNeeds: [need]});
+    expect(payload.rowCount).toBe(0);
+    expect(payload.parameterSources).toMatchObject({preliminaryNeeds: [need]});
+  });
+  it("does not reject a revision with one retained row, including an excluded row", () => {
+    expect(() => assertCanonicalRevisionHasContent({...base, rowCount: 1})).not.toThrow();
+    expect(buildCanonicalRevisionCommitPayload({...base, rowCount: 1}).rowCount).toBe(1);
   });
 });

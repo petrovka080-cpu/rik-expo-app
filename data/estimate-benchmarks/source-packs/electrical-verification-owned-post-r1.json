@@ -1,0 +1,605 @@
+{
+  "contract": "gox.electrical.verification-owned-post/source-only-r1",
+  "catalogId": "canonical-work:base:electrical_interior_socket_install_standard",
+  "workKey": "electrical_interior_socket_install_standard",
+  "titleRu": "Собственное оснащение проверки напряжения и непрерывности PE",
+  "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+  "prefix": "electrical:verification-owned-post-r1",
+  "socketSelectorId": "socket_complete_surface_method",
+  "socketProfile": "Составная двухместная накладная розетка 2P+E по принятой ведомости и готовому основанию",
+  "methodId": "electrical_verification_owned_post_method",
+  "method": "Собственный целый комплект проверки напряжения и непрерывности PE по ведомости",
+  "unresolvedMethod": "Собственное измерительное оснащение не определено",
+  "countId": "electrical_verification_owned_post_inventory_sets",
+  "scheduleId": "electrical_verification_owned_post_schedule",
+  "fitId": "electrical_verification_owned_post_fit",
+  "fit": "Принят собственный комплектVI15000/PD690SRD и1662EU с указанными принадлежностями и исправным питанием; сухое помещение0–35°C, влажность не выше70%, высота не выше2000м, точки доступны штатными проводами; приняты категория и диапазоны цепи, состояние приборов и документы; измерения выполняет допущенное лицо по программе объекта",
+  "scopeRu": "Только доступность документированного числа целых пригодных собственных комплектов и их первоначальной штатной BOM. Отсутствие напряжения и непрерывность PE — разные функции. Не переносятся технология светильника, WAGO/11мм, параметры розеточных клемм, число панелей или min(1,N). Выполненные измерения, безопасное отключение и допуск не подтверждаются этим выбором.",
+  "parts": [
+    {
+      "key": "voltage-indicator",
+      "titleRu": "Двухполюсный указатель напряжения с двумя щупами и защитными кожухами",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "VI-15000-instructions-VerF1.0",
+        "vipd150-srd-datasheet"
+      ],
+      "locator": "VI PDF8–11,15; matchedkitPDF1–2",
+      "profile": {
+        "internalModel": "VI15000",
+        "assembly": "INTEGRAL_TWO_PRODS_LINKED_LEAD_TWO_RETRACTABLE_GS38_SHROUDS",
+        "poles": 2,
+        "batteryCount": 0,
+        "voltageRangeVacDc": [
+          50,
+          1000
+        ],
+        "proveBeforeAndAfter": true,
+        "maximumOnSeconds": 30,
+        "offToOnRatio": 8,
+        "notPeContinuityProof": true
+      }
+    },
+    {
+      "key": "proving-unit",
+      "titleRu": "Устройство ступенчатой проверки двухполюсного указателя",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "vipd150-srd-datasheet",
+        "manPDS"
+      ],
+      "locator": "MatchedVI15000/PD690SRD; PDmanualPDF10 fullcycle,PDF16 levels",
+      "profile": {
+        "internalModel": "PD690SRD",
+        "manufacturerMatchedTo": "VI15000",
+        "nominalStepsV": [
+          690,
+          440,
+          230,
+          120,
+          50
+        ],
+        "maximumCycleSeconds": 10,
+        "minimumRestSeconds": 3,
+        "calcheckClaimed": false
+      }
+    },
+    {
+      "key": "proving-batteries",
+      "titleRu": "Элементы питания AA 1,5 В устройства проверки",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 6,
+      "countExpression": "6*min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "manPDS"
+      ],
+      "locator": "PDmanualPDF12,17: sixAA LR6 installed; no battery-life replacement norm",
+      "profile": {
+        "format": "AA_IEC_LR6_ALKALINE_1_5V",
+        "installedIn": "PD690SRD",
+        "initialFunctionalPowerOnly": true
+      }
+    },
+    {
+      "key": "proving-magnetic-hanger",
+      "titleRu": "Магнитный держатель устройства проверки",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "pds-srd-datasheet-c15"
+      ],
+      "locator": "OfficialPDdatasheetC1.5 includesMG3",
+      "profile": {
+        "internalModel": "MG3",
+        "compatibleWith": "PD690SRD"
+      }
+    },
+    {
+      "key": "voltage-kit-case",
+      "titleRu": "Защитный чехол указателя и устройства проверки",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "vipd150-srd-datasheet"
+      ],
+      "locator": "MatchedkitPDF1–2:TC71; VIstoragePDF13 protection from other tools",
+      "profile": {
+        "internalModel": "TC71",
+        "protects": [
+          "VI15000",
+          "PD690SRD"
+        ]
+      }
+    },
+    {
+      "key": "installation-tester",
+      "titleRu": "Измеритель непрерывности защитного проводника",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU continuityEN61557-4; PDF33 RLO L/PE; not fixture insulation/withstand test authorization",
+      "profile": {
+        "internalModel": "Fluke1662EU",
+        "function": "RLO_EN61557_4",
+        "terminals": [
+          "L_RED",
+          "PE_GREEN"
+        ],
+        "validInstrumentVerificationRequired": true,
+        "notVoltageAbsenceSubstitute": true,
+        "noAutomaticInsulationTestOnLedDriver": true
+      }
+    },
+    {
+      "key": "continuity-red-lead",
+      "titleRu": "Измерительный провод, красный",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF7; 2044945",
+      "profile": {
+        "manufacturerPart": "2044945",
+        "color": "red",
+        "compatibleWith": "Fluke1662EU"
+      }
+    },
+    {
+      "key": "continuity-green-lead",
+      "titleRu": "Измерительный провод, зелёный",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF7; 2044950",
+      "profile": {
+        "manufacturerPart": "2044950",
+        "color": "green",
+        "compatibleWith": "Fluke1662EU"
+      }
+    },
+    {
+      "key": "continuity-red-probe",
+      "titleRu": "Измерительный щуп 4 мм, красный",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF7; 2099044",
+      "profile": {
+        "manufacturerPart": "2099044",
+        "color": "red",
+        "tipMm": 4
+      }
+    },
+    {
+      "key": "continuity-green-probe",
+      "titleRu": "Измерительный щуп 4 мм, зелёный",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF7; 2065297",
+      "profile": {
+        "manufacturerPart": "2065297",
+        "color": "green",
+        "tipMm": 4
+      }
+    },
+    {
+      "key": "continuity-red-gs38-cap",
+      "titleRu": "Защитный колпачок измерительного щупа, красный",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF8; 1942029",
+      "profile": {
+        "manufacturerPart": "1942029",
+        "color": "red",
+        "role": "GS38_PROBE_CAP"
+      }
+    },
+    {
+      "key": "continuity-green-gs38-cap",
+      "titleRu": "Защитный колпачок измерительного щупа, зелёный",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF8; 2065304",
+      "profile": {
+        "manufacturerPart": "2065304",
+        "color": "green",
+        "role": "GS38_PROBE_CAP"
+      }
+    },
+    {
+      "key": "continuity-red-clip",
+      "titleRu": "Измерительный зажим, красный",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF8; 2041727",
+      "profile": {
+        "manufacturerPart": "2041727",
+        "color": "red",
+        "role": "ALLIGATOR_CLIP"
+      }
+    },
+    {
+      "key": "continuity-green-clip",
+      "titleRu": "Измерительный зажим, зелёный",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF8; 2068133",
+      "profile": {
+        "manufacturerPart": "2068133",
+        "color": "green",
+        "role": "ALLIGATOR_CLIP"
+      }
+    },
+    {
+      "key": "continuity-zero-adapter",
+      "titleRu": "Адаптер обнуления измерительных проводов",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF8; leadzeroPDF23–25",
+      "profile": {
+        "manufacturerPart": "3301338",
+        "role": "LEAD_RESISTANCE_ZERO_NOT_CALIBRATION_SUBSTITUTE"
+      }
+    },
+    {
+      "key": "continuity-batteries",
+      "titleRu": "Элементы питания AA 1,5 В измерителя непрерывности",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 6,
+      "countExpression": "6*min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "166xPDF75–78:sixAA LR6 installed; no battery-life/replacementnorm",
+      "profile": {
+        "format": "AA_IEC_LR6_ALKALINE_1_5V",
+        "installedIn": "Fluke1662EU",
+        "initialFunctionalPowerOnly": true
+      }
+    },
+    {
+      "key": "continuity-padded-strap",
+      "titleRu": "Мягкий ремень измерительного прибора",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF8",
+      "profile": {
+        "manufacturerPart": "4502043",
+        "compatibleWith": "Fluke1662EU"
+      }
+    },
+    {
+      "key": "continuity-hard-case",
+      "titleRu": "Защитный кейс измерителя и принадлежностей",
+      "category": "equipment",
+      "unitId": "piece",
+      "countPerPost": 1,
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "installation"
+      ],
+      "sourceArtifactIds": [
+        "fluke-166x-users-r3-2024"
+      ],
+      "locator": "1662EU Table2 PDF8",
+      "profile": {
+        "manufacturerPart": "4688513",
+        "compatibleWith": "Fluke1662EU"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "vipd150-srd-datasheet",
+      "officialUrl": "https://martindale-electric.co.uk/wp-content/uploads/2021/04/specVIPD150-S.pdf",
+      "path": "data/estimate-benchmarks/source-artifacts/master32-panel-tool-provision-r1/vipd150-srd-datasheet.pdf",
+      "sha256": "60b9b93f3637f13fb21696f57848dbe94f7c846aae62da8708fbca04c63eea9a",
+      "edition": "Ver E1.0 / ©2026",
+      "locatorRu": "PDF1–2: exact VI15000 + PD690SRD + TC71 matched package; compatible before/after proving, not a single-pole probe",
+      "role": "MANUFACTURER_CAPABILITY_AND_INSTRUCTIONS_NOT_CREW_OR_CONSUMPTION_NORM"
+    },
+    {
+      "id": "VI-15000-instructions-VerF1.0",
+      "officialUrl": "https://martindale-electric.co.uk/wp-content/uploads/2018/12/VI-15000-instructions-VerF1.0.pdf",
+      "path": "data/estimate-benchmarks/source-artifacts/master32-panel-tool-provision-r1/VI-15000-instructions-VerF1.0.pdf",
+      "sha256": "0b7781d2313142b10f0de0eb6929881899b91aadeb7ff302890d4b5f93a887c6",
+      "edition": "Actual Rev2 / ©2025",
+      "locatorRu": "PDF8–11: integral two prods/shrouds, before/after proving, cable flex inspection, 30s ON/240s OFF; PDF15: battery-free 50–1000V AC/DC",
+      "role": "MANUFACTURER_CAPABILITY_AND_INSTRUCTIONS_NOT_CREW_OR_CONSUMPTION_NORM"
+    },
+    {
+      "id": "manPDS",
+      "officialUrl": "https://martindale-electric.co.uk/wp-content/uploads/2024/03/manPDS.pdf",
+      "path": "data/estimate-benchmarks/source-artifacts/master32-panel-tool-provision-r1/manPDS.pdf",
+      "sha256": "17a8e645e9067b9590e426b6692d68026c09990b63ab10b0ce15a13c07b61c20",
+      "edition": "Actual Ver D1.0",
+      "locatorRu": "PDF10–12: full prove cycle, 10s cycle/3s minimum rest, six AA batteries; PDF16–18: SRD levels and VI15000 load graph, indoor/dry limits",
+      "role": "MANUFACTURER_CAPABILITY_AND_INSTRUCTIONS_NOT_CREW_OR_CONSUMPTION_NORM"
+    },
+    {
+      "id": "pds-srd-datasheet-c15",
+      "officialUrl": "https://martindale-electric.co.uk/wp-content/uploads/2024/03/specPDS_PDSX_series.pdf",
+      "path": "data/estimate-benchmarks/source-artifacts/master32-panel-tool-provision-r1/pds-srd-datasheet-c15.pdf",
+      "sha256": "8b70a5a7e2f2f314eda1a989a07926a171378810e5aedc2a0540644ae9fd74f9",
+      "edition": "Ver C1.5",
+      "locatorRu": "PDF1–2: PD690SRD capabilities and included MG3 magnetic hanger; no CALCHECK feature on this model",
+      "role": "MANUFACTURER_CAPABILITY_AND_INSTRUCTIONS_NOT_CREW_OR_CONSUMPTION_NORM"
+    },
+    {
+      "id": "fluke-166x-users-r3-2024",
+      "officialUrl": "https://media.fluke.com/75807436-7228-4144-8190-b309010baaca_original%20file.pdf",
+      "path": "data/estimate-benchmarks/source-artifacts/master32-panel-tool-provision-r1/fluke-166x-users-r3-2024.pdf",
+      "sha256": "0b1d1a64e4f00e53e7ee4c3d02c4e7dfca53dd57f5a7af4426a296725f455a27",
+      "edition": "10/2015 Rev3 /12/2024",
+      "locatorRu": "PDF5–8: 1662 EU standard red/green leads, probes, GS38 caps/clips, zero adapter; PDF23–25: lead zeroing; PDF33–34: RLO uses L/PE, continuity capability; PDF75–78: batteries, fuse, maintenance; PDF85–86: RLO characteristics",
+      "role": "MANUFACTURER_CAPABILITY_AND_INSTRUCTIONS_NOT_CREW_OR_CONSUMPTION_NORM"
+    }
+  ],
+  "reuseOrigin": {
+    "logicalPath": "data/estimate-benchmarks/source-packs/master32-panel-tool-provision-r1.json",
+    "sha256": "f4ed03c2dc09a5607b4c5b5cf7421e01817b566a402ad2c2a634d95fcbb96705",
+    "selectedCount": 18,
+    "physicalInitialItemsPerWhole": 28,
+    "preservedExactly": [
+      "key",
+      "titleRu",
+      "category",
+      "unitId",
+      "countPerPost",
+      "sourceArtifactIds",
+      "locator",
+      "profile"
+    ],
+    "oldCountExpressionIsEvidenceOnly": "The old min(1,m30_fixture_count) fields remain verbatim in the source rows for comparison and are never used by this producer.",
+    "notTransferred": [
+      "stripper-cutter",
+      "measuring-rule",
+      "slotted-screwdriver",
+      "panel_method",
+      "WAGO_connector",
+      "strip_length_11mm",
+      "panel_quantity",
+      "price_owner"
+    ]
+  },
+  "coveredCandidateRowIds": [
+    "electrical:socket-composable-two-gang-r1:own:voltage-indicator",
+    "electrical:socket-composable-two-gang-r1:own:proving-unit",
+    "electrical:socket-composable-two-gang-r1:own:installation-tester"
+  ],
+  "coveredCandidateParameterIds": [
+    "socket_composable_two_gang_own_voltage_indicator_count",
+    "socket_composable_two_gang_own_proving_unit_count",
+    "socket_composable_two_gang_own_installation_tester_count"
+  ],
+  "openNeeds": [
+    {
+      "key": "battery-renewal",
+      "parameterId": "electrical_verification_open_battery_renewal",
+      "titleRu": "Возобновление питания измерительных приборов",
+      "category": "material",
+      "reasonRu": "Начальный комплект6AA каждого прибора не задаёт ресурс элементов, число последующих замен или закупок. Нужны фактическое состояние и план обеспечения; универсальной нормы на розетку нет."
+    },
+    {
+      "key": "periodic-verification",
+      "parameterId": "electrical_verification_open_periodic_verification",
+      "titleRu": "Периодическая проверка измерительных приборов",
+      "category": "service",
+      "reasonRu": "Не подтверждены фактический срок, действующие документы и самостоятельная цена периодической услуги. Наличие комплекта не означает действующей проверки и не порождает1услугу на комплект."
+    },
+    {
+      "key": "additional-measurements",
+      "parameterId": "electrical_verification_open_additional_measurements",
+      "titleRu": "Дополнительные испытания электрической цепи",
+      "category": "service",
+      "reasonRu": "Это оснащение ограничено проверкой отсутствия напряжения и RLO. Программа объекта может требовать другие измерения и принадлежности; способ, объём, совместимость и цена отдельной услуги остаются открытыми."
+    }
+  ],
+  "excludedRu": [
+    "Нет нового публичного вида работы или второй backend/registry/publisher.",
+    "Только собственные первоначально исправные приборы; все строки информационные, без новой оплаты, аренды или заказа.",
+    "Не создаётся цена общего комплекта и не наследуется цена Master32 provision-owner.",
+    "Если тот же физический комплект используется в нескольких подработах, ROOT связывает его с одним сохранённым resourceID; повторное отображение не создаёт ещё один комплект.",
+    "Двенадцать элементовAA относятся к первоначальному питанию двух разных приборов, а не расходу на узел/тест.",
+    "Указатель не заменяет PE/RLO и приборRLO не заменяет проверку отсутствия напряжения.",
+    "Поверка/проверка, точный цикл proving, обнуление и фактические протоколы не выполнены наличием комплекта.",
+    "Нет автоматического испытания изоляции или повышенным напряжением через подключённую аппаратуру.",
+    "Стриппер, длина зачистки, клеммы, СИЗ, LOTO, доступ, труд, монтажные материалы и логистика этой подработой не закрыты."
+  ],
+  "publicationAllowed": false,
+  "completeInstallation": false,
+  "sourceAuthorityPromoted": false,
+  "projectAuthenticated": false,
+  "newPaidOwners": 0,
+  "newPurchaseOwners": 0,
+  "newPublicCatalogs": 0,
+  "usingOperationGroupId": "electrical:socket-composable-two-gang-r1",
+  "usingOperationGroupTitleRu": "Монтаж составной двухместной накладной розетки",
+  "usingOperations": [
+    {
+      "id": "electrical:socket-composable-two-gang-r1:connection",
+      "titleRu": "Подключение подготовленного совместимого ввода",
+      "processOrdinal": 2
+    },
+    {
+      "id": "electrical:socket-composable-two-gang-r1:qa-close",
+      "titleRu": "Проверки, закрытие и приёмка розеточного узла",
+      "processOrdinal": 3
+    }
+  ],
+  "usingOperationSourcePackSha256": "6bd155db6d7b8098266a5806afc270633b9b43131137b1e057c62b7cd4ea319e",
+  "partUsingOperationKeys": {
+    "voltage-indicator": [
+      "connection",
+      "qa-close"
+    ],
+    "proving-unit": [
+      "connection",
+      "qa-close"
+    ],
+    "proving-batteries": [
+      "connection",
+      "qa-close"
+    ],
+    "proving-magnetic-hanger": [
+      "connection",
+      "qa-close"
+    ],
+    "voltage-kit-case": [
+      "connection",
+      "qa-close"
+    ],
+    "installation-tester": [
+      "qa-close"
+    ],
+    "continuity-red-lead": [
+      "qa-close"
+    ],
+    "continuity-green-lead": [
+      "qa-close"
+    ],
+    "continuity-red-probe": [
+      "qa-close"
+    ],
+    "continuity-green-probe": [
+      "qa-close"
+    ],
+    "continuity-red-gs38-cap": [
+      "qa-close"
+    ],
+    "continuity-green-gs38-cap": [
+      "qa-close"
+    ],
+    "continuity-red-clip": [
+      "qa-close"
+    ],
+    "continuity-green-clip": [
+      "qa-close"
+    ],
+    "continuity-zero-adapter": [
+      "qa-close"
+    ],
+    "continuity-batteries": [
+      "qa-close"
+    ],
+    "continuity-padded-strap": [
+      "qa-close"
+    ],
+    "continuity-hard-case": [
+      "qa-close"
+    ]
+  }
+}

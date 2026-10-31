@@ -19,7 +19,7 @@ type ResourceKind =
   | "equipment" | "delivery" | "control";
 
 export const DRYWALL_CEILING_P113_FULL_CYCLE_S2723_CATALOG_ID =
-  "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_install_large_area";
+  "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_install_standard";
 export const DRYWALL_CEILING_P113_FULL_CYCLE_S2723_SOURCE_ID =
   "drywall_ceiling_p113_full_cycle_s27_23";
 export const DRYWALL_CEILING_P113_FULL_CYCLE_S2723_NORM_ID =

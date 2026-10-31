@@ -24,7 +24,7 @@ export type DrywallDomainCompletionOperationV7 =
 export type DrywallDomainCompletionFamilyV7 =
   | "bulkhead" | "curve" | "drywall_ceiling" | "drywall_partition" | "fire_partition" | "joint"
   | "moisture_partition" | "niche" | "revision_hatch" | "shaft" | "sound_partition" | "wall_cladding";
-export type DrywallDomainCompletionVariantV7 = "standard" | "large_area" | "small_area" | "technical_room" | "wet_zone" | "high_load";
+export type DrywallDomainCompletionVariantV7 = "standard" | "technical_room" | "wet_zone" | "high_load";
 
 const priorOwners = new Set<string>([
   ...DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3,
@@ -38,7 +38,7 @@ export const DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7: readonly string[] = Objec
     .map((row) => row.catalog_id),
 );
 const AUTHORIZED = new Set(DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7);
-if (DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7.length !== 393 || new Set(DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7).size !== 393) {
+if (DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7.length !== 243 || new Set(DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7).size !== 243) {
   throw new Error(`DRYWALL_DOMAIN_COMPLETION_DENOMINATOR_RED:${DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7.length}`);
 }
 
@@ -184,15 +184,13 @@ const SYSTEM: Readonly<Record<DrywallDomainCompletionFamilyV7, readonly DrywallD
 
 const VARIANT: Readonly<Record<DrywallDomainCompletionVariantV7, readonly DrywallDomainExpectedCandidateV7[]>> = {
   standard: candidates([["variant_standard_configuration_record", "Фиксация стандартной проектной конфигурации", 21, "documentation", "document"]] as const, "FULL"),
-  large_area: candidates([["variant_large_area_zoning", "Разбивка на технологические захватки", 6, "labor", "m2"], ["variant_large_area_material_handler", "Механизированная подача паллет/пакетов", 11, "equipment", "machine_hour"]] as const, "FULL"),
-  small_area: candidates([["variant_small_area_separate_mobilization", "Отдельная мобилизация малой площади", 12, "transport", "trip"], ["variant_small_area_hand_detail", "Ручная доводка малых участков", 7, "labor", "man_hour"]] as const, "FULL"),
   technical_room: candidates([["variant_technical_corrosion_protection", "Коррозионностойкая защита технического помещения", 2, "material", "kg"], ["variant_technical_interface_service", "Координация плотных инженерных интерфейсов", 18, "subcontract_service", "service"]] as const, "FULL"),
   wet_zone: candidates([["variant_wet_zone_barrier", "Дополнительный влагозащитный барьер", 2, "material", "m2"], ["variant_wet_zone_sealant", "Герметик мокрой зоны", 8, "material", "kg"], ["variant_wet_zone_test", "Контроль влажности и непрерывности защиты", 17, "testing", "test"]] as const, "FULL"),
   high_load: candidates([["variant_high_load_reinforcement", "Дополнительное усиление высокой нагрузки", 4, "material", "m"], ["variant_high_load_board", "Усиленная плита зоны нагрузки", 1, "material", "m2"], ["variant_high_load_pull_test", "Контроль креплений высокой нагрузки", 17, "testing", "test"]] as const, "FULL"),
 };
 
 function parseCatalogId(catalogId: string): { family: DrywallDomainCompletionFamilyV7; operation: DrywallDomainCompletionOperationV7; variant: DrywallDomainCompletionVariantV7 } {
-  const match = catalogId.match(/^drywall_ceiling_interior_(.+)_(prepare|frame|align|insulate|clad|finish_joint|repair|install)_(large_area|small_area|standard|technical_room|wet_zone|high_load)$/u);
+  const match = catalogId.match(/^drywall_ceiling_interior_(.+)_(prepare|frame|align|insulate|clad|finish_joint|repair|install)_(standard|technical_room|wet_zone|high_load)$/u);
   if (!match) throw new Error(`DRYWALL_DOMAIN_COMPLETION_ID_PARSE_RED:${catalogId}`);
   return { family: match[1] as DrywallDomainCompletionFamilyV7, operation: match[2].toUpperCase() as DrywallDomainCompletionOperationV7, variant: match[3] as DrywallDomainCompletionVariantV7 };
 }

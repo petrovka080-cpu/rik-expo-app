@@ -20,7 +20,7 @@ import { runMasterSingleDefinitionSuccessorR1 } from "./prepareMasterSingleDefin
 type Json = Record<string, any>;
 
 const variantKey = String(
-  process.env.S273_F09_COMMISSIONING_VARIANT ?? "small_area",
+  process.env.S273_F09_COMMISSIONING_VARIANT ?? "technical_room",
 ) as FireAlarmCommissioningClassifiedVariantKey;
 const variant = resolveFireAlarmCommissioningClassifiedVariant(variantKey);
 const variantToken = variantKey.toUpperCase();

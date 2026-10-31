@@ -15,7 +15,7 @@ describe("R4 registered professional domains use one backend compiler", () => {
   });
 
   it("fails the synchronous exact-domain route closed until the canonical backend responds", () => {
-    const inline = read("src/lib/estimate/buildEstimateFromInlineWorkPrompt.ts");
+    const inline = read("src/lib/estimate/backendPlatform/canonicalEstimateHistoricalIngress.ts");
     expect(inline).toContain("resolveRegisteredProfessionalEstimateSelectionV1(explicitExactId)");
     expect(inline).toContain('blockingReason: "CANONICAL_BACKEND_REQUIRED"');
     expect(inline).not.toContain("buildRegisteredProfessionalEstimateFromInlineInputV1(input)");

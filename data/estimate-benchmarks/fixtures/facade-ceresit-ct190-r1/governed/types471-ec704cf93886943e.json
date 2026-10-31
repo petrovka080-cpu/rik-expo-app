@@ -1,0 +1,9 @@
+{
+  "status": "PASS_TARGETED_TRANSITIVE_PROGRAM",
+  "fullApplicationTypecheck": false,
+  "roots": [
+    "work/stream-c-facade-ct190/prepareFacadeCt190RetainedWorkR1.ts"
+  ],
+  "sourceFiles": 471,
+  "errors": []
+}

@@ -1,0 +1,105 @@
+{
+  "contract": "rik-expo-app.s27-69.aggressive-floor-actual-thickness-scope.v1",
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/aggressive-floor-four-v3-parents-s27-69.json",
+  "parentSnapshotSha256": "acba0c779c25229adef88b0b0d1aa9e45dce3049abeb3f09703ef0f5b012ab18",
+  "targets": [
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_standard",
+      "predecessorDefinitionId": "c9bab5c2-e1bd-5ae1-91c4-2dd1db69f7cb",
+      "parentSha256": "506fc4817c9d2569c64568a01a7a1c9fad27a08c24de77c5ca8e2134b487acde",
+      "parentVersion": 3
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_large_area",
+      "predecessorDefinitionId": "2f2704ff-2f38-5717-aea9-ac2abc4b5fc6",
+      "parentSha256": "8b2d8d51c8a2dc40427f87fe34535d176b1ce8f705ca48acea6d44267e34bbbe",
+      "parentVersion": 3
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_small_area",
+      "predecessorDefinitionId": "baa63afe-b943-599d-9109-6e9d6f02b70b",
+      "parentSha256": "807eb61033d7d483318a525659318c5c967c2a832fa5a56e7272a7295f3fd128",
+      "parentVersion": 3
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_wet_zone",
+      "predecessorDefinitionId": "076352e9-c096-5e0c-baa7-5eb63174282a",
+      "parentSha256": "57f3374383dde2c8f0724354ce9ba2ca78e3a56c153893b85e5f0a4c95bf2f96",
+      "parentVersion": 3
+    }
+  ],
+  "source": {
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+    "localArtifact": ".release-runtime/r568/s27-3/f09-next-current-lineage/official-snapshots/krer_46_2015.pdf",
+    "sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+    "edition": "КРЕР46-2015, введён с01.01.2016",
+    "printedAndPdfPages": [
+      5,
+      6,
+      7,
+      58,
+      59,
+      60
+    ],
+    "table": "46-04-011",
+    "columns": [
+      "46-04-011-12",
+      "46-04-011-13"
+    ],
+    "basisM2": 100
+  },
+  "scopeRu": "Разборка существующего цементного или бетонного покрытия пола из кислото- или жароупорного бетона в агрессивной среде в отдельных местах ручными пневматическими механизмами. Базовая толщина25мм, изменение на каждые полные5мм; минимальная принятая толщина5мм. Это не обычная стяжка, не основание или железобетонная плита. Включены уборка, спуск через окно в лотках, горизонтальное перемещение суммарно до130м, включая до50м от объекта, сортировка и штабелирование пригодных материалов. Внешний вывоз, затаривание и иной спуск учитываются по применимости. Защита прилегающих частей по п.1.20 и обеспыливание по п.1.27 требуют явного решения; их нормы не назначены автоматически.",
+  "workScopeValue": "Подтверждено принятое цементное или бетонное покрытие из кислото- или жароупорного бетона в агрессивной среде; разборка в отдельных местах ручными пневматическими механизмами; включённые перемещения соответствуют КРЕР",
+  "actualThicknessParameterId": "cement_or_concrete_floor_actual_thickness_mm",
+  "legacyThicknessStepsParameterId": "cement_or_concrete_floor_thickness_adjustment_steps_5mm",
+  "legacyProfileParameterId": "existing_aggressive_environment_cement_or_concrete_floor_25mm_profile",
+  "legacyConfirmedParameterId": "existing_cement_or_concrete_floor_25mm_aggressive_environment_confirmed",
+  "acceptedProfileValue": "KRER_46_04_011_12_CEMENT_OR_CONCRETE_FLOOR_25MM_AGGRESSIVE_ENVIRONMENT",
+  "baseThicknessMm": 25,
+  "thicknessStepMm": 5,
+  "minimumSupportedThicknessMm": 5,
+  "rate12Per100M2": {
+    "labor": 28.54,
+    "machinistLabor": 5.58,
+    "compressor": 5.58,
+    "pneumaticBreaker": 11.16
+  },
+  "rate13Per5MmPer100M2": {
+    "labor": 3.5,
+    "machinistLabor": 1.1,
+    "compressor": 1.1,
+    "pneumaticBreaker": 2.2
+  },
+  "adjacentProtectionNotRequiredValue": "По принятому проектному решению защита прилегающих частей для этого участка не требуется",
+  "adjacentProtectionProvidedValue": "Защита прилегающих частей уже обеспечена и принята отдельной подработой; повторная оплата в этом этапе не требуется",
+  "adjacentProtectionNeededValue": "В этой смете нужно учитывать устройство и разборку защитных ограждений прилегающих частей",
+  "dustControlProvidedValue": "Обеспыливание этого этапа обеспечено и принято отдельной подработой; повторная оплата в текущем демонтаже не требуется",
+  "dustControlNeededValue": "Обеспыливание этого этапа требуется учитывать в этой смете",
+  "sourceNeeds": [
+    {
+      "id": "adjacent-protection",
+      "titleRu": "Устройство и разборка временных защитных ограждений прилегающих частей",
+      "reasonRu": "П.1.20 КРЕР46: по проектной применимости необходимо дополнительно рассчитать конструкцию, материалы, объём и отдельную норму. Универсальное количество щитов или комплектов не назначено."
+    },
+    {
+      "id": "dust-control",
+      "titleRu": "Обеспыливание при разборке цементного или бетонного покрытия",
+      "reasonRu": "П.1.27 КРЕР46: затраты не включены и определяются дополнительно по соответствующему КРЕР13. Положительный источник для способа, ресурсов и объёма в этом пакете пока отсутствует."
+    }
+  ],
+  "controls": {
+    "existingFiveOwnersRetained": true,
+    "existingNumericalRatesRetained": true,
+    "machinistNotPaidTwice": true,
+    "legacyColumnAndStepsNotUserQuestions": true,
+    "actualThicknessNeverRounded": true,
+    "wasteMassNeverDerivedFromAreaOrThickness": true,
+    "noDefaultActualThickness": true,
+    "noDefaultProtectionOrDustExclusion": true,
+    "sourceGapsOwnedByApplication": true,
+    "newPhysicalNormSources": 0,
+    "productionAccepted": false
+  },
+  "sourcePack": "data/estimate-benchmarks/source-packs/floor-demolition-series-s27-52.json",
+  "sourcePackSha256": "5bb4443b3ba1c5b254779696191c36c55555d8bc55131e00cea03589d9076713"
+}

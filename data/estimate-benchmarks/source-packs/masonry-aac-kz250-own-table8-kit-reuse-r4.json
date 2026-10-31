@@ -1,0 +1,852 @@
+{
+  "contract": "masonry-aac-kz250-own-table8-whole-kit-reuse/r4",
+  "status": "SOURCE_VERIFIED_WHOLE_TABLE_EXISTING_CONSUMER_APPLICATION_UNRUN",
+  "source": {
+    "id": "TNKSN_KZ_8_07_06_2019",
+    "sha256": "f5db7d0913d2d5f57634fb587a37fbccb61f9dda1787046fe13c30b096fe5b10",
+    "wall": "Calculation3, wall250mm under structural floor,600x250x200mm length/width/height, table3. Partition table4 is excluded.",
+    "territory": "Kazakhstan, own2019 edition. International quantity/method profile; no claim ofKG adoption and no source prices imported.",
+    "path": "data/estimate-benchmarks/source-artifacts/masonry-aac-kz250-whole-cycle-r4/TNKSN-KZ-8.07-06-2019-official.pdf",
+    "url": "https://new-shop.ksm.kz/media/egfntd/ntdgo/2_8_07_06_2019.pdf"
+  },
+  "table": "Table8, PDF41–43 / printed37–39, all41lines. Source whole-brigade inventory, not per-wall consumption or available site stock.",
+  "existingSourceId": "source:masonry:aac:kz250-m150-whole-cycle2019:r4",
+  "targetDefinitionId": "79c63634-3fa6-513a-87ed-f2e3c7807835",
+  "targetDefinitionSha256": "bfbe5869280540c0c009825d091504faa7d6813ff2e63b2c34a3434e8b524f0d",
+  "prefix": "masonry:aac:kz250-m150:whole-cycle:r4",
+  "selectorId": "aackz4_selected_whole_method",
+  "selectorValue": "OWN_TNKSN_RK_8_07_06_2019_AAC250_M150",
+  "records": [
+    {
+      "number": 1,
+      "key": "tower-crane",
+      "publicTitleRu": "Башенный кран",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Подача материала",
+      "specificationRu": "Номинальная грузоподъёмность исходной позиции 10 т; фактическая грузовая характеристика не подтверждена",
+      "operationKeys": [
+        "block-unload",
+        "block-feed",
+        "glue-unload",
+        "glue-feed"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "reuse": {
+        "kind": "EXACT_SAVED_PHYSICAL_OWNER",
+        "existingOwnerRowId": "masonry:ready-m50:whole-cycle:r2:crane",
+        "retainedSelectedMethodSourceCount": "1",
+        "newOwner": false,
+        "doNotSum": true,
+        "existingQuantityUnchanged": true,
+        "scope": "SAME_SAVED_PHYSICAL_OWNER_REFERENCE_NOT_EQUIPMENT_CAPACITY_EQUIVALENCE",
+        "sourceNominalCraneCapacityT": "10",
+        "actualCapacityCompatibilityConfirmed": false,
+        "existingSourceBoundary": "Existing inventory source retains KG8t project adaptation only; no source10t machine-hour norm transfer. Real current passport, curve, rigging and route remain separate mandatory needs."
+      }
+    },
+    {
+      "number": 2,
+      "key": "four-leg-sling",
+      "publicTitleRu": "Четырёхветвевой строп",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Строповка материалов",
+      "specificationRu": "Исходная марка 4СК-5,0/4000; ГОСТ25573 редакции источника; не заменяет полный захват трёх ящиков",
+      "operationKeys": [
+        "block-unload",
+        "block-feed",
+        "glue-unload",
+        "glue-feed"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:four-leg-sling"
+    },
+    {
+      "number": 3,
+      "key": "wall-fastening-tool",
+      "publicTitleRu": "Монтажный пистолет для крепления стен",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Крепление стен к несущим конструкциям",
+      "specificationRu": "ПЦ-84 только внутренняя идентичность источника; фактические крепления и допуск не подтверждены",
+      "operationKeys": [
+        "structural-connections"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:wall-fastening-tool"
+    },
+    {
+      "number": 4,
+      "key": "rotary-hammer",
+      "publicTitleRu": "Электроперфоратор",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Сверление отверстий в бетоне под дюбель-гвоздь",
+      "specificationRu": "220 В",
+      "operationKeys": [
+        "structural-connections"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:rotary-hammer"
+    },
+    {
+      "number": 5,
+      "key": "drill-with-basket",
+      "publicTitleRu": "Электродрель с корзинчатой насадкой",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Приготовление кладочного клея",
+      "specificationRu": "220 В; до300об/мин. Один полный исходный узел дрель+насадка; не Collomix/CT21",
+      "operationKeys": [
+        "glue-mixing"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:drill-with-basket",
+      "existingFinancialOwnerRowIds": [
+        "masonry:aac:kz250-m150:whole-cycle:r4:glue-mix-machine",
+        "masonry:aac:kz250-m150:whole-cycle:r4:main-labour"
+      ],
+      "sameMixingLimitRpm": 300
+    },
+    {
+      "number": 6,
+      "key": "inventory-scaffold",
+      "publicTitleRu": "Инвентарные подмости",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Кладка стен с подмостей",
+      "specificationRu": "ГОСТ24258 в редакции источника; не один полный фактический панельный комплект и не число панелей",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:inventory-scaffold"
+    },
+    {
+      "number": 7,
+      "key": "receiving-platform",
+      "publicTitleRu": "Выносная приёмная площадка",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Приёмка материалов и изделий",
+      "specificationRu": "Исходная грузоподъёмность до2т; фактическая платформа/перекрытие/ограждение не подтверждены",
+      "operationKeys": [
+        "block-feed",
+        "glue-feed"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:receiving-platform"
+    },
+    {
+      "number": 8,
+      "key": "mortar-box",
+      "publicTitleRu": "Ящик для растворной смеси",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Хранение растворной смеси",
+      "specificationRu": "ЯР-1;0.25м3. Таблица8 даёт1, выбранный целый способ таблицы2 требует3; не суммировать/не подменять",
+      "operationKeys": [
+        "first-row"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "reuse": {
+        "kind": "SOURCE_TABLE1_NOT_AN_EXTRA_BOX_OR_REPLACEMENT_FOR_WHOLE_THREE_BOX_METHOD",
+        "existingOwnerRowId": "masonry:ready-m50:whole-cycle:r2:boxes",
+        "retainedSelectedMethodSourceCount": "3",
+        "newOwner": false,
+        "doNotSum": true,
+        "existingQuantityUnchanged": true
+      }
+    },
+    {
+      "number": 9,
+      "key": "water-container",
+      "publicTitleRu": "Ёмкость для воды",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Замачивание блоков",
+      "specificationRu": "ГОСТ20588 в редакции источника; не объявляется сосудом для замеса клея",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:water-container"
+    },
+    {
+      "number": 10,
+      "key": "mortar-shovels",
+      "publicTitleRu": "Растворная лопата",
+      "sourceQuantity": "2",
+      "sourceQuantityText": "2",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Расстилание растворной постели и перелопачивание",
+      "specificationRu": "ГОСТ19596 в редакции источника",
+      "operationKeys": [
+        "first-row"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "reuse": {
+        "kind": "EXACT_SAVED_PHYSICAL_OWNER",
+        "existingOwnerRowId": "masonry:ready-m50:whole-cycle:r2:shovels",
+        "retainedSelectedMethodSourceCount": "2",
+        "newOwner": false,
+        "doNotSum": true,
+        "existingQuantityUnchanged": true
+      }
+    },
+    {
+      "number": 11,
+      "key": "block-handsaw",
+      "publicTitleRu": "Ножовка для распиловки блоков",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Распиловка блоков",
+      "specificationRu": "ГОСТ26215 в редакции источника; собственная ручная резка, без переноса станка и его износа",
+      "operationKeys": [
+        "sawing-fitting"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:block-handsaw",
+      "existingFinancialOwnerRowIds": [
+        "masonry:aac:kz250-m150:whole-cycle:r4:main-labour"
+      ],
+      "noSeparateCuttingLabour": true,
+      "mbs510WorkEnvelopeNeededForThisManualMethod": false
+    },
+    {
+      "number": 12,
+      "key": "metal-shears",
+      "publicTitleRu": "Ножницы по металлу",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Нарезка арматурной проволоки",
+      "specificationRu": "Не норма расхода режущей части",
+      "operationKeys": [
+        "structural-connections"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:metal-shears"
+    },
+    {
+      "number": 13,
+      "key": "masonry-trowels",
+      "publicTitleRu": "Кельма каменщика",
+      "sourceQuantity": "2",
+      "sourceQuantityText": "2",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Разравнивание раствора",
+      "specificationRu": "ГОСТ9533 в редакции источника",
+      "operationKeys": [
+        "first-row",
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "reuse": {
+        "kind": "EXACT_SAVED_PHYSICAL_OWNER",
+        "existingOwnerRowId": "masonry:ready-m50:whole-cycle:r2:trowels",
+        "retainedSelectedMethodSourceCount": "2",
+        "newOwner": false,
+        "doNotSum": true,
+        "existingQuantityUnchanged": true
+      }
+    },
+    {
+      "number": 14,
+      "key": "spatulas",
+      "publicTitleRu": "Шпатель",
+      "sourceQuantity": "2",
+      "sourceQuantityText": "2",
+      "unitId": "piece",
+      "sourcePdfPage": 41,
+      "purposeRu": "Устройство стен",
+      "specificationRu": "ГОСТ10778 в редакции источника",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:spatulas"
+    },
+    {
+      "number": 15,
+      "key": "brick-pick",
+      "publicTitleRu": "Молоток-кирочка",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Кладка блоков",
+      "specificationRu": "ГОСТ2310 в редакции источника",
+      "operationKeys": [
+        "sawing-fitting",
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:brick-pick"
+    },
+    {
+      "number": 16,
+      "key": "rubber-mallet",
+      "publicTitleRu": "Резиновый молоток",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Осаживание блоков",
+      "specificationRu": "Не норма износа",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:rubber-mallet"
+    },
+    {
+      "number": 17,
+      "key": "masonry-gauge",
+      "publicTitleRu": "Порядовка",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Кладка стен",
+      "specificationRu": "Исходное назначение наружных стен сохраняется; объектная применимость отдельно",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:masonry-gauge"
+    },
+    {
+      "number": 18,
+      "key": "guide-line",
+      "publicTitleRu": "Причальный шнур",
+      "sourceQuantity": "2",
+      "sourceQuantityText": "2",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Кладка стен",
+      "specificationRu": "ГОСТ29231 в редакции источника",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:guide-line"
+    },
+    {
+      "number": 19,
+      "key": "caliper",
+      "publicTitleRu": "Штангенциркуль",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Контроль повреждений углов и рёбер блоков",
+      "specificationRu": "ГОСТ166 в редакции источника",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "reuse": {
+        "kind": "EXACT_SAVED_PHYSICAL_OWNER",
+        "existingOwnerRowId": "masonry:ready-m50:whole-cycle:r2:caliper",
+        "retainedSelectedMethodSourceCount": "1",
+        "newOwner": false,
+        "doNotSum": true,
+        "existingQuantityUnchanged": true
+      }
+    },
+    {
+      "number": 20,
+      "key": "thermometer",
+      "publicTitleRu": "Метеорологический термометр",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Контроль температуры воздуха",
+      "specificationRu": "Цена деления1°C; ГОСТ112 в редакции источника",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:thermometer"
+    },
+    {
+      "number": 21,
+      "key": "control-straightedge",
+      "publicTitleRu": "Контрольная рейка",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Контроль вертикальной поверхности кладки",
+      "specificationRu": "Длина2м; отклонение от прямолинейности≤0.1мм",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:control-straightedge"
+    },
+    {
+      "number": 22,
+      "key": "plumb",
+      "publicTitleRu": "Строительный отвес",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Определение вертикальности",
+      "specificationRu": "Не финансовая норма",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:plumb"
+    },
+    {
+      "number": 23,
+      "key": "level",
+      "publicTitleRu": "Строительный уровень",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Определение горизонтальности",
+      "specificationRu": "ГОСТ9416 в редакции источника",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:level"
+    },
+    {
+      "number": 24,
+      "key": "measuring-tapes",
+      "publicTitleRu": "Металлическая измерительная рулетка",
+      "sourceQuantity": "2",
+      "sourceQuantityText": "2",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Разметка стены",
+      "specificationRu": "В источнике длины20м и3м, цена деления1мм; не по2каждого типа",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:measuring-tapes"
+    },
+    {
+      "number": 25,
+      "key": "metal-ruler",
+      "publicTitleRu": "Металлическая измерительная линейка",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Измерения",
+      "specificationRu": "500мм; цена деления1мм; ГОСТ427 в редакции источника",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:metal-ruler"
+    },
+    {
+      "number": 26,
+      "key": "square",
+      "publicTitleRu": "Измерительный угольник",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Измерения",
+      "specificationRu": "ГОСТ3749 в редакции источника",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:square"
+    },
+    {
+      "number": 27,
+      "key": "leveller-and-staff",
+      "publicTitleRu": "Нивелир с нивелирной рейкой",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Измерения",
+      "specificationRu": "Один исходный составной узел; ГОСТ10528 в редакции источника",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:leveller-and-staff"
+    },
+    {
+      "number": 28,
+      "key": "handcarts",
+      "publicTitleRu": "Ручная тележка",
+      "sourceQuantity": "2",
+      "sourceQuantityText": "2",
+      "unitId": "piece",
+      "sourcePdfPage": 42,
+      "purposeRu": "Перевозка блоков, цемента и песка",
+      "specificationRu": "Не производительность и не норма готового раствора",
+      "operationKeys": [
+        "block-cart",
+        "glue-cart"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:handcarts"
+    },
+    {
+      "number": 29,
+      "key": "surface-brush",
+      "publicTitleRu": "Щётка для очистки поверхности",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Очистка поверхности от грязи",
+      "specificationRu": "ГОСТ10597 в редакции источника; не мойщик смеси и не норма удаления отходов",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:surface-brush"
+    },
+    {
+      "number": 30,
+      "key": "hygrometer",
+      "publicTitleRu": "Психрометрический гигрометр",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Определение влажности воздуха",
+      "specificationRu": "30–90%; погрешность≤10%; типВИТ-1 только внутренний источник",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:hygrometer"
+    },
+    {
+      "number": 31,
+      "key": "scriber",
+      "publicTitleRu": "Чертилка или карандаш",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Разметка",
+      "specificationRu": "Один исходный инструмент",
+      "operationKeys": [
+        "sawing-fitting",
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:scriber"
+    },
+    {
+      "number": 32,
+      "key": "theodolite",
+      "publicTitleRu": "Теодолит",
+      "sourceQuantity": "1",
+      "sourceQuantityText": "1",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Контроль",
+      "specificationRu": "ГОСТ10529 в редакции источника",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": false,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:theodolite"
+    },
+    {
+      "number": 33,
+      "key": "safety-belt",
+      "publicTitleRu": "Предохранительный пояс",
+      "sourceQuantity": "2",
+      "sourceQuantityText": "2",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Индивидуальная защита",
+      "specificationRu": "Исторический ГОСТ12.4.089; не подтверждение современной сертифицированной защиты",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": true,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:safety-belt"
+    },
+    {
+      "number": 34,
+      "key": "safety-rope",
+      "publicTitleRu": "Страховочный канат",
+      "sourceQuantity": "2",
+      "sourceQuantityText": "2",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Индивидуальная защита",
+      "specificationRu": "Исторический ГОСТ12.4.107; фактический полный комплект и анкеровка не подтверждены",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": true,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:safety-rope"
+    },
+    {
+      "number": 35,
+      "key": "helmets",
+      "publicTitleRu": "Защитная каска",
+      "sourceQuantity": null,
+      "sourceQuantityText": "На бригаду",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Индивидуальная защита",
+      "specificationRu": "В источнике только «на бригаду»; ГОСТ12.4.087 исходной редакции",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": true,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:helmets",
+      "actualRequiredQuantitySourceRole": "ENGINEERING_DESIGN",
+      "quantityWithoutBoundActualPlan": null
+    },
+    {
+      "number": 36,
+      "key": "work-clothing",
+      "publicTitleRu": "Спецодежда",
+      "sourceQuantity": null,
+      "sourceQuantityText": "На бригаду",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Индивидуальная защита",
+      "specificationRu": "В источнике только «на бригаду»; ГОСТ12.4.100 исходной редакции",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": true,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:work-clothing",
+      "actualRequiredQuantitySourceRole": "ENGINEERING_DESIGN",
+      "quantityWithoutBoundActualPlan": null
+    },
+    {
+      "number": 37,
+      "key": "protective-mittens",
+      "publicTitleRu": "Защитные рукавицы",
+      "sourceQuantity": null,
+      "sourceQuantityText": "На бригаду",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Индивидуальная защита",
+      "specificationRu": "В источнике только «на бригаду»; ГОСТ12.4.010 исходной редакции",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": true,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:protective-mittens",
+      "actualRequiredQuantitySourceRole": "ENGINEERING_DESIGN",
+      "quantityWithoutBoundActualPlan": null
+    },
+    {
+      "number": 38,
+      "key": "safety-footwear",
+      "publicTitleRu": "Специальная обувь",
+      "sourceQuantity": null,
+      "sourceQuantityText": "На бригаду",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Индивидуальная защита",
+      "specificationRu": "В источнике только «на бригаду»; ГОСТ12.4.137 исходной редакции",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": true,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:safety-footwear",
+      "actualRequiredQuantitySourceRole": "ENGINEERING_DESIGN",
+      "quantityWithoutBoundActualPlan": null
+    },
+    {
+      "number": 39,
+      "key": "guardrails",
+      "publicTitleRu": "Предохранительные ограждения",
+      "sourceQuantity": null,
+      "sourceQuantityText": "На бригаду",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Коллективная защита",
+      "specificationRu": "В источнике только «на бригаду»; высота1.2м; ГОСТ23407 исходной редакции",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": true,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:guardrails",
+      "actualRequiredQuantitySourceRole": "ENGINEERING_DESIGN",
+      "quantityWithoutBoundActualPlan": null
+    },
+    {
+      "number": 40,
+      "key": "warning-signs",
+      "publicTitleRu": "Предупреждающие знаки",
+      "sourceQuantity": null,
+      "sourceQuantityText": "На бригаду",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Коллективная защита",
+      "specificationRu": "В источнике только «на бригаду»; ГОСТ12.4.026 исходной редакции",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": true,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:warning-signs",
+      "actualRequiredQuantitySourceRole": "ENGINEERING_DESIGN",
+      "quantityWithoutBoundActualPlan": null
+    },
+    {
+      "number": 41,
+      "key": "first-aid-kit",
+      "publicTitleRu": "Аптечка первой помощи",
+      "sourceQuantity": null,
+      "sourceQuantityText": "На бригаду",
+      "unitId": "piece",
+      "sourcePdfPage": 43,
+      "purposeRu": "Первая помощь",
+      "specificationRu": "В источнике только «на бригаду»; ТУ BY500059690.001 исходной редакции",
+      "operationKeys": [
+        "main-laying"
+      ],
+      "sourceStockNotConsumption": true,
+      "currentObjectAvailabilityConfirmed": false,
+      "sourceEditionIsNotCurrentPpeApproval": true,
+      "newInformationalRowId": "masonry:aac:kz250-m150:whole-cycle:r4:table8:first-aid-kit",
+      "actualRequiredQuantitySourceRole": "ENGINEERING_DESIGN",
+      "quantityWithoutBoundActualPlan": null
+    }
+  ],
+  "ordinaryInputsAdded": 0,
+  "newSourceResearch": false,
+  "newSourceId": false,
+  "newPaidOwners": 0,
+  "newProcurementOwners": 0,
+  "existingNormsUnchanged": true,
+  "rules": [
+    "Retain whole accepted three-box flow; table8 stock1 never replaces or adds to required3",
+    "Reuse five exact existing physical IDs, do not add duplicates",
+    "Mixing assembly count1 is not another machine-hour or rental payment",
+    "Sawing already paid by own main3.8889V labour; no machine or wear norm invented",
+    "Seven brigade quantities remain null until separately bound actual plan; no crew-size guess",
+    "Historical PPE2/2 remains source count only; current complete safety/anchoring/provision unproved",
+    "Own Table8 is neither a full scaffold maker BOM nor a confirmed adhesive mixing vessel",
+    "No current legal or regional conformity from old standards/foreign source",
+    "Existing whole_access/whole_mixing_cleaning/whole_cutting_ppe_control/residue/logistics needs stay open",
+    "Crane inventory ID1 is reused without asserting compatibility between source10t and existing KG8t adaptation; actual passport/curve/rigging remain mandatory and old rates stay unchanged"
+  ],
+  "full": false
+}

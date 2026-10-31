@@ -1,0 +1,294 @@
+{
+  "canonical-work:master:cs25_white01_ready_joint_10x5_existing_pe_backing_standard": {
+    "cartridge:cs25-ready-10x5:cartridges-opened": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:opening",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:opened-volume": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:opening",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:opening-plan-coverage": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:opening",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:cartridge-order": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:opening",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:unopened-remaining": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:opening",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:unused-opened-volume": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:opening",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:reference-use": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:application",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 20,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Нанесение выбранного материала",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:planned-use": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:application",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 20,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Нанесение выбранного материала",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:labor": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:application",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 20,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Нанесение выбранного материала",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно.",
+      "additionalOperations": [
+        {
+          "operationId": "cartridge:cs25-ready-10x5:masking",
+          "operationTitleRu": "Маскирование смежных поверхностей",
+          "processOrdinal": 5,
+          "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+        },
+        {
+          "operationId": "cartridge:cs25-ready-10x5:finishing",
+          "operationTitleRu": "Заглаживание силиконового шва",
+          "processOrdinal": 30,
+          "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+        },
+        {
+          "operationId": "cartridge:cs25-ready-10x5:cleaning",
+          "operationTitleRu": "Очистка инструмента и свежих излишков",
+          "processOrdinal": 40,
+          "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+        }
+      ]
+    },
+    "cartridge:cs25-ready-10x5:tools": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:application",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 20,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Нанесение выбранного материала",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно.",
+      "additionalOperations": [
+        {
+          "operationId": "cartridge:cs25-ready-10x5:finishing",
+          "operationTitleRu": "Заглаживание силиконового шва",
+          "processOrdinal": 30,
+          "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+        }
+      ]
+    },
+    "cartridge:cs25-ready-10x5:masking-tape": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:masking",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 5,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Маскирование смежных поверхностей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:soap-water": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:finishing",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 30,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Заглаживание силиконового шва",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:cleaner": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:cleaning",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 40,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Очистка инструмента и свежих излишков",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:protection": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:protection",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 50,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Защита и условия твердения",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:cs25-ready-10x5:logistics": {
+      "groupId": "cartridge:cs25-ready-10x5",
+      "operationId": "cartridge:cs25-ready-10x5:completion",
+      "groupTitleRu": "Герметизация готового шва 10 × 5 мм Ceresit CS 25 по принятому ПЭ-уплотнению",
+      "processOrdinal": 60,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Доставка, тара и остатки",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    }
+  },
+  "canonical-work:master:forbo232_ready_wood_skirting_glue_concrete_standard": {
+    "cartridge:forbo232-ready-wood:cartridges-opened": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:opening",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:opened-volume": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:opening",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:opening-plan-coverage": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:opening",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:cartridge-order": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:opening",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:unopened-remaining": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:opening",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:unused-opened-volume": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:opening",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 10,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Поставка и план вскрытия картриджей",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:reference-use": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:application",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 20,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Нанесение выбранного материала",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:planned-use": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:application",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 20,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Нанесение выбранного материала",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:labor": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:application",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 20,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Нанесение выбранного материала",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно.",
+      "additionalOperations": [
+        {
+          "operationId": "cartridge:forbo232-ready-wood:cleaning",
+          "operationTitleRu": "Очистка инструмента и свежих излишков",
+          "processOrdinal": 40,
+          "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+        }
+      ]
+    },
+    "cartridge:forbo232-ready-wood:tools": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:application",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 20,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Нанесение выбранного материала",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:cleaner": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:cleaning",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 40,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Очистка инструмента и свежих излишков",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:protection": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:protection",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 50,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Защита и условия твердения",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    },
+    "cartridge:forbo232-ready-wood:logistics": {
+      "groupId": "cartridge:forbo232-ready-wood",
+      "operationId": "cartridge:forbo232-ready-wood:completion",
+      "groupTitleRu": "Приклеивание готового деревянного плинтуса к бетону Forbo Eurocol 232",
+      "processOrdinal": 60,
+      "contractVersion": "canonical-operation-resource/v1",
+      "operationTitleRu": "Доставка, тара и остатки",
+      "completionCriterionRu": "Приняты готовый узел, поставленная версия, план нанесения и условия; ранее выполненные действия не оплачиваются повторно."
+    }
+  }
+}

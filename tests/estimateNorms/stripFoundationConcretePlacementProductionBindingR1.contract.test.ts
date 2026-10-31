@@ -2,7 +2,7 @@ import {
   extractStripFoundationConcretePlacementCanonicalParametersR1,
   stripFoundationConcretePlacementPromptDetailsR1,
 } from "../../src/lib/estimate/ownedDomain/stripFoundationConcretePlacementProductionBindingR1";
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   STRIP_FOUNDATION_CONCRETE_PLACEMENT_PARAMETERS,

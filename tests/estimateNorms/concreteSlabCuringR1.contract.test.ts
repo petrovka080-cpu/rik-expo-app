@@ -1,4 +1,5 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   concreteSlabCuringPromptDetailsR1,
@@ -15,7 +16,7 @@ import {
 } from "../../src/lib/estimate/v4/concreteSlabCuringR1";
 
 describe("concrete slab curing canonical family", () => {
-  it("compiles all six catalog identities through the shared canonical core", async () => {
+  it("compiles all four catalog identities through the shared canonical core", async () => {
     const fixtures = new Set<string>();
     const methods = new Set<string>();
     for (const target of CONCRETE_SLAB_CURING_TARGETS) {
@@ -35,7 +36,10 @@ describe("concrete slab curing canonical family", () => {
       fixtures.add(JSON.stringify(input));
       methods.add(String(input.approved_external_curing_method));
     }
-    expect(fixtures.size).toBe(6);
+    expect(fixtures.size).toBe(4);
+    methods.add(String(measuredConcreteProjectInputR533("concreteSlabCuringAcceptanceInputR1", "compact").approved_external_curing_method));
+    methods.add(String(measuredConcreteProjectInputR533("concreteSlabCuringAcceptanceInputR1", "compact").approved_external_curing_method));
+    methods.add(String(measuredConcreteProjectInputR533("concreteSlabCuringAcceptanceInputR1", "compact").approved_external_curing_method));
     expect(methods).toEqual(new Set([
       "WATER_CURING",
       "WET_COVERING",
@@ -72,9 +76,9 @@ describe("concrete slab curing canonical family", () => {
 
   it("recalculates direct project quantities without multiplying by duration", async () => {
     const target = CONCRETE_SLAB_CURING_TARGETS.find(
-      (candidate) => candidate.contextKey === "large_area",
+      (candidate) => candidate.contextKey === "standard",
     )!;
-    const input = concreteSlabCuringAcceptanceInputR1(target.contextKey);
+    const input = measuredConcreteProjectInputR533("concreteSlabCuringAcceptanceInputR1", "extended");
     const compiled = await compileConcreteSlabCuringR1({
       ...input,
       curing_duration_day: 14,
@@ -147,9 +151,9 @@ describe("concrete slab curing canonical family", () => {
 
   it("round-trips conditional inputs through the ordinary consumer binding", () => {
     const target = CONCRETE_SLAB_CURING_TARGETS.find(
-      (candidate) => candidate.contextKey === "small_area",
+      (candidate) => candidate.contextKey === "standard",
     )!;
-    const fixture = concreteSlabCuringAcceptanceInputR1(target.contextKey);
+    const fixture = measuredConcreteProjectInputR533("concreteSlabCuringAcceptanceInputR1", "compact");
     const prompt = [target.titleRu, ...concreteSlabCuringPromptDetailsR1(fixture)].join("\n");
     expect(extractConcretePlacementCanonicalParametersR1({
       catalogId: target.catalogId,

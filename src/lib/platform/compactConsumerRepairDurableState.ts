@@ -16,7 +16,7 @@ import type {
   EstimateDraftRevisionState,
   ProfessionalBoqRow,
 } from "../estimate/estimateDraftRevisionContract";
-import { DecodeUTF8, strFromU8, strToU8, unzlibSync, zlibSync } from "fflate";
+import { strFromU8, strToU8, unzlibSync, zlibSync } from "fflate";
 import {
   createEstimateDraftSession,
   hydrateExactDraft,
@@ -27,6 +27,7 @@ import {
   isConsumerRepairApprovedHistoryStatus,
 } from "./consumerRepairDurableSavePolicy";
 import { safeJsonParseValue } from "../format";
+import { consumerEstimateManualQuantityApprovalRecord } from '../consumerRequests/consumerEstimateManualQuantityApproval';
 import {
   ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
   estimateRevisionUtf8ByteLength,
@@ -214,24 +215,50 @@ function flatDurableStringChunk(chunk: string): string {
 }
 
 export function durableUtf8BytesToString(bytes: Uint8Array): string {
+  // Hermes has no native TextDecoder in older supported binaries. Decode into
+  // bounded flat UTF-16 buffers in one pass instead of building character
+  // ropes, flattening them and encoding all text back to UTF-8. Validate every
+  // sequence here: malformed bytes must never become replacement characters.
   const chunks: string[] = [];
-  let decodedByteOffset = 0;
-  const decoder = new DecodeUTF8(chunk => {
-    const flattened = flatDurableStringChunk(chunk);
-    // Both native non-fatal TextDecoder and the library fallback can replace
-    // malformed UTF-8. Accept only a byte-exact round trip of emitted text.
-    const reencoded = strToU8(flattened);
-    for (let index = 0; index < reencoded.length; index += 1) {
-      if (reencoded[index] !== bytes[decodedByteOffset + index]) throw new Error("CONSUMER_REPAIR_DURABLE_INVALID_UTF8");
+  const units = new Uint16Array(16 * 1024);
+  let used = 0;
+  const emit = (unit: number) => {
+    units[used++] = unit;
+    if (used === units.length) {
+      chunks.push(String.fromCharCode(...units));
+      used = 0;
     }
-    decodedByteOffset += reencoded.length;
-    chunks.push(flattened);
-  });
-  const chunkSize = 16 * 1024;
-  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-    decoder.push(bytes.subarray(offset, offset + chunkSize), offset + chunkSize >= bytes.length);
+  };
+  const invalid = (): never => { throw new Error("CONSUMER_REPAIR_DURABLE_INVALID_UTF8"); };
+  const continuation = (offset: number): number => {
+    const byte = bytes[offset];
+    if (offset >= bytes.length || byte < 0x80 || byte > 0xbf) return invalid();
+    return byte;
+  };
+  for (let index = 0; index < bytes.length;) {
+    const first = bytes[index++];
+    if (first < 0x80) { emit(first); continue; }
+    if (first >= 0xc2 && first <= 0xdf) {
+      emit(((first & 0x1f) << 6) | (continuation(index++) & 0x3f));
+      continue;
+    }
+    if (first >= 0xe0 && first <= 0xef) {
+      const second = continuation(index++), third = continuation(index++);
+      if ((first === 0xe0 && second < 0xa0) || (first === 0xed && second >= 0xa0)) invalid();
+      emit(((first & 0x0f) << 12) | ((second & 0x3f) << 6) | (third & 0x3f));
+      continue;
+    }
+    if (first >= 0xf0 && first <= 0xf4) {
+      const second = continuation(index++), third = continuation(index++), fourth = continuation(index++);
+      if ((first === 0xf0 && second < 0x90) || (first === 0xf4 && second >= 0x90)) invalid();
+      const point = (((first & 7) << 18) | ((second & 0x3f) << 12) | ((third & 0x3f) << 6) | (fourth & 0x3f)) - 0x10000;
+      emit(0xd800 | (point >> 10));
+      emit(0xdc00 | (point & 0x3ff));
+      continue;
+    }
+    invalid();
   }
-  if (decodedByteOffset !== bytes.length) throw new Error("CONSUMER_REPAIR_DURABLE_INVALID_UTF8");
+  if (used) chunks.push(String.fromCharCode(...units.subarray(0, used)));
   return chunks.join("");
 }
 
@@ -294,11 +321,71 @@ function compactScalarRecord(value: unknown): Record<string, unknown> | null {
   return Object.keys(compact).length > 0 ? compact : null;
 }
 
+// Emergency metadata is a bounded replay projection, not a replacement for the
+// immutable backend revision. Unknown/new canonical contracts keep the existing
+// lossless path instead of silently losing a future gate.
+const CANONICAL_EMERGENCY_REPLAY_MAX_BYTES = 512 * 1024;
+const CANONICAL_EMERGENCY_REPLAY_OVERFLOW = "CANONICAL_EMERGENCY_REPLAY_REQUIRES_LOSSLESS_STORAGE";
+const CANONICAL_EMERGENCY_REPLAY_KEYS = [
+  "canonicalSourceTitleRu", "canonicalPublicResourcePresentationV1", "canonicalPublicResourceAlternativesV1",
+  "canonicalManualTitleOverride", "canonicalDerivedQuantityEditPolicyV1", "canonicalOperationComposition",
+  "canonicalSourceOperationComposition", "canonicalScopeRequirementDecisionV1", "canonicalCompositionSelectionDecisionV1",
+  "canonicalPhysicalScopeExcludedV1", "canonicalPurchaseBalance", "canonicalPurchaseSupplyBlocksV1",
+  "canonicalExactPurchaseQuantityV1", "canonicalMachineHourPriceCoverageV1", "canonicalPriceResolutionTrace",
+  "canonicalPriceSourceKind", "canonicalPriceSnapshotId", "canonicalPurchaseRequirement",
+  "canonicalBackendRevisionId", "canonicalBackendReleaseId", "canonicalBackendCatalogId",
+  "canonicalBackendRevisionChecksumSha256", "canonicalNormSourceAdmissionEvidenceV1", "canonicalBackendOwnershipStatus",
+  "canonicalCostTreatment", "canonicalIncludedCostOwnerTitleRu", "canonicalCommercialCostCoverageDecisionV1",
+  "canonicalCommercialRateCoverageV1", "canonicalNeedEvidenceStatus", "canonicalNeedEvidenceReference",
+  "canonicalPreliminaryNeed", "canonicalPreliminaryNeedState", "canonicalParameterRequirementReference",
+  "rowSha256", "normativeTrace", "normativeRowTraceV3", "priceRouteV3", "manualQuantityOverride",
+  "calculatedQuantityBeforeOverride", "professionalPhysicalNormApplicabilityV1", "missingParameterIds",
+  "sourceManagedMissingParameterIds", "procurementEligible",
+] as const;
+
+function assertCanonicalEmergencyReplayBudget(value: unknown): void {
+  let bytes = 0;
+  const active = new Set<object>();
+  const pending: { value: unknown; exit?: boolean }[] = [{ value }];
+  const add = (amount: number) => {
+    bytes += amount;
+    if (bytes > CANONICAL_EMERGENCY_REPLAY_MAX_BYTES) throw new Error(CANONICAL_EMERGENCY_REPLAY_OVERFLOW);
+  };
+  while (pending.length) {
+    const frame = pending.pop()!, entry = frame.value;
+    if (entry != null && typeof entry === "object") {
+      if (frame.exit) { active.delete(entry); continue; }
+      if (active.has(entry) || (!Array.isArray(entry) && Object.getPrototypeOf(entry) !== Object.prototype
+        && Object.getPrototypeOf(entry) !== null)) throw new Error(CANONICAL_EMERGENCY_REPLAY_OVERFLOW);
+      active.add(entry); pending.push({ value: entry, exit: true }); add(2);
+      if (Array.isArray(entry)) {
+        add(Math.max(0, entry.length - 1));
+        for (const member of entry) pending.push({ value: member });
+      } else {
+        let first = true;
+        for (const key in entry) if (Object.hasOwn(entry, key)) {
+          if (key.length > CANONICAL_EMERGENCY_REPLAY_MAX_BYTES) throw new Error(CANONICAL_EMERGENCY_REPLAY_OVERFLOW);
+          add(estimateRevisionUtf8ByteLength(JSON.stringify(key)) + 1 + (first ? 0 : 1)); first = false;
+          const property = Object.getOwnPropertyDescriptor(entry, key);
+          if (!property || !Object.hasOwn(property, "value")) throw new Error(CANONICAL_EMERGENCY_REPLAY_OVERFLOW);
+          pending.push({ value: property.value });
+        }
+      }
+    } else if (typeof entry === "string") {
+      // Reject a giant string before JSON escaping allocates another copy.
+      if (entry.length > CANONICAL_EMERGENCY_REPLAY_MAX_BYTES) throw new Error(CANONICAL_EMERGENCY_REPLAY_OVERFLOW);
+      add(estimateRevisionUtf8ByteLength(JSON.stringify(entry)));
+    } else if (typeof entry === "number") add(Number.isFinite(entry) ? String(entry).length : 4);
+    else if (typeof entry === "boolean") add(entry ? 4 : 5);
+    else if (entry == null) add(4);
+    else throw new Error(CANONICAL_EMERGENCY_REPLAY_OVERFLOW);
+  }
+}
+
 export function compactConsumerRepairSourceParameters(
   sourceParameters: Record<string, unknown> | null | undefined,
 ): Record<string, unknown> | null {
   if (!sourceParameters) return null;
-  const extractedParams = compactScalarRecord(sourceParameters.extractedParams);
   const keepKeys = [
     "inlineWorkPrompt",
     "inlineWorkPromptTemplateId",
@@ -375,6 +462,18 @@ export function compactConsumerRepairSourceParameters(
     "pole_step_m",
     "voltage_kv",
   ];
+  const canonical = ["canonicalBackendRevisionId", "canonicalBackendReleaseId", "canonicalBackendCatalogId",
+    "canonicalScopeRequirementDecisionV1"].some(key => Object.hasOwn(sourceParameters, key));
+  const replay: Record<string, unknown> = {};
+  if (canonical) {
+    const allowed = new Set<string>([...keepKeys, ...CANONICAL_EMERGENCY_REPLAY_KEYS]);
+    for (const key in sourceParameters) if (Object.hasOwn(sourceParameters, key)
+      && key.startsWith("canonical") && !allowed.has(key)) throw new Error(CANONICAL_EMERGENCY_REPLAY_OVERFLOW);
+    for (const key of [...keepKeys, ...CANONICAL_EMERGENCY_REPLAY_KEYS, "extractedParams", "parameterSnapshot", "roadworksWaveAParameterMetadata"])
+      if (Object.hasOwn(sourceParameters, key)) replay[key] = sourceParameters[key] ?? null;
+    assertCanonicalEmergencyReplayBudget(replay);
+  }
+  const extractedParams = compactScalarRecord(sourceParameters.extractedParams);
   const compact: Record<string, unknown> = {};
   for (const key of keepKeys) {
     const value = sourceParameters[key];
@@ -413,6 +512,15 @@ export function compactConsumerRepairSourceParameters(
     if (Array.isArray(value) && value.every((item) => typeof item === "string")) {
       compact[key] = value.slice(0, 64);
     }
+  }
+  if (canonical) {
+    for (const key of CANONICAL_EMERGENCY_REPLAY_KEYS)
+      if (Object.hasOwn(sourceParameters, key)) compact[key] = sourceParameters[key] ?? null;
+    const sourcePresentation = recordFromUnknown(sourceParameters.smartEstimateProjectionV2);
+    const presentation = sourcePresentation ? Object.fromEntries(["stage", "category", "sourceCategory", "progressiveDisclosure", "initiallyCollapsed", "rowReachable", "preliminaryNeed"]
+      .filter(key => isScalar(sourcePresentation[key])).map(key => [key, sourcePresentation[key]])) : null;
+    if (presentation) compact.smartEstimateProjectionV2 = presentation;
+    assertCanonicalEmergencyReplayBudget(compact);
   }
   return Object.keys(compact).length > 0 ? compact : null;
 }
@@ -485,6 +593,7 @@ function compactConsumerRepairApprovedHistoryItemForDurableStorage(
     totalPrice: item.totalPrice,
     currency: item.currency,
     source: item.source,
+    sourceParameters: compactConsumerRepairSourceParameters(item.sourceParameters),
     editableByConsumer: item.editableByConsumer,
     createdAt: item.createdAt,
   };
@@ -585,15 +694,11 @@ export function buildConsumerRepairDurableHistorySummary(
       ?? null,
     compactedAt: input.compactedAt ?? bundle.durableHistorySummary?.compactedAt ?? new Date().toISOString(),
     fullSnapshotAvailable: input.fullSnapshotAvailable ?? bundle.items.length > 0,
-  };
-}
-
-function compactEditableEstimateRowForDurableStorage(row: EditableEstimateRow): EditableEstimateRow {
-  return {
-    ...row,
-    calculationTrace: stringLimit(row.calculationTrace, 720),
-    sourceParameters: compactConsumerRepairSourceParameters(row.sourceParameters),
-    catalogCandidates: [],
+    canonicalRevisionChecksumSha256: bundle.structuredEstimatePayload?.canonicalBackend?.checksumSha256
+      ?? bundle.estimateDraftRevisionState?.revisions.find(row => row.revisionId === canonicalRevisionId)
+        ?.resolvedIdentity?.sourceBindingVersions.find(source => source.sourceId === canonicalReleaseId)?.version
+      ?? bundle.durableHistorySummary?.canonicalRevisionChecksumSha256 ?? null,
+    manualQuantityApproval: consumerEstimateManualQuantityApprovalRecord(bundle),
   };
 }
 
@@ -606,28 +711,6 @@ function compactEditableEstimateRowForEmergencyStorage(row: EditableEstimateRow)
   };
 }
 
-function compactEditableEstimateSnapshotForDurableStorage(
-  snapshot: EditableEstimateSnapshot | null | undefined,
-): EditableEstimateSnapshot | null {
-  if (!snapshot) return null;
-  return {
-    ...snapshot,
-    rows: snapshot.rows.map(compactEditableEstimateRowForDurableStorage),
-  };
-}
-
-function compactEstimateRevisionSnapshotForDurableStorage(
-  revision: EstimateRevisionSnapshot,
-): EstimateRevisionSnapshot {
-  return {
-    ...revision,
-    editable_estimate_snapshot: {
-      ...revision.editable_estimate_snapshot,
-      rows: revision.editable_estimate_snapshot.rows.map(compactEditableEstimateRowForDurableStorage),
-    },
-  };
-}
-
 function compactEstimateRevisionSnapshotForEmergencyStorage(
   revision: EstimateRevisionSnapshot,
 ): EstimateRevisionSnapshot {
@@ -637,33 +720,6 @@ function compactEstimateRevisionSnapshotForEmergencyStorage(
       ...revision.editable_estimate_snapshot,
       rows: revision.editable_estimate_snapshot.rows.map(compactEditableEstimateRowForEmergencyStorage),
     },
-  };
-}
-
-function compactEstimateRevisionStateForDurableStorage(
-  state: EstimateRevisionState | null | undefined,
-): EstimateRevisionState | null {
-  if (!state) return null;
-  return {
-    ...state,
-    revisions: state.revisions.map(compactEstimateRevisionSnapshotForDurableStorage),
-    events: state.events.slice(-32),
-    diffs: state.diffs.slice(-32),
-  };
-}
-
-function compactCurrentEstimateRevisionStateForDurableStorage(
-  state: EstimateRevisionState | null | undefined,
-): EstimateRevisionState | null {
-  if (!state) return null;
-  const current = state.revisions.find((revision) => revision.revision_id === state.current_revision_id)
-    ?? state.revisions.at(-1)
-    ?? null;
-  return {
-    ...state,
-    revisions: current ? [compactEstimateRevisionSnapshotForDurableStorage(current)] : [],
-    events: state.events.slice(-32),
-    diffs: state.diffs.slice(-32),
   };
 }
 
@@ -688,15 +744,6 @@ function compactBoqRowForEmergencyStorage(row: ProfessionalBoqRow): Professional
   };
 }
 
-function compactBoqRowForDurableStorage(row: ProfessionalBoqRow): ProfessionalBoqRow {
-  return {
-    ...row,
-    calculationTrace: stringLimit(row.calculationTrace, 720),
-    sourceParameters: compactConsumerRepairSourceParameters(row.sourceParameters),
-    materialQuantity: null,
-  };
-}
-
 function compactEstimateDraftRevisionForEmergencyStorage(
   revision: EstimateDraftRevision,
 ): EstimateDraftRevision {
@@ -713,22 +760,6 @@ function compactEstimateDraftRevisionForEmergencyStorage(
   };
 }
 
-function compactEstimateDraftRevisionForDurableStorage(
-  revision: EstimateDraftRevision,
-): EstimateDraftRevision {
-  return {
-    ...revision,
-    boq: {
-      sections: revision.boq.sections,
-      rows: revision.boq.rows.map(compactBoqRowForDurableStorage),
-    },
-    trace: {
-      ...revision.trace,
-      rows: [],
-    },
-  };
-}
-
 function compactEstimateDraftRevisionStateForEmergencyStorage(
   state: EstimateDraftRevisionState | null | undefined,
 ): EstimateDraftRevisionState | null {
@@ -737,17 +768,6 @@ function compactEstimateDraftRevisionStateForEmergencyStorage(
     ...state,
     revisions: state.revisions.map(compactEstimateDraftRevisionForEmergencyStorage),
     diffs: state.diffs.slice(-32),
-  };
-}
-
-function compactEstimateDraftRevisionStateForDurableStorage(
-  state: EstimateDraftRevisionState | null | undefined,
-): EstimateDraftRevisionState | null {
-  if (!state) return null;
-  return {
-    ...state,
-    revisions: state.revisions.map(compactEstimateDraftRevisionForDurableStorage),
-    diffs: state.diffs,
   };
 }
 
@@ -774,6 +794,7 @@ export function compactConsumerRepairBundleForDurableStorage(
     estimateRevisionState: bundle.estimateRevisionState ?? null,
     estimateDraftRevisionState: bundle.estimateDraftRevisionState ?? null,
     structuredEstimatePayload: null,
+    ...(Object.hasOwn(bundle, "canonicalBackendApprovalEvidence") ? { canonicalBackendApprovalEvidence: null } : {}),
     projectExecutionDrafts: [],
     events: bundle.events.slice(-24).map((event) => ({
       ...event,
@@ -814,25 +835,34 @@ export function compactConsumerRepairBundleForEmergencyDurableStorage(
     createdAt: input.createdAt,
   });
   const approvedHistoryBundle = isConsumerRepairApprovedHistoryStatus(withDiagnostic.draft.status);
-  return {
-    ...compactConsumerRepairBundleForDurableStorage(withDiagnostic),
-    items: withDiagnostic.items.map(approvedHistoryBundle
-      ? compactConsumerRepairApprovedHistoryItemForDurableStorage
-      : compactConsumerRepairItemForDurableStorage),
-    editableEstimateSnapshot: null,
-    estimateRevisionState: approvedHistoryBundle
-      ? null
-      : compactEstimateRevisionStateForEmergencyStorage(withDiagnostic.estimateRevisionState),
-    estimateDraftRevisionState: compactEstimateDraftRevisionStateForEmergencyStorage(
-      withDiagnostic.estimateDraftRevisionState,
-    ),
-    structuredEstimatePayload: null,
-    projectExecutionDrafts: [],
-    events: withDiagnostic.events.slice(-12).map((event) => ({
-      ...event,
-      payload: event.eventType === "consumer_repair_durable_save_emergency_compacted" ? event.payload : {},
-    })),
-  };
+  try {
+    return {
+      ...compactConsumerRepairBundleForDurableStorage(withDiagnostic),
+      items: withDiagnostic.items.map(approvedHistoryBundle
+        ? compactConsumerRepairApprovedHistoryItemForDurableStorage
+        : compactConsumerRepairItemForDurableStorage),
+      editableEstimateSnapshot: null,
+      estimateRevisionState: approvedHistoryBundle
+        ? null
+        : compactEstimateRevisionStateForEmergencyStorage(withDiagnostic.estimateRevisionState),
+      estimateDraftRevisionState: compactEstimateDraftRevisionStateForEmergencyStorage(
+        withDiagnostic.estimateDraftRevisionState,
+      ),
+      structuredEstimatePayload: null,
+      projectExecutionDrafts: [],
+      events: withDiagnostic.events.slice(-12).map((event) => ({
+        ...event,
+        payload: event.eventType === "consumer_repair_durable_save_emergency_compacted" ? event.payload : {},
+      })),
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message === CANONICAL_EMERGENCY_REPLAY_OVERFLOW) {
+      // Preserve every original gate/identity through the existing lossless codec.
+      // If the quota still rejects it, existing previous-commit/memory-only recovery applies.
+      return compactConsumerRepairBundleForDurableStorage(withDiagnostic);
+    }
+    throw error;
+  }
 }
 
 function encodeConsumerRepairDurableItems(

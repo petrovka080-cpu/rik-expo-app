@@ -1,0 +1,1523 @@
+{
+  "contract": "gox-build.drywall-c11-layered-geometry.r1",
+  "sourceId": "drywall_c11_layered_geometry_r1",
+  "normId": "KNAUF_C11_C112_C113_SOURCE_GEOMETRY_Q1_R1",
+  "catalogId": "canonical-work:base:drywall_ceiling_interior_drywall_partition_install_standard",
+  "titleRu": "Монтаж многослойной перегородки из гипсокартона",
+  "selector": {
+    "id": "c11_partition_calculation_profile",
+    "titleRu": "Какой расчёт перегородки нужен?",
+    "legacyValue": "Прежний расчёт однослойной перегородки"
+  },
+  "profiles": [
+    {
+      "key": "two-layer",
+      "layers": 2,
+      "value": "Два слоя гипсокартона с каждой стороны",
+      "designationPrivate": "C112",
+      "step35": "0.25"
+    },
+    {
+      "key": "three-layer",
+      "layers": 3,
+      "value": "Три слоя гипсокартона с каждой стороны",
+      "designationPrivate": "C113",
+      "step35": "0.5"
+    }
+  ],
+  "geometry": {
+    "lengthId": "partition_length_m",
+    "heightId": "partition_height_m",
+    "areaId": "partition_area_m2",
+    "areaExpression": "partition_length_m*partition_height_m",
+    "lengthLimitsM": [
+      1.2,
+      15
+    ],
+    "heightLimitsM": [
+      1,
+      3
+    ],
+    "rule": {
+      "text": "Rectangular partition one-face area in m2 equals measured partition_length_m times partition_height_m. Layer count changes cladding demand but never multiplies the primary measure. Legacyarea and work-row overrides do not supply this identity. This is an authored engineering measurement rule, not a manufacturer consumption norm.",
+      "sha256": "a54a1cfbb1cde58a2c501a9ae18bde5db6738126a508d330f88e4912f3b5aa68",
+      "hashKind": "SHA256_UTF8_RULE_TEXT",
+      "sourceDocument": "drywall_c11_layered_geometry_r1",
+      "locator": "drywall-c11-layered-geometry-r1.json#/geometry/rule",
+      "guideVersion": "gox-build.drywall-c11-layered-geometry.r1",
+      "verifiedAt": "2026-10-21T21:40:11.604458+00:00"
+    }
+  },
+  "sources": [
+    {
+      "id": "KNAUF_C11_202502",
+      "path": ".release-runtime/r568/s27-35/g2-sources/knauf-c11-2025.pdf",
+      "sha256": "b811497cee980d793565aad404c03e66e8c7f09dd4d7a4fabeb97b955867e290",
+      "url": "https://www.knauf.ru/upload/iblock/9c0/uzpe7j9kucbu8olnefu2ygtqgygfjrsa/22-IL-C11-Peregorodki-iz-KNAUF_listov-_08_04_2025_-v01-Preview.pdf",
+      "locator": "PDF2: C112/C113 system descriptions; PDF3:600mm studs, TN750/250mm for two layers and750/500/250mm for three layers, ≥3 anchors/profile and ≤1000mm; bevel22.5deg to2/3thickness, inner layer no tape explicitly for two layers; PDF4 exact C112/C113 columns; table reference2.75x4m is not extrapolated as cut layout."
+    },
+    {
+      "id": "KNAUF_FUGEN_202507",
+      "path": ".release-runtime/r568/ceiling-high-load-geometry-r1/sources/KNAUF_FUGEN_2025_07.pdf",
+      "sha256": "3a6e5980c1e3009793f5b490f68ce80a80b675cb4c903d6725d907075455fdc6",
+      "url": "https://www.knauf.ru/upload/iblock/d54/s3vq1z4wsuh4e3a81gtzl5pp15z2gv2a/07-IL-KNAUF_Fugen-_02_09_2025_-v04-Preview.pdf",
+      "locator": "PDF2:Q1 .25kg/m2 per one cladding layer; PDF3 .6–.7l/kg net dry mixed mass, bags5/10/25kg. No table-unit шт→kg conversion."
+    },
+    {
+      "id": "KNAUF_TIEFENGRUND_202606",
+      "path": ".release-runtime/r568/ceiling-high-load-geometry-r1/sources/KNAUF_TIEFENGRUND_2026_06.pdf",
+      "sha256": "9487c60444959b35d40e9532af4b3fba2e699a9b44239279d999c5ba016b01a9",
+      "url": "https://www.knauf.ru/upload/iblock/215/ggu7x06mvv4w1pq8t5w2lw7b2ynkr25y/38-IL-KNAUF_Tifengrund-_23_06_2026_-v02-Preview.pdf",
+      "locator": "PDF2:approximately .1kg/m2 per coat, selected5kg container; undiluted product. Geometric cut bevel area; outer faces only for subsequent non-paint finish."
+    },
+    {
+      "id": "ACCEPTED_C111_WHOLE_KIT",
+      "path": "data/estimate-benchmarks/source-packs/drywall-partition-c111-s27-36.json",
+      "sha256": "b981d031cc05ca11e41bc6800afb0fc9f6f482110e7befb67fc4d20612f3e107",
+      "url": null,
+      "locator": "Complete existing C111 stage/material/tool inventory reused; its .1l/m2 cleaning, tool=1,20mm cut band and98man-hour norm are not transferred."
+    }
+  ],
+  "operations": [
+    {
+      "id": "setout",
+      "nameRu": "Разметка перегородки"
+    },
+    {
+      "id": "frame",
+      "nameRu": "Каркас и примыкания"
+    },
+    {
+      "id": "clad",
+      "nameRu": "Многослойная обшивка двух сторон"
+    },
+    {
+      "id": "insulate",
+      "nameRu": "Минеральное заполнение"
+    },
+    {
+      "id": "joint",
+      "nameRu": "Заделка стыков по слоям"
+    },
+    {
+      "id": "prime",
+      "nameRu": "Грунтование наружных поверхностей и резаных кромок"
+    },
+    {
+      "id": "cleanup",
+      "nameRu": "Очистка и сбор отходов"
+    },
+    {
+      "id": "handling",
+      "nameRu": "Доставка и перемещение материалов"
+    }
+  ],
+  "materials": [
+    {
+      "key": "track",
+      "nameRu": "Направляющий профиль 50 × 40 × 0,6 мм, длина 3 м",
+      "unitId": "piece",
+      "consumedExpression": "2*ceil(partition_length_m/3)",
+      "quantum": "1",
+      "operation": "frame",
+      "reuseC111Key": "pn50"
+    },
+    {
+      "key": "stud",
+      "nameRu": "Стоечный профиль 50 × 50 × 0,6 мм, длина 3 м",
+      "unitId": "piece",
+      "consumedExpression": "(ceil(partition_length_m/0.6)+1)",
+      "quantum": "1",
+      "operation": "frame",
+      "reuseC111Key": "ps50"
+    },
+    {
+      "key": "anchor",
+      "nameRu": "Дюбель-гвоздь 6 × 35 мм для минерального основания",
+      "unitId": "piece",
+      "consumedExpression": "8*ceil(partition_length_m/3)+2*max(3,ceil(partition_height_m)+1)",
+      "quantum": "1",
+      "operation": "frame",
+      "reuseC111Key": "dowel"
+    },
+    {
+      "key": "sealing-tape",
+      "nameRu": "Уплотнительная лента 50 мм",
+      "unitId": "m",
+      "consumedExpression": "2*(partition_length_m+partition_height_m)",
+      "quantum": "30",
+      "operation": "frame",
+      "reuseC111Key": "sealing-tape"
+    },
+    {
+      "key": "board",
+      "nameRu": "Гипсовый строительный лист типа А 3000 × 1200 × 12,5 мм",
+      "unitId": "piece",
+      "consumedExpression": "2*LAYERS*ceil(partition_length_m/1.2)",
+      "quantum": "1",
+      "operation": "clad",
+      "reuseC111Key": "board"
+    },
+    {
+      "key": "screw25",
+      "nameRu": "Шуруп для гипсокартона по металлу 3,5 × 25 мм",
+      "unitId": "piece",
+      "consumedExpression": "(2*(ceil(partition_length_m/0.6)+1)+(ceil(partition_length_m/1.2)-1)+ceil(max(0,partition_length_m-0.6)/1.2))*(ceil(partition_height_m/0.75)+1)",
+      "quantum": "1",
+      "operation": "clad",
+      "reuseC111Key": "tn25"
+    },
+    {
+      "key": "screw35",
+      "nameRu": "Шуруп для гипсокартона по металлу 3,5 × 35 мм",
+      "unitId": "piece",
+      "consumedExpression": "(2*(ceil(partition_length_m/0.6)+1)+(ceil(partition_length_m/1.2)-1)+ceil(max(0,partition_length_m-0.6)/1.2))*(ceil(partition_height_m/STEP35)+1)",
+      "quantum": "1",
+      "operation": "clad",
+      "reuseC111Key": "tn25"
+    },
+    {
+      "key": "screw55",
+      "nameRu": "Шуруп для гипсокартона по металлу 3,5 × 55 мм",
+      "unitId": "piece",
+      "consumedExpression": "(2*(ceil(partition_length_m/0.6)+1)+(ceil(partition_length_m/1.2)-1)+ceil(max(0,partition_length_m-0.6)/1.2))*(ceil(partition_height_m/0.25)+1)",
+      "quantum": "1",
+      "operation": "clad",
+      "reuseC111Key": "tn25"
+    },
+    {
+      "key": "insulation",
+      "nameRu": "Минераловатная плита 50 × 610 × 1230 мм",
+      "unitId": "m2",
+      "consumedExpression": "partition_area_m2",
+      "quantum": "12",
+      "operation": "insulate",
+      "reuseC111Key": "insulation"
+    },
+    {
+      "key": "joint-compound",
+      "nameRu": "Гипсовая смесь для заделки стыков Q1",
+      "unitId": "kg",
+      "consumedExpression": "2*LAYERS*partition_area_m2*0.25",
+      "quantum": "5",
+      "operation": "joint",
+      "reuseC111Key": "fugen"
+    },
+    {
+      "key": "outer-joint-tape",
+      "nameRu": "Бумажная армирующая лента 52 мм для наружного слоя",
+      "unitId": "m",
+      "consumedExpression": "((ceil(partition_length_m/1.2)-1)+ceil(max(0,partition_length_m-0.6)/1.2))*partition_height_m",
+      "quantum": "50",
+      "operation": "joint",
+      "reuseC111Key": "joint-tape"
+    },
+    {
+      "key": "separation-tape",
+      "nameRu": "Разделительная лента 65 мм",
+      "unitId": "m",
+      "consumedExpression": "4*(partition_length_m+partition_height_m)",
+      "quantum": "50",
+      "operation": "joint",
+      "reuseC111Key": "separation-tape"
+    },
+    {
+      "key": "primer",
+      "nameRu": "Грунтовка глубокого проникновения для гипсового листа",
+      "unitId": "kg",
+      "consumedExpression": "(2*partition_area_m2+LAYERS*(((ceil(partition_length_m/1.2)-floor(partition_length_m/1.2))+1+(ceil(max(0,partition_length_m-0.6)/1.2)-floor(max(0,partition_length_m-0.6)/1.2)))*partition_height_m+2*partition_length_m*ceil(max(0,3-partition_height_m)/3))*(0.0125*2/3)*2/sqrt(2+sqrt(2)))*0.1",
+      "quantum": "5",
+      "operation": "prime",
+      "reuseC111Key": "tiefengrund"
+    },
+    {
+      "key": "mixing-water",
+      "nameRu": "Чистая холодная вода для затворения гипсовой смеси",
+      "unitId": "l",
+      "consumedExpression": "2*LAYERS*partition_area_m2*0.25*0.7",
+      "quantum": null,
+      "operation": "joint",
+      "reuseC111Key": "water"
+    }
+  ],
+  "unknownNeeds": [
+    {
+      "key": "labour",
+      "nameRu": "Труд монтажа многослойной перегородки",
+      "category": "labor",
+      "unitId": "man_hour",
+      "operations": [
+        "setout",
+        "frame",
+        "clad",
+        "insulate",
+        "joint",
+        "prime",
+        "cleanup",
+        "handling"
+      ],
+      "reason": "No exact applicable C112/C113 labour norm admitted; C11198hours is not transferred."
+    },
+    {
+      "key": "shears",
+      "nameRu": "Электроножницы для раскроя профиля",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "frame"
+      ],
+      "reason": "Actual applicable machine time not established for the layered profile."
+    },
+    {
+      "key": "perforator",
+      "nameRu": "Электроперфоратор для крепления каркаса",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "frame"
+      ],
+      "reason": "Actual applicable machine time not established for the layered profile."
+    },
+    {
+      "key": "driver",
+      "nameRu": "Шуруповёрт для многослойной обшивки",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "clad"
+      ],
+      "reason": "C1112.9machine-hours not transferred to two/three layers."
+    },
+    {
+      "key": "laser",
+      "nameRu": "Лазерный построитель осей",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "setout",
+        "frame"
+      ],
+      "reason": "No finite source-supported whole-work provision established."
+    },
+    {
+      "key": "measure",
+      "nameRu": "Рулетка для обмера",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "setout",
+        "frame",
+        "clad"
+      ],
+      "reason": "No finite source-supported whole-work provision established."
+    },
+    {
+      "key": "level",
+      "nameRu": "Уровень для проверки каркаса",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "frame"
+      ],
+      "reason": "No finite source-supported whole-work provision established."
+    },
+    {
+      "key": "drill-bit",
+      "nameRu": "Сверло по минеральному основанию",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "frame"
+      ],
+      "reason": "Wear and sufficient stock are not established by the original tool=1 plan."
+    },
+    {
+      "key": "access",
+      "nameRu": "Средства подмащивания для монтажа перегородки",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "frame",
+        "clad",
+        "joint",
+        "prime"
+      ],
+      "reason": "Height does not establish safe complete access assembly or duration."
+    },
+    {
+      "key": "punch",
+      "nameRu": "Просекатель металлического профиля",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "frame"
+      ],
+      "reason": "Whole-work durable provision not established."
+    },
+    {
+      "key": "bit",
+      "nameRu": "Бита для шурупов по гипсокартону",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "clad"
+      ],
+      "reason": "Wear and renewal not established."
+    },
+    {
+      "key": "knife",
+      "nameRu": "Нож для раскроя гипсового листа",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "clad"
+      ],
+      "reason": "Whole-work blades and renewal not established."
+    },
+    {
+      "key": "plane",
+      "nameRu": "Рубанок для фаски резаной кромки",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "clad",
+        "joint"
+      ],
+      "reason": "Whole-work blade provision not established."
+    },
+    {
+      "key": "insulation-knife",
+      "nameRu": "Нож для резки минеральной ваты",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "insulate"
+      ],
+      "reason": "Whole-work blade provision not established."
+    },
+    {
+      "key": "mix-vessel",
+      "nameRu": "Чистая ёмкость ручного замеса гипсовой смеси",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint"
+      ],
+      "reason": "Compatible finite mixing station and cleaning/reuse have not been established."
+    },
+    {
+      "key": "mix-spatula",
+      "nameRu": "Шпатель для ручного перемешивания гипсовой смеси",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint"
+      ],
+      "reason": "Whole-work provision and cleaning not established."
+    },
+    {
+      "key": "joint-spatula",
+      "nameRu": "Шпатель для заполнения стыков и вдавливания ленты",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint"
+      ],
+      "reason": "Whole-work provision and cleaning not established."
+    },
+    {
+      "key": "sanding-holder",
+      "nameRu": "Тёрка доводки высохших стыков",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint"
+      ],
+      "reason": "Whole-work provision not established."
+    },
+    {
+      "key": "abrasive",
+      "nameRu": "Шлифовальная сетка для гипсовой шпаклёвки",
+      "category": "material",
+      "unitId": "piece",
+      "operations": [
+        "joint"
+      ],
+      "reason": "Wear norm and sufficient renewal not established."
+    },
+    {
+      "key": "cut-primer-brush",
+      "nameRu": "Кисть для грунтования резаных кромок",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "prime"
+      ],
+      "reason": "Whole-work provision and cleaning not established."
+    },
+    {
+      "key": "primer-roller",
+      "nameRu": "Валик для грунтования поверхности",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "prime"
+      ],
+      "reason": "Whole-work provision and cleaning not established."
+    },
+    {
+      "key": "gloves",
+      "nameRu": "Защитные перчатки для выбранных материалов",
+      "category": "material",
+      "unitId": "pair",
+      "operations": [
+        "frame",
+        "clad",
+        "insulate",
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "Material compatibility, sizes and sufficient replacement not established."
+    },
+    {
+      "key": "eye-protection",
+      "nameRu": "Защита глаз при монтаже и отделке",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "frame",
+        "clad",
+        "insulate",
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "Whole-work PPE provision not established."
+    },
+    {
+      "key": "dust-protection",
+      "nameRu": "Защита дыхания от пыли",
+      "category": "material",
+      "unitId": "piece",
+      "operations": [
+        "frame",
+        "clad",
+        "insulate",
+        "joint",
+        "cleanup"
+      ],
+      "reason": "Exposure, type and renewal not established; one mask is not a volume norm."
+    },
+    {
+      "key": "vacuum",
+      "nameRu": "Строительный пылесос для сухой очистки",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "Complete compatible dust-removal provision and performance not established."
+    },
+    {
+      "key": "dust-bag",
+      "nameRu": "Пылесборный мешок для строительного пылесоса",
+      "category": "material",
+      "unitId": "piece",
+      "operations": [
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "Capacity, dust quantity and sufficient renewal not established."
+    },
+    {
+      "key": "washing-water",
+      "nameRu": "Вода для очистки инструмента",
+      "category": "material",
+      "unitId": "l",
+      "operations": [
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "The old .1l/m2 plan is not a source norm and is not reused."
+    },
+    {
+      "key": "wash-vessel",
+      "nameRu": "Ёмкость для очистки инструмента",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "Capacity, renewal and wastewater handling not established."
+    },
+    {
+      "key": "electricity",
+      "nameRu": "Электроэнергия для монтажа перегородки",
+      "category": "equipment",
+      "unitId": "kWh",
+      "operations": [
+        "frame",
+        "clad",
+        "joint",
+        "cleanup"
+      ],
+      "reason": "Machine energy input and duration not established."
+    },
+    {
+      "key": "waste-container",
+      "nameRu": "Тара для раздельного сбора отходов",
+      "category": "material",
+      "unitId": "piece",
+      "operations": [
+        "cleanup"
+      ],
+      "reason": "Volume and sufficient count not established; one bag is not a norm."
+    },
+    {
+      "key": "waste-loading",
+      "nameRu": "Труд сбора и погрузки отходов",
+      "category": "labor",
+      "unitId": "man_hour",
+      "operations": [
+        "cleanup"
+      ],
+      "reason": "Board/profile offcut geometry does not establish handling time."
+    },
+    {
+      "key": "waste-transport",
+      "nameRu": "Транспорт для вывоза отходов",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "cleanup"
+      ],
+      "reason": "Actual vehicle, distance, loads and recipient route not established."
+    },
+    {
+      "key": "waste-recipient",
+      "nameRu": "Приём отходов уполномоченным получателем",
+      "category": "service",
+      "unitId": "",
+      "operations": [
+        "cleanup"
+      ],
+      "reason": "Recipient acceptance, waste class and physical quantity not established."
+    },
+    {
+      "key": "delivery-vehicle",
+      "nameRu": "Транспорт доставки материалов",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "handling"
+      ],
+      "reason": "Actual vehicle, distance and loading scheme not established."
+    },
+    {
+      "key": "handling-labour",
+      "nameRu": "Труд разгрузки и перемещения материалов",
+      "category": "labor",
+      "unitId": "man_hour",
+      "operations": [
+        "handling"
+      ],
+      "reason": "No applicable complete handling profile admitted."
+    },
+    {
+      "key": "material-lift",
+      "nameRu": "Средство подъёма материалов к рабочему месту",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "handling"
+      ],
+      "reason": "Geometry alone does not establish access, assembly or duration."
+    },
+    {
+      "key": "inner-tape",
+      "nameRu": "Лента армирования стыков внутренних слоёв трёхслойной обшивки",
+      "category": "material",
+      "unitId": "m",
+      "operations": [
+        "joint"
+      ],
+      "reason": "C11 explicitly omits tape for the two-layer inner layer; the exact three-layer inner-joint rule is not established by this packet."
+    }
+  ],
+  "engineeringLayout": {
+    "studStepM": 0.6,
+    "boardSizeMm": [
+      3000,
+      1200,
+      12.5
+    ],
+    "profileLengthM": 3,
+    "offsetM": 0.6,
+    "layoutRu": "Прямая перегородка без проёмов и пересекающих деформационных швов здания. По одной полноразмерной высоте, без горизонтальных стыков. Соседние слои и противоположные стороны чередуют старт0/600мм. Полосы600мм повторно используются только внутри раскроя того же слоя. Третий слой повторяет сетку первого через промежуточный смещённый слой.",
+    "fastenerCountRuleRu": "На каждой линии стойки и на каждой добавочной стороне вертикального стыка отдельный ряд шурупов:ceil(H/допустимыйшаг)+1 на всю высоту. Количество не масштабируется из справочной стены2.75x4м.",
+    "anchorCountRuleRu": "Четыре крепления на каждый установленный отрезок направляющего профиля длиной≤3м; у двух концевых примыканий max(3,ceil(H/1м)+1). Расстановка с шагом≤1м и минимум3/профиль. Это выбранный конечный инженерный план, не новая норма КРЕР.",
+    "primerRuleRu": "На наружные поверхности2A и реальную площадь фасок резаных кромок всех слоёв; геометрия22.5° на2/3 толщины12.5мм по C11. Расход примерно.1кг/м², выбранная тара5кг. Без выдуманной полосы20мм и без переименования литров в килограммы."
+  },
+  "reuse": {
+    "legacyParent": "Full captured C111 v6 77parameters/50formulas/50resources remains default with all arithmetic/owners/manuals retained.",
+    "wholeSubworks": [
+      "FRAME",
+      "CLAD",
+      "INSULATE",
+      "FINISH_JOINT"
+    ],
+    "sourceKit": "Complete accepted C111 supplies + tool/access/PPE list; source-specific new layered quantities replace only the new branches.",
+    "notTransferred": [
+      "98manhour C111 labour",
+      "C111 machine times",
+      ".1l/m2 washing",
+      "tool/PPE1",
+      "20mm cut-priming band",
+      "C11 ambiguous joint filler шт as kg",
+      "stock credit or supplier MOQ"
+    ]
+  },
+  "scopeRu": "Сухая прямая перегородка на одинарном металлическом каркасе 50 мм; гипсовый строительный лист типа А толщиной 12,5 мм в два или три слоя с каждой стороны; минеральное заполнение 50 мм; заделка стыков Q1 по каждому слою и грунтование под непокрасочный финиш. Без проёмов, горизонтальных стыков, подтверждения огнестойкости и звукоизоляции, влажной зоны, сплошного финиша и окраски.",
+  "openScopePolicy": "All actual missing resources remain quantitative preliminary needs; conditions/acceptance are not paid service rows. Partial branch only.",
+  "costScope": {
+    "workOwnerSuffix": "whole-work",
+    "workOwnerUnitId": "m2",
+    "workOwnerCostTreatment": "OWN_COST",
+    "includedPhysicalNeeds": "All37 declared unresolved labour/equipment/tools/PPE/handling/waste obligations are supplied within the selected whole-work commercial scope; unknown hours and physical quantities remain open.",
+    "separateLabourPaymentAllowed": false,
+    "toolOwnershipClaimed": false,
+    "newSupplierToolOrderClaimed": false,
+    "materialsHaveSeparateSupplyOwners": true,
+    "warehouseCreditClaimed": false,
+    "legacyPricesAutomaticallyTransferred": false
+  },
+  "projectGatesRetained": [
+    "Selected profile is preliminary material geometry, not structural approval of50mm studs at every object.",
+    "Actual supporting substrate, anchorage capacity, project heights/openings and existing building joints must remain compatible; engineering acceptance is not claimed.",
+    "Fire resistance and acoustic performance are not inferred from the layer count; certified system selection remains outside this preliminary quantity profile."
+  ],
+  "counts": {
+    "families": 1,
+    "workTypes": 1,
+    "existingCatalogIds": 1,
+    "newCatalogIds": 0,
+    "newTechnologyVariants": 2,
+    "newFullTechnologies": 0
+  },
+  "fullTechnicalAcceptance": false,
+  "published": false,
+  "independentExpectedInventory": {
+    "materialOrders": [
+      [
+        "track",
+        "material",
+        "piece",
+        [
+          "frame"
+        ]
+      ],
+      [
+        "stud",
+        "material",
+        "piece",
+        [
+          "frame"
+        ]
+      ],
+      [
+        "anchor",
+        "material",
+        "piece",
+        [
+          "frame"
+        ]
+      ],
+      [
+        "sealing-tape",
+        "material",
+        "m",
+        [
+          "frame"
+        ]
+      ],
+      [
+        "board",
+        "material",
+        "piece",
+        [
+          "clad"
+        ]
+      ],
+      [
+        "screw25",
+        "material",
+        "piece",
+        [
+          "clad"
+        ]
+      ],
+      [
+        "screw35",
+        "material",
+        "piece",
+        [
+          "clad"
+        ]
+      ],
+      [
+        "screw55",
+        "material",
+        "piece",
+        [
+          "clad"
+        ]
+      ],
+      [
+        "insulation",
+        "material",
+        "m2",
+        [
+          "insulate"
+        ]
+      ],
+      [
+        "joint-compound",
+        "material",
+        "kg",
+        [
+          "joint"
+        ]
+      ],
+      [
+        "outer-joint-tape",
+        "material",
+        "m",
+        [
+          "joint"
+        ]
+      ],
+      [
+        "separation-tape",
+        "material",
+        "m",
+        [
+          "joint"
+        ]
+      ],
+      [
+        "primer",
+        "material",
+        "kg",
+        [
+          "prime"
+        ]
+      ],
+      [
+        "mixing-water",
+        "material",
+        "l",
+        [
+          "joint"
+        ]
+      ]
+    ],
+    "wholeWork": [
+      "whole-work",
+      "work",
+      "m2",
+      [
+        "setout",
+        "frame",
+        "clad",
+        "insulate",
+        "joint",
+        "prime",
+        "cleanup",
+        "handling"
+      ]
+    ],
+    "physicalWaste": [
+      [
+        "board-offcuts",
+        "material",
+        "m2",
+        [
+          "clad",
+          "cleanup"
+        ]
+      ],
+      [
+        "track-offcuts",
+        "material",
+        "m",
+        [
+          "frame",
+          "cleanup"
+        ]
+      ],
+      [
+        "stud-offcuts",
+        "material",
+        "m",
+        [
+          "frame",
+          "cleanup"
+        ]
+      ]
+    ],
+    "unresolved": [
+      [
+        "labour",
+        "labor",
+        "man_hour",
+        [
+          "setout",
+          "frame",
+          "clad",
+          "insulate",
+          "joint",
+          "prime",
+          "cleanup",
+          "handling"
+        ]
+      ],
+      [
+        "shears",
+        "equipment",
+        "machine_hour",
+        [
+          "frame"
+        ]
+      ],
+      [
+        "perforator",
+        "equipment",
+        "machine_hour",
+        [
+          "frame"
+        ]
+      ],
+      [
+        "driver",
+        "equipment",
+        "machine_hour",
+        [
+          "clad"
+        ]
+      ],
+      [
+        "laser",
+        "equipment",
+        "piece",
+        [
+          "setout",
+          "frame"
+        ]
+      ],
+      [
+        "measure",
+        "equipment",
+        "piece",
+        [
+          "setout",
+          "frame",
+          "clad"
+        ]
+      ],
+      [
+        "level",
+        "equipment",
+        "piece",
+        [
+          "frame"
+        ]
+      ],
+      [
+        "drill-bit",
+        "equipment",
+        "piece",
+        [
+          "frame"
+        ]
+      ],
+      [
+        "access",
+        "equipment",
+        "piece",
+        [
+          "frame",
+          "clad",
+          "joint",
+          "prime"
+        ]
+      ],
+      [
+        "punch",
+        "equipment",
+        "piece",
+        [
+          "frame"
+        ]
+      ],
+      [
+        "bit",
+        "equipment",
+        "piece",
+        [
+          "clad"
+        ]
+      ],
+      [
+        "knife",
+        "equipment",
+        "piece",
+        [
+          "clad"
+        ]
+      ],
+      [
+        "plane",
+        "equipment",
+        "piece",
+        [
+          "clad",
+          "joint"
+        ]
+      ],
+      [
+        "insulation-knife",
+        "equipment",
+        "piece",
+        [
+          "insulate"
+        ]
+      ],
+      [
+        "mix-vessel",
+        "equipment",
+        "piece",
+        [
+          "joint"
+        ]
+      ],
+      [
+        "mix-spatula",
+        "equipment",
+        "piece",
+        [
+          "joint"
+        ]
+      ],
+      [
+        "joint-spatula",
+        "equipment",
+        "piece",
+        [
+          "joint"
+        ]
+      ],
+      [
+        "sanding-holder",
+        "equipment",
+        "piece",
+        [
+          "joint"
+        ]
+      ],
+      [
+        "abrasive",
+        "material",
+        "piece",
+        [
+          "joint"
+        ]
+      ],
+      [
+        "cut-primer-brush",
+        "equipment",
+        "piece",
+        [
+          "prime"
+        ]
+      ],
+      [
+        "primer-roller",
+        "equipment",
+        "piece",
+        [
+          "prime"
+        ]
+      ],
+      [
+        "gloves",
+        "material",
+        "pair",
+        [
+          "frame",
+          "clad",
+          "insulate",
+          "joint",
+          "prime",
+          "cleanup"
+        ]
+      ],
+      [
+        "eye-protection",
+        "equipment",
+        "piece",
+        [
+          "frame",
+          "clad",
+          "insulate",
+          "joint",
+          "prime",
+          "cleanup"
+        ]
+      ],
+      [
+        "dust-protection",
+        "material",
+        "piece",
+        [
+          "frame",
+          "clad",
+          "insulate",
+          "joint",
+          "cleanup"
+        ]
+      ],
+      [
+        "vacuum",
+        "equipment",
+        "piece",
+        [
+          "joint",
+          "prime",
+          "cleanup"
+        ]
+      ],
+      [
+        "dust-bag",
+        "material",
+        "piece",
+        [
+          "joint",
+          "prime",
+          "cleanup"
+        ]
+      ],
+      [
+        "washing-water",
+        "material",
+        "l",
+        [
+          "joint",
+          "prime",
+          "cleanup"
+        ]
+      ],
+      [
+        "wash-vessel",
+        "equipment",
+        "piece",
+        [
+          "joint",
+          "prime",
+          "cleanup"
+        ]
+      ],
+      [
+        "electricity",
+        "equipment",
+        "kWh",
+        [
+          "frame",
+          "clad",
+          "joint",
+          "cleanup"
+        ]
+      ],
+      [
+        "waste-container",
+        "material",
+        "piece",
+        [
+          "cleanup"
+        ]
+      ],
+      [
+        "waste-loading",
+        "labor",
+        "man_hour",
+        [
+          "cleanup"
+        ]
+      ],
+      [
+        "waste-transport",
+        "equipment",
+        "machine_hour",
+        [
+          "cleanup"
+        ]
+      ],
+      [
+        "waste-recipient",
+        "service",
+        null,
+        [
+          "cleanup"
+        ]
+      ],
+      [
+        "delivery-vehicle",
+        "equipment",
+        "machine_hour",
+        [
+          "handling"
+        ]
+      ],
+      [
+        "handling-labour",
+        "labor",
+        "man_hour",
+        [
+          "handling"
+        ]
+      ],
+      [
+        "material-lift",
+        "equipment",
+        "machine_hour",
+        [
+          "handling"
+        ]
+      ],
+      [
+        "inner-tape",
+        "material",
+        "m",
+        [
+          "joint"
+        ]
+      ]
+    ]
+  },
+  "legacyParent": {
+    "definitionVersionId": "91004f43-a66d-5bb2-aade-d85837a9e695",
+    "definitionSha256": "6f0b62ebd87ac3aa2a94adf60daa90d12460f3777b2196d317f5eda85d4fdcf4",
+    "capturedParentSha256": "ce75ab31a318d85bf3fcf6dad031a7c31ab2fa21a304e848d1a30d422573ce1f",
+    "shape": [
+      77,
+      50,
+      50
+    ]
+  },
+  "legacyRuntime": {
+    "input": {
+      "c111_height_m": 2.75,
+      "c111_pn50_stock": 0,
+      "c111_ps50_stock": 0,
+      "c111_tn25_stock": 0,
+      "c111_board_stock": 0,
+      "c111_dowel_stock": 0,
+      "c111_fugen_stock": 0,
+      "c111_stud_step_m": 0.6,
+      "c111_water_stock": 0,
+      "c111_pn50_reserve": 0,
+      "c111_ps50_reserve": 0,
+      "c111_tn25_reserve": 0,
+      "applicability_mode": "PRELIMINARY_PROFILE",
+      "c111_board_reserve": 0,
+      "c111_dowel_reserve": 0,
+      "c111_fugen_pack_kg": 5,
+      "c111_fugen_reserve": 0,
+      "c111_water_reserve": 0,
+      "c111_insulation_mode": "AKUSTIKNAUF_50",
+      "c111_fugen_water_l_kg": 0.65,
+      "c111_insulation_stock": 0,
+      "c111_joint_tape_stock": 0,
+      "c111_water_delivery_l": 5,
+      "c111_anchor_pack_items": 100,
+      "c111_primer_rate_kg_m2": 0.1,
+      "c111_tiefengrund_stock": 0,
+      "c111_tool_ph2_required": 1,
+      "c111_insulation_reserve": 0,
+      "c111_joint_tape_reserve": 0,
+      "c111_sealing_tape_stock": 0,
+      "c111_cleaning_water_l_m2": 0.1,
+      "c111_tiefengrund_reserve": 0,
+      "c111_tool_brush_required": 1,
+      "c111_tool_knife_required": 1,
+      "c111_tool_laser_required": 1,
+      "c111_tool_level_required": 1,
+      "c111_tool_plane_required": 1,
+      "c111_tool_punch_required": 1,
+      "c111_sealing_tape_reserve": 0,
+      "c111_tool_access_required": 1,
+      "c111_tool_bucket_required": 1,
+      "c111_tool_gloves_required": 1,
+      "c111_tool_roller_required": 1,
+      "c111_tool_vacuum_required": 1,
+      "c111_separation_tape_stock": 0,
+      "c111_tool_measure_required": 1,
+      "c111_tool_spatula_required": 1,
+      "c111_tool_abrasive_required": 1,
+      "c111_tool_dust_bag_required": 1,
+      "c111_cut_edge_priming_band_m": 0.02,
+      "c111_separation_tape_reserve": 0,
+      "c111_tool_drill_bit_required": 1,
+      "c111_tool_waste_bag_required": 1,
+      "c111_tool_joint_spatula_required": 1,
+      "c111_tool_eye_protection_required": 1,
+      "c111_tool_sanding_holder_required": 1,
+      "c111_tool_dust_protection_required": 1,
+      "c111_tool_insulation_knife_required": 1
+    },
+    "classification": {
+      "c111_height_m": "ASSUMPTION",
+      "c111_pn50_stock": "ASSUMPTION",
+      "c111_ps50_stock": "ASSUMPTION",
+      "c111_tn25_stock": "ASSUMPTION",
+      "c111_board_stock": "ASSUMPTION",
+      "c111_dowel_stock": "ASSUMPTION",
+      "c111_fugen_stock": "ASSUMPTION",
+      "c111_stud_step_m": "ASSUMPTION",
+      "c111_water_stock": "ASSUMPTION",
+      "c111_pn50_reserve": "ASSUMPTION",
+      "c111_ps50_reserve": "ASSUMPTION",
+      "c111_tn25_reserve": "ASSUMPTION",
+      "applicability_mode": "ASSUMPTION",
+      "c111_board_reserve": "ASSUMPTION",
+      "c111_dowel_reserve": "ASSUMPTION",
+      "c111_fugen_pack_kg": "ASSUMPTION",
+      "c111_fugen_reserve": "ASSUMPTION",
+      "c111_water_reserve": "ASSUMPTION",
+      "c111_insulation_mode": "ASSUMPTION",
+      "c111_fugen_water_l_kg": "ASSUMPTION",
+      "c111_insulation_stock": "ASSUMPTION",
+      "c111_joint_tape_stock": "ASSUMPTION",
+      "c111_water_delivery_l": "ASSUMPTION",
+      "c111_anchor_pack_items": "ASSUMPTION",
+      "c111_primer_rate_kg_m2": "ASSUMPTION",
+      "c111_tiefengrund_stock": "ASSUMPTION",
+      "c111_tool_ph2_required": "ASSUMPTION",
+      "c111_insulation_reserve": "ASSUMPTION",
+      "c111_joint_tape_reserve": "ASSUMPTION",
+      "c111_sealing_tape_stock": "ASSUMPTION",
+      "c111_cleaning_water_l_m2": "ASSUMPTION",
+      "c111_tiefengrund_reserve": "ASSUMPTION",
+      "c111_tool_brush_required": "ASSUMPTION",
+      "c111_tool_knife_required": "ASSUMPTION",
+      "c111_tool_laser_required": "ASSUMPTION",
+      "c111_tool_level_required": "ASSUMPTION",
+      "c111_tool_plane_required": "ASSUMPTION",
+      "c111_tool_punch_required": "ASSUMPTION",
+      "c111_sealing_tape_reserve": "ASSUMPTION",
+      "c111_tool_access_required": "ASSUMPTION",
+      "c111_tool_bucket_required": "ASSUMPTION",
+      "c111_tool_gloves_required": "ASSUMPTION",
+      "c111_tool_roller_required": "ASSUMPTION",
+      "c111_tool_vacuum_required": "ASSUMPTION",
+      "c111_separation_tape_stock": "ASSUMPTION",
+      "c111_tool_measure_required": "ASSUMPTION",
+      "c111_tool_spatula_required": "ASSUMPTION",
+      "c111_tool_abrasive_required": "ASSUMPTION",
+      "c111_tool_dust_bag_required": "ASSUMPTION",
+      "c111_cut_edge_priming_band_m": "ASSUMPTION",
+      "c111_separation_tape_reserve": "ASSUMPTION",
+      "c111_tool_drill_bit_required": "ASSUMPTION",
+      "c111_tool_waste_bag_required": "ASSUMPTION",
+      "c111_tool_joint_spatula_required": "ASSUMPTION",
+      "c111_tool_eye_protection_required": "ASSUMPTION",
+      "c111_tool_sanding_holder_required": "ASSUMPTION",
+      "c111_tool_dust_protection_required": "ASSUMPTION",
+      "c111_tool_insulation_knife_required": "ASSUMPTION"
+    },
+    "sourceIds": {
+      "c111_height_m": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_pn50_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_ps50_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tn25_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_board_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_dowel_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_fugen_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_stud_step_m": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_water_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_pn50_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_ps50_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tn25_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "applicability_mode": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_board_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_dowel_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_fugen_pack_kg": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_fugen_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_water_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_insulation_mode": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_fugen_water_l_kg": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_insulation_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_joint_tape_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_water_delivery_l": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_anchor_pack_items": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_primer_rate_kg_m2": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tiefengrund_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_ph2_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_insulation_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_joint_tape_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_sealing_tape_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_cleaning_water_l_m2": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tiefengrund_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_brush_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_knife_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_laser_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_level_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_plane_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_punch_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_sealing_tape_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_access_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_bucket_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_gloves_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_roller_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_vacuum_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_separation_tape_stock": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_measure_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_spatula_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_abrasive_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_dust_bag_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_cut_edge_priming_band_m": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_separation_tape_reserve": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_drill_bit_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_waste_bag_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_joint_spatula_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_eye_protection_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_sanding_holder_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_dust_protection_required": [
+        "src_drywall_partition_c111_s27_36"
+      ],
+      "c111_tool_insulation_knife_required": [
+        "src_drywall_partition_c111_s27_36"
+      ]
+    },
+    "newBranchesConsumeLegacyNorms": false,
+    "validationFixturePrimaryDefaultCopied": false
+  }
+}

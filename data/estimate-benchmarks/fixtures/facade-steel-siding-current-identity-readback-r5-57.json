@@ -1,0 +1,55 @@
+{
+  "status": "PASS_EXACT_CURRENT_IDENTITY_LOOKUP_ABSENT_NOT_APPEND_ADMISSION",
+  "input": {
+    "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+    "workKey": "facade_steel_siding_insulated_krer15_01_065_01",
+    "groupId": "wg:master:facade_steel_siding_insulated_krer15_01_065_01",
+    "sourceKey": "kg_krer15_2015_steel_siding_06501_r2"
+  },
+  "releaseId": "f7fcd344-b7f5-50f4-8c0a-b5d23851b55b",
+  "searchReleaseId": "35770814-0347-567e-9133-f53a3958b636",
+  "releasePointerSha256": "dbad63517de8bed5de050b61a085d4c6e5b690758cd2efd8114970f0671d96b0",
+  "proof": {
+    "identitiesExactCatalogOrWorkKey": {
+      "count": 0,
+      "rows": []
+    },
+    "allDefinitionVersionsExactCatalog": {
+      "count": 0,
+      "rows": []
+    },
+    "currentManifestExactCatalog": {
+      "count": 0,
+      "rows": []
+    },
+    "currentSearchExactCatalog": {
+      "count": 0,
+      "rows": []
+    },
+    "currentGroupExactIdentity": {
+      "count": 0,
+      "rows": []
+    },
+    "currentGroupMembersExactGroupOrCatalog": {
+      "count": 0,
+      "rows": []
+    },
+    "normativeSourceExactKey": {
+      "count": 0,
+      "rows": []
+    }
+  },
+  "allExactIdentityScopesAbsent": true,
+  "readOnly": true,
+  "timeZone": "UTC",
+  "sameRawRowsReadTwice": true,
+  "rolledBack": true,
+  "databaseWrites": 0,
+  "normalLockedSolePublisherStillRequired": true,
+  "oldFixtureRewritten": false,
+  "fullParentCapture": false,
+  "compilerCalls": 0,
+  "newNorms": 0,
+  "newCatalogIds": 0,
+  "newReadyQueueEntries": 0
+}

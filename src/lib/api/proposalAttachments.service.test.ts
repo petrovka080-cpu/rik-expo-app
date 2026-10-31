@@ -1,5 +1,10 @@
 import { listCanonicalProposalAttachments } from "./proposalAttachments.service";
 
+const missingCanonicalRpcError = {
+  code: "PGRST202",
+  message: "Could not find the function public.proposal_attachment_evidence_scope_v1(p_group_key, p_proposal_id, p_viewer_role) in the schema cache",
+};
+
 type RpcResult = { data: unknown; error: unknown };
 
 type CompatibilityQueryResult = { data: unknown[]; error: unknown };
@@ -28,13 +33,14 @@ function createClient(params: {
   rpcResult: RpcResult;
   compatibilityResult?: { data: unknown[]; error: unknown };
   signedUrl?: string | null;
+  signedUrlError?: unknown;
 }) {
   const compatibilityQuery = createCompatibilityQuery(
     params.compatibilityResult ?? { data: [], error: null },
   );
   const createSignedUrl = jest.fn(async () => ({
     data: { signedUrl: params.signedUrl ?? "https://signed.example/file.pdf" },
-    error: null,
+    error: params.signedUrlError ?? null,
   }));
   const from = jest.fn(() => compatibilityQuery);
   const rpc = jest.fn(async () => params.rpcResult);
@@ -167,11 +173,11 @@ describe("proposalAttachments.service evidence boundary", () => {
     expect(client.from).not.toHaveBeenCalled();
   });
 
-  it("falls back to compatibility rows only when canonical scope fails", async () => {
+  it("falls back to compatibility rows only when the canonical RPC version is missing", async () => {
     const client = createClient({
       rpcResult: {
         data: null,
-        error: { message: "scope failed" },
+        error: missingCanonicalRpcError,
       },
       compatibilityResult: {
         data: [
@@ -197,7 +203,7 @@ describe("proposalAttachments.service evidence boundary", () => {
     expect(result.state).toBe("degraded");
     expect(result.fallbackUsed).toBe(true);
     expect(result.sourceKind).toBe("table:proposal_attachments");
-    expect(result.errorMessage).toContain("scope failed");
+    expect(result.errorMessage).toBe(missingCanonicalRpcError.message);
     expect(result.rows[0]).toEqual(
       expect.objectContaining({
         attachmentId: "42",
@@ -224,7 +230,7 @@ describe("proposalAttachments.service evidence boundary", () => {
     const client = createClient({
       rpcResult: {
         data: null,
-        error: { message: "scope failed" },
+        error: missingCanonicalRpcError,
       },
       compatibilityResult: {
         data: compatibilityRows,
@@ -242,5 +248,130 @@ describe("proposalAttachments.service evidence boundary", () => {
     expect(compatibilityQuery.order).toHaveBeenCalledWith("id", { ascending: false });
     expect(compatibilityQuery.range).toHaveBeenCalledWith(0, 99);
     expect(compatibilityQuery.range).toHaveBeenCalledWith(100, 199);
+  });
+
+  it.each([
+    ["database permission", { code: "42501", message: "permission denied" }],
+    ["expired JWT", { code: "PGRST301", message: "JWT expired", status: 401 }],
+    ["HTTP unauthorized", { status: 401, message: "Unauthorized" }],
+    ["HTTP forbidden", { status: 403, message: "Forbidden" }],
+    ["MFA assurance", { code: "insufficient_aal", message: "MFA required" }],
+    ["unknown scope failure", { message: "scope failed" }],
+    ["transport failure", new Error("Network request failed")],
+    ["statement timeout", { code: "57014", message: "canceling statement due to statement timeout" }],
+    ["wrong missing RPC", { ...missingCanonicalRpcError, message: "Could not find the function public.other_scope_v1() in the schema cache" }],
+    ["wrong overload", { ...missingCanonicalRpcError, message: "Could not find the function public.proposal_attachment_evidence_scope_v1(p_proposal_id) in the schema cache" }],
+    ["extra overload parameter", { ...missingCanonicalRpcError, message: "Could not find the function public.proposal_attachment_evidence_scope_v1(p_proposal_id, p_group_key, p_viewer_role, p_actor) in the schema cache" }],
+    ["duplicate overload parameter", { ...missingCanonicalRpcError, message: "Could not find the function public.proposal_attachment_evidence_scope_v1(p_proposal_id, p_proposal_id, p_viewer_role) in the schema cache" }],
+    ["misclassified denied response", { ...missingCanonicalRpcError, statusCode: 403 }],
+    ["contradictory server failure", { ...missingCanonicalRpcError, status: 500 }],
+    ["missing code without exact function", { code: "PGRST202", message: "schema cache failed" }],
+  ])("does not widen %s to compatibility reads or signing", async (_label, error) => {
+    const client = createClient({
+      rpcResult: { data: null, error },
+      compatibilityResult: {
+        data: [{ id: 91, proposal_id: "proposal-denied", file_name: "hidden.pdf", url: "https://legacy.example/hidden.pdf" }],
+        error: null,
+      },
+    });
+
+    const result = await listCanonicalProposalAttachments(client as never, "proposal-denied", {
+      screen: "accountant",
+      fallbackOnEmpty: true,
+    });
+
+    expect(result).toEqual(expect.objectContaining({
+      rows: [], state: "error", sourceKind: "rpc:proposal_attachment_evidence_scope_v1",
+      fallbackUsed: false, errorMessage: expect.any(String),
+    }));
+    expect(client.from).not.toHaveBeenCalled();
+    expect(client.storage.from).not.toHaveBeenCalled();
+  });
+
+  it("keeps successful canonical empty authoritative even for a legacy fallbackOnEmpty caller", async () => {
+    const client = createClient({
+      rpcResult: { data: [], error: null },
+      compatibilityResult: {
+        data: [{ id: 92, proposal_id: "proposal-empty", file_name: "hidden.pdf", url: "https://legacy.example/hidden.pdf" }],
+        error: null,
+      },
+    });
+
+    const result = await listCanonicalProposalAttachments(client as never, "proposal-empty", { fallbackOnEmpty: true });
+
+    expect(result).toEqual(expect.objectContaining({ rows: [], state: "empty", fallbackUsed: false, errorMessage: null }));
+    expect(client.from).not.toHaveBeenCalled();
+    expect(client.storage.from).not.toHaveBeenCalled();
+  });
+
+  it("accepts only the same named RPC arguments regardless of error-message ordering", async () => {
+    const client = createClient({
+      rpcResult: {
+        data: null,
+        error: { ...missingCanonicalRpcError, status: 404, message: "Could not find the function public.proposal_attachment_evidence_scope_v1(p_proposal_id,p_group_key,p_viewer_role) in the schema cache" },
+      },
+    });
+
+    const result = await listCanonicalProposalAttachments(client as never, "proposal-missing-ordered");
+
+    expect(result).toEqual(expect.objectContaining({ rows: [], state: "degraded", fallbackUsed: true }));
+    expect(client.from).toHaveBeenCalledWith("proposal_attachments");
+  });
+
+  it("does not replace a canonical group-filtered empty with compatibility rows", async () => {
+    const client = createClient({
+      rpcResult: {
+        data: [{ attachment_id: "93", proposal_id: "proposal-filtered", group_key: "supplier_quote", file_name: "quote.pdf", file_url: "https://canonical.example/quote.pdf" }],
+        error: null,
+      },
+      compatibilityResult: {
+        data: [{ id: 94, proposal_id: "proposal-filtered", group_key: "invoice", file_name: "hidden.pdf", url: "https://legacy.example/hidden.pdf" }],
+        error: null,
+      },
+    });
+
+    const result = await listCanonicalProposalAttachments(client as never, "proposal-filtered", { groupKey: "invoice", fallbackOnEmpty: true });
+
+    expect(result).toEqual(expect.objectContaining({ rows: [], state: "empty", fallbackUsed: false, rawCount: 1, mappedCount: 1, filteredCount: 1 }));
+    expect(client.from).not.toHaveBeenCalled();
+  });
+
+  it("does not treat signing failure as an absent canonical RPC even with the same missing-version error", async () => {
+    const client = createClient({
+      rpcResult: {
+        data: [{ attachment_id: "95", proposal_id: "proposal-signing", file_name: "invoice.pdf", storage_path: "proposal-signing/invoice.pdf", bucket_id: "proposal_files" }],
+        error: null,
+      },
+      signedUrlError: missingCanonicalRpcError,
+    });
+
+    const result = await listCanonicalProposalAttachments(client as never, "proposal-signing");
+
+    expect(result).toEqual(expect.objectContaining({ rows: [], state: "error", fallbackUsed: false, rawCount: 1, errorMessage: missingCanonicalRpcError.message }));
+    expect(client.storage.from().createSignedUrl).toHaveBeenCalledTimes(1);
+    expect(client.from).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed canonical payload without compatibility fallback", async () => {
+    const client = createClient({ rpcResult: { data: { rows: [] }, error: null } });
+
+    const result = await listCanonicalProposalAttachments(client as never, "proposal-malformed");
+
+    expect(result).toEqual(expect.objectContaining({ rows: [], state: "error", fallbackUsed: false }));
+    expect(client.from).not.toHaveBeenCalled();
+    expect(client.storage.from).not.toHaveBeenCalled();
+  });
+
+  it("keeps an exact missing-version compatibility failure as an error", async () => {
+    const client = createClient({
+      rpcResult: { data: null, error: missingCanonicalRpcError },
+      compatibilityResult: { data: [], error: { code: "42501", message: "compatibility denied" } },
+    });
+
+    const result = await listCanonicalProposalAttachments(client as never, "proposal-compatibility-denied");
+
+    expect(result).toEqual(expect.objectContaining({ rows: [], state: "error", fallbackUsed: true }));
+    expect(client.from).toHaveBeenCalledWith("proposal_attachments");
+    expect(client.storage.from).not.toHaveBeenCalled();
   });
 });

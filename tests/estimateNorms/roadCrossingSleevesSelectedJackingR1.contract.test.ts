@@ -1,6 +1,6 @@
 import { buildRoadCrossingSleevesSelectedJackingR1, assertRoadCrossingSleevesSelectedJackingPublicationR1 } from "../../src/lib/estimate/v4/roadCrossingSleevesSelectedJackingR1";
 import { buildRoadCrossingSleevesComponentsR1 } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import { compileAutomaticConstructionOwnerR1 } from "../../src/lib/estimate/v4/automaticConstructionOwnerR1";
 import { isCanonicalEstimateConsumerSuppliedParameter, isCanonicalEstimateSourceManagedParameter, isCanonicalEstimateVisibleUserResourceSelectionParameter } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";

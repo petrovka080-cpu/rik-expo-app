@@ -18,7 +18,7 @@ type CostTreatment =
 type RuntimeClassification = "NORMATIVE" | "ASSUMPTION" | "DERIVED";
 
 export const STRIP_POUR_PROFILE_CATALOG_ID =
-  "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_large_area";
+  "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard";
 export const STRIP_POUR_PROFILE_SOURCE_ID =
   "strip_foundation_concrete_placement_preliminary_profile_r1";
 export const STRIP_POUR_PROFILE_NORM_ID =

@@ -25,26 +25,6 @@ export const ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_VARIANTS = Object.freeze({
       "установка извещателей АПС высокой плотности",
     ],
   }),
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_install_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY",
-    canonicalNameRu:
-      "Монтаж адресных дымовых пожарных извещателей на большой площади",
-    aliasesRu: [
-      "монтаж адресных дымовых извещателей большая площадь",
-      "установка извещателей АПС большого объекта",
-    ],
-  }),
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_install_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu:
-      "Монтаж адресных дымовых пожарных извещателей на малой площади",
-    aliasesRu: [
-      "монтаж адресных дымовых извещателей малая площадь",
-      "установка извещателей АПС небольшого объекта",
-    ],
-  }),
   technical_room: Object.freeze({
     catalogId: "canonical-work:base:electrical_interior_fire_alarm_install_technical_room",
     catalogVariant: "TECHNICAL_ROOM_SEARCH_IDENTITY",

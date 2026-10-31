@@ -5,8 +5,8 @@ import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./profes
 
 const APPLICABILITY_VERSION = "professional-physical-norm-applicability:v1" as const;
 
-export const REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID =
-  "project-profile:approved-reinforcement-bar-schedule:fhwa-rics:v1" as const;
+import { REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID } from "../../contracts/reinforcementBarScheduleProfileIdentityV1";
+export { REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID } from "../../contracts/reinforcementBarScheduleProfileIdentityV1";
 export const REINFORCEMENT_BAR_SCHEDULE_NORM_ID =
   "reinforcement_project_bar_schedule_weight_same_unit_routing_v1" as const;
 export const REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID =

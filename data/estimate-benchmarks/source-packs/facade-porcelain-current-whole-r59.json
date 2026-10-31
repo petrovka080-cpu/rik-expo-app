@@ -1,0 +1,1326 @@
+{
+  "contract": "gox-build.facade-porcelain-current-whole/r59-r142",
+  "key": "porcelain_ventilated_facade",
+  "catalogId": "canonical-work:master:facade_ventilated_porcelain_install",
+  "workKey": "facade_ventilated_porcelain_install",
+  "groupId": "wg:master:facade_ventilated_porcelain_install",
+  "sourceId": "gox_facade_ventilated_porcelain_whole_r3",
+  "prefix": "facade:current-porcelain:r3",
+  "selectedBoundedProfile": {
+    "key": "vertical_T_visible_clamps_porcelain10_singleMW100",
+    "wholeSubsystem": "СТ-КГ-В-Т",
+    "sourceEdition": "СТО72746455-4.4.3-2024;28.11.2025;Изм.2",
+    "panelsMm": [
+      "600",
+      "600",
+      "10"
+    ],
+    "panelFormatIsNotPublicCard": true,
+    "insulation": "ТЕХНОВЕНТ СТАНДАРТ;singlelayer;100mm actualheatdesign",
+    "insulationM2PerM2": "1.1",
+    "brackets": "КР-Н-L/КРУ-1р-L/КРУ-2р-L only as selected real structural BOM",
+    "thermalBreak": "90x60x2/90x80x2/70x70x2 per compatible actual bracket",
+    "guide": "ТО-А-Б-t;real designed section and thickness",
+    "rowClamp": "A.26;10–11mm;БЗ",
+    "startClamp": "A.34;10–11mm;РЖ",
+    "cornerClamp": "A.40;10–11mm;БЗ",
+    "noHiddenClampBorrow": true,
+    "structuralRivets": "Actual compatible stainless fixation toKG6.11;doNotCopyTC4.0mmAsModernStructuralRule",
+    "access": "Ready façade platform4m/300kg;realPPR safetyload/power/rigging required;not150mproductionadmission",
+    "scopeProductionHeightMaximumM": "50",
+    "KGGeneralLimit66mNot150m": true,
+    "sourceLaborApplicableKeys": [
+      "layout",
+      "brackets",
+      "guides",
+      "cladding",
+      "insulation"
+    ],
+    "scaffoldLaborNotAddedToReadyPlatformMethod": true,
+    "exactStockFrontBasis": "Table15literalPER_LINK;sizeNOTproved;never12/2/3personrescaling",
+    "membrane": "No membrane only for selected holder-approved single stone-wool layer AND acceptedKGdesign;notgenericall-insulationrule"
+  },
+  "normId": "ST_KG_V_T_PORCELAIN10_SOURCE_METHOD",
+  "existingSourcePack": {
+    "path": "data/estimate-benchmarks/source-packs/facade-current-family-whole-systems-r3.json",
+    "sha256": "797dee3748699fe701f7b4b2daeaa740c60e6bb6d48452391c25eb00460755ef",
+    "profileKey": "porcelain_ventilated_facade"
+  },
+  "existingPrimarySources": [
+    {
+      "key": "TN-ETICS2025",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-ETICS2025-full-primary.pdf",
+      "sha256": "12425a25026f07eb1a19876df0c3741ad9b688d7814078d17a6cb250f23c1102",
+      "bytes": 6528592,
+      "pdfPages": 56,
+      "url": "https://pim.tn.ru/8/3/a/f/83afac9a2ff5969ab1e5094f17286b602f794eea_______________________________________________________________________.pdf?response-content-disposition=filename%3D%22%D0%A2%D0%B5%D1%85%D0%BD%D0%BE%D0%BB%D0%BE%D0%B3%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B0%D1%8F+%D0%BA%D0%B0%D1%80%D1%82%D0%B0+%D0%BF%D0%BE+%D0%BC%D0%BE%D0%BD%D1%82%D0%B0%D0%B6%D1%83+%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B+%D1%84%D0%B0%D1%81%D0%B0%D0%B4%D0%BD%D0%BE%D0%B9+%D1%82%D0%B5%D0%BF%D0%BB%D0%BE%D0%B8%D0%B7%D0%BE%D0%BB%D1%8F%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D0%BE%D0%B9+%D0%BA%D0%BE%D0%BC%D0%BF%D0%BE%D0%B7%D0%B8%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D0%BE%D0%B9+%D0%A2%D0%9D_%D0%A4%D0%90%D0%A1%D0%90%D0%94+%D0%9F%D1%80%D0%BE%D1%84%D0%B8.pdf%22",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": [
+        8,
+        9,
+        10,
+        13,
+        14,
+        15,
+        41,
+        47,
+        48,
+        49,
+        52,
+        53
+      ]
+    },
+    {
+      "key": "TN-ETICS-STO2025",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-ETICS-STO2025-full-primary.pdf",
+      "sha256": "1196d223fb0210f8842d8b2d209297591a7453018ff3b9519e1e630c19670514",
+      "bytes": 3306454,
+      "pdfPages": 41,
+      "url": "https://pim.tn.ru/6/8/c/5/68c5a43d9cb13622f98783d05183bcffbf4789c2________72746455_4.4.2_2025_________.pdf?response-content-disposition=filename%3D%22%D0%A1%D0%A2%D0%9E+72746455_4_4_2_2025+%D0%A1%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B+%D1%84%D0%B0%D1%81%D0%B0%D0%B4%D0%BD%D1%8B%D0%B5+%D1%82%D0%B5%D0%BF%D0%BB%D0%BE%D0%B8%D0%B7%D0%BE%D0%BB%D1%8F%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D0%B5+%D0%BA%D0%BE%D0%BC%D0%BF%D0%BE%D0%B7%D0%B8%D1%86%D0%B8%D0%BE%D0%BD%D0%BD%D1%8B%D0%B5+%D1%81+%D0%BD%D0%B0%D1%80%D1%83%D0%B6%D0%BD%D1%8B%D0%BC%D0%B8+%D1%88%D1%82%D1%83%D0%BA%D0%B0%D1%82%D1%83%D1%80%D0%BD%D1%8B%D0%BC%D0%B8+%D1%81%D0%BB%D0%BE%D1%8F%D0%BC%D0%B8+%D0%A2%D0%9D_%D0%A4%D0%90%D0%A1%D0%90%D0%94+%D0%9F%D1%80%D0%BE%D1%84%D0%B8+%D0%B8+%D0%A2%D0%9D_%D0%A4%D0%90%D0%A1%D0%90%D0%94+%D0%9A%D0%BE%D0%BC%D0%B1%D0%B8.pdf%22",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": [
+        14,
+        29,
+        30,
+        31,
+        32,
+        33
+      ]
+    },
+    {
+      "key": "TN-VHF",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-VHF-full-primary.pdf",
+      "sha256": "726daf4928c2c3e98fc85aa16be6dfb2d276a856d5382fc8a3f6e73a1ef4d763",
+      "bytes": 1024704,
+      "pdfPages": 18,
+      "url": "https://pim.tn.ru/a/a/b/9/aab9bd3b1f9986f9ed110110a37a96c393ecce53_ast_instal_facsys__build_airgap.pdf?response-content-disposition=filename%3D%22%D0%A3%D1%81%D1%82%D1%80%D0%BE%D0%B9%D1%81%D1%82%D0%B2%D0%BE+%D0%BD%D0%B0%D0%B2%D0%B5%D1%81%D0%BD%D0%BE%D0%B9+%D1%84%D0%B0%D1%81%D0%B0%D0%B4%D0%BD%D0%BE%D0%B9+%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B+%D1%83%D1%82%D0%B5%D0%BF%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F+%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B9+%D1%81+%D0%B2%D0%BE%D0%B7%D0%B4%D1%83%D1%88%D0%BD%D1%8B%D0%BC+%D0%B7%D0%B0%D0%B7%D0%BE%D1%80%D0%BE%D0%BC+%D1%81+%D0%BF%D1%80%D0%B8%D0%BC%D0%B5%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5%D0%BC+%D0%BC%D0%B0%D1%82%D0%B5%D1%80%D0%B8%D0%B0%D0%BB%D0%BE%D0%B2+%D0%9A%D0%BE%D1%80%D0%BF%D0%BE%D1%80%D0%B0%D1%86%D0%B8%D0%B8+%D0%A2%D0%95%D0%A5%D0%9D%D0%9E%D0%9D%D0%98%D0%9A%D0%9E%D0%9B%D0%AC.pdf%22",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": [
+        15,
+        16
+      ]
+    },
+    {
+      "key": "TN-VHF-STO2024",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-VHF-STO2024-full-primary.pdf",
+      "sha256": "8d19a93533a64d82a2fec06e061fd9545d4bc7c8a6b691372b8ce1fcd995d687",
+      "bytes": 2360891,
+      "pdfPages": 60,
+      "url": "https://pim.tn.ru/a/4/4/f/a44f3b39dbc7fcebfbb1b14bc4addd77e6be4f3c________72746455.4.4.3_2024________________________________._2.pdf?response-content-disposition=filename%3D%22%D0%A1%D0%A2%D0%9E+72746455_4_4_3_2024+%D0%A1%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0+%D1%84%D0%B0%D1%81%D0%B0%D0%B4%D0%BD%D0%B0%D1%8F+%D0%BD%D0%B0%D1%80%D1%83%D0%B6%D0%BD%D0%BE%D0%B3%D0%BE+%D1%83%D1%82%D0%B5%D0%BF%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F+%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B9+%D0%BD%D0%B0%D0%B2%D0%B5%D1%81%D0%BD%D0%B0%D1%8F+%D1%81+%D0%B2%D0%BE%D0%B7%D0%B4%D1%83%D1%88%D0%BD%D1%8B%D0%BC+%D0%B7%D0%B0%D0%B7%D0%BE%D1%80%D0%BE%D0%BC+%D0%A2%D0%9D_%D0%A4%D0%90%D0%A1%D0%90%D0%94+%D0%92%D0%95%D0%9D%D0%A2_+%D0%A2%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5+%D0%BE%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5_+%D0%A2%D1%80%D0%B5%D0%B1%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F+%D0%BA+%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8E%2C+%D0%BC%D0%B0%D1%82%D0%B5%D1%80%D0%B8%D0%B0%D0%BB%D0%B0%D0%BC%2C+%D0%B8%D0%B7%D0%B4%D0%B5%D0%BB%D0%B8%D1%8F%D0%BC+%D0%B8+%D0%BA%D0%BE%D0%BD%D1%81%D1%82%D1%80%D1%83%D0%BA%D1%86%D0%B8%D1%8F%D0%BC.pdf%22",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": [
+        2,
+        19,
+        20
+      ]
+    },
+    {
+      "key": "TN-VHF-system-current-primary.pdf",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-VHF-system-current-primary.pdf",
+      "sha256": "131b423186beb0de8057817c2d2b16a2ab2ff0a17e06a113b3c24b9ec0102d87",
+      "bytes": 251673,
+      "pdfPages": 3,
+      "url": "https://pim.tn.ru/0/8/2/b/082bb411554ffb7441c1cc401ee7dc46429149d1_______________________10000071_________________________________________RU_ru.pdf?response-content-disposition=filename%3D%22%D0%A2%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9+%D0%BB%D0%B8%D1%81%D1%82+%D0%A4%D0%90%D0%A1_10000071+%D0%A2%D0%9D_%D0%A4%D0%90%D0%A1%D0%90%D0%94+%D0%92%D0%B5%D0%BD%D1%82.pdf%22",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": []
+    },
+    {
+      "key": "SP-KR65-101-2025",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/SP-KR65-101-2025-full-primary.pdf",
+      "sha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+      "bytes": 3283661,
+      "pdfPages": 178,
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/obedinennyeizolacionnye-13267ac76cb422108.87225877.pdf",
+      "sourceKind": "OFFICIAL_MANUFACTURER_OR_STATE_FULL_PRIMARY_PDF",
+      "visuallyReviewedPages": [
+        1,
+        97
+      ],
+      "sourceWarnings": [
+        "Actualsignedorder51of10.02.2025enclosed,butbodypreface/effectivedateplaceholdersremain",
+        "Scope1namesinternalroomswhile7.1.6explicitlycontainsfacadepreconditions;donotclaimuniversalSFTKtechnicaladmission"
+      ]
+    },
+    {
+      "key": "SP-KR53-101-2025",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/SP-KR53-101-2025-official.pdf",
+      "sha256": "279ad74a648a122a62ccb8bdc1a601c8c14138ef37fcb71fb7692c1bafdcdd31",
+      "sourceKind": "OFFICIAL_KG_FULL_PRIMARY_PDF_REUSE_EXACT",
+      "priorSealedSource": "steel-historical-candidate-r2",
+      "visuallyReviewedPages": "Previouslyreviewedfullsource;newsourcebranchesnotrepeated"
+    }
+  ],
+  "publicResourceNames": {
+    "labor:layout": "Разметка фасадной подсистемы",
+    "labor:brackets": "Крепление кронштейнов к основанию",
+    "labor:guides": "Монтаж Т-образных направляющих",
+    "labor:cladding": "Монтаж керамогранитной облицовки на видимых кляммерах",
+    "labor:insulation": "Монтаж и крепление минераловатного утепления",
+    "consumed:thermal-break": "Терморазрыв под фасадный кронштейн",
+    "supply:thermal-break": "Терморазрыв под фасадный кронштейн",
+    "consumed:bracket": "Кронштейн фасадный несущий",
+    "supply:bracket": "Кронштейн фасадный несущий",
+    "consumed:fixing-washer": "Шайба фиксирующая 30×33×2 мм из коррозионностойкой стали",
+    "supply:fixing-washer": "Шайба фиксирующая 30×33×2 мм из коррозионностойкой стали",
+    "consumed:base-anchor": "Анкер фасадный для основания",
+    "supply:base-anchor": "Анкер фасадный для основания",
+    "consumed:structural-rivet": "Заклёпка коррозионностойкая для фасадной подсистемы",
+    "supply:structural-rivet": "Заклёпка коррозионностойкая для фасадной подсистемы",
+    "consumed:bracket-extender": "Удлинитель фасадного кронштейна",
+    "supply:bracket-extender": "Удлинитель фасадного кронштейна",
+    "consumed:T-guide": "Профиль фасадный Т-образный",
+    "supply:T-guide": "Профиль фасадный Т-образный",
+    "consumed:row-clamp": "Кляммер рядовой для плиты толщиной 10 мм",
+    "supply:row-clamp": "Кляммер рядовой для плиты толщиной 10 мм",
+    "consumed:start-clamp": "Кляммер стартовый для плиты толщиной 10 мм",
+    "supply:start-clamp": "Кляммер стартовый для плиты толщиной 10 мм",
+    "consumed:corner-clamp": "Кляммер угловой для плиты толщиной 10 мм",
+    "supply:corner-clamp": "Кляммер угловой для плиты толщиной 10 мм",
+    "consumed:panel": "Плита керамогранитная фасадная 600×600×10 мм",
+    "supply:panel": "Плита керамогранитная фасадная 600×600×10 мм",
+    "consumed:insulation-anchor": "Анкер тарельчатый для минераловатной плиты толщиной 100 мм",
+    "supply:insulation-anchor": "Анкер тарельчатый для минераловатной плиты толщиной 100 мм",
+    "consumed:window-bracket": "Кронштейн оконного обрамления",
+    "supply:window-bracket": "Кронштейн оконного обрамления",
+    "consumed:node-bracket": "Кронштейн дополнительной подконструкции",
+    "supply:node-bracket": "Кронштейн дополнительной подконструкции",
+    "consumed:node-profile": "Профиль дополнительной подконструкции",
+    "supply:node-profile": "Профиль дополнительной подконструкции",
+    "consumed:node-extender": "Удлинитель дополнительной подконструкции",
+    "supply:node-extender": "Удлинитель дополнительной подконструкции",
+    "consumed:mounting-shelf": "Полка монтажная 625×625×1,2 мм",
+    "supply:mounting-shelf": "Полка монтажная 625×625×1,2 мм",
+    "consumed:fixing-angle": "Угол крепёжный 60×60×62×2 мм",
+    "supply:fixing-angle": "Угол крепёжный 60×60×62×2 мм",
+    "consumed:left-connector": "Соединитель дополнительного профиля левый",
+    "supply:left-connector": "Соединитель дополнительного профиля левый",
+    "consumed:right-connector": "Соединитель дополнительного профиля",
+    "supply:right-connector": "Соединитель дополнительного профиля",
+    "consumed:flashings": "Стальное обрамление и отливы",
+    "supply:flashings": "Стальное обрамление и отливы",
+    "consumed:fire-screen": "Элемент стальной противопожарный толщиной не менее 0,55 мм",
+    "supply:fire-screen": "Элемент стальной противопожарный толщиной не менее 0,55 мм",
+    "consumed:stone-wool": "Плита из каменной ваты для однослойного фасада толщиной 100 мм",
+    "supply:stone-wool": "Плита из каменной ваты для однослойного фасада толщиной 100 мм",
+    "stock:facade-platform": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+    "tool:facade-platform:own": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+    "tool:facade-platform:hired": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+    "tool:facade-platform:buy": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+    "stock:plumb-cord": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+    "tool:plumb-cord:own": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+    "tool:plumb-cord:hired": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+    "tool:plumb-cord:buy": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+    "stock:spirit-level": "Ватерпас длиной 1,5 м",
+    "tool:spirit-level:own": "Ватерпас длиной 1,5 м",
+    "tool:spirit-level:hired": "Ватерпас длиной 1,5 м",
+    "tool:spirit-level:buy": "Ватерпас длиной 1,5 м",
+    "stock:laser-survey-level": "Нивелир лазерный точностью 0,1 мм/м",
+    "tool:laser-survey-level:own": "Нивелир лазерный точностью 0,1 мм/м",
+    "tool:laser-survey-level:hired": "Нивелир лазерный точностью 0,1 мм/м",
+    "tool:laser-survey-level:buy": "Нивелир лазерный точностью 0,1 мм/м",
+    "stock:laser-level": "Уровень лазерный точностью 0,1 мм/м",
+    "tool:laser-level:own": "Уровень лазерный точностью 0,1 мм/м",
+    "tool:laser-level:hired": "Уровень лазерный точностью 0,1 мм/м",
+    "tool:laser-level:buy": "Уровень лазерный точностью 0,1 мм/м",
+    "stock:drill": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+    "tool:drill:own": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+    "tool:drill:hired": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+    "tool:drill:buy": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+    "stock:steel-tape": "Рулетка стальная длиной 20 м",
+    "tool:steel-tape:own": "Рулетка стальная длиной 20 м",
+    "tool:steel-tape:hired": "Рулетка стальная длиной 20 м",
+    "tool:steel-tape:buy": "Рулетка стальная длиной 20 м",
+    "stock:ratchet-screwdriver": "Отвёртка с рычажным наконечником",
+    "tool:ratchet-screwdriver:own": "Отвёртка с рычажным наконечником",
+    "tool:ratchet-screwdriver:hired": "Отвёртка с рычажным наконечником",
+    "tool:ratchet-screwdriver:buy": "Отвёртка с рычажным наконечником",
+    "stock:manual-nut-driver": "Гайковёрт ручной",
+    "tool:manual-nut-driver:own": "Гайковёрт ручной",
+    "tool:manual-nut-driver:hired": "Гайковёрт ручной",
+    "tool:manual-nut-driver:buy": "Гайковёрт ручной",
+    "stock:drill-and-driver-attachments": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+    "tool:drill-and-driver-attachments:own": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+    "tool:drill-and-driver-attachments:hired": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+    "tool:drill-and-driver-attachments:buy": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+    "stock:manual-riveter": "Инструмент заклёпочный ручной",
+    "tool:manual-riveter:own": "Инструмент заклёпочный ручной",
+    "tool:manual-riveter:hired": "Инструмент заклёпочный ручной",
+    "tool:manual-riveter:buy": "Инструмент заклёпочный ручной",
+    "stock:battery-riveter": "Пистолет заклёпочный аккумуляторный",
+    "tool:battery-riveter:own": "Пистолет заклёпочный аккумуляторный",
+    "tool:battery-riveter:hired": "Пистолет заклёпочный аккумуляторный",
+    "tool:battery-riveter:buy": "Пистолет заклёпочный аккумуляторный",
+    "stock:hammer": "Молоток для монтажа дюбелей",
+    "tool:hammer:own": "Молоток для монтажа дюбелей",
+    "tool:hammer:hired": "Молоток для монтажа дюбелей",
+    "tool:hammer:buy": "Молоток для монтажа дюбелей",
+    "stock:insulation-gloves": "Перчатки защитные для монтажа теплоизоляции",
+    "tool:insulation-gloves:own": "Перчатки защитные для монтажа теплоизоляции",
+    "tool:insulation-gloves:hired": "Перчатки защитные для монтажа теплоизоляции",
+    "tool:insulation-gloves:buy": "Перчатки защитные для монтажа теплоизоляции",
+    "stock:safety-belt": "Пояс предохранительный",
+    "tool:safety-belt:own": "Пояс предохранительный",
+    "tool:safety-belt:hired": "Пояс предохранительный",
+    "tool:safety-belt:buy": "Пояс предохранительный",
+    "stock:helmet": "Каска защитная",
+    "tool:helmet:own": "Каска защитная",
+    "tool:helmet:hired": "Каска защитная",
+    "tool:helmet:buy": "Каска защитная"
+  },
+  "independentAdditionalOwnerRoster": [
+    {
+      "key": "supply:thermal-break",
+      "operationKeys": [
+        "brackets"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Терморазрыв под фасадный кронштейн",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:bracket",
+      "operationKeys": [
+        "brackets"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Кронштейн фасадный несущий",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:fixing-washer",
+      "operationKeys": [
+        "brackets"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Шайба фиксирующая 30×33×2 мм из коррозионностойкой стали",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:base-anchor",
+      "operationKeys": [
+        "brackets"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Анкер фасадный для основания",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:structural-rivet",
+      "operationKeys": [
+        "guides"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Заклёпка коррозионностойкая для фасадной подсистемы",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:bracket-extender",
+      "operationKeys": [
+        "guides"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Удлинитель фасадного кронштейна",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:T-guide",
+      "operationKeys": [
+        "guides"
+      ],
+      "category": "material",
+      "unitId": "m",
+      "title": "Профиль фасадный Т-образный",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:row-clamp",
+      "operationKeys": [
+        "cladding"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Кляммер рядовой для плиты толщиной 10 мм",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:start-clamp",
+      "operationKeys": [
+        "cladding"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Кляммер стартовый для плиты толщиной 10 мм",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:corner-clamp",
+      "operationKeys": [
+        "cladding"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Кляммер угловой для плиты толщиной 10 мм",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:panel",
+      "operationKeys": [
+        "cladding"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Плита керамогранитная фасадная 600×600×10 мм",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:insulation-anchor",
+      "operationKeys": [
+        "insulation"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Анкер тарельчатый для минераловатной плиты толщиной 100 мм",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:window-bracket",
+      "operationKeys": [
+        "junctions"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Кронштейн оконного обрамления",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:node-bracket",
+      "operationKeys": [
+        "junctions"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Кронштейн дополнительной подконструкции",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:node-profile",
+      "operationKeys": [
+        "junctions"
+      ],
+      "category": "material",
+      "unitId": "m",
+      "title": "Профиль дополнительной подконструкции",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:node-extender",
+      "operationKeys": [
+        "junctions"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Удлинитель дополнительной подконструкции",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:mounting-shelf",
+      "operationKeys": [
+        "junctions"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Полка монтажная 625×625×1,2 мм",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:fixing-angle",
+      "operationKeys": [
+        "junctions"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Угол крепёжный 60×60×62×2 мм",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:left-connector",
+      "operationKeys": [
+        "junctions"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Соединитель дополнительного профиля левый",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:right-connector",
+      "operationKeys": [
+        "junctions"
+      ],
+      "category": "material",
+      "unitId": "piece",
+      "title": "Соединитель дополнительного профиля",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:flashings",
+      "operationKeys": [
+        "junctions"
+      ],
+      "category": "material",
+      "unitId": "m2",
+      "title": "Стальное обрамление и отливы",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:fire-screen",
+      "operationKeys": [
+        "fire"
+      ],
+      "category": "material",
+      "unitId": "m2",
+      "title": "Элемент стальной противопожарный толщиной не менее 0,55 мм",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "supply:stone-wool",
+      "operationKeys": [
+        "insulation"
+      ],
+      "category": "material",
+      "unitId": "m3",
+      "title": "Плита из каменной ваты для однослойного фасада толщиной 100 мм",
+      "mode": null,
+      "quantityRule": "SOLE_DECIMAL_OR_INTEGER_ORDER_FROM_ABSOLUTE_PROJECT_COMPONENT_OR_SINGLE_WOOL_SOURCE_CONSUMPTION"
+    },
+    {
+      "key": "tool:facade-platform:own",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:facade-platform:hired",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:facade-platform:buy",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:plumb-cord:own",
+      "operationKeys": [
+        "layout",
+        "brackets",
+        "guides",
+        "cladding",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:plumb-cord:hired",
+      "operationKeys": [
+        "layout",
+        "brackets",
+        "guides",
+        "cladding",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:plumb-cord:buy",
+      "operationKeys": [
+        "layout",
+        "brackets",
+        "guides",
+        "cladding",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:spirit-level:own",
+      "operationKeys": [
+        "brackets",
+        "guides",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Ватерпас длиной 1,5 м",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:spirit-level:hired",
+      "operationKeys": [
+        "brackets",
+        "guides",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Ватерпас длиной 1,5 м",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:spirit-level:buy",
+      "operationKeys": [
+        "brackets",
+        "guides",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Ватерпас длиной 1,5 м",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:laser-survey-level:own",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Нивелир лазерный точностью 0,1 мм/м",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:laser-survey-level:hired",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Нивелир лазерный точностью 0,1 мм/м",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:laser-survey-level:buy",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Нивелир лазерный точностью 0,1 мм/м",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:laser-level:own",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Уровень лазерный точностью 0,1 мм/м",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:laser-level:hired",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Уровень лазерный точностью 0,1 мм/м",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:laser-level:buy",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Уровень лазерный точностью 0,1 мм/м",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:drill:own",
+      "operationKeys": [
+        "brackets",
+        "insulation"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:drill:hired",
+      "operationKeys": [
+        "brackets",
+        "insulation"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:drill:buy",
+      "operationKeys": [
+        "brackets",
+        "insulation"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:steel-tape:own",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Рулетка стальная длиной 20 м",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:steel-tape:hired",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Рулетка стальная длиной 20 м",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:steel-tape:buy",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Рулетка стальная длиной 20 м",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:ratchet-screwdriver:own",
+      "operationKeys": [
+        "junctions",
+        "guides"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Отвёртка с рычажным наконечником",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:ratchet-screwdriver:hired",
+      "operationKeys": [
+        "junctions",
+        "guides"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Отвёртка с рычажным наконечником",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:ratchet-screwdriver:buy",
+      "operationKeys": [
+        "junctions",
+        "guides"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Отвёртка с рычажным наконечником",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:manual-nut-driver:own",
+      "operationKeys": [
+        "brackets"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Гайковёрт ручной",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:manual-nut-driver:hired",
+      "operationKeys": [
+        "brackets"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Гайковёрт ручной",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:manual-nut-driver:buy",
+      "operationKeys": [
+        "brackets"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Гайковёрт ручной",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:drill-and-driver-attachments:own",
+      "operationKeys": [
+        "brackets",
+        "guides"
+      ],
+      "category": "equipment",
+      "unitId": "set",
+      "title": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:drill-and-driver-attachments:hired",
+      "operationKeys": [
+        "brackets",
+        "guides"
+      ],
+      "category": "equipment",
+      "unitId": "set",
+      "title": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:drill-and-driver-attachments:buy",
+      "operationKeys": [
+        "brackets",
+        "guides"
+      ],
+      "category": "equipment",
+      "unitId": "set",
+      "title": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:manual-riveter:own",
+      "operationKeys": [
+        "guides",
+        "cladding"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Инструмент заклёпочный ручной",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:manual-riveter:hired",
+      "operationKeys": [
+        "guides",
+        "cladding"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Инструмент заклёпочный ручной",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:manual-riveter:buy",
+      "operationKeys": [
+        "guides",
+        "cladding"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Инструмент заклёпочный ручной",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:battery-riveter:own",
+      "operationKeys": [
+        "guides",
+        "cladding"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Пистолет заклёпочный аккумуляторный",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:battery-riveter:hired",
+      "operationKeys": [
+        "guides",
+        "cladding"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Пистолет заклёпочный аккумуляторный",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:battery-riveter:buy",
+      "operationKeys": [
+        "guides",
+        "cladding"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Пистолет заклёпочный аккумуляторный",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:hammer:own",
+      "operationKeys": [
+        "brackets",
+        "insulation"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Молоток для монтажа дюбелей",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:hammer:hired",
+      "operationKeys": [
+        "brackets",
+        "insulation"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Молоток для монтажа дюбелей",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:hammer:buy",
+      "operationKeys": [
+        "brackets",
+        "insulation"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Молоток для монтажа дюбелей",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:insulation-gloves:own",
+      "operationKeys": [
+        "insulation"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Перчатки защитные для монтажа теплоизоляции",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:insulation-gloves:hired",
+      "operationKeys": [
+        "insulation"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Перчатки защитные для монтажа теплоизоляции",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:insulation-gloves:buy",
+      "operationKeys": [
+        "insulation"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Перчатки защитные для монтажа теплоизоляции",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:safety-belt:own",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Пояс предохранительный",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:safety-belt:hired",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Пояс предохранительный",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:safety-belt:buy",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Пояс предохранительный",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:helmet:own",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Каска защитная",
+      "mode": "Собственное обеспечение на период ППР",
+      "quantityRule": "EXCLUSIVE_OWN_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:helmet:hired",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Каска защитная",
+      "mode": "Услуга обеспечения на период ППР",
+      "quantityRule": "EXCLUSIVE_HIRED_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    },
+    {
+      "key": "tool:helmet:buy",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "category": "equipment",
+      "unitId": "piece",
+      "title": "Каска защитная",
+      "mode": "Новая поставка для рабочего фронта",
+      "quantityRule": "EXCLUSIVE_BUY_PERIOD_OWNER_FROM_EFFECTIVE_LITERAL_SOURCE_STOCK"
+    }
+  ],
+  "literalStockResourceRoster": [
+    {
+      "key": "facade-platform",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "title": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг"
+    },
+    {
+      "key": "plumb-cord",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "layout",
+        "brackets",
+        "guides",
+        "cladding",
+        "quality"
+      ],
+      "title": "Отвес массой 0,4 кг со шнуром длиной 5 м"
+    },
+    {
+      "key": "spirit-level",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets",
+        "guides",
+        "quality"
+      ],
+      "title": "Ватерпас длиной 1,5 м"
+    },
+    {
+      "key": "laser-survey-level",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "title": "Нивелир лазерный точностью 0,1 мм/м"
+    },
+    {
+      "key": "laser-level",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "title": "Уровень лазерный точностью 0,1 мм/м"
+    },
+    {
+      "key": "drill",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets",
+        "insulation"
+      ],
+      "title": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм"
+    },
+    {
+      "key": "steel-tape",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "title": "Рулетка стальная длиной 20 м"
+    },
+    {
+      "key": "ratchet-screwdriver",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "junctions",
+        "guides"
+      ],
+      "title": "Отвёртка с рычажным наконечником"
+    },
+    {
+      "key": "manual-nut-driver",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets"
+      ],
+      "title": "Гайковёрт ручной"
+    },
+    {
+      "key": "drill-and-driver-attachments",
+      "unitId": "set",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets",
+        "guides"
+      ],
+      "title": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания"
+    },
+    {
+      "key": "manual-riveter",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "guides",
+        "cladding"
+      ],
+      "title": "Инструмент заклёпочный ручной"
+    },
+    {
+      "key": "battery-riveter",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "guides",
+        "cladding"
+      ],
+      "title": "Пистолет заклёпочный аккумуляторный"
+    },
+    {
+      "key": "hammer",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets",
+        "insulation"
+      ],
+      "title": "Молоток для монтажа дюбелей"
+    },
+    {
+      "key": "insulation-gloves",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "insulation"
+      ],
+      "title": "Перчатки защитные для монтажа теплоизоляции"
+    },
+    {
+      "key": "safety-belt",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "title": "Пояс предохранительный"
+    },
+    {
+      "key": "helmet",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "title": "Каска защитная"
+    }
+  ],
+  "protectedNeedKeys": [
+    "preparation-labor",
+    "working-parts",
+    "access-power-protection",
+    "quality-services",
+    "delivery-feed-waste"
+  ],
+  "developerDelta": [
+    "Current MASTER2.16 normal Config on existing source/catalog identity",
+    "Independent map49+23materialSupply+48exclusiveToolOwners=120 with all43 stock consumers required at each raw/owner row",
+    "Finite before/after absolute BOM/stock invariance and three provision-mode cost/procurement checks",
+    "Existing common public operation/PDF projection checks; no facade renderer or new shared core"
+  ],
+  "sourceNormsAdded": 0,
+  "sourcePricesImported": false,
+  "actualProtectedNeedClosures": 0,
+  "approvedActualProjectObjects": 0,
+  "physicalFull": false,
+  "newFULL": 0
+}

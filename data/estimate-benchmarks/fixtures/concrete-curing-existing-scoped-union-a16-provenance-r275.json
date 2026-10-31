@@ -1,0 +1,86 @@
+{
+  "contract": "curing-existing-scoped-union-oracle/r275",
+  "fixture": "data/estimate-benchmarks/fixtures/concrete-curing-existing-scoped-union-a16-r275.json",
+  "fixtureSha256": "21666eaedbd64679babd11b996c1ba5476675c045b1989372e5c220600ed5d3b",
+  "snapshotSha256": "579c6a406379666280bb81f134114be7155aaa5086c56530687c2590f1fe6866",
+  "rootBoundEvidence": {
+    "atUtc": "2026-10-31T01:05:13.692311+00:00",
+    "status": "A16_EXACT_FAILED_SCOPE_DIAGNOSTIC_BOUND_TO_CLOSED_OWNED_WINDOW",
+    "diagnostic": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-30\\files-pasted-by-the-user-gox\\work\\scoped-db-r275-scope-diagnostic-owned-a16\\normal-locked-three\\r275-output\\SCOPED_EXISTING_REGISTRY_FAILURE_R275.json",
+      "sha256": "21666eaedbd64679babd11b996c1ba5476675c045b1989372e5c220600ed5d3b"
+    },
+    "snapshotSha256": "579c6a406379666280bb81f134114be7155aaa5086c56530687c2590f1fe6866",
+    "closure": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-30\\files-pasted-by-the-user-gox\\work\\scoped-db-r275-scope-diagnostic-owned-a16\\ROOT_CLOSURE_VERIFIED.json",
+      "sha256": "2355c2821c270a1036ad1fc73d5cdc0e912cb825264990dd3641e2ddac268ab6"
+    },
+    "receipt": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-30\\files-pasted-by-the-user-gox\\work\\scoped-db-r275-scope-diagnostic-owned-a16\\normal-locked-three\\receipt.json",
+      "sha256": "54ac50222ba04d0cef3be18e2ff4fddd2cbd93926a487e9da5f5c729cdfbb6c8"
+    },
+    "jestR275": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-30\\files-pasted-by-the-user-gox\\work\\scoped-db-r275-scope-diagnostic-owned-a16\\normal-locked-three\\jest-1.json",
+      "sha256": "fcaf3859f141c217f96d1153eee1687f5bd369fa37b87b9e1748ad4ed5fea3b6"
+    },
+    "sourceFreeze": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-30\\files-pasted-by-the-user-gox\\work\\scoped-db-r275-scope-diagnostic-root-a16\\SOURCE_FREEZE.json",
+      "sha256": "9f30d0923e38ecf205f3cea33a094a8d09c4120a904eebef41c0e96ed36e76b0"
+    },
+    "command": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-30\\files-pasted-by-the-user-gox\\work\\scoped-db-r275-scope-diagnostic-owned-a16\\normal-locked-three\\command.json",
+      "sha256": "ee8fda0edd287962ae2db622a588374499a822d41f9cfc4f7fa5e65609e5062a"
+    },
+    "sourceWitnessPins": [
+      {
+        "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\scripts\\verification\\capturePanelSocketCurrentInputsR1.ts",
+        "sha256": "4ab360b1df0d34fc6f9afd0aa364eefb38f724792eb73ab18cb0abc0f4db3bb6"
+      },
+      {
+        "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\scripts\\verification\\ownedControlFiletimeTransportR1.ts",
+        "sha256": "8f9d694f821d77faf27e5df6c83a4fe17d27e8dbc594cf9b987fff01b02b0705"
+      },
+      {
+        "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\scripts\\estimate\\r4a13\\masterScopedNormativeRegistryPreimageR1.ts",
+        "sha256": "f0dccae656e3dbac815d9eb536eade3bd2bdee78234821f33a82197cfa82af99"
+      },
+      {
+        "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\scripts\\estimate\\r4a13\\masterSingleDefinitionRetainParentBindingsR1.ts",
+        "sha256": "25901332f1e40ca135aa58784d148c07b5028fc7499c3d1f159f4628430e0a0d"
+      },
+      {
+        "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\data\\estimate-benchmarks\\r568-local-developer-canonical-release.json",
+        "sha256": "9b6322feb70e38191e7fe171d82dadebfe47816890d4c339f890477ebc83a258"
+      }
+    ],
+    "r275SourcePin": {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\scripts\\estimate\\r4a13\\concreteCuringCurrentFormalNormalLockedR275.test.ts",
+      "sha256": "c219eaf0f6773d842d826cb435e5ba7d2ad665161575fb292943b4851caf3c50"
+    },
+    "sourceCount": 2,
+    "locatorCount": 2,
+    "primaryManagedSource": true,
+    "primaryManagedLocator": true,
+    "manufacturerManagedFlags": null,
+    "actualDB7": "R145_PASS_R275_FAIL_OTHER5_UNRUN",
+    "guardSatisfied": false,
+    "sourceAdmission": false,
+    "full": false
+  },
+  "rootBoundEvidenceSha256": "cdd6da2a673da566eb666b0af97e8c902394ae005e9c46c1bfa5bbf2e7d0c95f",
+  "rootClosureSha256": "2355c2821c270a1036ad1fc73d5cdc0e912cb825264990dd3641e2ddac268ab6",
+  "authoredCandidateMapManifestSha256": "fcecdb6c0254c24e55f292586f8b9d7f4af94169ab08bcb3575d95dfd975b312",
+  "authoredCandidateMapSha256": "dbf578b8626b13f21d29302a4cd4e4a04ba96ee36620bcb29dcdec452a0961c9",
+  "sourceIdsInObservedOrder": [
+    "7a6855d3-e8b7-5672-8f22-5afe750b501c",
+    "15ddf10c-ebe4-51d3-84c3-29ced3d9b3c8"
+  ],
+  "locatorIdsInObservedOrder": [
+    "669859cb-0a68-58e3-8563-46d46eda8b66",
+    "d3b89eb0-5081-5dc8-9fda-f7ec9b37bc3b"
+  ],
+  "historicalFailureFlagsRemainFalse": true,
+  "reusableNativeOwnership": false,
+  "newSourceAdmission": false,
+  "full": false
+}

@@ -1,0 +1,251 @@
+{
+  "contract": "concrete-curing-roller-whole-post/r108",
+  "sourceId": "gox_concrete_curing_exact_roller_case_method_r108",
+  "titleRu": "Пост нанесения состава для ухода за бетоном валиком",
+  "scopeRu": "Внутренний компонент фактически выбранного ухода за свежим бетоном. Точный шестипредметный исходный набор обеспечивается на фактический период по подтверждённому ППР и договору после учёта имеющегося оснащения. Количество комплектов не выводится из площади. Не самостоятельная полная работа или новая публичная карточка.",
+  "materialSource": {
+    "titleRu": "Sika Antisol-250 W: паспорт производителя США",
+    "edition": "June 2020, Version 01.03",
+    "officialUrl": "https://usa.sika.com/dam/dms/us01/3/sika_antisol_-250w.pdf",
+    "localArtifact": ".release-runtime/r568/s27-63/sources/sika-antisol-250w-us-2020-06-v01-03.pdf",
+    "sha256": "b2f03cae00c6edf37228a1836104b5beba33a56dbb19b559caa8cc435a8b14b3",
+    "coverageM2PerL": 4.9,
+    "packageL": 19,
+    "minimumExclusiveTemperatureC": 7,
+    "temperatureForecastHours": 12,
+    "locatorRu": "Стр. 1: приблизительный расход 4,9 м²/л только для бетона с отделкой щёткой; упаковка 19 л; срок/хранение и запрет замороженного материала. Стр. 2: свежий бетон, окно нанесения, равномерная плёнка без разбавления, температура выше 7 °C и отсутствие ожидаемого снижения до 7 °C в следующие 12 ч, отсутствие конденсата.",
+    "quantityQuality": "APPROXIMATE_MANUFACTURER_NOMINAL",
+    "artifactPath": "data/estimate-benchmarks/source-artifacts/concrete-curing-roller-r108/material-pds.pdf"
+  },
+  "kitSource": {
+    "sha256": "a60458bb7969275543a32db7d6c06b0e0a026008e90a66fac5307f3beac27077",
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-curing-roller-whole-post-r83\\purdy-six-piece-parent.html",
+    "officialUrl": "https://www.sherwin-williams.com/homeowners/products/purdy-white-dove-premium-painters-kit",
+    "exactVariant": "145811000|102807682|1028-07682",
+    "artifactPath": "data/estimate-benchmarks/source-artifacts/concrete-curing-roller-r108/exact-six-piece-case.html"
+  },
+  "coverSource": {
+    "key": "purdy-whitedove-cover",
+    "officialUrl": "https://www.purdy.com/en/products/rollers/whitedove",
+    "atUtc": "2026-10-24T23:03:00.220668+00:00",
+    "artifactWritten": true,
+    "httpStatus": 200,
+    "finalUrl": "https://www.purdy.com/en/products/rollers/whitedove",
+    "contentType": "text/html;charset=utf-8",
+    "etag": "\"21111-65e4f11c011c9-gzip\"",
+    "lastModified": "Wed, 21 Oct 2026 00:45:53 GMT",
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-curing-roller-whole-post-r83\\purdy-whitedove-cover.html",
+    "sha256": "9817ff4d6f14d25f0449f03ff5ddc8e181ec8a259cf68472c11ec6c5b331d942",
+    "bytes": 135441,
+    "visibleTextPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-curing-roller-whole-post-r83\\purdy-whitedove-cover.visible.txt",
+    "visibleTextSha256": "22016a975b76b3b45029a1da5f729316a1874bc8bfc04dde9b98dc33df748f4c",
+    "requiredIdentityTerms": {
+      "WhiteDove": true,
+      "lint-free": true,
+      "144670092": true
+    },
+    "status": "PRIMARY_CAPTURE_IDENTITY_TERMS_PASS",
+    "artifactPath": "data/estimate-benchmarks/source-artifacts/concrete-curing-roller-r108/roller-cover.html"
+  },
+  "compatibility": {
+    "status": "REQUIREMENT_LEVEL_PLUS_ACTUAL_PROJECT_CONFIRMATION_REQUIRED",
+    "requiredProjectConfirmation": "PROJECT_CONFIRMED_EXACT_CASE_NONSHED_3_8_INCH_FOR_ACTUAL_TEXTURE_AND_PRODUCT",
+    "noCrossManufacturerCertificationClaim": true
+  },
+  "operations": [
+    {
+      "key": "scope_and_readiness",
+      "titleRu": "Проверить поверхность и условия",
+      "completionRu": "Подтверждены точный материал, открытая площадь, фактура, готовность и условия паспорта."
+    },
+    {
+      "key": "material_takeoff",
+      "titleRu": "Определить потребность в составе",
+      "completionRu": "Применён существующий ограниченный материальный алгоритм; наличие и цена не подменяют расход."
+    },
+    {
+      "key": "actual_post_and_initial_stock",
+      "titleRu": "Проверить целый комплект и наличие",
+      "completionRu": "Проверены точный исходный комплект, его компоненты и фактическое обеспечение периода после учёта наличия."
+    },
+    {
+      "key": "mixing_and_transfer",
+      "titleRu": "Перемешать и передать состав",
+      "completionRu": "Выполнено ручное перемешивание без разбавления; фактический инструмент и передача состава обеспечены."
+    },
+    {
+      "key": "roller_application",
+      "titleRu": "Нанести состав валиком",
+      "completionRu": "Нанесена равномерная плёнка подходящим неосыпающимся валиком; кисть не получает допуска нанесения."
+    },
+    {
+      "key": "access_and_protection",
+      "titleRu": "Обеспечить доступ и защиту",
+      "completionRu": "Фактические доступ, СИЗ и защита смежных поверхностей обеспечены."
+    },
+    {
+      "key": "film_and_regime_control",
+      "titleRu": "Проконтролировать плёнку и режим",
+      "completionRu": "Обеспечен контроль условий и сплошности по принятой программе."
+    },
+    {
+      "key": "cleaning_and_waste",
+      "titleRu": "Очистить оснащение и собрать отходы",
+      "completionRu": "Оснащение очищено водой с мылом; промывочные остатки удержаны и переданы на обработку."
+    },
+    {
+      "key": "replacement_and_inventory",
+      "titleRu": "Проверить замену и возврат оснащения",
+      "completionRu": "Проверены действительные замены, остатки и возврат; исходные два валика не считаются нормой ресурса."
+    },
+    {
+      "key": "labour_payment_and_procurement",
+      "titleRu": "Сверить оплату и обеспечение",
+      "completionRu": "Сохранён один владелец оплаты комплекта на период и прежний владелец включённого труда."
+    }
+  ],
+  "components": [
+    {
+      "key": "roller-cover",
+      "publicNameRu": "Сменный валик шириной 9 дюймов с ворсом 3/8 дюйма",
+      "quantityPerOriginalCase": 2,
+      "unitId": "piece",
+      "operationKeys": [
+        "actual_post_and_initial_stock",
+        "roller_application",
+        "replacement_and_inventory"
+      ]
+    },
+    {
+      "key": "roller-frame",
+      "publicNameRu": "Ручка-держатель для валика шириной 9 дюймов",
+      "quantityPerOriginalCase": 1,
+      "unitId": "piece",
+      "operationKeys": [
+        "actual_post_and_initial_stock",
+        "roller_application",
+        "replacement_and_inventory"
+      ]
+    },
+    {
+      "key": "tray",
+      "publicNameRu": "Лоток для нанесения состава валиком",
+      "quantityPerOriginalCase": 1,
+      "unitId": "piece",
+      "operationKeys": [
+        "actual_post_and_initial_stock",
+        "roller_application",
+        "replacement_and_inventory"
+      ]
+    },
+    {
+      "key": "tray-liner",
+      "publicNameRu": "Вкладыш для лотка",
+      "quantityPerOriginalCase": 1,
+      "unitId": "piece",
+      "operationKeys": [
+        "actual_post_and_initial_stock",
+        "roller_application",
+        "replacement_and_inventory"
+      ]
+    },
+    {
+      "key": "trim-brush",
+      "publicNameRu": "Кисть с наклонным срезом шириной 2 дюйма",
+      "quantityPerOriginalCase": 1,
+      "unitId": "piece",
+      "operationKeys": [
+        "actual_post_and_initial_stock",
+        "replacement_and_inventory"
+      ]
+    }
+  ],
+  "protectedNeeds": [
+    {
+      "key": "surface_preparation",
+      "titleRu": "Подготовка и защита поверхности перед уходом",
+      "category": "material",
+      "operation": "scope_and_readiness",
+      "missingFactRu": "Фактическое обеспечение подготовки и защиты по выбранному способу не подтверждено; готовность поверхности не является расходной нормой."
+    },
+    {
+      "key": "manual_mixing_transfer",
+      "titleRu": "Инструмент ручного перемешивания и передачи состава",
+      "category": "equipment",
+      "operation": "mixing_and_transfer",
+      "missingFactRu": "Паспорт требует ручного перемешивания, но не задаёт количественную ведомость выбранного поста и его оснащения."
+    },
+    {
+      "key": "access_ppe",
+      "titleRu": "Доступ, индивидуальная защита и защита смежных участков",
+      "category": "equipment",
+      "operation": "access_and_protection",
+      "missingFactRu": "Нужны действительные условия доступа, комплектность и обеспечение защиты; эти количества не выводятся из м²."
+    },
+    {
+      "key": "regime_control",
+      "titleRu": "Оснащение и обеспечение контроля плёнки и режима",
+      "category": "equipment",
+      "operation": "film_and_regime_control",
+      "missingFactRu": "Требуются фактическая программа и оснащение контроля; приборы и часы не выводятся из объёма бетона."
+    },
+    {
+      "key": "soap_water",
+      "titleRu": "Вода и моющее средство для очистки оснащения",
+      "category": "material",
+      "operation": "cleaning_and_waste",
+      "missingFactRu": "Паспорт требует воду с мылом, но не задаёт расход; перенос промывочной нормы другого аппарата запрещён."
+    },
+    {
+      "key": "wash_waste",
+      "titleRu": "Сбор промывочных остатков и обращение с отходами",
+      "category": "service",
+      "operation": "cleaning_and_waste",
+      "missingFactRu": "Нужны действительные схема удержания, количества и граница услуги обработки остатков."
+    },
+    {
+      "key": "case_replacements",
+      "titleRu": "Замена валиков, вкладышей и фактический возврат оснащения",
+      "category": "equipment",
+      "operation": "replacement_and_inventory",
+      "missingFactRu": "Два исходных валика и один вкладыш являются комплектностью, а не нормой долговечности; замены и остатки определяются отдельно."
+    },
+    {
+      "key": "logistics",
+      "titleRu": "Доставка полного оснащения к месту работ",
+      "category": "delivery",
+      "operation": "actual_post_and_initial_stock",
+      "missingFactRu": "Количество рейсов, груз и включение доставки в договор обеспечения периода не подтверждены."
+    }
+  ],
+  "exactPrimaryMethodFacts": {
+    "manualMixOnly": true,
+    "dilutionAllowed": false,
+    "napInchRange": [
+      "1/4",
+      "1/2"
+    ],
+    "selectedNapInch": "3/8",
+    "cleaningMedia": "SOAP_AND_WATER",
+    "cleaningConsumptionNorm": null,
+    "brushApplicationAdmitted": false
+  },
+  "exclusionsRu": [
+    "Не выводить комплект, срок службы, замены, труд, аренду, рейсы и промывку из площади или объёма.",
+    "Не списывать весь многоразовый комплект как расход и не умножать оплату на каждый компонент.",
+    "Не считать неизвестное наличие нулём; договор обеспечения обязан учитывать фактическое оснащение, неполные комплекты не приравниваются к полным.",
+    "Не применять модель к кисти, другому набору, иной химии или недопущенной поверхности.",
+    "Нет автоматической второй оплаты включённого труда ухода; текущие native owners и UNKNOWN сохраняются."
+  ],
+  "status": "SOURCE_ONLY_ORDINARY_CONFIG_AND_ACTUAL_CORE_UNRUN",
+  "fullTechnicalAcceptance": false,
+  "newFULL": 0,
+  "sourceResearchReuse": {
+    "r83": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-curing-roller-whole-post-r83\\WHOLE_ROLLER_POST_COMPONENTS_AND_SCOPE_R83.json",
+    "r83Sha256": "cb532d1e8fd76c2b3c79f70b06a2139310691efa5c6eb6dc9424f2690fc00089",
+    "pdsAdditionalReusedPage": 2,
+    "newWebQueries": 0,
+    "newSourceDownload": 0
+  },
+  "atUtc": "2026-10-25T00:50:47.810632+00:00"
+}

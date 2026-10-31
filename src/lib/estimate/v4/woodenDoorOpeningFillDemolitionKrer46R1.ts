@@ -18,20 +18,6 @@ export const WOODEN_DOOR_FILL_DEMOLITION_KRER46_VARIANTS = Object.freeze({
     catalogVariant: "STANDARD_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
     canonicalNameRu: "Разборка существующего деревянного дверного заполнения проёма",
   }),
-  large_area: Object.freeze({
-    catalogId:
-      "canonical-work:base:demolition_interior_door_block_dismantle_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu:
-      "Разборка существующего деревянного дверного заполнения — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId:
-      "canonical-work:base:demolition_interior_door_block_dismantle_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu:
-      "Разборка существующего деревянного дверного заполнения — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId:
       "canonical-work:base:demolition_interior_door_block_dismantle_wet_zone",

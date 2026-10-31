@@ -381,12 +381,8 @@ function scopeParameters(
 ): ProfessionalDomainParameterDefinitionV1[] {
   const scope = row.scope_capability;
   const result: ProfessionalDomainParameterDefinitionV1[] = [];
-  if (scope === "small_area") {
-    result.push(parameter("small_area_detail_productivity_m2_per_man_hour", "Производительность ручной доводки малой площади", "number", "P1", "m2_per_man_hour", ["small_area_detail_labor"], { minimum: 0.01, maximum: 10_000, fullOnly: true }));
-  }
-  if (scope === "large_area") {
-    result.push(parameter("large_area_handling_productivity_kg_per_machine_hour", "Производительность механизированной подачи материалов", "number", "P1", "kg_per_machine_hour", ["large_area_handling_equipment"], { minimum: 0.01, maximum: 100_000, fullOnly: true }));
-  }
+
+
   if (scope === "wet_zone") {
     result.push(
       parameter("wet_zone_protection_rate_kg_m2", "Расход совместимой защиты примыканий мокрой зоны", "number", "P1", "kg_per_m2", ["wet_zone_protection_material"], { minimum: 0.001, maximum: 100, fullOnly: true }),
@@ -723,13 +719,7 @@ function scopeAssembly(inventory: InteriorFinishesDomainInventoryRow): Professio
   const mass = massFormula(interiorOperationProfile(inventory).formula_kind, technologyId);
   const parameters: ProfessionalAssemblyParameterDefinitionV4[] = [assemblyParameter("work_included", "Операция включена", "SCOPE_TRIGGER", null, ["FULL_APPLICABLE_SCOPE"])];
   const rows: ProfessionalAssemblyRowDefinitionV4[] = [];
-  if (scope === "small_area") {
-    parameters.push(assemblyParameter("area_m2", "Площадь", "PROJECT_QUANTITY", "m2", ["FULL_APPLICABLE_SCOPE"]), assemblyParameter("small_area_detail_productivity_m2_per_man_hour", "Производительность ручной доводки", "NORM_RATE", "m2_per_man_hour", ["FULL_APPLICABLE_SCOPE"]));
-    rows.push(boqRow(inventory, "small_area_detail_labor", "Особые условия малой площади", "labor", `Ручная доводка границ малой площади для «${inventory.localized_name_ru}»`, formula(`${technologyId}:small-area-detail:v1`, "area_m2 ÷ small_area_detail_productivity_m2_per_man_hour", ["area_m2", "small_area_detail_productivity_m2_per_man_hour"], "man_hour", (v) => v.area_m2 / v.small_area_detail_productivity_m2_per_man_hour)));
-  } else if (scope === "large_area") {
-    parameters.push(...mass.input_parameter_ids.map((id) => assemblyParameter(id, id, id === "area_m2" ? "PROJECT_QUANTITY" : "MATERIAL_PASSPORT_VALUE", null, ["FULL_APPLICABLE_SCOPE"])), assemblyParameter("large_area_handling_productivity_kg_per_machine_hour", "Производительность подачи", "NORM_RATE", "kg_per_machine_hour", ["FULL_APPLICABLE_SCOPE"]));
-    rows.push(boqRow(inventory, "large_area_handling_equipment", "Механизированная подача", "equipment", `Механизированная подача материалов большой площади для «${inventory.localized_name_ru}»`, formula(`${technologyId}:large-area-handling:v1`, `(${mass.expression}) ÷ large_area_handling_productivity_kg_per_machine_hour`, [...mass.input_parameter_ids, "large_area_handling_productivity_kg_per_machine_hour"], "machine_hour", (v) => mass.calculate(v) / v.large_area_handling_productivity_kg_per_machine_hour)));
-  } else if (scope === "wet_zone") {
+  if (scope === "wet_zone") {
     parameters.push(assemblyParameter("area_m2", "Площадь", "PROJECT_QUANTITY", "m2", ["FULL_APPLICABLE_SCOPE"]), assemblyParameter("wet_zone_protection_rate_kg_m2", "Расход защиты", "MATERIAL_PASSPORT_VALUE", "kg_per_m2", ["FULL_APPLICABLE_SCOPE"]), assemblyParameter("wet_zone_test_interval_m2", "Интервал испытаний", "CONTROL_PLAN_VALUE", "m2_per_test", ["FULL_APPLICABLE_SCOPE"]));
     rows.push(
       boqRow(inventory, "wet_zone_protection_material", "Защита мокрой зоны", "material", `Совместимый защитный состав и материалы примыканий для «${inventory.localized_name_ru}»`, formula(`${technologyId}:wet-zone-protection:v1`, "area_m2 × wet_zone_protection_rate_kg_m2", ["area_m2", "wet_zone_protection_rate_kg_m2"], "kg", (v) => v.area_m2 * v.wet_zone_protection_rate_kg_m2)),

@@ -1,5 +1,6 @@
+import {useCanonicalOperationCompositionDiagnostic} from './useCanonicalOperationCompositionDiagnostic';
 import React from "react";
-import { KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
 import { canonicalLanternIntent, CANONICAL_LANTERN_KIND_CHOICES, selectCanonicalLanternKindText } from '../../lib/estimate/backendPlatform/canonicalLanternIntent';
 import type { TextInput } from "react-native";
 
@@ -28,8 +29,10 @@ import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenAc
 import { consumerRepairEstimateApprovalParameterErrors, consumerRepairExactAsphaltApprovalErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 import { canonicalEstimateRevisionIdFromRoute } from "../../lib/navigation/canonicalEstimateRevisionDeepLink";
-import {consumerEstimateOpenScopeGroups} from '../../lib/consumerRequests/consumerEstimateReadiness';
+import {consumerEstimateOpenScopeGroups,consumerEstimateManualPreliminaryItems} from '../../lib/consumerRequests/consumerEstimateReadiness';
 import {buildRequestEstimateSourceGates} from './requestEstimateViewModel';
+import { consumerEstimateManualQuantityApprovalCandidate,consumerEstimateSavedPreliminaryApprovalCandidate } from '../../lib/consumerRequests/consumerEstimateManualQuantityApproval';
+import {consumerEstimateSavedReportBinding} from '../../lib/consumerRequests/consumerEstimateProfessionalPdfReview';
 import {
   consumerRepairCanonicalEstimateBlocksApproval,
   consumerRepairCanonicalMissingObjectParameterCount,
@@ -132,6 +135,10 @@ type ConsumerRepairRequestScreenViewProps = {
   onCreateNew: () => void;
   onDeleteDraft: () => void;
   onApproveDraft: () => void;
+  onApproveManualQuantities?: () => void;
+  onOpenPreliminaryReviewPdf?: (expected:{revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string}) => void;
+  historyReviewConfirmation?:{requestDraftId:string;revision:import('../../lib/estimate/backendPlatform/contracts').CanonicalEstimateRevisionView}|null;
+  onConfirmHistoryReview?:()=>void;onCancelHistoryReview?:()=>void;
   onApplyAndApproveDraft: () => void;
   onPrepareDraft: () => void;
   onSelectRoadScope: (scopePresetId: string) => void;
@@ -193,11 +200,29 @@ export function ConsumerRepairRequestScreenView({
   onCreateNew,
   onDeleteDraft,
   onApproveDraft,
+  onApproveManualQuantities,
   onApplyAndApproveDraft,
   onPrepareDraft,
   onSelectRoadScope,
   onScrollPositionChange,
 }: ConsumerRepairRequestScreenViewProps) {
+  const operationBinding=consumerRepairCanonicalBackendBinding(renderModel.bundle);
+  const operationBackend=renderModel.bundle?.structuredEstimatePayload?.canonicalBackend;
+  const operationDiagnostic=useCanonicalOperationCompositionDiagnostic(operationBinding?{...operationBinding,
+    ...(operationBackend?.revisionId===operationBinding.revisionId&&operationBackend.releaseId===operationBinding.releaseId
+      ? {checksumSha256:operationBackend.checksumSha256}:{})}:null);
+  const runDocumentAction=(action:()=>void,targetRequestDraftId?:string,readingPdf=false):boolean=>{
+    // Reading a saved report never borrows admission from the local editor.
+    if(readingPdf){action();return true;}
+    const targetsCurrent=!targetRequestDraftId||targetRequestDraftId===renderModel.bundle?.draft.id;
+    if(targetsCurrent&&operationDiagnostic?.acceptance?.pdfAllowed===false){
+      const unverified=operationDiagnostic.acceptance.status==='COMPOSITION_UNVERIFIED';
+      Alert.alert(unverified?'Состав подработ не проверен':'Состав сметы требует исправления',
+        'Список закупки пока недоступен. Сохранённая смета и предварительный PDF остаются доступными для чтения.');
+      return false;
+    }
+    action();return true;
+  };
   const canonicalReopenPending = consumerRepairCanonicalReopenPending(renderModel.bundle, expectedCanonicalRevisionId, openedCanonicalRouteRevisionId);
   const currentDraftRevisionState =
     getConsumerRepairCalculationStateForReadOnlyDisplay(renderModel.bundle);
@@ -216,11 +241,12 @@ export function ConsumerRepairRequestScreenView({
     consumerRepairCanonicalBackendBinding(renderModel.bundle) &&
     !renderModel.bundle?.canonicalParameterSession,
   );
+  const manualQuantityApproval = consumerEstimateManualQuantityApprovalCandidate(renderModel.bundle) ?? consumerEstimateSavedPreliminaryApprovalCandidate(renderModel.bundle,operationDiagnostic?.revision);
   const approvalBlockedByParameters = Boolean(
     consumerRepairCanonicalEstimateBlocksApproval(
       renderModel.bundle?.canonicalParameterSession,
-    ) || canonicalParameterReadinessMissing
-    || consumerRepairEstimateApprovalParameterErrors(renderModel.bundle).length > 0
+    ) || (canonicalParameterReadinessMissing && !manualQuantityApproval)
+    || consumerRepairEstimateApprovalParameterErrors(renderModel.bundle, manualQuantityApproval,operationDiagnostic?.revision).length > 0
   );
   const approvalUnresolvedRowCount = consumerRepairCanonicalUnresolvedRowCount(
     renderModel.bundle,
@@ -234,7 +260,7 @@ export function ConsumerRepairRequestScreenView({
   );
   const approvalBlockedBeyondPendingEdits = Boolean(
     approvalBlockedByParameters ||
-    approvalUnresolvedRowCount > 0 ||
+    (approvalUnresolvedRowCount > 0 && !manualQuantityApproval) ||
     state.approvalCommitBusy ||
     state.deleteCommitBusy ||
     state.canonicalEstimateMutationBusy ||
@@ -244,6 +270,7 @@ export function ConsumerRepairRequestScreenView({
     consumerRepairExactAsphaltApprovalErrors(renderModel.bundle).length > 0
   );
   const approvalBlockedByEstimate = approvalBlockedBeyondPendingEdits || (state.pendingCanonicalRowEditCount ?? 0) > 0;
+  const savedPdfSnapshotAvailable=Boolean(consumerEstimateSavedReportBinding(renderModel.bundle));
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -256,6 +283,9 @@ export function ConsumerRepairRequestScreenView({
         centerTitle
         right={<ConsumerRepairRequestHeaderMarketButton onPress={onGoToMarket} />}
       />
+      {savedPdfSnapshotAvailable?<View testID="consumer-repair-saved-pdf-report-note" style={{padding:12}}>
+        <Text>PDF показывает сохранённую версию сметы. Неизвестные количества, цены и предупреждения остаются видимыми. Несохранённые правки в отчёт не входят. Чтение отчёта не подтверждает смету и не разрешает оплату или закупку.</Text>
+      </View>:null}
       <AppScreenScroll
         key={renderModel.bundle?.draft.id ?? "new-estimate"}
         contentStyle={styles.content}
@@ -323,8 +353,8 @@ export function ConsumerRepairRequestScreenView({
           onSelectTemplateCandidate={onSelectTemplateCandidate}
           onLoadMoreWorkSuggestions={onLoadMoreWorkSuggestions}
           onPrepareDraft={onPrepareDraft}
-          onMakePdf={onMakePdf}
-          onOpenProcurement={onOpenProcurement}
+          onMakePdf={()=>runDocumentAction(onMakePdf,undefined,true)}
+          onOpenProcurement={()=>runDocumentAction(onOpenProcurement)}
           onRefineCanonicalParameters={onRefineCanonicalParameters}
           onDecrease={onDecrease}
           onIncrease={onIncrease}
@@ -352,7 +382,7 @@ export function ConsumerRepairRequestScreenView({
           onParameterDraftInteraction={onParameterDraftInteraction}
           primerPrerequisiteNode={primerPrerequisiteNode}
           onCompositionRowsChange={onCompositionRowsChange}
-          onOpenPdf={onOpenPdf}
+          onOpenPdf={(requestDraftId)=>runDocumentAction(()=>onOpenPdf(requestDraftId),requestDraftId,true)}
           onOpenDraft={onOpenDraft}
           onToggleHistorySnapshot={onToggleHistorySnapshot}
           onEditHistoryDraft={onEditHistoryDraft}
@@ -365,6 +395,7 @@ export function ConsumerRepairRequestScreenView({
           roadScopeSelectionBusy={state.roadScopeSelectionBusy}
         />
         <ConsumerRepairRequestStickyActions
+          operationCompositionDiagnostic={operationDiagnostic}
           approved={renderModel.approved}
           sent={renderModel.sent}
           hasBundle={Boolean(renderModel.bundle)}
@@ -375,10 +406,16 @@ export function ConsumerRepairRequestScreenView({
           approvalBlockedByEstimate={approvalBlockedByEstimate}
           approvalBlockedBeyondPendingEdits={approvalBlockedBeyondPendingEdits}
           approvalBlockedByParameters={approvalBlockedByParameters}
+          manualQuantityApprovalAvailable={manualQuantityApproval != null}
+          manualSavedPreliminaryAvailable={manualQuantityApproval?.basis==='SAVED_VERSION_REVIEW'}
+          pdfSavedSnapshotAvailable={savedPdfSnapshotAvailable}
+          approvalManualUnresolvedRowCount={manualQuantityApproval?.unresolvedQuantityRowIds?.length ?? 0}
+          onApproveManualQuantities={onApproveManualQuantities}
           approvalMissingObjectParameterCount={approvalMissingObjectParameterCount}
           contentWithdrawalReasonRu={renderModel.bundle?.canonicalParameterSession?.contentWithdrawalReasonRu
-            || renderModel.bundle?.structuredEstimatePayload?.canonicalBackend?.contentWithdrawalReasonRu}
+            || renderModel.bundle?.structuredEstimatePayload?.canonicalBackend?.contentWithdrawalReasonRu || renderModel.bundle?.canonicalBackendApprovalEvidence?.contentWithdrawalReasonRu}
           approvalUnresolvedRowCount={approvalUnresolvedRowCount}
+          approvalManualQuantityCount={consumerEstimateManualPreliminaryItems(renderModel.bundle).length}
           approvalIncompleteStages={consumerEstimateOpenScopeGroups(renderModel.bundle)}
           approvalMissingPriceCount={approvalMissingPriceCount}
           approvalPendingRowEditCount={state.pendingCanonicalRowEditCount ?? 0}
@@ -386,8 +423,8 @@ export function ConsumerRepairRequestScreenView({
           deleteCommitBusy={state.deleteCommitBusy}
           pdfOpenBusy={state.pdfOpenBusy === true}
           needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
-          onOpenPdf={() => onOpenPdf()}
-          onMakePdf={onMakePdf}
+          onOpenPdf={() => runDocumentAction(()=>onOpenPdf(),undefined,true)}
+          onMakePdf={()=>runDocumentAction(onMakePdf,undefined,true)}
           onCreateNew={onCreateNew}
           onDeleteDraft={onDeleteDraft}
           onApproveDraft={onApproveDraft}

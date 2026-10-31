@@ -1,7 +1,7 @@
 import {
   ANCHOR_GROUP_INSTALLATION_PARAMETERS,
   ANCHOR_GROUP_INSTALLATION_TARGETS,
-} from "../v4/anchorGroupInstallationR1";
+} from "../contracts/anchorGroupInstallationParametersR1";
 
 type Primitive = string | number | boolean;
 

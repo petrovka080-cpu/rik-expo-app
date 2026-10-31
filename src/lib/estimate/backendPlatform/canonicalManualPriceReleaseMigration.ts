@@ -46,28 +46,51 @@ export function canonicalManualExclusionMigrationBindings(input:{resources:reado
  }));
 }
 
-/** Stored unit prices and exact stored exclusions can migrate with matching
- * source evidence. Quantities, additions, new inclusions and custom rows cannot. */
+/** A saved quantity also depends on applicability and the procurement owner.
+ * Missing evidence never grants permission to carry a physical quantity. */
+export function canonicalManualQuantityMigrationBindings(input:{resources:readonly Row[];formulas:readonly Row[];parameters:readonly Row[]}):Record<string,string>{
+ const prices=canonicalManualPriceMigrationBindings(input);
+ return Object.fromEntries(input.resources.flatMap(row=>{
+  const id=String(row.row_id);if(!prices[id]||!isObject(row.inclusion_ast)||typeof row.procurement_eligible!=='boolean')return [];
+  return [[id,canonicalEstimateSha256HexText(canonicalEstimateStableJson({version:'canonical-manual-quantity-binding/v1',
+   priceBinding:prices[id],inclusionAst:row.inclusion_ast,procurementEligible:row.procurement_eligible,
+   rowType:row.row_type??null,semanticOwner:row.semantic_owner??null}))]];
+ }));
+}
+
+/** Saved numeric edits require matching source evidence. A null quantity only
+ * clears an override on a surviving row; it never transfers an old quantity. */
 export function canonicalStoredManualPricesCanMigrate(input:{
  rowOverrides:unknown;customRows:unknown;fromBindings:unknown;toBindings:unknown;
  fromExclusionBindings?:unknown;toExclusionBindings?:unknown;
+ fromQuantityBindings?:unknown;toQuantityBindings?:unknown;
  currency?:unknown;
 }):boolean{
  const overrides=object(input.rowOverrides),from=object(input.fromBindings),to=object(input.toBindings);
  const fromExclusions=object(input.fromExclusionBindings),toExclusions=object(input.toExclusionBindings);
+ const fromQuantities=object(input.fromQuantityBindings),toQuantities=object(input.toQuantityBindings);
  if(!isObject(input.rowOverrides)||!Array.isArray(input.customRows)||input.customRows.length)return false;
  return Object.entries(overrides).every(([id,value])=>{
   const override=object(value),provenance=object(override.provenance),price=override.unitPrice;
   const hasPrice=Object.hasOwn(override,'unitPrice');
+  const hasTitle=Object.hasOwn(override,'titleRu');
+  const titleEvidence=hasTitle&&typeof override.titleRu==='string'&&override.titleRu.trim().length>0&&override.titleRu.length<=2000
+   &&typeof from[id]==='string'&&/^[a-f0-9]{64}$/u.test(from[id] as string)&&from[id]===to[id];
   const hasExclusion=Object.hasOwn(override,'includedInEstimate')||Object.hasOwn(override,'includedInProcurement');
+  const hasQuantity=Object.hasOwn(override,'quantity'),quantity=override.quantity;
+  const quantityEvidence=hasQuantity&&typeof toQuantities[id]==='string'&&/^[a-f0-9]{64}$/u.test(toQuantities[id] as string)
+   &&(quantity===null||((typeof quantity==='number'||typeof quantity==='string')&&/^\d+(?:\.\d+)?$/u.test(String(quantity))
+    &&Number.isFinite(Number(quantity))&&Number(quantity)>=0&&fromQuantities[id]===toQuantities[id]));
   const evidence=parseCanonicalMachineHourPriceCoverageV1(override.machineHourPriceCoverageV1);
   const evidenceValid=override.machineHourPriceCoverageV1==null||evidence!=null&&hasPrice&&price!=null
     &&/^\d+(?:\.\d+)?$/.test(String(price))&&compareFormulaGraphDecimals(evidence.unitPrice,String(price))===0
     &&evidence.currencyCode===input.currency&&evidence.resourceCode===canonicalMachineHourPriceRequirementV1(id,'machine_hour')?.resourceCode
     &&evidence.operationScope===(canonicalMachineHourPriceRequirementV1(id,'machine_hour')?.operationScope??'FULL_SOURCE_OPERATION')
     &&evidence.source.kind==='MANUAL'&&evidence.source.rowId===id&&evidence.source.priceProvenanceReason===(provenance.reason??null);
-  return evidenceValid&&(hasPrice||hasExclusion)&&Object.keys(override).every(key=>['unitPrice','machineHourPriceCoverageV1','provenance','includedInEstimate','includedInProcurement'].includes(key))
+  return evidenceValid&&(hasPrice||hasExclusion||hasQuantity||hasTitle)&&Object.keys(override).every(key=>['titleRu','quantity','unitPrice','machineHourPriceCoverageV1','provenance','includedInEstimate','includedInProcurement'].includes(key))
    &&provenance.kind==='manual'
+   &&(!hasTitle||titleEvidence)
+   &&(!hasQuantity||quantityEvidence)
    &&(!hasPrice||((price===null||((typeof price==='string'||typeof price==='number')&&String(price).trim()!==''&&Number.isFinite(Number(price))&&Number(price)>=0))
     &&typeof from[id]==='string'&&/^[a-f0-9]{64}$/u.test(from[id] as string)&&from[id]===to[id]))
    &&(!hasExclusion||(override.includedInEstimate===false&&override.includedInProcurement===false
@@ -79,11 +102,13 @@ export function assertCanonicalStoredManualPriceReleaseMigration(input:{
  parentOverrides:unknown;parentCustomRows:unknown;requestedOverrides:unknown;requestedCustomRows:unknown;
  fromBindings:unknown;toBindings:unknown;parentCurrency:unknown;requestedCurrency:unknown;
  fromExclusionBindings?:unknown;toExclusionBindings?:unknown;
+ fromQuantityBindings?:unknown;toQuantityBindings?:unknown;
 }):void{
  if(input.parentCurrency!==input.requestedCurrency
   ||canonicalEstimateStableJson(input.parentOverrides??{})!==canonicalEstimateStableJson(input.requestedOverrides??{})
   ||canonicalEstimateStableJson(input.parentCustomRows??[])!==canonicalEstimateStableJson(input.requestedCustomRows??[])
   ||!canonicalStoredManualPricesCanMigrate({rowOverrides:input.parentOverrides,customRows:input.parentCustomRows??[],fromBindings:input.fromBindings,toBindings:input.toBindings,
-   fromExclusionBindings:input.fromExclusionBindings,toExclusionBindings:input.toExclusionBindings,currency:input.parentCurrency}))
+   fromExclusionBindings:input.fromExclusionBindings,toExclusionBindings:input.toExclusionBindings,
+   fromQuantityBindings:input.fromQuantityBindings,toQuantityBindings:input.toQuantityBindings,currency:input.parentCurrency}))
   throw Object.assign(new Error('Переход остановлен: совместимость сохранённых ручных цен или строк не подтверждена. Исходная смета и введённые значения сохранены.'),{code:'RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED'});
 }

@@ -27,7 +27,7 @@ const CONDITIONAL = [
 describe("MASTER surface-drainage-channel owner", () => {
   test("uses the narrow tray owner without importing historical scalar rates", () => {
     expect(SURFACE_DRAINAGE_CHANNEL_CATALOG_ID)
-      .toBe("canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area");
+      .toBe("canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard");
     expect(SURFACE_DRAINAGE_CHANNEL_PARAMETERS).toHaveLength(25);
     expect(SURFACE_DRAINAGE_CHANNEL_FORMULAS).toHaveLength(11);
     expect(SURFACE_DRAINAGE_CHANNEL_RESOURCES).toHaveLength(11);

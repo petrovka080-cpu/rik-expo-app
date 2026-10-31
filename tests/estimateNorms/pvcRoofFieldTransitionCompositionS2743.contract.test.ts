@@ -1,3 +1,8 @@
+import {readFileSync as readPvc15History} from 'node:fs';
+import {createHash as pvc15HistoryHash} from 'node:crypto';
+import pvc15HistoricalBindings from '../../data/estimate-benchmarks/source-packs/pvc15-existing-area-bindings-s27-43.json';
+import {pvc15MeasuredControlInputS2743} from '../fixtures/pvc15AreaVariantBindingsS2743';
+import {assertCanonicalNewWorkCatalogIdV1 as assertPvc15NewCatalog} from '../../src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1';
 import {compileAutomaticConstructionOwnerR1} from '../../src/lib/estimate/v4/automaticConstructionOwnerR1';
 import {PVC15_FIELD_TRANSITION_DEFINITION_S2743 as definition,PVC15_JOINT_CHOICE,PVC15_JOINT_LAYER,PVC15_JOINT_CONFIRM} from '../../src/lib/estimate/v4/pvcRoofFieldTransitionCompositionS2743';
 import {G6_COMPOSITE_LABOR_MODE_S2741} from '../../src/lib/estimate/v4/g6PvcCommercialLaborProfilesS2741';
@@ -9,6 +14,9 @@ import {canonicalEstimateWorkProcess} from '../../src/lib/estimate/backendPlatfo
 import {buildMasterParameterCalculationConsumers} from '../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import {compileCanonicalEstimateCore} from '../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore';
 import {estimateDeterministicHash} from '../../src/lib/estimate/estimateDeterministicHash';
+import {canonicalEstimateStableJson} from '../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism';
+import {canonicalEstimateSha256HexText} from '../../src/lib/estimate/backendPlatform/canonicalEstimateSha256';
+import {canonicalProfessionalPdfReviewAcknowledgmentV1,canonicalProfessionalPdfReportOriginalAuditV1} from '../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
 import {buildCanonicalProfessionalPdfProjection} from '../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf';
 import {pvc15FieldTransitionPublishConfigS2743} from '../../scripts/estimate/r4a13/prepareS2743Pvc15FieldTransitionSuccessor';
 const compile=(submittedParameters:Record<string,unknown>)=>compileAutomaticConstructionOwnerR1({definition,submittedParameters,
@@ -123,20 +131,40 @@ describe('PVC15 field and accepted reinforced bitumen transition through one cor
   expect(balance(r,'rc09:liquid_pvc_joint_sealant')).toMatchObject({consumed:'6.4',effectiveOrder:'7'});
  });
  test('main labor, separate preparation, shared apparatus, layer labor and transition labor have their own prices without paying included tools twice',async()=>{
+  const savedHash=(value:unknown)=>canonicalEstimateSha256HexText(canonicalEstimateStableJson(value));
   const result=await compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:'PVC15_JOINT_PRICED_CONTROL',
    catalogId:'canonical-work:base:roofing_interior_flat_roof_install_standard',primaryMeasureParameterId:'area_m2',
    parameterDefinitions:[...definition.parameters],formulaDefinitions:[...definition.formulas],resourceDefinitions:[...definition.resources],
    submittedParameters:pvc15FieldTransitionControlInputS2743(),confirmedParameters:{},currencyCode:'KGS',priceItems:[],
-   maximumResourceRows:definition.resources.length,hashJson:async value=>estimateDeterministicHash(value),
+   maximumResourceRows:definition.resources.length,hashJson:savedHash,
    rowOverrides:Object.fromEntries([['rc09:pvc_membrane_hot_air_install','10'],['pvc15:labor:preparation','100'],
     ['pvc15:joint:machine-own','20'],['pvc15:labor:separation','75'],['pvc15_transition_transition:labor:worker','100']]
     .map(([id,unitPrice])=>[id,{unitPrice,provenance:{kind:'manual'}}]))});
   expect(result.rows.reduce((total,r)=>total+Number(r.amount??0),0)).toBe(5705);
   expect(row(result,'pvc15:joint:tool-cutting')).toMatchObject({included_in_estimate:false,unit_price:null,amount:null});
-  const pdf=buildCanonicalProfessionalPdfProjection({revision:{id:'joint-control',release_id:'local-control',catalog_id:'canonical-work:base:roofing_interior_flat_roof_install_standard',
-   checksum_sha256:'a'.repeat(64),row_count:result.rows.length,currency_code:'KGS',input_parameters:result.parameters},rows:result.rows.map(r=>({...r,ownership_status:'OWNED'})),
-   workTitleRu:'VALIDATION_FIXTURE: поле ПВХ1,5 и армированный переход'});
-  expect(pdf.html).toContain('кВт·ч');expect(pdf.html).toContain('9,25');expect(pdf.html).toContain('Не суммируется');
+  expect(result.preliminaryNeeds).toEqual([]);
+  const revision={id:'TEST_ONLY_joint_saved_revision',release_id:'TEST_ONLY_joint_saved_release',definition_version_id:'TEST_ONLY_joint_definition',
+   catalog_id:'canonical-work:base:roofing_interior_flat_roof_install_standard',checksum_sha256:savedHash(result.revisionProjection),
+   row_count:result.rows.length,currency_code:'KGS',input_parameters:result.parameters,totals:result.totals,
+   amendment_contract:{parameterSources:{preliminaryNeeds:result.preliminaryNeeds}}};
+  const resources=result.rows,before=JSON.stringify({revision,result}),input={revision,rows:result.rows,workTitleRu:'VALIDATION_FIXTURE: поле ПВХ1,5 и армированный переход'};
+  const originalAudit=canonicalProfessionalPdfReportOriginalAuditV1({revision,resources});
+  expect(originalAudit).toMatchObject({status:'STRUCTURE_INVALID',pdfAllowed:false,definitionAdmissionAllowed:false,completeClaimAllowed:false});
+  expect(originalAudit.issues).toEqual(expect.arrayContaining([{code:'RESOURCE_OPERATION_MISSING',rowId:'rc09:pvc_membrane_hot_air_install'},
+   {code:'INDEPENDENT_OPERATION_COMPOSITION_UNVERIFIED'}]));
+  expect(()=>buildCanonicalProfessionalPdfProjection(input)).toThrow(expect.objectContaining({code:'ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID'}));
+  const review={...input,issuancePurpose:'PRELIMINARY_REVIEW' as const};
+  expect(()=>buildCanonicalProfessionalPdfProjection(review)).toThrow(expect.objectContaining({code:'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID'}));
+  const ack=canonicalProfessionalPdfReviewAcknowledgmentV1({revision,resources,
+   request:{revisionId:revision.id,releaseId:revision.release_id,definitionVersionId:revision.definition_version_id,checksumSha256:revision.checksum_sha256,acknowledgedPreliminaryReview:true},
+   actorUserId:'TEST_ONLY-saved-reader',acknowledgedAt:'2026-10-30T00:00:00Z'});
+  expect(()=>buildCanonicalProfessionalPdfProjection({...review,reviewAcknowledgmentV1:{...ack,checksumSha256:'0'.repeat(64)}}))
+   .toThrow(expect.objectContaining({code:'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID'}));
+  const pdf=buildCanonicalProfessionalPdfProjection({...review,reviewAcknowledgmentV1:ack});
+  expect(pdf.html).toContain('Предварительная для проверки');expect(pdf.grandTotalStatus).not.toBe('COMPLETE');
+  expect(canonicalProfessionalPdfReportOriginalAuditV1({revision,resources})).toEqual(originalAudit);expect(JSON.stringify({revision,result})).toBe(before);
+   expect(pdf.html).toContain('кВт·ч');expect(pdf.html).toContain('9,25');expect(pdf.html).not.toContain('Не суммируется');
+   expect(Object.values(pdf.categoryTotals).reduce((total,value)=>total+value,0)).toBe(5705);
   expect(pdf.grandTotalStatus).toBe('PARTIAL_NEEDS_PRICE');
  });
  test('unknown compatibility or shared provision retains known consumption and asks for exact evidence, with no procurement from guesses',async()=>{
@@ -145,5 +173,50 @@ describe('PVC15 field and accepted reinforced bitumen transition through one cor
   expect(row(r,'pvc15:joint:liquid-pvc')).toBeUndefined();expect(r.preliminaryNeeds.find(x=>x.row_id==='pvc15:joint:liquid-pvc')?.missing_parameter_ids).toContain('pvc15_joint_source_confirmed');
   delete input.pvc15_joint_machine_reference;input.pvc15_machine_provision=PVC15_MACHINE.unknown;
   const unknown=await compile(input);expect(unknown.preliminaryNeeds.some(x=>x.row_id==='pvc15:joint:machine-need')).toBe(true);
+ });
+});
+
+
+// Measured control cases use the surviving standard owner. The archived pack
+// remains an immutable evidence descriptor and is never a publication target list.
+const pvc15MeasuredParent={definition:'3444a36d-584c-5bc3-bdaa-872a3345e6ea',search:'71b2296d-25fc-53fc-9341-85db8bc7c217'};
+const pvc15MeasuredStandardCatalog='canonical-work:base:roofing_interior_flat_roof_install_standard';
+const pvc15MeasuredCompile=(submittedParameters:Record<string,unknown>)=>compileAutomaticConstructionOwnerR1({definition,
+ catalogId:pvc15MeasuredStandardCatalog,primaryMeasureParameterId:'area_m2',compilerVersion:'pvc15-standard-measured-control',submittedParameters});
+describe('one standard PVC15 owner with independent measured control quantities',()=>{
+ test('preserves historical source identities and uses the surviving standard publication configuration',()=>{
+  expect(pvc15HistoricalBindings.members.map(m=>m.variant)).toEqual(['small_area','large_area']);
+  expect(pvc15HistoricalBindings.newTypeDelta).toBe(0);
+  for(const source of pvc15HistoricalBindings.components)expect(pvc15HistoryHash('sha256').update(readPvc15History(source.path)).digest('hex')).toBe(source.sha256);
+  const config=pvc15FieldTransitionPublishConfigS2743(pvc15MeasuredParent);
+  expect(config.catalogAppend).toBeUndefined();expect(config.catalogId).toBe(pvc15MeasuredStandardCatalog);
+  expect(config.parameterDefinitions).toBe(definition.parameters);expect(config.formulaDefinitions).toBe(definition.formulas);expect(config.resourceDefinitions).toBe(definition.resources);
+  expect(config.runtimeProfileInput).toEqual({});expect(config.parameterDefinitions.every(p=>p.default_value===null)).toBe(true);
+ });
+ test.each([75,5000] as const)('%s m² short measured input retains the primary area and project needs',async area=>{
+  const result=await pvc15MeasuredCompile({area_m2:area});
+  expect(result.rows.map(r=>[r.row_id,r.quantity])).toEqual([['rc09:pvc_membrane_hot_air_install',String(area)]]);
+  expect(result.preliminaryNeeds.length).toBeGreaterThan(0);expect(result.rows.some(r=>r.included_in_procurement)).toBe(false);
+  await expect(pvc15MeasuredCompile({q:100})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED',message:'unknown estimate parameters: q'});
+ });
+ test.each([75,5000] as const)('%s m² honors independent consumption, order and control counts in 26 physical rows',async area=>{
+  const measured75=area===75,result=await pvc15MeasuredCompile(pvc15MeasuredControlInputS2743(area));
+  const row=(id:string)=>result.rows.find(r=>r.row_id===id)!;
+  expect(result.preliminaryNeeds).toEqual([]);expect(result.rows.length).toBe(26);
+  expect(row('rc09:reinforced_pvc_roof_membrane_1_5mm').quantity).toBe(measured75?'85':'5160');
+  expect((row('rc09:reinforced_pvc_roof_membrane_1_5mm').calculation_trace as {purchaseBalance:{consumed:string;remaining:string}}).purchaseBalance).toMatchObject({consumed:measured75?'80.5':'5150',remaining:measured75?'4.5':'10'});
+  expect(row('rc09:pvc_membrane_telescopic_fastener').quantity).toBe(measured75?'400':'10100');
+  expect(row('rc09:pvc_membrane_weld_probe_test').quantity).toBe(measured75?'7':'38');
+  expect(row('pvc15:separation:mineral').quantity).toBe(measured75?'80':'5110');
+  expect(row('pvc15:equipment:own-use').quantity).toBe('9');expect(row('pvc15:labor:preparation').quantity).toBe('2.5');
+  expect(result.rows.some(r=>r.included_in_procurement&&r.unit_id==='machine_hour')).toBe(false);
+ });
+ test.each([75,5000] as const)('%s m² rejects fractional fastener/control counts while retaining fractional material demand',async area=>{
+  for(const id of ['telescopic_fastener_quantity_piece','weld_probe_control_count_test'])await expect(pvc15MeasuredCompile({...pvc15MeasuredControlInputS2743(area),[id]:'7.5'})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED',message:'invalid integer '+id});
+  const result=await pvc15MeasuredCompile({...pvc15MeasuredControlInputS2743(area),pvc15_membrane_consumption_m2:area===75?'80.5':'5150.5'});
+  expect(result.preliminaryNeeds).toEqual([]);
+ });
+ test.each(pvc15HistoricalBindings.members)('retired $variant identity cannot be published again',member=>{
+  expect(()=>assertPvc15NewCatalog(member.catalogId)).toThrow('CANONICAL_AREA_CATALOG_VARIANT_RETIRED');
  });
 });

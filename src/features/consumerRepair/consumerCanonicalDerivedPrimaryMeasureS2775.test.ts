@@ -1,5 +1,5 @@
 import type { CanonicalEstimateCatalogItem } from '../../lib/estimate/backendPlatform/contracts';
-import { buildCanonicalBaselinePlan } from './consumerCanonicalBaselineCompile';
+import {buildCanonicalBaselinePlan} from '../../lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1';
 
 type Parameter = CanonicalEstimateCatalogItem['parameterSchema'][number];
 const primary = 'effective_resource_quantity_review_installed_area';

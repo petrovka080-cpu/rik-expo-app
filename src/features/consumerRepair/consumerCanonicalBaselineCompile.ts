@@ -1,22 +1,29 @@
 import {
   compileCanonicalEstimateAndLoad,
   getCanonicalEstimateCatalogItem,
+  getCanonicalEstimateCatalogItemForPrompt,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import {
   canonicalEstimateBlockingParameterIssues,
   canonicalEstimateConsumerInputRole,
+  isCanonicalEstimateConsumerSuppliedParameter,
+  isCanonicalEstimateUserEditableParameter,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
-import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
+import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection";
 import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateCatalogItem,
+  type CanonicalCatalogPromptExtractionV1,
   type CanonicalEstimateParameterInputValue,
 } from "../../lib/estimate/backendPlatform/contracts";
-import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters";
+import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
 import { createCancellableDelay } from "../../lib/async/mapWithConcurrencyLimit";
 import { logger } from "../../lib/logger";
 import { buildConsumerCanonicalPrecompileParameterSession } from "./consumerCanonicalParameterEditor";
+import { resolvePrimaryMeasureSelectionV1, isCanonicalCompilerDerivedPrimaryMeasureV1, isCanonicalSourceManagedPrimarySelectorV1 } from '../../lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1';
+import { resolveCanonicalSourceProfileSelectionV1 } from '../../lib/estimate/backendPlatform/canonicalSourceProfileSelectionV1';
+import { resolveProfessionalUnitDefinition } from '../../lib/estimate/professionalUnitRegistry';
 /*
  * This module is deliberately backend-only: it may derive typed inputs from
  * the user's prompt, but it never compiles a fallback estimate on the client.
@@ -36,47 +43,45 @@ import {
   R4_A10_ASPHALT_DRAINAGE_CATALOG_ID,
   R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID,
 } from "../../lib/estimate/r4A10AsphaltDrainagePrompt";
-import {
-  extractAsphaltUserFactsV4,
-  type AsphaltScopeSelectionIdV5,
-} from "../../lib/estimate/v4/asphalt";
+import { extractAsphaltUserFactsV4 } from "../../lib/estimate/v4/asphalt/extractAsphaltUserFactsV4";
+import type { AsphaltScopeSelectionIdV5 } from "../../lib/estimate/v4/asphalt/roadScopeTruthV4";
 import {
   getAsphaltRelatedProfileByCanonicalWorkKeyV4,
   getAsphaltRelatedProfileByCatalogRecordIdV4,
 } from "../../lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
-import { extractRicsNrm2FormworkCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1";
-import { extractFormworkFramiXlifeCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1";
-import { extractReinforcementBarScheduleCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/reinforcementBarScheduleProductionBindingV1";
-import { extractBiaTn10MasonryCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/masonryBiaTn10ProductionBindingV1";
-import { extractConcretePlacementCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/concretePlacementProductionBindingR1";
+import { extractRicsNrm2FormworkCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/formworkRicsNrm2PromptParametersV1";
+import { extractFormworkFramiXlifeCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/formworkFramiXlifePromptParametersR1";
+import { extractReinforcementBarScheduleCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/reinforcementBarSchedulePromptParametersV1";
+import { extractBiaTn10MasonryCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/masonryBiaTn10PromptParametersV1";
+import { assertCanonicalCatalogPromptExtractionV1 } from "../../lib/estimate/backendPlatform/canonicalCatalogPromptExtractionV1";
 import { extractStripFoundationReinforcementCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1";
 import { extractAnchorGroupInstallationCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/anchorGroupInstallationProductionBindingR1";
-import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/v4/domainFactory";
-import { MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS } from "../../lib/estimate/v4/masonryBrickWallBiaTn10R1";
+import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/contracts/nrmcaReadyMixProfileIdentityV1";
+import { MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS } from "../../lib/estimate/contracts/masonryBiaTn10IdentityV1";
 import {
   FILTRATION_STATION_CATALOG_ID,
   parseFiltrationStationOrdinaryPromptR1,
-} from "../../lib/estimate/v4/filtrationStationR1";
+} from "../../lib/estimate/v4/filtrationStationPromptR1";
 import {
   CHLORINATION_STATION_CATALOG_ID,
   parseChlorinationStationOrdinaryPromptR1,
-} from "../../lib/estimate/v4/chlorinationStationR1";
+} from "../../lib/estimate/v4/chlorinationStationPromptR1";
 import {
   FLUSHING_DISINFECTION_CATALOG_ID,
   parseFlushingDisinfectionOrdinaryPromptR1,
-} from "../../lib/estimate/v4/flushingDisinfectionR1";
+} from "../../lib/estimate/v4/flushingDisinfectionPromptR1";
 import {
   PRESSURE_PIPELINE_CATALOG_ID,
   parsePressurePipelineOrdinaryPromptR1,
-} from "../../lib/estimate/v4/pressurePipelineR1";
+} from "../../lib/estimate/v4/pressurePipelinePromptR1";
 import {
   PRESSURE_SEWER_PIPELINE_CATALOG_ID,
   parsePressureSewerPipelineOrdinaryPromptR1,
-} from "../../lib/estimate/v4/pressureSewerPipelineR1";
+} from "../../lib/estimate/v4/pressureSewerPipelinePromptR1";
 import {
   RESERVOIR_CLEAN_WATER_CATALOG_ID,
   parseReservoirCleanWaterOrdinaryPromptR1,
-} from "../../lib/estimate/v4/reservoirCleanWaterR1";
+} from "../../lib/estimate/v4/reservoirCleanWaterPromptR1";
 import { ROAD_CROSSING_SLEEVES_SELECTED_JACKING_CATALOG_ID_R1, ROAD_CROSSING_SLEEVES_PRIMARY_MEASURE_PARAMETER_ID_R1,
   parseRoadCrossingSleevesSelectedJackingPromptR1 } from "../../lib/estimate/v4/roadCrossingSleevesSelectedJackingPromptR1";
 
@@ -197,6 +202,7 @@ const ASPHALT_GEOMETRY_FACT_SUFFIX: Readonly<Record<string, string>> = Object.fr
 });
 
 const ASPHALT_FACT_PARAMETER_ALIASES: Readonly<Record<string, readonly string[]>> = Object.freeze({
+  asphalt_layer_1_thickness_mm: Object.freeze(["binder_layer_thickness_mm"]),
   asphalt_layer_2_thickness_mm: Object.freeze(["wearing_layer_thickness_mm"]),
 });
 
@@ -211,6 +217,17 @@ function asphaltPromptParameterId(
   catalog: CanonicalEstimateCatalogItem,
   extractedParameterId: string,
 ): string | null {
+  if (extractedParameterId === "area_m2") {
+    const declaredId = typeof catalog.applicability?.primaryMeasureParameterId === "string"
+      ? catalog.applicability.primaryMeasureParameterId.trim() : undefined;
+    const declared = catalog.parameterSchema.find(parameter => parameter.parameterId === declaredId);
+    if (declared && !parameterIsLiterallyHidden(declared)
+      && declared.visibilityRole === "USER_INPUT"
+      && (declared.valueType === "decimal" || declared.valueType === "integer")
+      && declared.unitId === "m2"
+      && parameterHasDirectUserQuantitySource(declared)
+      && canonicalEstimateConsumerInputRole(declared) !== "APPLICATION_TECHNICAL") return declared.parameterId;
+  }
   const exact = catalog.parameterSchema.find(
     (parameter) => parameter.parameterId === extractedParameterId,
   );
@@ -237,6 +254,7 @@ function explicitAsphaltPromptInputs(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
   selectedRoadScope?: AsphaltScopeSelectionIdV5 | null;
+  parameterOverrides?: Record<string, CanonicalEstimateParameterInputValue>;
 }): Record<string, CanonicalEstimateParameterInputValue> | null {
   const exactRelatedProfile =
     getAsphaltRelatedProfileByCatalogRecordIdV4(input.catalog.catalogId)
@@ -255,13 +273,23 @@ function explicitAsphaltPromptInputs(input: {
   }
   const lengthParameterId = asphaltPromptParameterId(input.catalog, "length_m");
   const widthParameterId = asphaltPromptParameterId(input.catalog, "width_m");
-  const length = Number(lengthParameterId ? values[lengthParameterId] : undefined);
-  const width = Number(widthParameterId ? values[widthParameterId] : undefined);
+  // Editor measurements supersede the text before deriving the area. Keep
+  // explicit area independent: it can describe a measured net surface rather
+  // than the whole rectangle, and must never be silently replaced.
+  const effectiveValues = { ...values, ...input.parameterOverrides };
+  const dimension = (id: string | null) => {
+    const value = id ? effectiveValues[id] : undefined;
+    return typeof value === "number" ? value
+      : typeof value === "string" ? Number(value.replace(",", ".")) : Number.NaN;
+  };
+  const length = dimension(lengthParameterId);
+  const width = dimension(widthParameterId);
   if (
     exactRelatedProfile != null
     && !isConsumerCanonicalBroadAsphaltCatalog(input.catalog)
     && schemaIds.has("area_m2")
     && values.area_m2 == null
+    && !Object.prototype.hasOwnProperty.call(input.parameterOverrides ?? {}, "area_m2")
     && Number.isFinite(length)
     && Number.isFinite(width)
     && length > 0
@@ -353,18 +381,10 @@ function explicitBiaTn10MasonryPromptInputs(input: {
 function explicitConcretePlacementPromptInputs(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
+  promptExtraction: CanonicalCatalogPromptExtractionV1;
 }): Record<string, CanonicalEstimateParameterInputValue> | null {
-  const extracted = extractConcretePlacementCanonicalParametersR1({
-    catalogId: input.catalog.catalogId,
-    text: input.prompt,
-  });
-  if (!extracted) return null;
-  const schemaIds = new Set(input.catalog.parameterSchema.map((parameter) => parameter.parameterId));
-  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
-  for (const [parameterId, value] of Object.entries(extracted)) {
-    if (schemaIds.has(parameterId)) values[parameterId] = value;
-  }
-  return values;
+  assertCanonicalCatalogPromptExtractionV1(input.promptExtraction,input.catalog,input.prompt);
+  return input.promptExtraction.concretePlacement===null?null:{...input.promptExtraction.concretePlacement};
 }
 
 function explicitStripFoundationReinforcementPromptInputs(input: {
@@ -450,6 +470,17 @@ const DIRECT_USER_QUANTITY_SOURCE = new Set([
   "VISIBLE_BASELINE_ASSUMPTION",
 ]);
 
+function parameterHasDirectUserQuantitySource(parameter: CanonicalEstimateCatalogItem["parameterSchema"][number]): boolean {
+  return parameter.valueSourceRole == null || DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole))
+    || (parameter.valueSourceRole === "CONDITIONAL_PROJECT_FACT"
+      && canonicalEstimateConsumerInputRole(parameter) === "OBJECT_FACT"
+      && (parameter.guide?.guideKind === "MEASUREMENT_RULE" || parameter.guide?.guideKind === "PROJECT_DEFINED")
+      && parameter.guide.guideValidationPolicy === "MANDATORY_BLOCK"
+      && Boolean(parameter.guide.sourceDocument?.trim() && parameter.guide.sourceLocator?.trim())
+      && /^[a-f0-9]{64}$/iu.test(parameter.guide.sourceSnapshotHash ?? "")
+      && isCanonicalEstimateConsumerSuppliedParameter(parameter));
+}
+
 function normalizeJoinedAreaWords(prompt: string): string {
   // Only explicit area words may supply a missing space; identifiers and SKUs
   // must not turn a numeric suffix into a user quantity.
@@ -488,19 +519,36 @@ export function extractUserQuantity(prompt: string, accepts?: (quantity: UserQua
   return extractUserQuantities(prompt).find(quantity => !accepts || accepts(quantity)) ?? null;
 }
 
+function parameterIsLiterallyHidden(
+  parameter: CanonicalEstimateCatalogItem["parameterSchema"][number],
+): boolean {
+  const condition = parameter.visibleWhen;
+  // Retained predecessor measurements are explicitly disabled by their owner.
+  // Unknown conditional branches remain candidates; they must not be guessed.
+  return condition != null && typeof condition === "object"
+    && condition.kind === "literal" && condition.value === false;
+}
+
 function parameterAcceptsQuantity(
   parameter: CanonicalEstimateCatalogItem["parameterSchema"][number],
   quantity: UserQuantity,
 ): boolean {
+  if (parameterIsLiterallyHidden(parameter)) return false;
   if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") return false;
   if (parameter.visibilityRole != null && parameter.visibilityRole !== "USER_INPUT") return false;
-  if (parameter.valueSourceRole != null && !DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole))) return false;
+  if (!parameterHasDirectUserQuantitySource(parameter)) return false;
   const identity = `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""}`.toLocaleLowerCase("en-US");
   if (DERIVED_QUANTITY_PARAMETER.test(identity)) return false;
   // A label such as «Количество этажей» is not a count of the selected
   // products. A bare «10 шт.» may bind only to an object-count parameter;
   // units alone must not turn products into floors, layers or working days.
   if (quantity.unit === "pcs") {
+    const declaredUnit = String(parameter.unitId ?? "").normalize("NFKC").trim().toLocaleLowerCase("en");
+    const countUnit = resolveProfessionalUnitDefinition(declaredUnit)?.code === "pcs"
+      || declaredUnit === "item";
+    // An item quantity is not a set, an installation point, or an area.
+    // Keep the selected profile's missing measure for the existing input form.
+    if (!countUnit) return false;
     const key = `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""}`
       .toLocaleLowerCase("en-US");
     return /(?:^|[_:\s])(?:count|quantity|qty)(?:$|[_:\s])/u.test(key)
@@ -580,10 +628,14 @@ function promptOwnedNamedParameters(
   const byId = new Map(schema.map((parameter) => [parameter.parameterId, parameter]));
   const values: Record<string, CanonicalEstimateParameterInputValue> = {};
   for (const rule of PROMPT_PARAMETER_RULES) {
-    const parameterId = rule.parameterIds.find((candidate) => byId.has(candidate));
+    const parameterId = rule.parameterIds.find((candidate) => {
+      const parameter = byId.get(candidate);
+      return parameter != null && !parameterIsLiterallyHidden(parameter);
+    });
     if (!parameterId) continue;
     const parameter = byId.get(parameterId)!;
-    if ((parameter.valueType !== "decimal" && parameter.valueType !== "integer")
+    if (parameterIsLiterallyHidden(parameter)
+      || (parameter.valueType !== "decimal" && parameter.valueType !== "integer")
       || (parameter.visibilityRole != null && parameter.visibilityRole !== "USER_INPUT")
       || (parameter.valueSourceRole != null
         && !DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole)))) continue;
@@ -595,7 +647,7 @@ function promptOwnedNamedParameters(
 }
 
 type ExplicitGeometryFact = {
-  semanticSuffix: "length_m" | "width_m" | "height_m" | "depth_m" | "area_m2" | "volume_m3" | "thickness_mm";
+  semanticSuffix: "length_m" | "width_m" | "height_m" | "depth_m" | "drop_m" | "area_m2" | "volume_m3" | "thickness_mm";
   unitId: "m" | "m2" | "m3" | "mm";
   value: string | undefined;
 };
@@ -609,9 +661,10 @@ function schemaDrivenExplicitGeometry(
   const number = (pattern: RegExp): string | undefined =>
     pattern.exec(normalized)?.[1]?.replace(",", ".");
   const linearValue = (labelStem: string): string | undefined => {
-    const heightPattern = String.raw`высот\p{L}*(?:\s+(?:помещен\p{L}*|комнат\p{L}*))?\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(мм|см|м|метр\p{L}*)(?![\p{L}\p{N}²³])`;
+    const objectLabel = String.raw`(?:\s+(?:помещен\p{L}*|комнат\p{L}*|(?:готов\p{L}*\s+)?потолк\p{L}*(?:\s+от\s+пол\p{L}*)?))?`;
+    const heightPattern = String.raw`высот\p{L}*${objectLabel}\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(мм|см|м|метр\p{L}*)(?![\p{L}\p{N}²³])`;
     const pattern = labelStem === "высот" ? heightPattern
-      : String.raw`${labelStem}\p{L}*\s*(\d+(?:[,.]\d+)?)\s*(мм|см|м(?![\p{L}\p{N}²³])|метр\p{L}*)`;
+      : String.raw`${labelStem}\p{L}*${objectLabel}\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(мм|см|м(?![\p{L}\p{N}²³])|метр\p{L}*)`;
     const matches = [...normalized.matchAll(new RegExp(pattern, "giu"))];
     if (labelStem === "высот") {
       const heights = matches.map(match => {
@@ -669,6 +722,7 @@ function schemaDrivenExplicitGeometry(
       unitId: "m",
       value: linearValue("глубин"),
     },
+    { semanticSuffix: "drop_m", unitId: "m", value: linearValue("опуск") },
     {
       semanticSuffix: "area_m2",
       unitId: "m2",
@@ -681,16 +735,16 @@ function schemaDrivenExplicitGeometry(
     },
   ];
   const result: Record<string, CanonicalEstimateParameterInputValue> = {};
+  const geometryOwners = new Map<ExplicitGeometryFact['semanticSuffix'], string>();
   for (const fact of facts) {
     if (skipGenericArea && fact.unitId === "m2") continue;
-    if (fact.value == null) continue;
     const candidates = schema.filter((parameter) => {
+      if (parameterIsLiterallyHidden(parameter)) return false;
       if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") return false;
       if (canonicalEstimateConsumerInputRole(parameter) === "APPLICATION_TECHNICAL") return false;
       if (String(parameter.unitId ?? "").toLocaleLowerCase("en-US") !== fact.unitId) return false;
       if (parameter.visibilityRole != null && parameter.visibilityRole !== "USER_INPUT") return false;
-      if (parameter.valueSourceRole != null
-        && !DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole))) return false;
+      if (!parameterHasDirectUserQuantitySource(parameter)) return false;
       if (DERIVED_QUANTITY_PARAMETER.test(
         `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""}`,
       )) return false;
@@ -700,7 +754,30 @@ function schemaDrivenExplicitGeometry(
     });
     // A dimension label is not enough to choose between, for example, route
     // length and joint length. Only the selected schema can make it unique.
-    if (candidates.length === 1) result[candidates[0].parameterId] = fact.value;
+    if (candidates.length === 1) {
+      geometryOwners.set(fact.semanticSuffix, candidates[0].parameterId);
+      if (fact.value != null) result[candidates[0].parameterId] = fact.value;
+    }
+  }
+  // An explicit room rectangle belongs only to the two measured room fields.
+  // Product sizes, several different rooms and ambiguous schema owners cannot
+  // supply these dimensions. Named measurements retain their existing path.
+  if (geometryOwners.get('length_m') === 'room_length_m'
+    && geometryOwners.get('width_m') === 'room_width_m'
+    && result.room_length_m == null && result.room_width_m == null) {
+    const rectangles = [...normalized.matchAll(
+      /(?:помещен\p{L}*|комнат\p{L}*)\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*[×xх]\s*(\d+(?:[,.]\d+)?)\s*(мм|см|м|метр\p{L}*)(?![\p{L}\p{N}²³])/giu,
+    )].map(match => {
+      const unit = match[3].toLocaleLowerCase('ru-RU');
+      const scale = unit === 'мм' ? 0.001 : unit === 'см' ? 0.01 : 1;
+      return [Number(match[1].replace(',', '.')) * scale,
+        Number(match[2].replace(',', '.')) * scale] as const;
+    });
+    const distinct = [...new Set(rectangles.map(pair => JSON.stringify(pair)))];
+    if (distinct.length === 1 && rectangles[0].every(value => Number.isFinite(value) && value > 0)) {
+      result.room_length_m = String(rectangles[0][0]);
+      result.room_width_m = String(rectangles[0][1]);
+    }
   }
   return result;
 }
@@ -722,6 +799,40 @@ export function extractPromptOwnedProfessionalParameters(
     ...promptOwnedNamedParameters(schema, prompt),
   };
   const normalized = prompt.normalize("NFKC").replace(/\u00a0/gu, " ");
+  // Published measurement labels bind a named secondary quantity to its own
+  // schema field. Do not mistake the first length or area for every dimension.
+  const measurementLabels=(parameter:typeof schema[number]):string[]=>{
+    if (parameterIsLiterallyHidden(parameter) || parameter.visibilityRole !== 'USER_INPUT'
+      || !['decimal','integer'].includes(parameter.valueType)
+      || !parameterHasDirectUserQuantitySource(parameter)
+      || canonicalEstimateConsumerInputRole(parameter) === 'APPLICATION_TECHNICAL') return [];
+    const provenance=parameter.provenance as Record<string,unknown>|undefined;
+    const labels=provenance?.measured_quantity_labels_ru_v1;
+    if (!Array.isArray(labels) || labels.length===0 || labels.length>16
+      || !labels.every(label=>typeof label==='string' && /^[\p{L}][\p{L}\s-]{0,119}$/u.test(label))) return [];
+    return labels as string[];
+  };
+  const labelKey=(label:string,unit:string|null)=>`${unit==='linear_m'?'m':unit}:${label.normalize('NFKC').trim().replace(/\s+/gu,' ').toLocaleLowerCase('ru-RU')}`;
+  const labelOwners=new Map<string,Set<string>>();
+  for(const parameter of schema)for(const label of measurementLabels(parameter)){
+    const key=labelKey(label,parameter.unitId),owners=labelOwners.get(key)??new Set<string>();
+    owners.add(parameter.parameterId);labelOwners.set(key,owners);
+  }
+  for (const parameter of schema) {
+    const labels=measurementLabels(parameter).filter(label=>labelOwners.get(labelKey(label,parameter.unitId))?.size===1);
+    if(labels.length===0)continue;
+    const unit=String(parameter.unitId??'').toLowerCase(),unitPattern=({
+      m:String.raw`(?:м|m|метр\p{L}*)`,linear_m:String.raw`(?:м|m|метр\p{L}*|пог\.?\s*м)`,
+      m2:String.raw`(?:м2|m2|кв\.?\s*м)`,m3:String.raw`(?:м3|m3|куб\.?\s*м)`,mm:String.raw`(?:мм|mm)`,
+    } as Record<string,string>)[unit];
+    if (!unitPattern) continue;
+    const labelPattern=labels.map(label=>String(label).trim().split(/\s+/u)
+      .map(word=>word.replace(/[.*+?^${}()|[\]\\]/gu,'\\$&')).join('\\s+')).join('|');
+    const matches=[...normalized.matchAll(new RegExp(`(?:^|[^\\p{L}\\p{N}_])(?:${labelPattern})\\s*[:=]?\\s*(-?\\d+(?:[,.]\\d+)?)\\s*${unitPattern}(?![\\p{L}\\p{N}²³])`,'giu'))];
+    const distinct=[...new Set(matches.map(match=>match[1].replace(',','.')))];
+    if (distinct.length===1) values[parameter.parameterId]=distinct[0];
+    else if (distinct.length>1) delete values[parameter.parameterId];
+  }
   const assign = (
     candidateIds: readonly string[],
     value: CanonicalEstimateParameterInputValue | undefined,
@@ -733,6 +844,18 @@ export function extractPromptOwnedProfessionalParameters(
   const number = (pattern: RegExp): string | undefined =>
     pattern.exec(normalized)?.[1]?.replace(",", ".");
   const text = (pattern: RegExp): string | undefined => pattern.exec(normalized)?.[1]?.trim();
+
+  // This measured route belongs to the selected CT29 delivery, not to the
+  // building dimensions or another cargo. Keep multiple routes unresolved.
+  const ct29Route = byId.get("ct29_delivery_distance_km");
+  if (ct29Route?.visibilityRole === "USER_INPUT" && ct29Route.unitId === "km"
+    && ct29Route.valueType === "decimal") {
+    const routes = [...normalized.matchAll(/(?:доставк\p{L}*(?:\s+(?:смес\p{L}*\s+)?(?:Ceresit\s+)?CT\s*29)?(?:\s+от\s+склад\p{L}*\s+до\s+объект\p{L}*)?|расстоян\p{L}*\s+от\s+склад\p{L}*\s+до\s+объект\p{L}*)\s*[:=]?\s*(-?\d+(?:[,.]\d+)?)\s*км(?![\p{L}\p{N}])/giu)]
+      .map(match => match[1].replace(",", "."));
+    if (routes.length > 0 && new Set(routes).size === 1) {
+      assign(["ct29_delivery_distance_km"], routes[0]);
+    }
+  }
 
   assign([
     "pile_count", "anchor_group_count", "element_count_piece", "count", "radiator_count",
@@ -2240,9 +2363,11 @@ export function parseR4A13BulkheadFramePrompt(
 export function buildCanonicalBaselinePlan(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
+  promptExtraction: CanonicalCatalogPromptExtractionV1;
   selectedRoadScope?: AsphaltScopeSelectionIdV5 | null;
   parameterOverrides?: Record<string, CanonicalEstimateParameterInputValue>;
 }): CanonicalBaselinePlan {
+  assertCanonicalCatalogPromptExtractionV1(input.promptExtraction,input.catalog,input.prompt);
   const baselineInputs: Record<string, CanonicalEstimateParameterInputValue> = {};
   for (const parameter of input.catalog.parameterSchema) {
     const value = baselineValue(parameter);
@@ -2289,8 +2414,64 @@ export function buildCanonicalBaselinePlan(input: {
     : null;
   const selectedJackingInput = input.catalog.catalogId === ROAD_CROSSING_SLEEVES_SELECTED_JACKING_CATALOG_ID_R1
     ? parseRoadCrossingSleevesSelectedJackingPromptR1(input.prompt) : null;
-  const declaredPrimaryMeasureId = typeof input.catalog.applicability?.primaryMeasureParameterId === "string"
-    ? input.catalog.applicability.primaryMeasureParameterId.trim() || null : null;
+  const sourceProfileMetadata = input.catalog.applicability?.sourceProfileSelectionV1;
+  if (sourceProfileMetadata !== undefined || input.catalog.parameterSchema.some(p => p.provenance?.source_geometry_copy_v1 !== undefined)) {
+    // Use the existing prompt parser and actual editor fields before choosing
+    // the primary identity. Neither baseline geometry nor a validation fixture
+    // is an actual user fact for this source-profile admission.
+    const sourceProfilePromptInputs = {
+      ...extractPromptOwnedProfessionalParameters(input.catalog.parameterSchema, input.prompt, true),
+      ...(pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput ?? asphaltRoadInput
+        ?? formworkFramiXlifeInput ?? ricsNrm2FormworkInput ?? biaTn10MasonryInput
+        ?? concretePlacementInput ?? stripFoundationReinforcementInput ?? anchorGroupInstallationInput
+        ?? bulkheadFrameInput ?? filtrationStationInput ?? chlorinationStationInput ?? flushingDisinfectionInput
+        ?? pressurePipelineInput ?? pressureSewerPipelineInput ?? reservoirCleanWaterInput ?? selectedJackingInput ?? {}),
+    };
+    const actualProfileInputs = { ...sourceProfilePromptInputs, ...input.parameterOverrides };
+    const sourceProfileInput = {
+      catalogId: input.catalog.catalogId, sourceProfileSelectionMetadata: sourceProfileMetadata,
+      parameterSchema: input.catalog.parameterSchema, confirmedParameters: baselineInputs,
+      effectiveUserParameters: actualProfileInputs,
+    };
+    const sourceProfile = resolveCanonicalSourceProfileSelectionV1(sourceProfileInput);
+    for (const id of Object.keys(baselineInputs)) delete baselineInputs[id];
+    Object.assign(baselineInputs, sourceProfile.confirmedParameters);
+    if (sourceProfile.sourceProfileSelectionV1?.status === 'UNRESOLVED') {
+      const missing = sourceProfile.sourceProfileSelectionV1.missingGeometryParameterIds;
+      if (missing.length) throw new CanonicalBaselineContractMissingError({
+        message: 'Укажите размеры для выбора подтверждённого состава работ.', missingParameterIds: [...missing],
+        parameters: actualProfileInputs, userExplicitParameterIds: Object.keys(input.parameterOverrides ?? {}),
+        textExtractedParameterIds: Object.keys(sourceProfilePromptInputs),
+      });
+      throw new CanonicalEstimateApiError('Для указанных размеров нет единственного подтверждённого состава работ.',
+        {code: 'SOURCE_PROFILE_SELECTION_UNRESOLVED', httpStatus: 422});
+    }
+  }
+  const branchSelectorId = (input.catalog.applicability?.primaryMeasureSelectionV1 as {selectorParameterId?: unknown} | undefined)?.selectorParameterId;
+  const sourceManagedBranch = isCanonicalSourceManagedPrimarySelectorV1(
+    input.catalog.parameterSchema.find(parameter => parameter.parameterId === branchSelectorId),
+  );
+  const branchMeasure = resolvePrimaryMeasureSelectionV1({
+    selectionMetadata: input.catalog.applicability?.primaryMeasureSelectionV1,
+    parameterSchema: input.catalog.parameterSchema,
+    submittedParameters: sourceManagedBranch ? { ...input.parameterOverrides }
+      : { ...baselineInputs, ...input.parameterOverrides },
+    confirmedParameters: baselineInputs,
+  });
+  if (branchMeasure.kind === 'CLARIFICATION_REQUIRED') {
+    if ((branchMeasure.reason === 'SELECTION_REQUIRED' || branchMeasure.reason === 'UNKNOWN_SELECTION')
+        && branchMeasure.selectorParameterId) {
+      throw new CanonicalBaselineContractMissingError({
+        message: branchMeasure.questionRu, missingParameterIds: [branchMeasure.selectorParameterId],
+        parameters: { ...baselineInputs, ...input.parameterOverrides },
+        userExplicitParameterIds: Object.keys(input.parameterOverrides ?? {}), textExtractedParameterIds: [],
+      });
+    }
+    throw new CanonicalEstimateApiError(branchMeasure.questionRu, {code: 'PRIMARY_MEASURE_SELECTION_INVALID', httpStatus: 422});
+  }
+  const declaredPrimaryMeasureId = branchMeasure.kind === 'RESOLVED' ? branchMeasure.primaryMeasure.parameterId
+    : typeof input.catalog.applicability?.primaryMeasureParameterId === "string"
+      ? input.catalog.applicability.primaryMeasureParameterId.trim() || null : null;
   const declaredPrimaryMeasure = input.catalog.parameterSchema.find(p => p.parameterId === declaredPrimaryMeasureId);
   const ambiguousGenericArea = hasAmbiguousGenericArea(input.catalog.parameterSchema, input.prompt);
   const extractedUserQuantity = pumpStationInput == null && stripFoundationInput == null
@@ -2333,7 +2514,10 @@ export function buildCanonicalBaselinePlan(input: {
   }
   Object.assign(
     submittedInputs,
-    extractPromptOwnedProfessionalParameters(input.catalog.parameterSchema, input.prompt, ambiguousGenericArea),
+    // The drainage parser owns restoration geometry. A bare site area must not
+    // fill the only area-valued restoration field through the generic shortcut.
+    extractPromptOwnedProfessionalParameters(input.catalog.parameterSchema, input.prompt,
+      ambiguousGenericArea || asphaltDrainageInput != null),
     pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput ?? asphaltRoadInput
       ?? formworkFramiXlifeInput ?? ricsNrm2FormworkInput ?? biaTn10MasonryInput
       ?? concretePlacementInput ?? stripFoundationReinforcementInput
@@ -2361,14 +2545,17 @@ export function buildCanonicalBaselinePlan(input: {
   // The passport may identify a measure produced by the compiler (for example,
   // area from two lengths). Select its identity without accepting a user value
   // for that readonly output. Ordinary inputs retain the existing ingress rules.
-  const declaredConnectedCompilerDerivedMeasureId = declaredPrimaryMeasure
+  const declaredConnectedCompilerDerivedMeasureId = isCanonicalCompilerDerivedPrimaryMeasureV1(declaredPrimaryMeasure)
+    ? declaredPrimaryMeasure?.parameterId : undefined;
+  // The published passport owns a fixed measure even when preserved legacy
+  // parameters sort earlier. Keep domain parsers and explicit branch selection
+  // above this generic fallback; readonly derived measures have their own guard.
+  const declaredConnectedUserMeasureId = declaredPrimaryMeasure
     && (declaredPrimaryMeasure.valueType === "decimal" || declaredPrimaryMeasure.valueType === "integer")
-    && declaredPrimaryMeasure.visibilityRole === "INTERNAL_ONLY"
-    && declaredPrimaryMeasure.valueSourceRole === "COMPILER_DERIVED_RESOURCE_QUANTITY"
+    && (declaredPrimaryMeasure.visibilityRole == null || declaredPrimaryMeasure.visibilityRole === "USER_INPUT")
     && typeof declaredPrimaryMeasure.unitId === "string" && declaredPrimaryMeasure.unitId.trim().length > 0
-    && Array.isArray(declaredPrimaryMeasure.formulaConsumers)
-    && declaredPrimaryMeasure.formulaConsumers.length > 0
-    && declaredPrimaryMeasure.formulaConsumers.every(id => typeof id === "string" && id.trim().length > 0)
+    && (declaredPrimaryMeasure.formulaConsumers == null || declaredPrimaryMeasure.formulaConsumers.length > 0)
+    && !DERIVED_QUANTITY_PARAMETER.test(`${declaredPrimaryMeasure.parameterId} ${declaredPrimaryMeasure.semanticParameterKey ?? ""}`)
     ? declaredPrimaryMeasure.parameterId : undefined;
   const formulaConnectedPrimaryParameterId = input.catalog.parameterSchema
     .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
@@ -2395,7 +2582,7 @@ export function buildCanonicalBaselinePlan(input: {
           ? R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID
           : "length_m"
         : asphaltRoadInput != null
-          ? (asphaltRoadInput.area_m2 != null ? "area_m2" : asphaltRoadInput.length_m != null ? "length_m" : undefined)
+          ? (declaredConnectedUserMeasureId ?? (asphaltRoadInput.area_m2 != null ? "area_m2" : asphaltRoadInput.length_m != null ? "length_m" : undefined))
         : formworkFramiXlifeInput != null || ricsNrm2FormworkInput != null
           ? "measured_formwork_contact_area_m2"
         : biaTn10MasonryInput != null
@@ -2452,11 +2639,12 @@ export function buildCanonicalBaselinePlan(input: {
           ? ROAD_CROSSING_SLEEVES_PRIMARY_MEASURE_PARAMETER_ID_R1
     : connectedUserQuantityParameterId
     ?? declaredConnectedCompilerDerivedMeasureId
+    ?? declaredConnectedUserMeasureId
     ?? formulaConnectedPrimaryParameterId;
   const preferredPrimaryParameter = input.catalog.parameterSchema.find(
     (parameter) => parameter.parameterId === preferredPrimaryMeasureParameterId,
   );
-  const primaryMeasureParameterId = preferredPrimaryMeasureParameterId
+  const primaryMeasureParameterId = branchMeasure.kind === 'RESOLVED' ? branchMeasure.primaryMeasure.parameterId : preferredPrimaryMeasureParameterId
     && preferredPrimaryParameter
     && (preferredPrimaryParameter?.formulaConsumers == null
       || preferredPrimaryParameter.formulaConsumers.length > 0)
@@ -2474,6 +2662,8 @@ export function buildCanonicalBaselinePlan(input: {
         ? [[
           parameterId,
           schemaById.get(parameterId)?.valueType === "boolean"
+            || typeof submittedInputs[parameterId] === 'string'
+              && ['decimal','integer'].includes(String(schemaById.get(parameterId)?.valueType))
             ? validation.parameters[parameterId]
             : submittedInputs[parameterId],
         ]]
@@ -2484,13 +2674,26 @@ export function buildCanonicalBaselinePlan(input: {
     input.catalog.parameterSchema,
     validation.issues,
   );
+  if (branchMeasure.kind === 'RESOLVED' && primaryMeasureParameterId !== declaredConnectedCompilerDerivedMeasureId) {
+    // A branch can defer project details, but its selected main quantity must
+    // exist before a revision receives that quantity's immutable identity.
+    for (const issue of validation.issues) {
+      if (issue.parameterId === branchMeasure.primaryMeasure.parameterId && !blockingIssues.includes(issue)) blockingIssues.push(issue);
+    }
+    if (validation.parameters[branchMeasure.primaryMeasure.parameterId] == null && blockingIssues.length === 0) {
+      throw new CanonicalBaselineContractMissingError({
+        message: 'Укажите объём выбранного состава работ.', missingParameterIds: [branchMeasure.primaryMeasure.parameterId],
+        parameters: validation.parameters, userExplicitParameterIds: Object.keys(input.parameterOverrides ?? {}), textExtractedParameterIds,
+      });
+    }
+  }
   if (primaryMeasureParameterId === declaredConnectedCompilerDerivedMeasureId) {
     // A missing derived identity cannot be saved by the revision writer until
     // its ordinary object measurements exist. Reuse their validation issues so
     // the existing precompile editor collects them before the compile request.
     for (const issue of validation.issues) {
       const parameter = schemaById.get(issue.parameterId);
-      if (issue.code === "REQUIRED" && parameter?.required === true
+      if (parameter && ((issue.code === "REQUIRED" && parameter.required === true) || issue.code === "REQUIRED_WHEN")
         && parameter.visibilityRole === "USER_INPUT" && parameter.valueSourceRole === "USER_INPUT"
         && parameter.provenance?.consumer_input_role_v1 === "OBJECT_FACT"
         && (parameter.valueType === "decimal" || parameter.valueType === "integer")
@@ -2501,11 +2704,19 @@ export function buildCanonicalBaselinePlan(input: {
     const missing = blockingIssues
       .filter((issue) => issue.code === "REQUIRED" || issue.code === "REQUIRED_WHEN")
       .map((issue) => issue.parameterId);
+    // Invalid supplied geometry needs the same editable precompile form as a
+    // missing measurement. Keep the invalid value so its existing validator
+    // can show the actual bound; never unlock an application-owned norm.
+    const editableInvalidIds = blockingIssues.filter(issue => {
+      const definition = schemaById.get(issue.parameterId);
+      return definition && isCanonicalEstimateUserEditableParameter(definition)
+        && isCanonicalEstimateConsumerSuppliedParameter(definition);
+    }).map(issue => issue.parameterId);
     const message = `CANONICAL_BASELINE_CONTRACT_MISSING:${[...new Set(missing)].join(",") || blockingIssues.map((issue) => issue.code).join(",")}`;
-    if (missing.length === 0) throw new Error(message);
+    if (missing.length === 0 && editableInvalidIds.length === 0) throw new Error(message);
     throw new CanonicalBaselineContractMissingError({
       message,
-      missingParameterIds: [...new Set(missing)],
+      missingParameterIds: [...new Set([...missing, ...editableInvalidIds])],
       // The missing-input form must evaluate the same conditional schema as
       // the canonical compile request. Keep definition defaults in the form
       // as visible assumptions, while preserving their distinct provenance
@@ -2539,6 +2750,7 @@ export function buildCanonicalBaselinePlan(input: {
 export function buildCanonicalBaselineInputs(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
+  promptExtraction: CanonicalCatalogPromptExtractionV1;
   selectedRoadScope?: AsphaltScopeSelectionIdV5 | null;
 }): Record<string, CanonicalEstimateParameterInputValue> {
   return buildCanonicalBaselinePlan(input).parameters;
@@ -2564,7 +2776,7 @@ export async function compileConsumerCanonicalBaseline(input: {
   logger.releaseEvidence("RikEstimateParameters", "BASELINE_CATALOG_REQUESTED", {
     stage: "BASELINE_CATALOG_REQUESTED", catalogId: input.catalogId,
   });
-  const catalog = await getCanonicalEstimateCatalogItem(input.catalogId).catch((error: unknown) => {
+  const {item:catalog,promptExtraction} = await getCanonicalEstimateCatalogItemForPrompt(input.catalogId,input.prompt).catch((error: unknown) => {
     if (error instanceof CanonicalEstimateApiError && error.code === "NOT_FOUND") {
       throw new Error(`CANONICAL_BACKEND_DEFINITION_MISSING:${input.catalogId}`);
     }
@@ -2579,6 +2791,7 @@ export async function compileConsumerCanonicalBaseline(input: {
     baseline = buildCanonicalBaselinePlan({
       catalog,
       prompt: input.prompt,
+      promptExtraction,
       selectedRoadScope: input.selectedRoadScope,
       parameterOverrides: input.parameterOverrides,
     });

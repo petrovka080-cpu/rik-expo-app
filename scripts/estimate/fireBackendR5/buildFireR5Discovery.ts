@@ -332,7 +332,7 @@ function main(): void {
   assertExact(specBytes.length === 155_180 && specLines === 4_374, "FIRE_R5_SPEC_CARDINALITY_RED:" + specBytes.length + ":" + specLines);
   const floor = parseFloor(specBytes.toString("utf8"));
   const global = buildGlobalCatalogInventoryV1();
-  assertExact(global.rows.length === 11_610 && global.catalog_total === 11_610, "FIRE_GLOBAL_CATALOG_RED");
+  assertExact(global.rows.length === 11_610 && Number(global.catalog_total) === 11_610, "FIRE_GLOBAL_CATALOG_RED");
   const globalIds = new Set(global.rows.map((row) => row.catalog_id));
   const predecessor = predecessorSet(globalIds);
   const candidateRows = global.rows.filter((row) => globalFire(row) && !predecessor.ids.has(row.catalog_id));

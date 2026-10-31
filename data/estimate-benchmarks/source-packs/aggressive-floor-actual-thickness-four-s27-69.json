@@ -10,18 +10,6 @@
       "parentVersion": 3
     },
     {
-      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_large_area",
-      "predecessorDefinitionId": "2f2704ff-2f38-5717-aea9-ac2abc4b5fc6",
-      "parentSha256": "8b2d8d51c8a2dc40427f87fe34535d176b1ce8f705ca48acea6d44267e34bbbe",
-      "parentVersion": 3
-    },
-    {
-      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_small_area",
-      "predecessorDefinitionId": "baa63afe-b943-599d-9109-6e9d6f02b70b",
-      "parentSha256": "807eb61033d7d483318a525659318c5c967c2a832fa5a56e7272a7295f3fd128",
-      "parentVersion": 3
-    },
-    {
       "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_wet_zone",
       "predecessorDefinitionId": "076352e9-c096-5e0c-baa7-5eb63174282a",
       "parentSha256": "57f3374383dde2c8f0724354ce9ba2ca78e3a56c153893b85e5f0a4c95bf2f96",

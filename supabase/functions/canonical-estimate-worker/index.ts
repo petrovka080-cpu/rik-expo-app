@@ -17,6 +17,8 @@ import { canonicalManualPriceMigrationBindings, assertCanonicalStoredManualPrice
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts";
 import { stripCanonicalAutomaticPreliminaryInputsV1 } from '../../../src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1.ts';
 import { canonicalApprovedBaselineRuntimeParameters } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts";
+import {resolveCanonicalEstimateProfileInputsS2723} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateProfileInputResolverS2723.ts';
+import {assertCanonicalPrimaryMeasureSelectionV1} from '../../../src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts';
 import {
   CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
   CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
@@ -245,7 +247,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     throw Object.assign(new Error("definition content is not admitted"), { code: "DEFINITION_CONTENT_NOT_ADMITTED" });
   }
   const [{ data: definitionVersion, error: definitionError }, { data: identity, error: identityError }] = await Promise.all([
-    admin.from("estimate_definition_version").select("id,definition_version,catalog_id,passport").eq("id", definitionVersionId).single(),
+    admin.from("estimate_definition_version").select("id,definition_version,catalog_id,passport,definition_sha256,applicability").eq("id", definitionVersionId).single(),
     admin.from("estimate_work_identity").select("title_ru,domain").eq("catalog_id", job.catalog_id).single(),
   ]);
   if (definitionError || identityError) {
@@ -318,6 +320,31 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     parentRevision = parent;
   }
   let effectiveUserParameters = { ...inheritedUserParameters, ...submittedParameters };
+  const sourceProfileSelectionMetadata = definition.applicability?.sourceProfileSelectionV1;
+  if (sourceProfileSelectionMetadata !== undefined) {
+    const parameterSchema = (parameterResult.data ?? []).map(p => ({
+      parameterId:p.parameter_id,valueType:p.value_type,unitId:p.unit_id,defaultValue:p.default_value,
+      visibilityRole:p.truth_metadata?.visibility_role,valueSourceRole:p.truth_metadata?.value_source_role,
+      provenance:p.truth_metadata?.provenance,constraints:p.constraints_json,
+      formulaConsumers:(formulaResult.data ?? []).filter(f=>f.input_parameter_ids.includes(p.parameter_id)).map(f=>f.formula_id),
+      guide:p.truth_metadata?.guide?{sourceDocument:p.truth_metadata.guide.source_document,
+        sourceLocator:p.truth_metadata.guide.source_locator,sourceSnapshotHash:p.truth_metadata.guide.source_snapshot_hash}:undefined,
+    }));
+    const resolution=resolveCanonicalEstimateProfileInputsS2723({catalogId:job.catalog_id,
+      sourceProfileSelectionMetadata,parameterSchema,effectiveUserParameters,confirmedParameters});
+    confirmedParameters={...resolution.confirmedParameters};
+    let parentPrimaryMeasure;
+    if(parentRevision){
+      const {data:parentPrimary,error:parentPrimaryError}=await admin.from('estimate_parameter_definition')
+        .select('unit_id').eq('definition_version_id',parentRevision.definition_version_id)
+        .eq('parameter_id',parentRevision.primary_measure_parameter_id).single();
+      if(parentPrimaryError)throw Object.assign(new Error('parent primary measure unavailable'),{code:'PARENT_REVISION_INVALID'});
+      parentPrimaryMeasure={parameterId:parentRevision.primary_measure_parameter_id,unitId:parentPrimary.unit_id};
+    }
+    assertCanonicalPrimaryMeasureSelectionV1({selectionMetadata:definition.applicability.primaryMeasureSelectionV1,
+      parameterSchema,submittedParameters,confirmedParameters,parentPrimaryMeasure,
+      explicitPrimaryMeasureParameterId:parentRevision?undefined:job.input_payload?.requestIdentity?.primaryMeasureParameterId});
+  }
   if (parentRevision && parentRevision.release_id !== release.id) {
     const [oldResources, oldFormulas, oldParameters] = await Promise.all([
       admin.from("estimate_resource_spec").select("*").eq("definition_version_id", parentRevision.definition_version_id),
@@ -338,7 +365,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   }
   const snapshotIds = Array.isArray(job.input_payload?.priceSnapshotIds) ? job.input_payload.priceSnapshotIds : [];
   const prices = await loadPriceItems(admin, definition.id, snapshotIds);
-  confirmedParameters = { ...baselineParameters, ...stripCanonicalAutomaticPreliminaryInputsV1(parameterResult.data ?? [], confirmedParameters, effectiveUserParameters) };
+  confirmedParameters = { ...(sourceProfileSelectionMetadata === undefined ? baselineParameters : {}), ...stripCanonicalAutomaticPreliminaryInputsV1(parameterResult.data ?? [], confirmedParameters, effectiveUserParameters) };
   const compiled = await compileCanonicalEstimateCore({
     compositionSelectionV1:parseCanonicalCompositionSelectionV1(Object.hasOwn(job.input_payload ?? {},'compositionSelectionV1') ? job.input_payload?.compositionSelectionV1
       : parentRevision?.amendment_contract?.parameterSources?.compositionSelectionV1),
@@ -355,6 +382,9 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     resourceDefinitions: resources,
     submittedParameters,
     confirmedParameters,
+    ...(sourceProfileSelectionMetadata === undefined ? {} : {sourceProfileSelectionV1: {
+      metadata: sourceProfileSelectionMetadata, effectiveUserParameters,
+    }}),
     currencyCode: String(job.input_payload?.currencyCode ?? ""),
     priceSnapshotIds: snapshotIds,
     priceItems: [...prices.values()],
@@ -408,6 +438,10 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     effectiveUserParameters,
     parentRevisionId: job.parent_revision_id,
     derivedParameters: compiled.derivedParameters,
+    ...(compiled.sourceProfileProducerV1 == null ? {} : {sourceProfileProducerV1: {
+      ...compiled.sourceProfileProducerV1,
+      definitionVersionId: String(definition.id), definitionSha256: String(definition.definition_sha256),
+    }}),
     identityContract,
     preliminaryNeeds: compiled.preliminaryNeeds,
     compositionSelectionV1:compiled.compositionSelectionV1,
@@ -605,6 +639,8 @@ async function compileLegacyRevisionJob(admin: AdminClient, workerId: string, jo
 }
 
 async function buildArtifactJob(admin: AdminClient, workerId: string, job: ClaimedJob): Promise<string> {
+  if(job.input_payload&&Object.hasOwn(job.input_payload,'issuancePurpose')&&job.input_payload.issuancePurpose!=='STANDARD')
+    throw Object.assign(new Error('This adapter does not support preliminary review PDF.'),{code:'ARTIFACT_PURPOSE_UNSUPPORTED'});
   if (!job.parent_revision_id || !["pdf", "professional_pdf", "procurement"].includes(job.operation)) {
     throw Object.assign(new Error("invalid artifact job"), { code: "ARTIFACT_JOB_INVALID" });
   }

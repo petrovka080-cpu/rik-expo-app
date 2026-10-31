@@ -20,6 +20,8 @@ import {
 import {
   CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX,
   CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY,
+  CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX,
+  CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX,
   getConsumerRepairRepositoryMemoryStatsForTests,
   saveConsumerRepairBundle,
   setConsumerRepairTransactionalDurableStoreForTests,
@@ -28,6 +30,8 @@ import { safeJsonStringify } from "../../src/lib/format";
 import {
   compactConsumerRepairBundleForDurableStorage,
   compactConsumerRepairBundleForEmergencyDurableStorage,
+  encodeConsumerRepairBundleForDurableStorage,
+  decodeConsumerRepairBundleFromDurableStorage,
 } from "../../src/lib/platform/compactConsumerRepairDurableState";
 import {
   CONSUMER_REPAIR_DURABLE_SAVE_DIAGNOSTIC_EVENT,
@@ -37,6 +41,7 @@ import {
 import {
   buildConsumerRepairDurableStorageRoutingPlan,
   flushTransactionalConsumerRepairWrites,
+  isConsumerRepairWebTransactionalStoreAvailable,
 } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 import { createEstimateRevisionDurableStore } from "../../src/lib/platform/estimateRevisionDurableStore.factory";
 
@@ -238,13 +243,23 @@ function durableBundleKey(requestDraftId: string): string {
   return `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(requestDraftId)}`;
 }
 
-function projectedStorageBytesWithReplacement(
-  storage: InstalledQuotaStorage,
-  key: string,
-  value: string,
-): number {
-  const currentRaw = storage.values.get(key) ?? "";
-  return storage.totalBytes() - key.length - currentRaw.length + key.length + value.length;
+// Project the real compressed V3 snapshot append, with its committed current
+// snapshot retained. A V2 replacement projection no longer models this writer.
+function projectedSnapshotAppendBytes(storage: InstalledQuotaStorage, requestDraftId: string, raw: string): number {
+  const encodedId=encodeURIComponent(requestDraftId);
+  const prefix=CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX+encodedId+":";
+  const pointerRaw=storage.values.get(CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX+encodedId);
+  if (!pointerRaw) throw new Error("DURABLE_QUOTA_AUDIT_COMMITTED_V3_POINTER_REQUIRED");
+  const pointer=JSON.parse(pointerRaw) as {currentChecksum:string;previousChecksum:string|null};
+  const currentRaw=storage.values.get(prefix+pointer.currentChecksum);
+  if (!currentRaw || currentRaw===raw) throw new Error("DURABLE_QUOTA_AUDIT_NEW_ENCODED_WRITE_REQUIRED");
+  let bytes=storage.totalBytes();
+  for (const key of [durableBundleKey(requestDraftId),
+    ...(pointer.previousChecksum && pointer.previousChecksum!==pointer.currentChecksum ? [prefix+pointer.previousChecksum] : [])]) {
+    const value=storage.values.get(key);if(value!==undefined)bytes-=key.length+value.length;
+  }
+  // The writer's FNV checksum is always eight hexadecimal characters.
+  return bytes+prefix.length+8+raw.length;
 }
 
 export async function auditConsumerRepairDurableSaveFallback(input: { writeSummary?: boolean } = {}) {
@@ -252,9 +267,8 @@ export async function auditConsumerRepairDurableSaveFallback(input: { writeSumma
   const userId = "durable-runtime-hardening-user";
   try {
     __resetConsumerRepairRequestStoreForTests();
-    setConsumerRepairTransactionalDurableStoreForTests(
-      createEstimateRevisionDurableStore({ platform: "memory" }),
-    );
+    const approvedHistoryStore=createEstimateRevisionDurableStore({ platform: "memory" });
+    setConsumerRepairTransactionalDurableStoreForTests(approvedHistoryStore);
     for (let index = 0; index < 100; index += 1) {
       createApproved(userId, index);
       if ((index + 1) % 7 === 0) await flushTransactionalConsumerRepairWrites();
@@ -278,28 +292,41 @@ export async function auditConsumerRepairDurableSaveFallback(input: { writeSumma
       userId,
       createdAt: "2026-07-09T10:10:00.000Z",
     });
-    const pressureBundle = getConsumerRepairRequest(heavyDraft.draft.id);
+    const previousPressureBundle = getConsumerRepairRequest(heavyDraft.draft.id);
+    // A real new save must append a distinct snapshot; saving identical bytes
+    // reuses the committed checksum and cannot reproduce quota pressure.
+    const pressureBundle = {...previousPressureBundle,draft:{...previousPressureBundle.draft,updatedAt:"2026-07-09T10:10:02.000Z"}};
     const pressureRoutingPlan = buildConsumerRepairDurableStorageRoutingPlan(pressureBundle);
-    const pressureKey = durableBundleKey(pressureBundle.draft.id);
-    const normalCompactRaw = safeJsonStringify(compactConsumerRepairBundleForDurableStorage(pressureBundle), "");
+    const normalCompactRaw = safeJsonStringify(encodeConsumerRepairBundleForDurableStorage(compactConsumerRepairBundleForDurableStorage(pressureBundle)), "");
     const emergencyCompactRaw = safeJsonStringify(
-      compactConsumerRepairBundleForEmergencyDurableStorage(pressureBundle, {
+      encodeConsumerRepairBundleForDurableStorage(compactConsumerRepairBundleForEmergencyDurableStorage(pressureBundle, {
         createdAt: "2026-07-09T10:10:01.000Z",
-      }),
+      })),
       "",
     );
     resetConsumerRepairDurableSaveDiagnosticsForTests();
-    const normalCompactProjectedBytes = projectedStorageBytesWithReplacement(storage, pressureKey, normalCompactRaw);
-    const emergencyCompactProjectedBytes = projectedStorageBytesWithReplacement(storage, pressureKey, emergencyCompactRaw);
+    const normalCompactProjectedBytes = projectedSnapshotAppendBytes(storage, pressureBundle.draft.id, normalCompactRaw);
+    const emergencyCompactProjectedBytes = projectedSnapshotAppendBytes(storage, pressureBundle.draft.id, emergencyCompactRaw);
     const quotaGapBytes = normalCompactProjectedBytes - emergencyCompactProjectedBytes;
     const pressureQuotaBytes = quotaGapBytes > 0
       ? emergencyCompactProjectedBytes + Math.max(1, Math.floor(quotaGapBytes / 2))
       : storage.totalBytes() + 1;
+    // This audit exercises the synchronous localStorage emergency path. An
+    // available atomic adapter intentionally recovers an ordinary quota failure
+    // before that path, without data loss or an emergency diagnostic. Keep the
+    // approved-history adapter and its commits intact, but make it unavailable
+    // only for this exact local quota write after every queued commit settles.
+    await flushTransactionalConsumerRepairWrites();
+    setConsumerRepairTransactionalDurableStoreForTests(null);
+    const atomicAdapterUnavailableForLocalQuota=!isConsumerRepairWebTransactionalStoreAvailable();
     storage.setQuota(pressureQuotaBytes);
-    saveConsumerRepairBundle(pressureBundle);
+    try { saveConsumerRepairBundle(pressureBundle); }
+    finally { setConsumerRepairTransactionalDurableStoreForTests(approvedHistoryStore); }
 
-    const compactedRecordRaw =
-      storage.values.get(pressureKey) ?? "";
+    const currentPointer=JSON.parse(storage.values.get(CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX+encodeURIComponent(pressureBundle.draft.id))??"null");
+    const compactedRecordRaw = storage.values.get(CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX+encodeURIComponent(pressureBundle.draft.id)+":"+currentPointer?.currentChecksum) ?? "";
+    const decodedRecord=compactedRecordRaw ? decodeConsumerRepairBundleFromDurableStorage(JSON.parse(compactedRecordRaw)) : null;
+    if (!decodedRecord) throw new Error("DURABLE_QUOTA_AUDIT_COMMITTED_RECORD_DECODE_FAILED");
     const diagnostics = getConsumerRepairDurableSaveDiagnosticsForTests();
     const lastDiff = patched.estimateDraftRevisionState?.diffs.at(-1) ?? null;
     const stalePdfPreservedBeforeReload = patched.pdfs.some((pdf) => pdf.pdfStatus === "archived");
@@ -312,6 +339,7 @@ export async function auditConsumerRepairDurableSaveFallback(input: { writeSumma
       final_status: GREEN_CONSUMER_REPAIR_DURABLE_SAVE_FALLBACK_READY,
       source_sha: gitOutput(["rev-parse", "HEAD"]),
       durable_save_fallback_audited: true,
+      atomic_adapter_unavailable_for_local_quota_branch:atomicAdapterUnavailableForLocalQuota,
       consumer_repair_durable_save_failure_reproduced: diagnostics.length > 0,
       compact_fallback_runs_on_storage_pressure: diagnostics.some((event) =>
         event.eventType === CONSUMER_REPAIR_DURABLE_SAVE_DIAGNOSTIC_EVENT
@@ -348,7 +376,7 @@ export async function auditConsumerRepairDurableSaveFallback(input: { writeSumma
       fallback_does_not_silently_delete_approved_estimates: afterReloadHistory.totalApprovedCount === 100,
       fallback_emits_redacted_diagnostic_event:
         diagnostics.length > 0 && diagnostics.every((event) => event.redacted && event.approvedHistoryDeleteAllowed === false),
-      compact_record_strips_heavy_trace: !compactedRecordRaw.includes("oversizedRuntimeTrace"),
+      compact_record_strips_heavy_trace: !JSON.stringify(decodedRecord).includes("oversizedRuntimeTrace"),
       durable_manifest_present_after_fallback: storage.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY),
       CONSUMER_REPAIR_DURABLE_SAVE_FAILED_no_longer_crashes_request: true,
       approved_history_deleted_by_fallback: false,
@@ -357,6 +385,7 @@ export async function auditConsumerRepairDurableSaveFallback(input: { writeSumma
       fallback_marks_green_after_data_loss: false,
     };
     const blockers = [
+      summary.atomic_adapter_unavailable_for_local_quota_branch ? "" : "local_quota_branch_atomic_adapter_still_available",
       summary.consumer_repair_durable_save_failure_reproduced ? "" : "consumer_repair_durable_save_failure_not_reproduced",
       summary.compact_fallback_runs_on_storage_pressure ? "" : "compact_fallback_not_run",
       summary.storage_pressure_forces_emergency_compact ? "" : "storage_pressure_not_between_normal_and_emergency_compact",

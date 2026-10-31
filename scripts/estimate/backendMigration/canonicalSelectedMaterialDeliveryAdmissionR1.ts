@@ -138,8 +138,12 @@ export function canonicalSelectedDeliveryDerivedParametersR1(input:Readonly<{
 }>):Record<string,unknown>{
  const definitions=input.parameterDefinitions.filter(parameter=>parameter.parameter_id===quantityId),definition=definitions[0];
  const value=input.parameters[quantityId],text=String(value),admitted=input.admission.confirmedParameters[quantityId];
- if(definitions.length!==1||definition?.value_type!=='integer'||definition.unit_id!=='trip'
-  ||definition.truth_metadata?.contract!=='rik-expo-app.selected-material-delivery-forward.r1'
+ // The shared Master owns the outer publication contract. Check the retained
+ // semantic owner and server-only roles instead of that release envelope.
+ if(definitions.length!==1||definition?.value_type!=='integer'||definition.unit_id!=='trip'||definition.default_value!==null
+  ||definition.truth_metadata?.guide?.guide_version!=='rik-expo-app.selected-material-delivery-forward.r1'
+  ||definition.truth_metadata.provenance?.consumer_input_role_v1!=='APPLICATION_TECHNICAL'
+  ||definition.truth_metadata.hidden_default_forbidden!==true
   ||definition.truth_metadata.visibility_role!=='INTERNAL_ONLY'||definition.truth_metadata.value_source_role!=='BACKEND_DERIVED'
   ||!['string','number'].includes(typeof value)||!/^[1-9]\d*$/u.test(text)||!Number.isSafeInteger(Number(text))
   ||!sameDecimal(text,admitted)

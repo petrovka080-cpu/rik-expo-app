@@ -1,15 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
+import * as ts from "typescript";
 
 import {
   buildConsumerEstimateActionContext,
   ConsumerEstimateActionContextError,
 } from "../../src/features/consumerRepair/consumerEstimateActionRouter";
-import {
-  buildCanonicalBaselineInputs,
-  extractUserQuantity,
-  parseR4A10StripFoundationPrompt,
-} from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {extractUserQuantity, parseR4A10StripFoundationPrompt} from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselineInputs} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import {
   buildConsumerCanonicalParameterSession,
   canonicalCatalogCustomRowClassification,
@@ -17,7 +15,11 @@ import {
   isConsumerMeaningfulCanonicalParameter,
   normalizedCanonicalNumericValidation,
 } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
-import { canonicalConsumerParameterPlaceholder } from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
+import {
+  canonicalEstimateParameterRequiresManagedProfessionalSource,
+  isCanonicalEstimateVisibleReplaceableProfile,
+} from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
+import { canonicalConsumerParameterPlaceholder, canonicalConsumerParameterInlineGuide } from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
 import {
   buildMultiDomainReferenceSelectedWorkBinding,
   canonicalBaselineContractMissingStatusMessage,
@@ -34,6 +36,49 @@ import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backen
 
 const root = path.resolve(__dirname, "../..");
 const read = (relativePath: string) => fs.readFileSync(path.join(root, relativePath), "utf8");
+
+// Inspect the existing owners/call arguments; quote style and obsolete alias
+// slices cannot stand in for the immutable saved-revision/report contract.
+function sourceNodes<T extends ts.Node>(rootNode: ts.Node, predicate: (node: ts.Node) => node is T): T[] {
+  const matches: T[] = [];
+  const visit = (node: ts.Node): void => { if (predicate(node)) matches.push(node); ts.forEachChild(node, visit); };
+  visit(rootNode); return matches;
+}
+function screenOwner(source: ts.SourceFile, name: string): ts.ArrowFunction {
+  const members = sourceNodes(source, ts.isPropertyDeclaration).filter(node => ts.isIdentifier(node.name) && node.name.text === name);
+  expect(members).toHaveLength(1);
+  const initializer = members[0]?.initializer;
+  if (!initializer || !ts.isArrowFunction(initializer)) throw new Error('EXACT_SCREEN_ARROW_OWNER_REQUIRED:' + name);
+  return initializer;
+}
+function sourceCalls(owner: ts.Node, name: string): ts.CallExpression[] {
+  return sourceNodes(owner, ts.isCallExpression).filter(call => ts.isIdentifier(call.expression) ? call.expression.text === name
+    : ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === name);
+}
+function sourceExpression(expression: ts.Expression): ts.Expression {
+  while (ts.isAsExpression(expression) || ts.isParenthesizedExpression(expression) || ts.isNonNullExpression(expression)) expression = expression.expression;
+  return expression;
+}
+function sourceProperty(expression: ts.Expression, name: string): ts.Expression {
+  const object = sourceExpression(expression);
+  if (!ts.isObjectLiteralExpression(object)) throw new Error('EXACT_OBJECT_ARGUMENT_REQUIRED:' + name);
+  const properties = object.properties.filter(ts.isPropertyAssignment).filter(property =>
+    (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) && property.name.text === name);
+  expect(properties).toHaveLength(1); return properties[0]!.initializer;
+}
+function sourceLiteral(expression: ts.Expression): string {
+  const value = sourceExpression(expression);
+  if (!ts.isStringLiteral(value)) throw new Error('EXACT_STRING_LITERAL_REQUIRED');
+  return value.text;
+}
+function sourceBinding(expression: ts.Expression): string { return sourceExpression(expression).getText().replace(/\s+/gu, ''); }
+function savedReportRequest(owner: ts.Node): ts.Expression {
+  const declarations = sourceNodes(owner, ts.isVariableDeclaration).filter(node => ts.isIdentifier(node.name) && node.name.text === 'reportRequest');
+  expect(declarations).toHaveLength(1); const initializer = declarations[0]?.initializer;
+  if (!initializer) throw new Error('EXACT_SAVED_REPORT_REQUEST_REQUIRED');
+  return initializer;
+}
+
 
 function canonicalBundle(): ConsumerRepairDraftBundle {
   return {
@@ -105,6 +150,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       catalog: {
         catalogId: "catalog-with-manual-need",
         workKey: "work-with-manual-need",
+        applicability: {},
         definitionVersion: 1,
         parameterSchema: [],
       } as never,
@@ -169,6 +215,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       catalog: {
         catalogId: "drainage-conditional-schema",
         workKey: "drainage-conditional-schema",
+        applicability: {},
         definitionVersion: 1,
         parameterSchema: [
           parameter("system_type", 0, true),
@@ -195,10 +242,11 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     ]);
     expect(session.parameters.find((candidate) => candidate.parameterId === "system_type")?.source)
       .toBe("USER_EXPLICIT");
-    expect(session.contractMissingParameterIds).toEqual(["tray_nominal_size"]);
-    expect(session.parameters.find((candidate) => candidate.parameterId === "tray_nominal_size")?.requiredLevel)
-      .toBe("CONDITIONAL");
-    expect(session.status).toBe("PRELIMINARY_WITH_ASSUMPTIONS");
+    expect(session.contractMissingParameterIds).toEqual([]);
+    expect(session.blockingMissingParameterIds).toEqual(["tray_nominal_size"]);
+    expect(session.parameters.find((candidate) => candidate.parameterId === "tray_nominal_size"))
+      .toMatchObject({ requiredLevel: "BLOCKING_REQUIRED", value: null, valid: false });
+    expect(session.status).toBe("BLOCKING_REQUIRED");
 
     // The UI/calculation projection is branch-specific, but the canonical revision keeps
     // the inactive value so a reversible technology switch does not destroy user input.
@@ -210,6 +258,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       catalog: {
         catalogId: "drainage-conditional-schema",
         workKey: "drainage-conditional-schema",
+        applicability: {},
         definitionVersion: 1,
         parameterSchema: [
           parameter("system_type", 0, true),
@@ -237,6 +286,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(restoredPipeSession.parameters.find((candidate) => candidate.parameterId === "drain_pipe_nominal_size")?.value)
       .toBe("DN160");
     expect(restoredPipeSession.contractMissingParameterIds).toEqual([]);
+    expect(restoredPipeSession.blockingMissingParameterIds).toEqual([]);
   });
 
   it("recognizes ordinary strip-foundation construction text without requiring an exact catalog title", () => {
@@ -253,7 +303,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
   it("routes asphalt drainage as its own canonical owner without widening it to full road infrastructure", () => {
     const fragment = "водоотвод для асфальтового покрытия на большой площади";
     expect(buildMultiDomainReferenceSelectedWorkBinding(fragment)).toMatchObject({
-      selectedWorkKey: "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
+      selectedWorkKey: "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard",
       selectedTitleRu: "Устройство системы водоотвода асфальтированного покрытия",
       selectedCategoryKey: "roadworks",
       rawInput: fragment,
@@ -262,12 +312,12 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(buildMultiDomainReferenceSelectedWorkBinding(
       `${fragment}; тип системы: линейный лоток; проектная длина трассы 180 м`,
     )?.selectedWorkKey).toBe(
-      "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
+      "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard",
     );
     expect(buildMultiDomainReferenceSelectedWorkBinding(
       "линейный поверхностный водоотвод в существующем асфальте 25 м",
     )?.selectedWorkKey).toBe(
-      "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
+      "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard",
     );
     expect(consumerRepairCanonicalWorkSearchQuery(
       "линейный поверхностный водоотвод в существующем асфальте 25 м",
@@ -398,6 +448,9 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       provenance: {},
     });
     const catalog = Object.assign({} as CanonicalEstimateCatalogItem, {
+      // Explicit offline nonmember identity; no production fallback or source authority.
+      catalogId: "test-only:generic-user-quantity-offline",
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
       parameterSchema: [
         parameter("area_m2", "\u043c\u00b2"),
         parameter("asphalt_paver_layer_1_coverage_area_m2", null, true),
@@ -420,6 +473,9 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     "lets explicit user input replace a visible baseline for %s",
     (parameterId, unitId, prompt, expected) => {
       const catalog = Object.assign({} as CanonicalEstimateCatalogItem, {
+        // Explicit offline nonmember identity; no production fallback or source authority.
+        catalogId: "test-only:generic-user-quantity-offline",
+        releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
         parameterSchema: [{
           parameterId,
           ordinal: 0,
@@ -445,6 +501,9 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
 
   it("does not force a derived coverage output into the preliminary user form", () => {
     const catalog = Object.assign({} as CanonicalEstimateCatalogItem, {
+      // Explicit offline nonmember identity; no production fallback or source authority.
+      catalogId: "test-only:generic-user-quantity-offline",
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
       parameterSchema: [{
         parameterId: "area_m2",
         ordinal: 0,
@@ -570,17 +629,21 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(normalizedCanonicalNumericValidation({ minimum: 40, maximum: 60, integer: false })).toEqual({ min: 40, max: 60 });
   });
 
-  it("shows source-backed runtime values as editable assumptions or norms and preserves a manual override", () => {
-    const parameter = (input: Record<string, unknown>) => ({
-      parameterId: "material_volume_factor",
+  it("shows explicitly replaceable runtime profiles while keeping ordinary source norms protected", () => {
+    // This positive fixture is replaceable object geometry. A material norm
+    // coefficient is not geometry merely because it carries ASSUMPTION; the
+    // unchanged source coefficient is exercised by the negative cases below.
+    type Schema = CanonicalEstimateCatalogItem["parameterSchema"][number];
+    const parameter = (input: Partial<Schema>): Schema => ({
+      parameterId: "trial_layer_thickness_mm",
       ordinal: 0,
       valueType: "decimal",
-      unitId: "ratio",
-      titleRu: "Коэффициент геометрического объёма материала",
+      unitId: "mm",
+      titleRu: "Толщина пробного слоя",
       required: true,
       defaultValue: null,
       constraints: { min: 0.000001 },
-      semanticParameterKey: "material_volume_factor",
+      semanticParameterKey: "trial_layer_thickness_mm",
       visibilityRole: "USER_INPUT",
       valueSourceRole: "SOURCE_BACKED_PRELIMINARY_PROFILE",
       normativeLinks: [{
@@ -588,6 +651,8 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
         documentTitleRu: "Метод производства работ",
         editionStatus: "v1",
         locator: "section 4",
+        applicabilityRu: "ДЕМО / VALIDATION_FIXTURE: геометрический профиль",
+        verifiedSource: "ДЕМО / VALIDATION_FIXTURE: typed reference metadata",
         verifiedAt: "2026-09-25T00:00:00+06:00",
       }],
       formulaConsumers: ["material-volume"],
@@ -599,12 +664,14 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     const catalog = {
       catalogId: "source-backed-profile",
       workKey: "source-backed-profile",
+      applicability: {},
       definitionVersion: 2,
       parameterSchema: [
         parameter({ defaultValue: 1, runtimeProfileClassification: "ASSUMPTION" }),
         parameter({
           parameterId: "packer_spacing_thickness_ratio",
           ordinal: 1,
+          unitId: "ratio",
           titleRu: "Шаг пакеров к толщине элемента",
           semanticParameterKey: "packer_spacing_thickness_ratio",
           defaultValue: 0.5,
@@ -618,24 +685,50 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       parameterSchemaHash: "source-backed-schema",
       compilerVersion: "source-backed-compiler",
       createdAt: "2026-09-25T00:00:00.000Z",
-      parameters: { material_volume_factor: 1, packer_spacing_thickness_ratio: 0.5 },
+      parameters: { trial_layer_thickness_mm: 1, packer_spacing_thickness_ratio: 0.5 },
       userInputSnapshot: {},
       preliminaryNeeds: [],
       ...overrides,
     }) as never;
 
-    const initial = buildConsumerCanonicalParameterSession({
+    const geometryProfile = (catalog as CanonicalEstimateCatalogItem).parameterSchema[0];
+    expect(canonicalEstimateParameterRequiresManagedProfessionalSource(geometryProfile)).toBe(false);
+    expect(isCanonicalEstimateVisibleReplaceableProfile(geometryProfile)).toBe(true);
+
+    const protectedRevision = revision();
+    const protectedSession = buildConsumerCanonicalParameterSession({
       catalog,
+      revision: protectedRevision,
+      draftId: "source-backed-draft",
+    });
+    expect(protectedSession.parameters.map((entry) => entry.parameterId))
+      .toEqual(["trial_layer_thickness_mm"]);
+    expect((protectedRevision as { parameters: Record<string, unknown> }).parameters)
+      .toEqual({ trial_layer_thickness_mm: 1, packer_spacing_thickness_ratio: 0.5 });
+
+    // A checked norm is not a consumer scalar. An immutable definition must
+    // explicitly declare a profile replaceable before the editor exposes it.
+    const explicitlyReplaceableCatalog = {
+      ...(catalog as CanonicalEstimateCatalogItem),
+      parameterSchema: (catalog as CanonicalEstimateCatalogItem).parameterSchema.map((schema) =>
+        schema.parameterId === "packer_spacing_thickness_ratio"
+          ? { ...schema, valueSourceRole: "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE" }
+          : schema),
+    } as never;
+    const initial = buildConsumerCanonicalParameterSession({
+      catalog: explicitlyReplaceableCatalog,
       revision: revision(),
       draftId: "source-backed-draft",
     });
     expect(initial.parameters.map((entry) => entry.parameterId)).toEqual([
-      "material_volume_factor",
+      "trial_layer_thickness_mm",
       "packer_spacing_thickness_ratio",
     ]);
+    // An unconfirmed editable profile remains assumed; referenceSource below
+    // separately records the normative classification of its bound reference.
     expect(initial.parameters.map((entry) => entry.source)).toEqual([
       "ASSUMED",
-      "NORMATIVE_DERIVED",
+      "ASSUMED",
     ]);
     expect(initial.parameters.map((entry) => entry.referenceSource)).toEqual([
       "ASSUMED",
@@ -644,17 +737,58 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(initial.parameters.map((entry) => entry.referenceValue)).toEqual([1, 0.5]);
 
     const edited = buildConsumerCanonicalParameterSession({
-      catalog,
+      catalog: explicitlyReplaceableCatalog,
       parent: revision(),
       revision: revision({
         revisionId: "source-backed-revision-child",
-        parameters: { material_volume_factor: 1.1, packer_spacing_thickness_ratio: 0.5 },
-        userInputSnapshot: { material_volume_factor: 1.1 },
+        parameters: { trial_layer_thickness_mm: 1.1, packer_spacing_thickness_ratio: 0.5 },
+        userInputSnapshot: { trial_layer_thickness_mm: 1.1 },
       }),
       draftId: "source-backed-draft",
     });
-    expect(edited.parameters.find((entry) => entry.parameterId === "material_volume_factor")?.source)
+    expect(edited.parameters.find((entry) => entry.parameterId === "trial_layer_thickness_mm")?.source)
       .toBe("USER_EXPLICIT");
+
+    // Original regression input, kept under its own source identity rather than
+    // relabelled as a user fact. No legacy profile marker makes this coefficient
+    // a scalar customer input, even when a saved value and an active need exist.
+    for (const marker of [
+      { runtimeProfileClassification: "ASSUMPTION", valueSourceRole: "SOURCE_BACKED_PRELIMINARY_PROFILE" },
+      { runtimeProfileClassification: "ASSUMPTION", valueSourceRole: "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE" },
+      { runtimeProfileClassification: "NORMATIVE", valueSourceRole: "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE" },
+      { runtimeProfileClassification: "VISIBLE_PRELIMINARY_SCENARIO", valueSourceRole: "VISIBLE_PRELIMINARY_SCENARIO" },
+      { runtimeProfileClassification: "RUNTIME_STRUCTURAL_DEFAULT", valueSourceRole: "VISIBLE_BASELINE_ASSUMPTION" },
+    ] as const) {
+      const coefficient = parameter({
+        parameterId: "material_volume_factor",
+        semanticParameterKey: "material_volume_factor",
+        titleRu: "Коэффициент геометрического объёма материала",
+        unitId: "ratio", defaultValue: 1, ...marker,
+      });
+      const sourceCatalog = {
+        ...(catalog as CanonicalEstimateCatalogItem), parameterSchema: [coefficient],
+      };
+      const sourceRevision = revision({
+        parameters: { material_volume_factor: 1 },
+        userInputSnapshot: { material_volume_factor: 1 },
+        preliminaryNeeds: [{
+          rowId: "material-row", quantity: null, selected: true,
+          needState: "QUANTITY_REQUIRED", missingParameterIds: ["material_volume_factor"],
+        }],
+      });
+      const sourceBefore = JSON.stringify({ catalog: sourceCatalog, revision: sourceRevision });
+      expect(canonicalEstimateParameterRequiresManagedProfessionalSource(coefficient)).toBe(true);
+      expect(isCanonicalEstimateVisibleReplaceableProfile(coefficient)).toBe(false);
+      expect(isConsumerMeaningfulCanonicalParameter(coefficient)).toBe(false);
+      const sourceSession = buildConsumerCanonicalParameterSession({
+        catalog: sourceCatalog, revision: sourceRevision, draftId: "source-backed-draft",
+      });
+      expect(sourceSession.parameters.map((entry) => entry.parameterId))
+        .not.toContain("material_volume_factor");
+      expect(consumerCanonicalPrecompileParameterOverrides({ session: sourceSession, patches: [] }))
+        .not.toHaveProperty("material_volume_factor");
+      expect(JSON.stringify({ catalog: sourceCatalog, revision: sourceRevision })).toBe(sourceBefore);
+    }
   });
 
   it("keeps recognized calculation values but drops document-only precision profiles before preliminary compile", () => {
@@ -735,6 +869,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       catalog: {
         catalogId: "scope-catalog",
         workKey: "scope-work",
+        applicability: {},
         definitionVersion: 1,
         parameterSchema: [scopeSchema],
       } as never,
@@ -754,51 +889,31 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     ]);
   });
 
-  it("uses a compact accepted-baseline placeholder without scientific notation", () => {
-    const placeholder = canonicalConsumerParameterPlaceholder({
-      parameter: {
-        source: "ASSUMED",
-        validation: { min: 40, max: 60 },
-        normativeSource: { document: "СП", locator: "п. 4", sourceId: "n1" },
-      } as never,
-      baselineDisplay: "50 мм",
-      guideShortRu: "По проекту",
-    });
-    expect(placeholder).toBe("Предварительно принято: 50 мм · допустимо: 40–60");
-    expect(placeholder).not.toMatch(/e-\d|2\.220446|Нормативный диапазон: числовое значение/u);
+  it("keeps a compact range placeholder and the accepted baseline in their separate source guide", () => {
+    const parameter = { source: "ASSUMED", validation: { min: 40, max: 60 },
+      normativeSource: { document: "СП", locator: "п. 4", sourceId: "n1" } } as never;
+    const before = JSON.stringify(parameter);
+    const placeholder = canonicalConsumerParameterPlaceholder({ parameter, baselineDisplay: "50 мм", guideShortRu: "По проекту" });
+    const guide = canonicalConsumerParameterInlineGuide({ parameter, baselineValue: "50 мм", guideKind: "MEASUREMENT_RULE" });
+    expect(placeholder).toBe("Допустимо: 40–60"); expect(guide).toBe("принято 50 мм");
+    expect(placeholder + guide).not.toMatch(/e-\d|2\.220446|Нормативный диапазон: числовое значение/u);
+    expect(canonicalConsumerParameterInlineGuide({ parameter, baselineValue: "", guideKind: "MEASUREMENT_RULE" })).not.toMatch(/(?:принято|норма)\s*0/u);
+    expect(JSON.stringify(parameter)).toBe(before);
   });
 
-  it("explains what to enter and where to get it instead of saying only 'По проекту'", () => {
-    const numeric = canonicalConsumerParameterPlaceholder({
-      parameter: {
-        parameterId: "strip_width_m",
-        valueType: "number",
-        unit: "m",
-        source: "MISSING",
-        validation: {},
-        normativeSource: null,
-      } as never,
-      baselineDisplay: "",
-      guideShortRu: "По проекту",
-      unitLabel: "м",
-    });
-    expect(numeric).toContain("Введите подтверждённое число, м");
-    expect(numeric).toContain("обмер, чертёж или ведомость объёмов");
-    expect(numeric).not.toBe("По проекту");
-
-    const document = canonicalConsumerParameterPlaceholder({
-      parameter: {
-        parameterId: "structural_drawing_and_revision_reference",
-        valueType: "string",
-        source: "MISSING",
-        validation: {},
-        normativeSource: null,
-      } as never,
-      baselineDisplay: "",
-      guideShortRu: "По проекту",
-    });
-    expect(document).toContain("номер или название документа");
-    expect(document).toContain("не должно блокировать предварительный расчёт");
+  it("keeps short examples separate from measurement and document source guidance without inserting a value", () => {
+    const parameter = { parameterId: "strip_width_m", valueType: "number", unit: "m", source: "MISSING", validation: {}, normativeSource: null } as never;
+    const before = JSON.stringify(parameter);
+    const numeric = canonicalConsumerParameterPlaceholder({ parameter, baselineDisplay: "", guideShortRu: "По проекту", unitLabel: "м" });
+    expect(numeric).toBe("Например: 1,5");
+    expect(canonicalConsumerParameterInlineGuide({ parameter, baselineValue: "", guideKind: "MEASUREMENT_RULE" })).toBe("чертёж/обмер");
+    expect(numeric).not.toBe("По проекту"); expect(JSON.stringify(parameter)).toBe(before);
+    const documentParameter = { parameterId: "structural_drawing_and_revision_reference", valueType: "string", source: "MISSING", validation: {}, normativeSource: null } as never;
+    const documentBefore = JSON.stringify(documentParameter);
+    const document = canonicalConsumerParameterPlaceholder({ parameter: documentParameter, baselineDisplay: "", guideShortRu: "По проекту" });
+    const documentGuide = canonicalConsumerParameterInlineGuide({ parameter: documentParameter, baselineValue: "" });
+    expect(document).toBe("Например: акт № 12"); expect(documentGuide).toBe("проект/ведомость");
+    expect(document + documentGuide).not.toContain("не должно блокировать"); expect(JSON.stringify(documentParameter)).toBe(documentBefore);
   });
 
   it("keeps approval on the compatible archival contract and removes technical routing from line actions", () => {
@@ -808,8 +923,23 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     const localBackend = read("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts");
     const edgeWorker = read("supabase/functions/canonical-estimate-worker/index.ts");
     const artifactContract = read("src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts");
-    expect(screen).toContain('kind: "pdf"');
-    expect(screen).toContain('documentProfile: "professional_v1"');
+    const source = ts.createSourceFile('ConsumerRepairRequestScreen.tsx', screen, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const approval = screenOwner(source, 'approveDraft'), approvalBuilds = sourceCalls(approval, 'buildCanonicalEstimateArtifact');
+    expect(approvalBuilds).toHaveLength(1);
+    expect(sourceLiteral(sourceProperty(approvalBuilds[0]!.arguments[0]!, 'kind'))).toBe('pdf');
+    expect(sourceBinding(sourceProperty(approvalBuilds[0]!.arguments[0]!, 'revisionId'))).toBe('canonical.revisionId');
+    const report = screenOwner(source, 'completeSavedPreliminaryReport'), request = savedReportRequest(report);
+    expect(sourceLiteral(sourceProperty(request, 'kind'))).toBe('pdf');
+    expect(sourceLiteral(sourceProperty(request, 'documentProfile'))).toBe('professional_v1');
+    expect(sourceLiteral(sourceProperty(request, 'issuancePurpose'))).toBe('PRELIMINARY_REVIEW');
+    const ack = sourceProperty(request, 'reviewRequest');
+    for (const field of ['revisionId', 'releaseId', 'definitionVersionId', 'checksumSha256'])
+      expect(sourceBinding(sourceProperty(ack, field))).toBe('revision.' + field);
+    expect(sourceBinding(sourceProperty(ack, 'acknowledgedPreliminaryReview'))).toBe('true');
+    for (const alias of ['completePdfOpen', 'completeHistoryPdfOpen']) {
+      const calls = sourceCalls(screenOwner(source, alias), 'completeSavedPreliminaryReport'); expect(calls).toHaveLength(1);
+      expect(sourceBinding(calls[0]!.expression)).toBe('this.completeSavedPreliminaryReport');
+    }
     expect(screen).not.toContain('kind: "professional_pdf"');
     expect(client).not.toContain('kind: "pdf" | "professional_pdf" | "procurement"');
     expect(localBackend).toContain("buildCanonicalProfessionalPdfProjection");
@@ -840,27 +970,46 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(prepareFlow).toContain("Смета рассчитана. Проверьте позиции и параметры.");
   });
 
-  it("recovers a quarantined revision through the current release and reads an existing legacy PDF without creating a new artifact", () => {
+  it("keeps current-release recovery separate from saved-report reads and binds every report to its immutable owner tuple", () => {
     const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
-    const ensureFlow = screen.slice(
-      screen.indexOf("private ensureInitialCanonicalRevision = async"),
-      screen.indexOf("private prepareDraft = async"),
-    );
+    const ensureFlow = screen.slice(screen.indexOf("private ensureInitialCanonicalRevision = async"), screen.indexOf("private prepareDraft = async"));
     expect(ensureFlow).toContain("getCanonicalEstimateRevision(existingBinding.revisionId)");
     expect(ensureFlow).toContain("getCanonicalEstimateCatalogItem(existingRevision.catalogId)");
-    expect(ensureFlow).toContain("currentCatalog.releaseId === existingBinding.releaseId");
-    expect(ensureFlow).toContain("requiresCanonicalSuccessor = true");
-
-    const pdfFlow = screen.slice(
-      screen.indexOf("private completePdfOpen = async"),
-      screen.indexOf("private makePdf ="),
-    );
-    expect(pdfFlow.indexOf("getCanonicalEstimateArtifact({"))
-      .toBeLessThan(pdfFlow.indexOf("buildCanonicalEstimateArtifact({"));
-    expect(pdfFlow).toContain("getCanonicalEstimateCatalogItem(revision.catalogId)");
-    expect(pdfFlow).toContain("currentCatalog.releaseId !== revision.releaseId");
-    expect(pdfFlow).toContain('error.code !== "NOT_FOUND"');
-    expect(pdfFlow).toContain('{ code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 }');
+    expect(ensureFlow).toContain("currentCatalog.releaseId === existingBinding.releaseId"); expect(ensureFlow).toContain("requiresCanonicalSuccessor = true");
+    const source = ts.createSourceFile('ConsumerRepairRequestScreen.tsx', screen, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const owner = screenOwner(source, 'completeSavedPreliminaryReport');
+    const revisionReads = sourceCalls(owner, 'getCanonicalEstimateRevision'), artifactReads = sourceCalls(owner, 'getCanonicalEstimateArtifact'), builds = sourceCalls(owner, 'buildCanonicalEstimateArtifact');
+    expect(revisionReads).toHaveLength(1); expect(artifactReads).toHaveLength(1); expect(builds).toHaveLength(2);
+    expect(sourceBinding(revisionReads[0]!.arguments[0]!)).toBe('binding.revisionId');
+    expect(sourceLiteral(sourceProperty(revisionReads[0]!.arguments[1]!, 'issuancePurpose'))).toBe('PRELIMINARY_REVIEW');
+    expect(ts.isAwaitExpression(revisionReads[0]!.parent)).toBe(true); expect(ts.isAwaitExpression(artifactReads[0]!.parent)).toBe(true);
+    expect(revisionReads[0]!.getStart()).toBeLessThan(artifactReads[0]!.getStart());
+    expect(sourceBinding(sourceProperty(artifactReads[0]!.arguments[0]!, 'revisionId'))).toBe('revision.revisionId');
+    expect(sourceLiteral(sourceProperty(artifactReads[0]!.arguments[0]!, 'issuancePurpose'))).toBe('PRELIMINARY_REVIEW');
+    for (const build of builds) {
+      expect(artifactReads[0]!.getStart()).toBeLessThan(build.getStart()); expect(ts.isAwaitExpression(build.parent)).toBe(true);
+      expect(sourceBinding(build.arguments[0]!)).toBe('reportRequest');
+    }
+    const rejectionPairs = sourceNodes(owner, ts.isBinaryExpression).filter(node => node.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken)
+      .map(node => sourceBinding(node.left) + '|' + sourceBinding(node.right));
+    expect(rejectionPairs).toEqual(expect.arrayContaining([
+      'revision.revisionId|binding.revisionId', 'revision.releaseId|binding.releaseId', 'revision.checksumSha256|binding.checksumSha256',
+      'revision.catalogId|binding.catalogId', 'revision.definitionVersionId|binding.definitionVersionId',
+      'this.props.consumerUserId|ownerId', 'generation|this.historyReviewGeneration',
+    ]));
+    const identity = sourceCalls(owner, 'assertCanonicalEstimateArtifactIdentity'); expect(identity).toHaveLength(1);
+    expect(sourceLiteral(sourceProperty(identity[0]!.arguments[0]!, 'expectedIssuancePurpose'))).toBe('PRELIMINARY_REVIEW');
+    expect(sourceLiteral(sourceProperty(identity[0]!.arguments[0]!, 'expectedKind'))).toBe('pdf');
+    expect(sourceLiteral(sourceProperty(identity[0]!.arguments[0]!, 'expectedDocumentProfile'))).toBe('professional_v1');
+    const descriptors = sourceCalls(owner, 'createPdfDocumentDescriptor'); expect(descriptors).toHaveLength(1);
+    const contentIdentity = sourceProperty(descriptors[0]!.arguments[0]!, 'contentIdentity');
+    for (const field of ['revisionId', 'releaseId', 'definitionVersionId', 'checksumSha256']) expect(sourceBinding(sourceProperty(contentIdentity, field))).toBe('revision.' + field);
+    expect(sourceLiteral(sourceProperty(contentIdentity, 'issuancePurpose'))).toBe('PRELIMINARY_REVIEW');
+    expect(sourceLiteral(sourceProperty(contentIdentity, 'documentStatus'))).toBe('PRELIMINARY_READ');
+    expect(sourceBinding(sourceProperty(contentIdentity, 'viewerUserId'))).toBe('ownerId');
+    expect(sourceCalls(owner, 'prepareAndPreviewPdfDocument')).toHaveLength(1);
+    expect(sourceCalls(owner, 'getCanonicalEstimateCatalogItem')).toHaveLength(0);
+    expect(sourceCalls(owner, 'compileCanonicalEstimateCore')).toHaveLength(0); expect(sourceCalls(owner, 'approveDraft')).toHaveLength(0);
   });
 
   it("opens history editing on /request with the exact inline parameter session", () => {

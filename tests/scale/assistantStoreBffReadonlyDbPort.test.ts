@@ -7,6 +7,24 @@ const sqlText = (plans: ReturnType<typeof buildAssistantStoreReadQueryPlans>): s
   plans.map((plan) => plan.sql).join("\n");
 
 describe("assistant/store BFF readonly DB port", () => {
+  it("bounds latest chat history and binds a precise older cursor as parameters", () => {
+    const [page] = buildAssistantStoreReadQueryPlans({
+      operation: "chat.listing.messages.list", args: {
+        listingId: "bbbbbbbb-0000-4000-8000-000000000001", pageSize: 1000,
+        before: { createdAt: "2026-10-29T05:30:00.123456+05:30", id: "aaaaaaaa-0000-4000-8000-000000000001" },
+      },
+    });
+    expect(page.values).toEqual(["bbbbbbbb-0000-4000-8000-000000000001", 100, "2026-10-29T00:00:00.123456Z", "aaaaaaaa-0000-4000-8000-000000000001"]);
+    expect(page.sql).toContain("(m.created_at, m.id) < ($3::timestamptz, $4::uuid)");
+    expect(page.sql).toContain("m.supplier_id = $1::uuid");
+    expect(page.sql).toContain("SS.US");
+    expect(page.sql).not.toContain("123456");
+  });
+  it("rejects a malformed chat cursor even when the DB planner is called directly", () => {
+    expect(() => buildAssistantStoreReadQueryPlans({ operation: "chat.listing.messages.list", args: {
+      listingId: "listing", before: { createdAt: "now();delete", id: "bad" },
+    } })).toThrow("CHAT_CURSOR_INVALID");
+  });
   it("builds bounded deterministic assistant listing plans", () => {
     const plans = buildAssistantStoreReadQueryPlans({
       operation: "assistant.market.active_listings",
@@ -116,7 +134,7 @@ describe("assistant/store BFF readonly DB port", () => {
       }),
     );
     expect(chatMessages[0].sql).toContain("from public.chat_messages");
-    expect(chatMessages[0].sql).toContain("order by created_at asc, id asc");
+    expect(chatMessages[0].sql).toContain("order by m.created_at desc, m.id desc");
     expect(supplierCompany[0].sql).toContain("from public.companies");
     expect(supplierUserListings[0]).toEqual(
       expect.objectContaining({

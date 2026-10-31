@@ -5,8 +5,7 @@ import { overlayS2732PurchaseGroup, S2733_CURING_MATERIAL_PURCHASE_CATALOG_IDS, 
 import { buildCuringMaterialAccessoriesS2733, CURING_MATERIAL_ACCESSORIES_S2733_CONTRACT } from "../../../src/lib/estimate/v4/curingMaterialAccessoriesS2733";
 
 export const FOUNDATION_CURING_PROFILE_S2733_CONTRACT = "foundation-curing-existing-profile:s27-33.v1";
-const contexts = { standard: "в стандартной зоне", high_load: "в зоне высокой нагрузки", large_area: "на большом участке",
-  small_area: "на малом участке", technical_room: "в техническом помещении", wet_zone: "во влажной зоне" } as const;
+const contexts = { standard: "в стандартной зоне", high_load: "в зоне высокой нагрузки",  technical_room: "в техническом помещении", wet_zone: "во влажной зоне" } as const;
 const families = { slab_foundation: "плитного фундамента", stairs_concrete: "монолитной лестницы", strip_foundation: "ленточного фундамента" } as const;
 export const FOUNDATION_CURING_NEW_PROFILE_TARGETS_S2733 = Object.keys(families).flatMap(family => Object.keys(contexts)
   .map(context => `canonical-work:base:concrete_foundation_interior_${family}_cure_${context}`));

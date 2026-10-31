@@ -1,0 +1,556 @@
+{
+  "contract": "master33-root-exact-construction-machine-admissions/r1",
+  "purpose": "Independent integration test fixture, not a physical provision or resource quantity norm",
+  "sourceTablePins": {
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-22\\files-pasted-by-the-user-c-2\\work\\masonry-first-package\\machine-owner-admission-table.json": "677dce2bcb0a14316d493c368af3b3396842ec3082714787ac58be7555aa7a23",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-22\\files-pasted-by-the-user-c-2\\work\\concrete-first-package\\machine-owner-admission-table.json": "8113e61633723136372f9ac7eb19cee0fcc7011c7ff4052afb92a213c4d1988a"
+  },
+  "rows": [
+    {
+      "rowId": "masonry:wall:krer08-02-001-07:tower-crane-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+        "canonical-work:base:masonry_interior_brick_wall_lay_technical_room"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-02-001-07",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-02-001-07:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-02-001-07:tower-crane-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+        "canonical-work:base:masonry_interior_brick_wall_lay_technical_room"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-02-001-07",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-02-001-07:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-02-001-08:tower-crane-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+        "canonical-work:base:masonry_interior_brick_wall_lay_technical_room"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-02-001-08",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-02-001-08:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-02-001-08:tower-crane-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+        "canonical-work:base:masonry_interior_brick_wall_lay_technical_room"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-02-001-08",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-02-001-08:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-01:tower-crane-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0004",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-01",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-01:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-01:tower-crane-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0004",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-01",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-01:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-01:truck-crane-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-01",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-01:truck-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-01:truck-crane-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-01",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-01:truck-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-01:perforator-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "33-0462",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-01",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-01:perforator-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-01:perforator-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "33-0462",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-01",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-01:perforator-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-01:flatbed-truck-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-01",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-01:flatbed-truck-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-01:flatbed-truck-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-01",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-01:flatbed-truck-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-02:tower-crane-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0004",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-02",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-02:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-02:tower-crane-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0004",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-02",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-02:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-02:truck-crane-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-02",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-02:truck-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-02:truck-crane-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-02",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-02:truck-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-02:perforator-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "33-0462",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-02",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-02:perforator-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-02:perforator-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "33-0462",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-02",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-02:perforator-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-02:flatbed-truck-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-02",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-02:flatbed-truck-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-02:flatbed-truck-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-02",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-02:flatbed-truck-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-03:tower-crane-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0004",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-03",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-03:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-03:tower-crane-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0004",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-03",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-03:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-03:truck-crane-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-03",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-03:truck-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-03:truck-crane-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-03",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-03:truck-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-03:perforator-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "33-0462",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-03",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-03:perforator-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-03:perforator-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "33-0462",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-03",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-03:perforator-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-03:flatbed-truck-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-03",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-03:flatbed-truck-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-03:flatbed-truck-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-03",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-03:flatbed-truck-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-04:tower-crane-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0004",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-04",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-04:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-04:tower-crane-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0004",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-04",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-04:tower-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-04:truck-crane-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-04",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-04:truck-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-04:truck-crane-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "02-0075",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-04",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-04:truck-crane-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-04:perforator-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "33-0462",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-04",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-04:perforator-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-04:perforator-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "33-0462",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-04",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-04:perforator-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-04:flatbed-truck-own",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-04",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-04:flatbed-truck-consumed"
+    },
+    {
+      "rowId": "masonry:wall:krer08-03-004-04:flatbed-truck-hired",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_gas_block_lay_standard",
+        "canonical-work:base:masonry_interior_gas_block_lay_technical_room"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "normId": "08-03-004-04",
+      "columnMetadataKey": "exact_column",
+      "informationalRowId": "masonry:wall:krer08-03-004-04:flatbed-truck-consumed"
+    },
+    {
+      "rowId": "master212:concrete-preparation:krer06-01-001-01:r1:tower-crane",
+      "catalogIds": [
+        "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+        "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard"
+      ],
+      "resourceCode": "02-0005",
+      "operator": "OPERATOR",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+      "normId": "06-01-001-01",
+      "columnMetadataKey": "exactColumn",
+      "informationalRowId": "master212:concrete-preparation:krer06-01-001-01:r1:machinists"
+    },
+    {
+      "rowId": "master212:concrete-preparation:krer06-01-001-01:r1:deep-vibrator",
+      "catalogIds": [
+        "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+        "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard"
+      ],
+      "resourceCode": "11-0180",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+      "normId": "06-01-001-01",
+      "columnMetadataKey": "exactColumn",
+      "informationalRowId": "master212:concrete-preparation:krer06-01-001-01:r1:machinists"
+    },
+    {
+      "rowId": "master212:concrete-preparation:krer06-01-001-01:r1:flatbed-truck",
+      "catalogIds": [
+        "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+        "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard"
+      ],
+      "resourceCode": "40-0001",
+      "operator": "DRIVER",
+      "operationScope": "FULL_SOURCE_OPERATION",
+      "sourceArtifactSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+      "normId": "06-01-001-01",
+      "columnMetadataKey": "exactColumn",
+      "informationalRowId": "master212:concrete-preparation:krer06-01-001-01:r1:machinists"
+    }
+  ]
+}

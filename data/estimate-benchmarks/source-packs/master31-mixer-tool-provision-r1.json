@@ -1,0 +1,297 @@
+{
+  "contract": "gox-build.master31.mixer-whole-tool-provision.r1",
+  "sourceId": "master31_fastfixation33265002_whole_tool_post_r1",
+  "normId": "EXPLICIT_SERIAL_POST_TOOL_ASSETS_NOT_CONSUMPTION_HOURS_OR_PURCHASE",
+  "titleRu": "Оснащение поста ручного монтажа смесителя",
+  "prefix": "master31:mixer:tool-post:r1",
+  "ownerRowId": "master31:mixer:tool-post:r1:provision-owner",
+  "countId": "m30_fixture_count",
+  "factorySelectorId": "m30_material_technology",
+  "factoryChoiceRu": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+  "legacyChoiceRu": "Прежняя общая монтажная ветвь без нового заводского комплекта",
+  "methodId": "m31_mixer_tool_provision_method",
+  "methodRu": "Один последовательный пост ручного монтажа: полный инструментальный комплект с двумя отдельными ключами для затяжки и встречного удержания",
+  "unresolvedMethodRu": "Оснащение монтажного поста пока не подтверждено",
+  "fitId": "m31_mixer_tool_joint_access",
+  "fitRu": "Подтверждены штатный крепёж13мм, подводкаG3/8 с гайкой19мм, доступ и подходящие плоские грани для двух отдельных ключей, шлиц винта сливного узла и совместимое полотно для подрезки тяги; горячая и холодная вода безопасно отключаются",
+  "postExpression": "min(1,m30_fixture_count)",
+  "profileKind": "EXPLICIT_SELECTED_SINGLE_SERIAL_WORKSTATION_ORGANIZATION",
+  "scopeRu": "Только целый комплект ручного инструмента одного последовательного поста для FastFixation33265002 с тягой и донным клапаном1¼; два отдельных ключа одновременно обеспечивают затяжку и встречное удержание. Количество активных постов0приN0/1приN>0. Нормы часов, износа, новой покупки и фактический склад не заявлены.",
+  "priceScopeRu": "Ручная договорная цена обеспечения всего оснащения одного поста на принятый последовательный объём; без изделий, труда монтажа, аренды по часам, расходников, СИЗ, доставки и испытаний. Вторая цена каждого инструмента не назначается; цена может оставаться неизвестной.",
+  "source": {
+    "id": "grohe-33265002-manual-and-explicit-post-plan-master31",
+    "officialUrl": "https://cdn.cloud.grohe.com/tpi/2000/2200/2220/2229/2229613/original/2229613.pdf",
+    "path": "work/stream-c-plumbing-mixer/GROHE-2229613.pdf",
+    "sha256": "601da351cbf1a4423b3af76bfa5e92e70bad2c339564ed72e2bae6dfda7df9bd",
+    "edition": "99.0238.731/ÄM254484/10.23",
+    "locatorRu": "PDFp3–5: hand tools, mounting13mm, supply19mm(G3/8), pop-up linkage; PDFp7: hex2.5/3mm initial setting; PDFp8:32mm is cartridge SERVICE, excluded from installation toolkit"
+  },
+  "snapshotPath": "data/estimate-benchmarks/fixtures/master31-mixer-current-three-v4-r1.json",
+  "snapshotSha256": "9a2899b32c62e989c7a38e83c6c47d3ba32a701c9e1dd972edf92f12968957db",
+  "baseDefinitionReleaseId": "e09f8912-8ed0-51f8-9fdb-3703d5bf08e8",
+  "baseSearchReleaseId": "2e09aba5-416e-53ac-af19-d2fc019a6de9",
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "definitionId": "836b1d60-67ec-5e1c-85f0-99e49f1cbe59",
+      "definitionSha256": "40557d0e7eb32c9ef0bdda5fc1ab63800c9cc0c2ad8dfb7871211a8f6c7249df",
+      "definitionVersion": 4,
+      "baselineId": "a51ea837-0938-599e-a5b1-450423fd3122",
+      "expectedParentShape": [
+        34,
+        102,
+        102
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_technical_room",
+      "definitionId": "774ee2cb-7cf7-5f38-91f2-dd176934aa9a",
+      "definitionSha256": "2b335e1737c931ce4133c2c5931f2f9abc802d6c8fd61797c0af81662e006922",
+      "definitionVersion": 4,
+      "baselineId": "fc2ad91d-97be-5714-9c86-c04066c23a14",
+      "expectedParentShape": [
+        34,
+        102,
+        102
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_wet_zone",
+      "definitionId": "560161e9-a8eb-5faa-8c8e-f852df56381c",
+      "definitionSha256": "08600504c92748288194cb74f678c13afa2e1b46b5371f032489bfa3d4e77d39",
+      "definitionVersion": 4,
+      "baselineId": "77972e19-b6c7-505e-8d46-045cafea99af",
+      "expectedParentShape": [
+        34,
+        102,
+        102
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "key": "mounting-key-13",
+      "titleRu": "Торцевой монтажный ключ 13 мм",
+      "unitId": "piece",
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "mounting"
+      ],
+      "locator": "PDFp4 step2; optional19017/SW13; fitted shank/nut; not cartridge tool",
+      "profile": {
+        "socketMm": 13
+      },
+      "category": "equipment"
+    },
+    {
+      "key": "turning-wrench",
+      "titleRu": "Разводной ключ для накидных гаек",
+      "unitId": "piece",
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "water-connection",
+        "waste-connection"
+      ],
+      "locator": "PDFp4 step3 G3/8 19mm; PDFp5 pop-up body; engineering role: turn nut while the mating part is held",
+      "profile": {
+        "supplyNutMm": 19,
+        "role": "TURNING"
+      },
+      "category": "equipment"
+    },
+    {
+      "key": "counterhold-wrench",
+      "titleRu": "Разводной ключ для встречного удержания",
+      "unitId": "piece",
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "water-connection",
+        "waste-connection"
+      ],
+      "locator": "Same connected joint requires simultaneous independent counterhold; explicit post organization, not manufacturer crew/count norm",
+      "profile": {
+        "role": "COUNTERHOLD",
+        "distinctPhysicalToolFrom": "turning-wrench"
+      },
+      "category": "equipment"
+    },
+    {
+      "key": "slotted-screwdriver",
+      "titleRu": "Шлицевая отвёртка для сливного узла",
+      "unitId": "piece",
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "waste-connection"
+      ],
+      "locator": "PDFp5 steps1,3: linkage ball/retainer; tip fits actual supplied slotted screw",
+      "profile": {
+        "tip": "SLOTTED_MATCHED_TO_SUPPLIED_SCREW"
+      },
+      "category": "equipment"
+    },
+    {
+      "key": "hacksaw-with-blade",
+      "titleRu": "Ножовка по металлу с установленным полотном",
+      "unitId": "piece",
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "waste-connection"
+      ],
+      "locator": "PDFp5 step3: linkage shortening where measured fit requires; ready asset includes blade, no wear/replacement norm",
+      "profile": {
+        "assembly": "FRAME_WITH_FITTED_METAL_BLADE"
+      },
+      "category": "equipment"
+    },
+    {
+      "key": "measuring-rule",
+      "titleRu": "Линейка для обмера тяги",
+      "unitId": "piece",
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "waste-connection"
+      ],
+      "locator": "Engineering workflow before depicted linkage cut: measure actual required fit; physical ruler, not dimensional consumption norm",
+      "profile": {
+        "rangeMm": 1000
+      },
+      "category": "equipment"
+    },
+    {
+      "key": "marking-pencil",
+      "titleRu": "Карандаш для разметки тяги",
+      "unitId": "piece",
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "waste-connection"
+      ],
+      "locator": "Engineering workflow before linkage cut: mark measured cut; one reusable post asset, no pencil consumption/wear norm",
+      "profile": {
+        "role": "CUT_MARKING"
+      },
+      "category": "equipment"
+    },
+    {
+      "key": "hex-key-2-5",
+      "titleRu": "Шестигранный ключ 2,5 мм",
+      "unitId": "piece",
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "adjustment"
+      ],
+      "locator": "PDFp7 temperature limiter adjustment",
+      "profile": {
+        "acrossFlatsMm": 2.5
+      },
+      "category": "equipment"
+    },
+    {
+      "key": "hex-key-3",
+      "titleRu": "Шестигранный ключ 3 мм",
+      "unitId": "piece",
+      "countExpression": "min(1,m30_fixture_count)",
+      "operations": [
+        "adjustment"
+      ],
+      "locator": "PDFp7 handle/flow adjustment; initial setting only, not32mm cartridge replacement",
+      "profile": {
+        "acrossFlatsMm": 3
+      },
+      "category": "equipment"
+    }
+  ],
+  "coveredNeedIds": [
+    "master30:plumbing:open:mixer-mounting-key",
+    "master30:plumbing:open:waste-valve-key"
+  ],
+  "uncoveredNeedIds": [
+    "master30:plumbing:open:pipes",
+    "master30:plumbing:open:fittings",
+    "master30:plumbing:open:seals",
+    "master30:plumbing:open:pipe-fixings",
+    "master30:plumbing:open:isolating-valves",
+    "master30:plumbing:open:pipe-insulation",
+    "master30:plumbing:open:additional-supports",
+    "master30:plumbing:open:trap",
+    "master30:plumbing:open:interfaces",
+    "master30:plumbing:open:contingency",
+    "master30:plumbing:open:surface-protection",
+    "master30:plumbing:open:marking",
+    "master30:plumbing:open:tool-consumables",
+    "master30:plumbing:open:personal-protection",
+    "master30:plumbing:open:tool-25",
+    "master30:plumbing:open:tool-26",
+    "master30:plumbing:open:tool-27",
+    "master30:plumbing:open:tool-55",
+    "master30:plumbing:open:tool-56",
+    "master30:plumbing:open:site-preparation",
+    "master30:plumbing:open:installation-labour",
+    "master30:plumbing:open:delivery-unloading",
+    "master30:plumbing:open:on-site-supply",
+    "master30:plumbing:open:returnable-packaging",
+    "master30:plumbing:open:waste-handling",
+    "master30:plumbing:open:site-cleanup",
+    "master30:plumbing:open:testing-handover",
+    "master30:plumbing:open:quantity-review"
+  ],
+  "notCoveredRu": [
+    "PPE, safe site access and area protection remain existing needs",
+    "Installationkit sealing compound shown PDFp5 is not specified/quantified; no putty/sealant source/quantity/SDS fabricated",
+    "Installation labor, pipe works, testing, logistics, waste/cleaning remain existing needs",
+    "No32mm cartridge-repair tool admitted as pop-up waste tool",
+    "No G1/2/24mm family variant silently substituted for exact33265002 G3/8"
+  ],
+  "workflow": [
+    {
+      "id": "mounting",
+      "titleRu": "Закрепить смеситель штатным креплением",
+      "tools": [
+        "mounting-key-13"
+      ],
+      "evidence": "PDFp3 step1a +p4 step2"
+    },
+    {
+      "id": "water-connection",
+      "titleRu": "Подключить штатную подводку со встречным удержанием",
+      "tools": [
+        "turning-wrench",
+        "counterhold-wrench"
+      ],
+      "simultaneousToolRoleCount": 2,
+      "evidence": "PDFp4 step3 + explicit engineering joint counterhold decision"
+    },
+    {
+      "id": "waste-connection",
+      "titleRu": "Собрать и отрегулировать тягу донного клапана",
+      "tools": [
+        "turning-wrench",
+        "counterhold-wrench",
+        "slotted-screwdriver",
+        "hacksaw-with-blade",
+        "measuring-rule",
+        "marking-pencil"
+      ],
+      "evidence": "PDFp5 steps1–6; measure/mark before cut is explicit workflow organization"
+    },
+    {
+      "id": "adjustment",
+      "titleRu": "Настроить рукоятку и ограничители",
+      "tools": [
+        "hex-key-2-5",
+        "hex-key-3"
+      ],
+      "evidence": "PDFp7 initial adjustments; cartridge replacement p8 excluded"
+    }
+  ],
+  "physicalToolKitCompleteForSelectedMethod": true,
+  "wholeInstallationComplete": false,
+  "fullTechnicalAcceptance": false,
+  "newFULL": 0,
+  "newPublicCards": 0,
+  "newApplicationConsumptionNorms": 0,
+  "newToolNeedTypesConditionallyClosed": 2,
+  "newToolNeedInstancesConditionallyClosed": 6,
+  "expectedRemainingNeedsPerSelectedProfile": 28,
+  "masterPath": "C:/Users/User/Downloads/GOX_BUILD_MASTER_TZ_2_10_2026-10-22 (1).txt",
+  "masterSha256": "c43f11299cabe70c803c59eca62f345afa986d6bbc17ac0c69198074e30cb8ed"
+}

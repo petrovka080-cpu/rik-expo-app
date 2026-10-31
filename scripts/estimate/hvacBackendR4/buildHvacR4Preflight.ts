@@ -208,8 +208,8 @@ async function main(): Promise<void> {
 
     const global = buildGlobalCatalogInventoryV1();
     const hvacIds = new Set(HVAC_DOMAIN_INVENTORY.map((row) => row.catalog_id));
-    assertExact(global.catalog_total === 11_610 && global.rows.length === 11_610, "BATCH007_GLOBAL_LEDGER_SOURCE_RED");
-    assertExact(HVAC_COMPLETE_RECORD_COUNT === 920 && hvacIds.size === 920, "BATCH007_HVAC_BASELINE_DENOMINATOR_RED");
+    assertExact(Number(global.catalog_total) === 11_610 && global.rows.length === 11_610, "BATCH007_GLOBAL_LEDGER_SOURCE_RED");
+    assertExact(Number(HVAC_COMPLETE_RECORD_COUNT) === 920 && hvacIds.size === 920, "BATCH007_HVAC_BASELINE_DENOMINATOR_RED");
 
     const processSnapshot = command("powershell.exe", ["-NoProfile", "-Command",
       "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'batch007|hvac-r4|55432|postgres' } | Select-Object ProcessId,ParentProcessId,Name,CommandLine | ConvertTo-Json -Depth 4"],

@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import { extractStripFoundationReinforcementCanonicalParametersR1, stripFoundationReinforcementPromptDetailsR1 } from "../../src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1";
 import { REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID } from "../../src/lib/estimate/v4/domainFactory";
@@ -9,7 +9,7 @@ function catalog(target: (typeof JOINT_REINFORCEMENT_TARGETS)[number]): Canonica
 }
 
 describe("joint reinforcement family", () => {
-  test("compiles all seven exact identities from distinct approved joint-edge BBS schedules", async () => {
+  test("compiles all five exact identities from distinct approved joint-edge BBS schedules", async () => {
     const results = [];
     for (const target of JOINT_REINFORCEMENT_TARGETS) {
       const fixture = jointReinforcementAcceptanceInputR1(target.contextKey);
@@ -21,7 +21,7 @@ describe("joint reinforcement family", () => {
       results.push({ contextKey: target.contextKey, steelKg: Number(steel?.quantity), rows: compiled.rows.length, procurementRows: compiled.rows.filter((row) => row.included_in_procurement).length });
     }
     expect(results).toEqual([
-      { contextKey: "standard", steelKg: 420, rows: 9, procurementRows: 6 }, { contextKey: "high_load", steelKg: 1_800, rows: 15, procurementRows: 9 }, { contextKey: "large_area", steelKg: 3_600, rows: 15, procurementRows: 9 }, { contextKey: "repair", steelKg: 260, rows: 14, procurementRows: 8 }, { contextKey: "small_area", steelKg: 140, rows: 9, procurementRows: 6 }, { contextKey: "technical_room", steelKg: 380, rows: 14, procurementRows: 8 }, { contextKey: "wet_zone", steelKg: 760, rows: 9, procurementRows: 6 },
+      { contextKey: "standard", steelKg: 420, rows: 9, procurementRows: 6 }, { contextKey: "high_load", steelKg: 1_800, rows: 15, procurementRows: 9 },  { contextKey: "repair", steelKg: 260, rows: 14, procurementRows: 8 },  { contextKey: "technical_room", steelKg: 380, rows: 14, procurementRows: 8 }, { contextKey: "wet_zone", steelKg: 760, rows: 9, procurementRows: 6 },
     ]);
   });
 

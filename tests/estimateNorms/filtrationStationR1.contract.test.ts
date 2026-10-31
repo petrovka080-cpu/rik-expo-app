@@ -1,4 +1,8 @@
 import {
+  FILTRATION_STATION_CATALOG_ID as pureCatalogId,
+  parseFiltrationStationOrdinaryPromptR1 as parsePurePrompt,
+} from "../../src/lib/estimate/v4/filtrationStationPromptR1";
+import {
   FILTRATION_STATION_ACCEPTANCE_INPUT,
   FILTRATION_STATION_CATALOG_ID,
   FILTRATION_STATION_FORMULAS,
@@ -17,6 +21,22 @@ const quantity = async (input: Record<string, unknown>, rowId: string) => {
 };
 
 describe("S27.26 automatic complete potable-water filtration-station owner", () => {
+  test("preserves the existing ten-fact fixture through the pure parser and legacy exports", () => {
+    const prompt = "Строительство 1 фильтровальной станции FS-RGF-5000-4C производительностью 5000 м3/сут: 4 фильтровальные ячейки внутренним размером 8 x 5 м; загрузка DUAL-MEDIA-ANTHRACITE-SAND-POTABLE глубиной 0.8 м; дренаж HDPE-BLOCK-UNDERDRAIN-AIR-WATER; промывочный пакет BW-2P2B-AIR-WATER-5000.";
+    const expected = Object.fromEntries(Object.entries(FILTRATION_STATION_SHORT_INPUT)
+      .map(([key, value]) => [key, String(value)]));
+    expect(parsePurePrompt).toBe(parseFiltrationStationOrdinaryPromptR1);
+    expect(pureCatalogId).toBe(FILTRATION_STATION_CATALOG_ID);
+    expect(pureCatalogId).toBe("canonical-work:expanded:filtration_station");
+    expect(parsePurePrompt(prompt)).toEqual(expected);
+    expect(parsePurePrompt(prompt.replace("0.8 м", "0,8 м").replace("8 x 5 м", "8 × 5 м")))
+      .toEqual(expected);
+    expect(parsePurePrompt("смета на фильтровальную станцию производительностью 1000 м3 в сутки"))
+      .toEqual({ flt_station_count: "1", flt_design_capacity_m3_day: "1000" });
+    expect(parsePurePrompt("Смета на устройство водопровода")).toEqual({});
+    expect(parsePurePrompt("")).toEqual({});
+  });
+
   test("asks ten primary facts and keeps the engineering model in a visible profile", () => {
     expect(FILTRATION_STATION_CATALOG_ID).toBe(
       "canonical-work:expanded:filtration_station",

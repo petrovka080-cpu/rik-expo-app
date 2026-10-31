@@ -15,6 +15,7 @@ import {
   VVGNG_LS_POWER_CABLE_SOURCE_ID,
   VVGNG_LS_POWER_CABLE_SOURCE_METADATA,
   compileVvgngLsPowerCableR1,
+  vvgngLsPowerCableIndependentCompositionR1,
 } from "../../../src/lib/estimate/v4/vvgngLsPowerCableR1";
 import { runMasterSingleDefinitionSuccessorR1 } from
   "./prepareMasterSingleDefinitionSuccessorR1";
@@ -23,7 +24,7 @@ type Json = Record<string, any>;
 
 const MINIMUM_REAL_QUANTITY_NEEDS = Object.freeze({
   "rc09:fire_resistant_cable_marker": ["marker_quantity_piece"],
-  "rc09:halogen_free_cable_clamp": ["clamp_quantity_piece"],
+  "rc09:halogen_free_cable_clamp": ["clamp_quantity_piece","cable_fixing_mode","cable_fixing_layout_reference"],
   "rc09:cable_gland_for_5x6": ["gland_quantity_piece"],
   "rc09:copper_lug_6mm2": ["lug_quantity_piece"],
   "rc09:firestop_cable_penetration_compound": ["firestop_quantity_kg"],
@@ -77,7 +78,7 @@ async function verifyCore(): Promise<Json> {
     "vvgng:logistics:delivery",
     "vvgng:logistics:waste-removal",
   ];
-  if (!(first.rows.length === 8 && first.preliminaryNeeds.length === 17
+  if (!(first.rows.length === 8 && first.preliminaryNeeds.length === 24
     && quantity(first, "rc09:vvgng_ls_cable_lay") === "150"
     && quantity(first, "rc09:vvgng_a_ls_5x6_cable") === "150"
     && requiredFirstNeeds.every((rowId) => firstNeeds.has(rowId)))) {
@@ -85,11 +86,11 @@ async function verifyCore(): Promise<Json> {
   }
   for (const [rowId, missingParameterIds] of Object.entries(MINIMUM_REAL_QUANTITY_NEEDS)) {
     const need = first.preliminaryNeeds.find((item) => item.row_id === rowId);
-    if (JSON.stringify(need?.missing_parameter_ids) !== JSON.stringify(missingParameterIds)) {
+    if (JSON.stringify([...(need?.missing_parameter_ids??[])].sort()) !== JSON.stringify([...missingParameterIds].sort())) {
       throw new Error(`STOP_S2724_VVGNG_MINIMUM_REAL_FACTS:${rowId}`);
     }
   }
-  if (!(complete.rows.length === 22 && complete.preliminaryNeeds.length === 0
+  if (!(complete.rows.length === 22 && complete.preliminaryNeeds.length === 7
     && quantity(complete, "vvgng:labor:installation") === "24"
     && quantity(complete, "vvgng:equipment:installation-tester") === "3"
     && quantity(complete, "vvgng:logistics:delivery") === "1")) {
@@ -104,7 +105,7 @@ async function verifyCore(): Promise<Json> {
     && quantity(balanced, "vvgng:balance:surplus-beyond-reserve") === "37.5")) {
     throw new Error("STOP_S2723_VVGNG_PROCUREMENT_BALANCE");
   }
-  if (!(conditional.rows.length === 25 && conditional.preliminaryNeeds.length === 0)) {
+  if (!(conditional.rows.length === 25 && conditional.preliminaryNeeds.length === 7)) {
     throw new Error("STOP_S2723_VVGNG_CONDITIONAL_RESOURCES");
   }
   const serialized = JSON.stringify({ first, complete, balanced, conditional });
@@ -112,7 +113,8 @@ async function verifyCore(): Promise<Json> {
     throw new Error("STOP_S2723_VVGNG_ADJACENT_SCOPE");
   }
   return {
-    status: "GREEN_S27_24_VVGNG_LS_MINIMUM_CLARIFICATIONS_AUDITED_CORE",
+    status: "SOURCE_ONLY_PRODUCER_CASES_NOT_COMPOSITION_SOURCE_OR_OBJECT_ACCEPTANCE",
+    full:false,publicationAllowed:false,sourceAuthorityPromoted:false,newQuantityNorms:0,
     firstEstimate: {
       rows: first.rows.length,
       preliminaryNeeds: first.preliminaryNeeds.length,
@@ -121,7 +123,7 @@ async function verifyCore(): Promise<Json> {
       optionalProductDesignationQuestionsRemoved: 6,
       orderLengthM: quantity(first, "rc09:vvgng_a_ls_5x6_cable"),
     },
-    complete: { rows: complete.rows.length, preliminaryNeeds: 0 },
+    complete: { rows: complete.rows.length, preliminaryNeeds: complete.preliminaryNeeds.length },
     balanced: {
       installedM: quantity(balanced, "vvgng:balance:installed-net-length"),
       expectedLossM: quantity(balanced, "vvgng:balance:expected-loss"),
@@ -131,7 +133,7 @@ async function verifyCore(): Promise<Json> {
       remainderM: quantity(balanced, "vvgng:balance:remainder-after-installation-loss"),
       surplusBeyondReserveM: quantity(balanced, "vvgng:balance:surplus-beyond-reserve"),
     },
-    conditional: { rows: conditional.rows.length, preliminaryNeeds: 0 },
+    conditional: { rows: conditional.rows.length, preliminaryNeeds: conditional.preliminaryNeeds.length },
     serializedSha256: createHash("sha256").update(serialized).digest("hex"),
   };
 }
@@ -182,6 +184,7 @@ void runMasterSingleDefinitionSuccessorR1({
   benchmarkOrdinal: 22,
   validationScenario: "S27_24_VVGNG_LS_MINIMUM_CLARIFICATIONS_150_M",
   passport: {
+    independentCompletenessMap:vvgngLsPowerCableIndependentCompositionR1(),
     canonicalRuName: "Прокладка силового кабеля ВВГнг(А)-LS 5×6 мм²",
     workKey: "electrical_interior_vvg_cable_lay_standard",
     physicalResultRu: "Силовой кабель ВВГнг(А)-LS 5×6 мм² проложен по подтверждённому маршруту, промаркирован, оконцован, проходки заделаны и электроизмерения выполнены",

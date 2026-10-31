@@ -13,10 +13,8 @@ export const BATCH001_DRYWALL_RUNTIME_DELTA_AUDIT_R1_CONTRACT =
 
 export const BATCH001_SELECTED_CASE_IDS_R1 = [
   "drywall_ceiling_interior_bulkhead_align_standard",
-  "drywall_ceiling_interior_bulkhead_frame_large_area",
   "drywall_ceiling_interior_bulkhead_clad_wet_zone",
   "drywall_ceiling_interior_bulkhead_frame_wet_zone",
-  "drywall_ceiling_interior_bulkhead_clad_large_area",
 ] as const;
 
 type MaterialDispositionR1 =

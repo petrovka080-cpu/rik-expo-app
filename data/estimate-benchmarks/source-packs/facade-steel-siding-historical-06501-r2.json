@@ -1,0 +1,805 @@
+{
+  "contract": "gox-build.facade-steel-siding-historical-06501/r2",
+  "sourceId": "kg_krer15_2015_steel_siding_06501_r2",
+  "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+  "workKey": "facade_steel_siding_insulated_krer15_01_065_01",
+  "groupId": "wg:master:facade_steel_siding_insulated_krer15_01_065_01",
+  "prefix": "facade:steel-siding:krer15-06501:r2",
+  "titleRu": "Навесная облицовка стальным сайдингом с утеплением по металлическому каркасу",
+  "normId": "15-01-065-01",
+  "masterPath": "C:/Users/User/Downloads/GOX_BUILD_MASTER_TZ_2_12_2026-10-22.txt",
+  "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+  "source": {
+    "sourceId": "KG_KRER15_2015",
+    "decision": "REUSE_EXACT",
+    "localReceipt": "C:\\Users\\User\\Documents\\Codex\\2026-10-22\\files-pasted-by-the-user-c-2\\work\\facade-first-package\\after\\data\\estimate-benchmarks\\source-artifacts\\facade-bolix-mw120-krer15-r1\\KRER15-2015-official.pdf",
+    "canonicalPath": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KRER15-2015-official.pdf",
+    "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+    "pdfPages": [
+      118,
+      119
+    ],
+    "scopePages": [
+      12,
+      13,
+      17
+    ],
+    "newCopy": false,
+    "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KRER15-2015-official.pdf"
+  },
+  "book01": {
+    "sourceId": "KG_BOOK01_2015",
+    "decision": "REUSE_EXACT",
+    "localReceipt": "C:\\Users\\User\\Documents\\Codex\\2026-10-22\\files-pasted-by-the-user-c-2\\work\\facade-first-package\\after\\data\\estimate-benchmarks\\source-artifacts\\facade-bolix-mw120-krer15-r1\\KG-material-resource-book01-official.pdf",
+    "canonicalPath": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KG-material-resource-book01-official.pdf",
+    "sha256": "4c06ea5b428048cbf33872ded079306f21c2c7f5c798c99a03ec5c6249f9e837",
+    "officialUrl": "https://minstroy.gov.kg/index.php/ru/state_program/download-pdf/kniga01_compressed-18768f9f830b689f4.99664411.pdf",
+    "pdfPages": [
+      26,
+      27,
+      31,
+      116,
+      144,
+      170
+    ],
+    "newCopy": false,
+    "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KG-material-resource-book01-official.pdf"
+  },
+  "additionalSources": [
+    {
+      "key": "book09",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-steel-siding-06501-r2/KG-material-resource-book09-official.pdf",
+      "sha256": "1e3d810e36f6752bfd9d9dec2f9baa9cd51796b85aec76a8b65ac627080587b8",
+      "officialUrl": "https://minstroy.gov.kg/index.php/ru/state_program/download-pdf/kniga09-74568fa023aaf53d0.62729580.pdf",
+      "pdfPages": [
+        7,
+        10,
+        11
+      ],
+      "scope": "Identity only;no prices imported"
+    },
+    {
+      "key": "sp2025",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-steel-siding-06501-r2/SP-KR53-101-2025-official.pdf",
+      "sha256": "279ad74a648a122a62ccb8bdc1a601c8c14138ef37fcb71fb7692c1bafdcdd31",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/obedinennyjfasad120425-626822c9c4958144.63610845.pdf",
+      "pdfPages": [
+        3,
+        7,
+        12,
+        15,
+        16,
+        22,
+        44,
+        48,
+        49,
+        50
+      ],
+      "scope": "Applicable production/project/QC constraints;not labour or supply norm"
+    },
+    {
+      "key": "steelHandling",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-steel-siding-06501-r2/steel-sheet-handling-cutting-primary2019.pdf",
+      "sha256": "131cd0b440db7b5e5a543821a6eea36586defefe6fe37f00baf084922acfdd43",
+      "officialUrl": "https://metallprofil.kg/about/documents/instruktsii/instruktsiya-po-montazhu-saydinga.pdf",
+      "pdfPages": [
+        3,
+        4
+      ],
+      "scope": "NARROW_PROVEN_ADAPTATION_ONLY:sheetmaterialhandling/cutting;neithermodernframeidentitynorlabour"
+    }
+  ],
+  "identityPrewrite": {
+    "path": "data/estimate-benchmarks/fixtures/facade-steel-siding-06501-identity-prewrite-r2.json",
+    "sha256": "caefbfe03eae991d0d8de397520f42648d05644b73ae5b57f7cafb42c980dfa4",
+    "notAppendAdmission": true
+  },
+  "rows": [
+    {
+      "key": "labour",
+      "titleRu": "Рабочие-строители среднего разряда3,7",
+      "category": "labor",
+      "resourceCode": "000-1003-7",
+      "unitId": "man_hour",
+      "printedUnit": "чел.-ч",
+      "literalRate": "175.61",
+      "conversionFactor": "1",
+      "ratePer100M2": "175.61",
+      "pdfPage": 118,
+      "operationKeys": [
+        "all-eight"
+      ],
+      "projectQuantityKey": null,
+      "projectQuantityReason": null
+    },
+    {
+      "key": "screwdriver",
+      "titleRu": "Шуруповёрт",
+      "category": "equipment",
+      "resourceCode": "13-0400",
+      "unitId": "machine_hour",
+      "printedUnit": "маш.-ч",
+      "literalRate": "57.2",
+      "conversionFactor": "1",
+      "ratePer100M2": "57.2",
+      "pdfPage": 118,
+      "operationKeys": [
+        "brackets",
+        "profiles",
+        "starter",
+        "cladding"
+      ],
+      "projectQuantityKey": null,
+      "projectQuantityReason": null
+    },
+    {
+      "key": "electric-grinding-machine",
+      "titleRu": "Машина шлифовальная электрическая",
+      "category": "equipment",
+      "resourceCode": "33-0368",
+      "unitId": "machine_hour",
+      "printedUnit": "маш.-ч",
+      "literalRate": "1.07",
+      "conversionFactor": "1",
+      "ratePer100M2": "1.07",
+      "pdfPage": 118,
+      "operationKeys": [
+        "profiles"
+      ],
+      "projectQuantityKey": null,
+      "projectQuantityReason": null
+    },
+    {
+      "key": "perforator",
+      "titleRu": "Перфоратор электрический1,5кВт,энергия удара до18Дж",
+      "category": "equipment",
+      "resourceCode": "33-0440",
+      "unitId": "machine_hour",
+      "printedUnit": "маш.-ч",
+      "literalRate": "26.89",
+      "conversionFactor": "1",
+      "ratePer100M2": "26.89",
+      "pdfPage": 118,
+      "operationKeys": [
+        "drilling"
+      ],
+      "projectQuantityKey": null,
+      "projectQuantityReason": null
+    },
+    {
+      "key": "flatbed",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до5т",
+      "category": "equipment",
+      "resourceCode": "40-0001",
+      "unitId": "machine_hour",
+      "printedUnit": "маш.-ч",
+      "literalRate": "0.97",
+      "conversionFactor": "1",
+      "ratePer100M2": "0.97",
+      "pdfPage": 118,
+      "operationKeys": [
+        "handling"
+      ],
+      "projectQuantityKey": null,
+      "projectQuantityReason": null
+    },
+    {
+      "key": "dowel-screw",
+      "titleRu": "Дюбели с шурупом6/35мм",
+      "category": "material",
+      "resourceCode": "01-1913-0001",
+      "unitId": "piece",
+      "printedUnit": "100шт.",
+      "literalRate": "2.174",
+      "conversionFactor": "100",
+      "ratePer100M2": "217.400",
+      "pdfPage": 118,
+      "operationKeys": [
+        "brackets"
+      ],
+      "projectQuantityKey": "project_dowel_screw",
+      "projectQuantityReason": "ACTUAL_APPROVED_STRUCTURAL_BOM_NOT_AREA_ANCHOR_DESIGN"
+    },
+    {
+      "key": "screw",
+      "titleRu": "Шурупы-саморезы4,2×16мм",
+      "category": "material",
+      "resourceCode": "01-9206-0060",
+      "unitId": "piece",
+      "printedUnit": "100шт.",
+      "literalRate": "9.13",
+      "conversionFactor": "100",
+      "ratePer100M2": "913.00",
+      "pdfPage": 118,
+      "operationKeys": [
+        "starter",
+        "cladding"
+      ],
+      "projectQuantityKey": null,
+      "projectQuantityReason": null
+    },
+    {
+      "key": "levelling-bracket",
+      "titleRu": "Кронштейн выравнивающий стальной оцинкованный,h200мм,t1,2мм",
+      "category": "material",
+      "resourceCode": "09-0320-0020",
+      "unitId": "piece",
+      "printedUnit": "шт.",
+      "literalRate": "402.98",
+      "conversionFactor": "1",
+      "ratePer100M2": "402.98",
+      "pdfPage": 118,
+      "operationKeys": [
+        "brackets"
+      ],
+      "projectQuantityKey": "project_levelling_bracket",
+      "projectQuantityReason": "ACTUAL_APPROVED_STRUCTURAL_BOM_NOT_AREA_ANCHOR_DESIGN"
+    },
+    {
+      "key": "stud-profile",
+      "titleRu": "Профиль стоечный",
+      "category": "material",
+      "resourceCode": "09-0408-0001",
+      "unitId": "m",
+      "printedUnit": "м",
+      "literalRate": "236.89",
+      "conversionFactor": "1",
+      "ratePer100M2": "236.89",
+      "pdfPage": 119,
+      "operationKeys": [
+        "profiles"
+      ],
+      "projectQuantityKey": "project_stud_profile",
+      "projectQuantityReason": "ACTUAL_APPROVED_STRUCTURAL_BOM_NOT_AREA_ANCHOR_DESIGN"
+    },
+    {
+      "key": "expansion-dowel",
+      "titleRu": "Дюбели распорные с гайкой",
+      "category": "material",
+      "resourceCode": "01-1909-0002",
+      "unitId": "piece",
+      "printedUnit": "100шт.",
+      "literalRate": "П",
+      "conversionFactor": "100",
+      "ratePer100M2": null,
+      "pdfPage": 119,
+      "operationKeys": [
+        "brackets"
+      ],
+      "projectQuantityKey": "project_expansion_dowel",
+      "projectQuantityReason": "PRINTED_P_ACTUAL_APPROVED_BOM"
+    },
+    {
+      "key": "steel-siding",
+      "titleRu": "Сайдинг металлический с полимерным покрытием",
+      "category": "material",
+      "resourceCode": "01-2510-0001",
+      "unitId": "m",
+      "printedUnit": "п.м",
+      "literalRate": "П",
+      "conversionFactor": "1",
+      "ratePer100M2": null,
+      "pdfPage": 119,
+      "operationKeys": [
+        "cladding"
+      ],
+      "projectQuantityKey": "project_steel_siding",
+      "projectQuantityReason": "PRINTED_P_ACTUAL_APPROVED_BOM"
+    },
+    {
+      "key": "insulation",
+      "titleRu": "Утеплитель",
+      "category": "material",
+      "resourceCode": "01-5515-0001",
+      "unitId": "m3",
+      "printedUnit": "м³",
+      "literalRate": "П",
+      "conversionFactor": "1",
+      "ratePer100M2": null,
+      "pdfPage": 119,
+      "operationKeys": [
+        "insulation"
+      ],
+      "projectQuantityKey": "project_insulation",
+      "projectQuantityReason": "PRINTED_P_ACTUAL_APPROVED_BOM"
+    },
+    {
+      "key": "weather-membrane",
+      "titleRu": "Материал гидроветрозащитный",
+      "category": "material",
+      "resourceCode": "01-7406-0020",
+      "unitId": "m2",
+      "printedUnit": "м²",
+      "literalRate": "120",
+      "conversionFactor": "1",
+      "ratePer100M2": "120",
+      "pdfPage": 119,
+      "operationKeys": [
+        "membrane"
+      ],
+      "projectQuantityKey": null,
+      "projectQuantityReason": null
+    },
+    {
+      "key": "cover-strip",
+      "titleRu": "Нащельник стальной оцинкованный с полимерным покрытием",
+      "category": "material",
+      "resourceCode": "09-0111-0020",
+      "unitId": "m",
+      "printedUnit": "п.м",
+      "literalRate": "П",
+      "conversionFactor": "1",
+      "ratePer100M2": null,
+      "pdfPage": 119,
+      "operationKeys": [
+        "junctions"
+      ],
+      "projectQuantityKey": "project_cover_strip",
+      "projectQuantityReason": "PRINTED_P_ACTUAL_APPROVED_BOM"
+    },
+    {
+      "key": "starter-strip",
+      "titleRu": "Начальная планка из оцинкованной стали с полимерным покрытием",
+      "category": "material",
+      "resourceCode": "09-0320-0040",
+      "unitId": "m",
+      "printedUnit": "п.м",
+      "literalRate": "П",
+      "conversionFactor": "1",
+      "ratePer100M2": null,
+      "pdfPage": 119,
+      "operationKeys": [
+        "starter"
+      ],
+      "projectQuantityKey": "project_starter_strip",
+      "projectQuantityReason": "PRINTED_P_ACTUAL_APPROVED_BOM"
+    },
+    {
+      "key": "corner-strip",
+      "titleRu": "Угол наружный/внутренний из оцинкованной стали с полимерным покрытием",
+      "category": "material",
+      "resourceCode": "09-0320-0080",
+      "unitId": "m",
+      "printedUnit": "п.м",
+      "literalRate": "П",
+      "conversionFactor": "1",
+      "ratePer100M2": null,
+      "pdfPage": 119,
+      "operationKeys": [
+        "junctions"
+      ],
+      "projectQuantityKey": "project_corner_strip",
+      "projectQuantityReason": "PRINTED_P_ACTUAL_APPROVED_BOM"
+    }
+  ],
+  "operations": [
+    {
+      "key": "layout",
+      "titleRu": "Разметка проектного положения металлического каркаса",
+      "ordinal": 1
+    },
+    {
+      "key": "drilling",
+      "titleRu": "Сверление отверстий для установки кронштейнов",
+      "ordinal": 2
+    },
+    {
+      "key": "brackets",
+      "titleRu": "Установка кронштейнов",
+      "ordinal": 3
+    },
+    {
+      "key": "insulation",
+      "titleRu": "Монтаж утеплителя",
+      "ordinal": 4
+    },
+    {
+      "key": "membrane",
+      "titleRu": "Монтаж ветрогидрозащитной плёнки с подрезкой",
+      "ordinal": 5
+    },
+    {
+      "key": "profiles",
+      "titleRu": "Резка, монтаж и крепление профилей к кронштейнам",
+      "ordinal": 6
+    },
+    {
+      "key": "starter",
+      "titleRu": "Установка начальной планки и цокольного слива",
+      "ordinal": 7
+    },
+    {
+      "key": "cladding",
+      "titleRu": "Монтаж сайдинга",
+      "ordinal": 8
+    }
+  ],
+  "expectedExtraOperations": [
+    {
+      "key": "handling",
+      "titleRu": "Доставка, разгрузка, складирование и подача"
+    },
+    {
+      "key": "access",
+      "titleRu": "Доступ, рабочие места, электропитание и защита"
+    },
+    {
+      "key": "junctions",
+      "titleRu": "Углы, проёмы, цоколь, кровля и примыкания"
+    },
+    {
+      "key": "fire",
+      "titleRu": "Пожарные узлы и вентиляция"
+    },
+    {
+      "key": "quality",
+      "titleRu": "Входной, операционный, скрытый и приёмочный контроль"
+    },
+    {
+      "key": "cleanup",
+      "titleRu": "Очистка, отходы и внешняя логистика"
+    }
+  ],
+  "needs": [
+    {
+      "key": "source-component-identity",
+      "needId": "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+      "kind": "PROJECT_AND_INTERNAL_SOURCE",
+      "titleRu": "Точные изделия исторического комплекта и его узлы",
+      "missingRu": "Нельзя подставить современную КК/КПГ-подсистему. Для09-0408-0001 сечение не восстановлено из цены/массы;h200кронштейна не трактуется как вылет. Нужны точные проектные узлы и подтверждение соответствия всей исходной технологии.",
+      "returnCriterionRu": "Исторический метод целиком и принятые точные спецификации, без изменения труда по частичной инструкции.",
+      "operationKeys": [
+        "profiles",
+        "brackets",
+        "cladding",
+        "junctions"
+      ]
+    },
+    {
+      "key": "fire-ventilation",
+      "needId": "facade:steel-siding:krer15-06501:r2:need:fire-ventilation",
+      "kind": "PROJECT_FACT",
+      "titleRu": "Пожарные узлы и непрерывная вентиляция",
+      "missingRu": "Нужны количество и положения рассечек/экранов/коробов, законные документы материалов/мембраны, аэродинамика и узлы притока/оттока.",
+      "returnCriterionRu": "Принятый пожарный/теплотехнический проект и ведомость узлов поСПКР53-101:2025.",
+      "operationKeys": [
+        "insulation",
+        "membrane",
+        "junctions",
+        "fire"
+      ]
+    },
+    {
+      "key": "anchor-tests",
+      "needId": "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+      "kind": "PROJECT_FACT",
+      "titleRu": "Испытания крепления и объектная анкеровка",
+      "missingRu": "Типы, длины, глубины, количество, зоны и испытания анкеров определяются фактическим основанием, ветром, сейсмикой и статикой. Нормированные217,4шт6/35 и402,98кронштейна не расчёт анкеров.",
+      "returnCriterionRu": "Испытания+принятый расчёт и структурная ведомость;по6.10 не менее10опытных отверстий с зонами/числом по проекту.",
+      "operationKeys": [
+        "drilling",
+        "brackets",
+        "quality"
+      ]
+    },
+    {
+      "key": "access-rigging-power",
+      "needId": "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+      "kind": "PROJECT_AND_INTERNAL_SOURCE",
+      "titleRu": "Полный доступ, строповка, питание и защита",
+      "missingRu": "Нужны леса/подъёмники,настилы/ограждения,стропы/траверсы,схема подачи,питание/кабели,защита погоды/людей и СИЗ с количеством. Маш.-ч не количество машин/оснастки.",
+      "returnCriterionRu": "ППР+применимая внутренняя норма на известный фронт/период, без универсального1комплекта.",
+      "operationKeys": [
+        "handling",
+        "access"
+      ]
+    },
+    {
+      "key": "workstation-wear",
+      "needId": "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+      "kind": "INTERNAL_NORM",
+      "titleRu": "Количество оснащения и рабочих частей по фронту работ",
+      "missingRu": "Состав типов подтверждён частично;нет полного количества,длительности работы/износа,рабочих частей под выбранный анкер/лист/заклёпку и нормированного рабочего звена.",
+      "returnCriterionRu": "Целая применимая техкарта поста/звена с полными доказанными количествами и совместимостью.",
+      "operationKeys": [
+        "layout",
+        "drilling",
+        "profiles",
+        "starter",
+        "cladding"
+      ]
+    },
+    {
+      "key": "qc-services",
+      "needId": "facade:steel-siding:krer15-06501:r2:need:qc-services",
+      "kind": "PROJECT_AND_INTERNAL_SOURCE",
+      "titleRu": "Контроль, скрытые работы и внешние услуги",
+      "missingRu": "Порог10%щупом не полная приёмка. Нет полного плана и частот всех проверок, количества приборов/звена, лаборатории/геодезии/трудоёмкости услуг.",
+      "returnCriterionRu": "Принятый план и источник полного обеспечения:входной/операционный/скрытый/приёмочный контроль раздельно.",
+      "operationKeys": [
+        "quality"
+      ]
+    },
+    {
+      "key": "cleanup-logistics",
+      "needId": "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+      "kind": "PROJECT_AND_INTERNAL_SOURCE",
+      "titleRu": "Очистка, вода уборки, отходы, тара и внешняя логистика",
+      "missingRu": "Нет нормы уборочнойводы,сбора стружки/обрезков/упаковки/остатковутеплителя,тары/плеча/вывоза. Воды/затворения в таблице нет, но это не0 всегоцикла.",
+      "returnCriterionRu": "Техкарта+раскладка/ведомостьотходов+маршрут/услуги. Не произвольныйпроцентотходов.",
+      "operationKeys": [
+        "cleanup",
+        "handling"
+      ]
+    }
+  ],
+  "toolNeeds": [
+    {
+      "key": "screwdriver-bits",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+      "titleRu": "Шуруповёрт и сменные насадки",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "brackets",
+        "profiles",
+        "starter",
+        "cladding"
+      ],
+      "sourceEvidence": "OEMp4:тип,безчисла",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "drill-anchor-bits",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+      "titleRu": "Дрель и оснастка под фактическое основание и анкер",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "drilling"
+      ],
+      "sourceEvidence": "SP9.4.6-9.4.7/9.4.17:пустотелоеоснованиебезудара",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "hole-brush-pump",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump",
+      "titleRu": "Ёршик и ручной насос для очистки отверстий",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "drilling"
+      ],
+      "sourceEvidence": "SP9.4.7:тип,безчисла",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "nonabrasive-sheet-cutter",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+      "titleRu": "Ножницы по металлу либо разрешённая пила с рабочей частью",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "profiles",
+        "cladding",
+        "junctions"
+      ],
+      "sourceEvidence": "OEMp4:толькообращениеслистовойоцинкованнойстальюспокрытием;неприменимостькаркаса",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "cutter-working-parts",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+      "titleRu": "Сменные ножи или диск для выбранного неразрушающего реза",
+      "category": "material",
+      "unitId": "piece",
+      "operationKeys": [
+        "profiles",
+        "cladding",
+        "junctions"
+      ],
+      "sourceEvidence": "OEMp4:ножницы≤0,6мм/насадка≤0,8мм;выбранноесредствоодновариантное",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "insulation-knife",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+      "titleRu": "Нож для теплоизоляции",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "insulation"
+      ],
+      "sourceEvidence": "OEMp4:тип,безчисла",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "layout-instruments",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+      "titleRu": "Рулетка, уровень, отвес, угольник, маркер и киянка",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "layout",
+        "profiles",
+        "starter",
+        "cladding"
+      ],
+      "sourceEvidence": "OEMp4:различимыетипы,не1универсальныйнабор",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "rivet-tool",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool",
+      "titleRu": "Заклёпочный инструмент и совместимая оснастка",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "profiles",
+        "junctions"
+      ],
+      "sourceEvidence": "SP6.11:постоянноесоединениекаркаса;количество/типпопроекту",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "torque-key-heads",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+      "titleRu": "Динамометрический ключ с подходящими головками",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "brackets",
+        "quality"
+      ],
+      "sourceEvidence": "SP9.4.10-9.4.11:моментпопаспортусвоегокрепежа",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "feeler01",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+      "titleRu": "Щуп толщиной0,1мм",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "quality"
+      ],
+      "sourceEvidence": "SP9.4.11:минимум10%анкероввкаждых100м²,неколичествоприборов",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "survey-instruments",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments",
+      "titleRu": "Линейка, штангенциркуль, уровень от2м и геодезические приборы",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "quality"
+      ],
+      "sourceEvidence": "SP10.3.2:типовыесредства,безчисла/аренды",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "lifting-working-parts",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+      "titleRu": "Мягкие стропы и при применимости траверса",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "handling"
+      ],
+      "sourceEvidence": "OEMp3:пачка>5мтраверса,нетнормыкомплектов",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "storage-bearers",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers",
+      "titleRu": "Брусья для складирования50×150мм",
+      "category": "material",
+      "unitId": "m",
+      "operationKeys": [
+        "handling"
+      ],
+      "sourceEvidence": "OEMp3:шаг0,5м;числобезсхемысклада/пачекневыводится",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    },
+    {
+      "key": "ppe",
+      "needId": "facade:steel-siding:krer15-06501:r2:need-tool:ppe",
+      "titleRu": "Защитные перчатки, респиратор и защита рабочего места",
+      "category": "equipment",
+      "unitId": "piece",
+      "operationKeys": [
+        "insulation",
+        "access"
+      ],
+      "sourceEvidence": "OEMp4/13+ППР:тип,безчисла/износа",
+      "quantity": null,
+      "quantityNormAccepted": false,
+      "kind": "INTERNAL_NORM"
+    }
+  ],
+  "projectBasisValue": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+  "sourceFitValue": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+  "machineFulfillmentChoices": {
+    "own": "Собственная полная эксплуатация",
+    "hired": "Услуга полной эксплуатации"
+  },
+  "baseQuantity": "100",
+  "baseUnitId": "m2",
+  "scopeRu": "Только целый исторический метод15-01-065-01 с его исходными изделиями и нормальными условиями;современнаяоблегчённаяКК/КПГ-система не объявляетсяэквивалентной. Принятый проект и применимость текущихКРправил обязательны.",
+  "measurementRu": "100м²поверхностиоблицовки по принятой ведомости;не переносить§2.48/2.49для080,не заменять погонные метры сайдинга01-2510-0001 нам².",
+  "structuralReferenceKeys": [
+    "dowel-screw",
+    "levelling-bracket",
+    "stud-profile"
+  ],
+  "wholeLabourNotDivided": true,
+  "printedOperatorNormAbsent": true,
+  "sourcePricesImported": false,
+  "componentBridgeToModernSystemAccepted": false,
+  "newFULL": 0,
+  "physicalFull": false,
+  "categoryKeys": [
+    "substrate",
+    "subsystem",
+    "insulation",
+    "membrane",
+    "cladding",
+    "anchors-fasteners",
+    "junctions-fire",
+    "mixture-water",
+    "tools-working-parts",
+    "access-lifting",
+    "labour-operators",
+    "qc-services",
+    "waste",
+    "logistics"
+  ],
+  "sourceCorrectionsFromR1": [
+    {
+      "key": "cover-strip",
+      "oldCode": "09-0111-0220",
+      "correctedCode": "09-0111-0020",
+      "proof": "OfficialBook09:p7/10;sealedr1unmodified"
+    },
+    {
+      "key": "starter-strip",
+      "oldCode": "09-0320-0940",
+      "correctedCode": "09-0320-0040",
+      "proof": "OfficialBook09:p7/10;sealedr1unmodified"
+    },
+    {
+      "key": "corner-strip",
+      "oldCode": "09-0320-0980",
+      "correctedCode": "09-0320-0080",
+      "proof": "OfficialBook09:p7/10;sealedr1unmodified"
+    }
+  ]
+}

@@ -101,6 +101,8 @@ function contentType(filePath) {
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
     ".js": "text/javascript; charset=utf-8",
+    ".mjs": "text/javascript; charset=utf-8",
+    ".wasm": "application/wasm",
     ".json": "application/json; charset=utf-8",
     ".map": "application/json; charset=utf-8",
     ".png": "image/png",
@@ -169,12 +171,27 @@ if (!existsSync(indexPath)) {
 }
 
 const server = createServer((req, res) => {
+  req.on("error", () => {
+    if (res.destroyed || res.writableEnded) return;
+    if (res.headersSent) { res.destroy(); return; }
+    sendJson(res, 400, { error: "invalid_request" });
+  });
   if (!["GET", "HEAD"].includes(req.method ?? "")) {
     sendJson(res, 405, { error: "method_not_allowed" });
     return;
   }
 
-  const url = new URL(req.url ?? "/", "http://localhost");
+  let url;
+  try {
+    url = new URL(req.url ?? "/", "http://localhost");
+    // Validate before decoding reaches filesystem resolution. One malformed
+    // request must never terminate the existing static Web service.
+    const decodedPath = decodeURIComponent(url.pathname);
+    if (/[\u0000-\u001f\u007f]/u.test(decodedPath)) throw new URIError("invalid path");
+  } catch {
+    sendJson(res, 400, { error: "invalid_request_url" });
+    return;
+  }
   if (url.pathname === "/health" || url.pathname === "/api/health") {
     sendJson(res, 200, { status: "ok", ...versionPayload() });
     return;
@@ -200,6 +217,13 @@ const server = createServer((req, res) => {
   sendStatic(req, res, filePath);
 });
 
+// Parser failures can precede the request listener. Close only the affected
+// connection; preserve Node's header-overflow status and reset handling.
+server.on("clientError", (error, socket) => {
+  if (error.code === "ECONNRESET" || !socket.writable) { socket.destroy(); return; }
+  const status = error.code === "HPE_HEADER_OVERFLOW" ? "431 Request Header Fields Too Large" : "400 Bad Request";
+  socket.end(`HTTP/1.1 ${status}\r\nConnection: close\r\nContent-Length: 0\r\n\r\n`);
+});
 const port = Number(process.env.PORT ?? argValue("port") ?? 8080);
 const host = process.env.HOST ?? "0.0.0.0";
 server.listen(port, host, () => {

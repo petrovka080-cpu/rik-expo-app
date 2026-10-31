@@ -26,8 +26,9 @@ type Input = {
     itemId: string,
     value: string,
     meta?: ConsumerRepairQuantityChangeMeta,
+    phase?: "input",
   ) => void;
-  onUnitPriceChange: (itemId: string, value: string) => void;
+  onUnitPriceChange: (itemId: string, value: string, phase?: "input") => void;
   onSpecificationChange?: (itemId: string, value: string) => void;
 };
 
@@ -442,9 +443,23 @@ export function useConsumerRepairItemRowEditing({
   return {
     quantityInputRef,
     quantityText,
-    setQuantityText: (value: string) => { if (editingLifetimeActiveRef.current && numericEditResetKeyRef.current === numericEditResetKey && quantityEditableRef.current) setQuantityText(value); },
+    setQuantityText: (value: string) => {
+      if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey || !quantityEditableRef.current) return;
+      setQuantityText(value);
+      // Stage the current buffer before Apply, including when native presses
+      // keep the TextInput focused. The backend still runs only on Apply.
+      if (consumerRepairRowCanonicalRevisionId(item) && consumerRepairRowCode(item)) {
+        onQuantityChange(item.id, value, undefined, "input");
+      }
+    },
     priceText,
-    setPriceText: (value: string) => { if (editingLifetimeActiveRef.current && numericEditResetKeyRef.current === numericEditResetKey) setPriceText(value); },
+    setPriceText: (value: string) => {
+      if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey) return;
+      setPriceText(value);
+      if (consumerRepairRowCanonicalRevisionId(item) && consumerRepairRowCode(item)) {
+        onUnitPriceChange(item.id, value, "input");
+      }
+    },
     quantityEditing,
     priceEditing,
     quantitySelection,

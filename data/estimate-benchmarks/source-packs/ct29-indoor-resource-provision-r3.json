@@ -1,0 +1,835 @@
+{
+  "contract": "rik-expo-app.ct29-indoor-resource-provision.r3",
+  "catalogId": "canonical-work:master:ct29_existing_cement_lime_plaster_indoor_standard",
+  "predecessor": "rik-expo-app.ct29-existing-cement-lime-indoor-delivery-cleanup-r2",
+  "titleRu": "Выравнивание CT29 по готовой внутренней штукатурке: обеспечение операций",
+  "sourceRole": "INDEPENDENT_EXPECTED_TECHNOLOGY_AND_UNRESOLVED_PHYSICAL_PROVISION_NOT_NEW_NUMERIC_NORMS",
+  "resultRu": "Однослойное ручное выравнивание CT29 en_GL до20мм по уже прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри; нанесение, разглаживание, защита от быстрого высыхания, контроль и обычная уборка рабочего места.",
+  "incomingBoundaryRu": "Подготовка непригодного основания, устранение трещин/глубоких дефектов, самостоятельное грунтование и последующая окраска не входят. Готовность основания проверяется перед нанесением; название материала само по себе её не подтверждает. Обычная область до3,5м не является доказательством наличия конкретных подмостей.",
+  "source": {
+    "id": "ct29-en-gl-0120-physical-provision-r3",
+    "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+    "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+    "edition": "C_CT29_TDS_1_0120; signed2025-11-27",
+    "locatorRu": "Стр1 APPLICATION: целый мешок, заранее отмеренная вода, дрель с миксером, металлический длинный полутерок. Стр2 TECHNICAL DATA: плотности, вода и жизнеспособность; OTHER INFORMATION: лёгкое распыление; защита кожи и глаз. Тип инструмента не является нормой числа экземпляров.",
+    "unsupportedRu": "Не содержит литровой нормы ухода/промывки, модели/числа инструментов, организации звена, схемы подачи и комплекта уборки. Эти величины не выведены из накладной стоимости."
+  },
+  "operations": [
+    {
+      "id": "preparation-check",
+      "ordinal": 1,
+      "titleRu": "Проверить готовность основания",
+      "resultRu": "Подтверждены готовые прочность, чистота, шероховатость, влажность и геометрия входящего основания."
+    },
+    {
+      "id": "delivery",
+      "ordinal": 5,
+      "titleRu": "Доставить новый заказ CT29",
+      "resultRu": "Сохранён принятый расчёт сухой массы нового заказа и одностороннего расстояния."
+    },
+    {
+      "id": "handling",
+      "ordinal": 10,
+      "titleRu": "Подать материалы к рабочему месту",
+      "resultRu": "Для принятой геометрии определена фактическая схема подачи; нормативные затраты не подменяют её."
+    },
+    {
+      "id": "mixing",
+      "ordinal": 20,
+      "titleRu": "Приготовить последовательные целые замесы CT29",
+      "resultRu": "Целые25кгмешки смешаны с отмеренной чистой холодной водой в однородный состав без комков; каждый замес используется в пределах2ч."
+    },
+    {
+      "id": "application",
+      "ordinal": 30,
+      "titleRu": "Нанести и разгладить CT29",
+      "resultRu": "Состав нанесён металлическим длинным полутерком и разглажен до принятого однослойного результата."
+    },
+    {
+      "id": "curing",
+      "ordinal": 40,
+      "titleRu": "Защитить слой от быстрого высыхания",
+      "resultRu": "Обеспечены лёгкое распыление и допустимые условия; расход и труд ухода должны иметь отдельное подтверждение."
+    },
+    {
+      "id": "acceptance",
+      "ordinal": 50,
+      "titleRu": "Проверить результат выравнивания",
+      "resultRu": "Проверены толщина, ровность и состояние слоя в заявленном узле."
+    },
+    {
+      "id": "completion",
+      "ordinal": 60,
+      "titleRu": "Очистить инструмент и сдать рабочее место",
+      "resultRu": "Собраны упаковка и обычные остатки, инструмент и рабочее место очищены; отдельный платный вывоз не назначен."
+    }
+  ],
+  "needs": [
+    {
+      "id": "mixer-drive",
+      "titleRu": "Миксер Collomix XQ4 HF для CT29",
+      "specificationRu": "XQ4 HF, артикул29018;1500Вт,230В,HEXAFIX,до65л;один привод на один последовательный пост.",
+      "unitId": "pcs",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "costOwner": "mixer",
+      "sourceRole": "CALCULATED_SINGLE_POST_COMPATIBLE_DRIVE_PROVISION",
+      "locatorRu": "TDSстр1 APPLICATION: drill with mixer",
+      "reasonRu": "Один привод обслуживает один последовательный пост целых замесов; после работы тот же привод очищается. Это плановое обеспечение, не закупка нового инструмента и не перевод нормативных часов в фактические часы дрели.",
+      "provisionProfileId": "CT29_ONE_SEQUENTIAL_25KG_BATCH_XQ4_WK140HF_R3",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "mixer-paddle",
+      "titleRu": "Насадка Collomix WK140HF для CT29",
+      "specificationRu": "WK140HF,40113-000;HEXAFIX,135×590мм;25–35кгсмеси,min1300Вт;входит в выбранныйXQ4артикул29018.",
+      "unitId": "pcs",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "costOwner": "mixer",
+      "sourceRole": "CALCULATED_SINGLE_POST_COMPATIBLE_PADDLE_PROVISION",
+      "locatorRu": "TDSстр1 APPLICATION: drill with mixer",
+      "reasonRu": "Одна насадка установлена на единственном активном приводе; она уже входит в артикул29018. Максимум31,2кгнацелыймешок подходит к паспортным25–35кг; второй заказ насадки и повторная оплата не назначаются.",
+      "provisionProfileId": "CT29_ONE_SEQUENTIAL_25KG_BATCH_XQ4_WK140HF_R3",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "mixing-vessel",
+      "titleRu": "Чистая ёмкость для целого замеса CT29",
+      "specificationRu": "Для загрузки целого мешка25кг и5,7–6,2лводы; рабочая вместимость и безопасное перемешивание по подтверждённому профилю.",
+      "unitId": "pcs",
+      "operations": [
+        "mixing"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "APPLICATION_REQUIRED_PROVISION_PROFILE_OPEN",
+      "locatorRu": "TDSстр1 APPLICATION: whole package into measured water",
+      "reasonRu": "Приготовление в ёмкости следует из способа замеса. Объём, свободный борт и количество подходящих ёмкостей не назначаются произвольно.",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "water-measure",
+      "titleRu": "Мерный кувшин Bürkle7204-1000,1л для воды CT29",
+      "specificationRu": "Полипропилен,1л,деления10мл,закрытая ручка и носик; доза6,2л=6×1л+200мл.",
+      "unitId": "pcs",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "CALCULATED_SINGLE_SERIAL_POST_CONCRETE_TOOL_PROVISION",
+      "locatorRu": "TDSстр1 APPLICATION: previously measured water; стр2 mixing ratio",
+      "reasonRu": "Один последовательный пост замеса. Один чистый мерный кувшин1л отмеряет принятую дозу6,2л как6полных наливов по1л и один налив200мл. Деления10мл позволяют прочитать200мл;7наливов не требуют7кувшинов. Принятая вода750,2л и целые мешки не меняются.",
+      "provisionProfileId": "CT29_ONE_SERIAL_WATER_DOSE_BUERKLE72041000_R3",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "metal-float",
+      "titleRu": "Гладилка STAYER0803,480×130мм для CT29",
+      "specificationRu": "Нержавеющее удлинённое полотно480×130мм, деревянная рукоять; один цельный инструмент на ручной последовательный пост.",
+      "unitId": "pcs",
+      "operations": [
+        "application",
+        "completion"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "CALCULATED_SINGLE_SERIAL_POST_CONCRETE_TOOL_PROVISION",
+      "locatorRu": "TDSстр1 APPLICATION: metal long float",
+      "reasonRu": "Один одновременно работающий ручной пост нанесения. Один цельный длинный полутерок480×130мм переносит и разглаживает раствор; тот же предмет затем очищается. Количество — пик одновременного использования1, не норма износа на м² и не покупка нового полутерка на каждый этап.",
+      "provisionProfileId": "CT29_ONE_SERIAL_APPLICATION_STAYER0803_R3",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "sprayer",
+      "titleRu": "Распылитель чистой воды для ухода CT29",
+      "specificationRu": "Лёгкое распыление воды для защиты нанесённого слоя от быстрого высыхания.",
+      "unitId": "pcs",
+      "operations": [
+        "curing"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "TDS_NAMES_METHOD_NOT_PROVISION",
+      "locatorRu": "TDSстр2 OTHER INFORMATION: slight water spray",
+      "reasonRu": "Способ ухода требует подходящего распыления; модель, число распылителей и обеспечивающий профиль не подтверждены.",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "skin-protection",
+      "titleRu": "Защитные перчатки для работы с цементным CT29",
+      "specificationRu": "Защита кожи от щелочного цементного состава; совместимая спецификация и обеспечение исполнителей требуют подтверждения.",
+      "unitId": "pcs",
+      "operations": [
+        "mixing",
+        "application",
+        "completion"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "TDS_NAMES_PROTECTION_NOT_PROVISION",
+      "locatorRu": "TDSстр2: protect skin and eyes",
+      "reasonRu": "Необходимость защиты кожи известна; конкретная совместимая спецификация и количество не выводятся из процента накладных.",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "eye-protection",
+      "titleRu": "Защитные очки при приготовлении и нанесении CT29",
+      "specificationRu": "Защита глаз при работе с цементной смесью и раствором.",
+      "unitId": "pcs",
+      "operations": [
+        "mixing",
+        "application",
+        "completion"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "TDS_NAMES_PROTECTION_NOT_PROVISION",
+      "locatorRu": "TDSстр2: protect skin and eyes",
+      "reasonRu": "Необходимость защиты глаз известна; тип и число предоставляемых средств должны соответствовать принятой организации работ.",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "control-provision",
+      "titleRu": "Средства проверки готового основания и слоя CT29",
+      "specificationRu": "Нужны конкретные средства контроля толщины, ровности и условий в выбранном узле; состав пока не подтверждён.",
+      "unitId": "pcs",
+      "operations": [
+        "preparation-check",
+        "acceptance"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "REQUIRED_RESULT_CONTROL_PROFILE_OPEN",
+      "locatorRu": "TDSстр1 SUBSTRATE PREPARATION, APPLICATION; заявленный результат выравнивания",
+      "reasonRu": "Эта строка обозначает незакрытую потребность в конкретном составе контроля, а не подтверждённый комплект с количеством1.",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "access-provision",
+      "titleRu": "Средства доступа к рабочей зоне CT29",
+      "specificationRu": "Для принятой высотыдо3,5м нужны конкретные допустимые подмости/инвентарь с рабочей площадкой и нагрузкой.",
+      "unitId": "pcs",
+      "operations": [
+        "preparation-check",
+        "application",
+        "curing",
+        "acceptance"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "OVERHEAD_COST_ONLY_PHYSICAL_PROFILE_OPEN",
+      "locatorRu": "КРЕР15§1.2(a); накладныеприл6III.1–2 подтверждают стоимость, не физическую обеспеченность",
+      "reasonRu": "Обычная область высоты и включённые затраты не устанавливают конкретную конструкцию, рабочую высоту, число и режим перестановок.",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "kr-overheads-method.pdf",
+          "url": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/nakladnyerashodyvstroitelstv-938692055ac0ce2a6.16153263.pdf",
+          "sha256": "89afde6f0135bb465db576dc8e6d1a1154054df6887e8011447e6fcdee114a76",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/kr-overheads-method.pdf"
+        },
+        {
+          "file": "KRER-15.pdf",
+          "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+          "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/KRER-15.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "handling-provision",
+      "titleRu": "Фактическое обеспечение подачи мешков CT29",
+      "specificationRu": "Нужна подходящая схема перемещения целых25кгмешков до места замеса и подачи готового состава.",
+      "unitId": "item",
+      "operations": [
+        "handling",
+        "mixing",
+        "application"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "NORMATIVE_MACHINE_ALLOCATION_NOT_PHYSICAL_HANDLING_PROFILE",
+      "locatorRu": "КРЕР15-02-019-03: нормативные погрузчик и подъёмник; фактическая схема этим не задана",
+      "reasonRu": "Сохранённые0,04/0,16маш.-чна100м² являются нормативными затратами; они не доказывают применимость и достаточность фактической техники на объекте.",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "KRER-15.pdf",
+          "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+          "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/KRER-15.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "cleanup-provision",
+      "titleRu": "Инвентарь сбора упаковки и остатков CT29",
+      "specificationRu": "Конкретный состав уборочного инвентаря для обычных остатков выбранной операции ещё требуется подтвердить.",
+      "unitId": "pcs",
+      "operations": [
+        "completion"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "OVERHEAD_COST_ONLY_PHYSICAL_PROFILE_OPEN",
+      "locatorRu": "Накладныеприл6III.11–12: граница уборки при сдаче",
+      "reasonRu": "Стоимость обычной уборки имеет владельца, но конкретный физический набор и расходники этим не установлены; моющая химия автоматически не назначается.",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "kr-overheads-method.pdf",
+          "url": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/nakladnyerashodyvstroitelstv-938692055ac0ce2a6.16153263.pdf",
+          "sha256": "89afde6f0135bb465db576dc8e6d1a1154054df6887e8011447e6fcdee114a76",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/kr-overheads-method.pdf"
+        },
+        {
+          "file": "KRER-15.pdf",
+          "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+          "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/KRER-15.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "wash-water",
+      "titleRu": "Вода для очистки оборудования и инструмента CT29",
+      "specificationRu": "Отдельное от замеса и ухода назначение; способ очистки и расчётное обеспечение требуют технологического профиля.",
+      "unitId": "l",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "CLEANUP_PHYSICAL_WATER_PROFILE_OPEN",
+      "locatorRu": "Требование чистого замеса и очистки рабочего места; числового расхода вTDSнет",
+      "reasonRu": "Рецепт воды замеса не покрывает промывку. Литровая норма, применимый способ и включённое обеспечение не подтверждены.",
+      "category": "material",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "adjacent-protection",
+      "titleRu": "Защита смежных поверхностей при работе CT29",
+      "specificationRu": "Применимость, конкретный защитный материал и требуемая геометрия защиты должны быть определены выбранным профилем.",
+      "unitId": "m2",
+      "operations": [
+        "mixing",
+        "application",
+        "completion"
+      ],
+      "costOwner": "labor",
+      "sourceRole": "APPLICABILITY_AND_PROVISION_PROFILE_OPEN",
+      "locatorRu": "MASTER2.6§10Д.5: проверить применимость защиты смежных поверхностей",
+      "reasonRu": "Применимость пока не установлена; потребность не скрывается как выполненная и не заменяется выдуманной площадью плёнки.",
+      "category": "material",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "power-provision",
+      "titleRu": "Электропитание поста приготовления CT29",
+      "specificationRu": "Точка230В/50Гц для1500Вт, с УЗО номинального дифференциального тока не более30мА и допустимым подключением по руководству; новый кабель/генератор автоматически не назначаются.",
+      "unitId": "item",
+      "operations": [
+        "mixing"
+      ],
+      "costOwner": "mixer",
+      "sourceRole": "ELECTRICAL_PROVISION_PROFILE_OPEN",
+      "locatorRu": "CollomixXQ07044,PDFс12–13:230В/50Гц,1500Вт; подключать черезУЗО rated30mAorless. Физическое предоставление и схема точки ещё требуют профиля.",
+      "reasonRu": "Нужен применимый подтверждённый способ электропитания/подключения поста; количество энергии и новый кабель/генератор произвольно не назначаются.",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "requirementsEvidence": [
+        {
+          "file": "COLLOMIX_XQ_230V_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/01%20R%C3%BChrwerke/XQ/BA_XQ1_4_6_230V_Multi_07044_ebook.pdf",
+          "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "hearing-protection",
+      "titleRu": "Защита слуха при работе миксером CT29",
+      "category": "equipment",
+      "unitId": "pcs",
+      "operations": [
+        "mixing"
+      ],
+      "costOwner": "labor",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "sourceRole": "APPLICATION_REQUIRED_PROVISION_OR_APPLICABILITY_PROFILE_OPEN",
+      "specificationRu": "Подходящая защита слуха исполнителя работающегоXQ4; точный вид и число пока не подтверждены.",
+      "locatorRu": "CollomixXQmanual07044,PDFс13: ear protection.",
+      "reasonRu": "Руководство выбранного привода требует защиты слуха. Её конкретное обеспечение не следует из наличия очков/перчаток или включённой стоимости инвентаря.",
+      "requirementsEvidence": [
+        {
+          "file": "COLLOMIX_XQ_230V_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/01%20R%C3%BChrwerke/XQ/BA_XQ1_4_6_230V_Multi_07044_ebook.pdf",
+          "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "work-clothing",
+      "titleRu": "Прилегающая рабочая одежда оператора миксера CT29",
+      "category": "equipment",
+      "unitId": "pcs",
+      "operations": [
+        "mixing"
+      ],
+      "costOwner": "labor",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "sourceRole": "APPLICATION_REQUIRED_PROVISION_OR_APPLICABILITY_PROFILE_OPEN",
+      "specificationRu": "Прилегающая одежда без свободных частей у вращающегося инструмента; конкретное обеспечение исполнителя требует профиля.",
+      "locatorRu": "CollomixXQmanual07044,PDFс13: close-fitting work clothes.",
+      "reasonRu": "Требование к одежде опубликовано отдельно от защиты кожи цементного состава. Готовый комплект с произвольным количеством1 не назначен.",
+      "requirementsEvidence": [
+        {
+          "file": "COLLOMIX_XQ_230V_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/01%20R%C3%BChrwerke/XQ/BA_XQ1_4_6_230V_Multi_07044_ebook.pdf",
+          "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "dust-protection-profile",
+      "titleRu": "Защита от пыли при загрузке CT29",
+      "category": "service",
+      "unitId": "item",
+      "operations": [
+        "mixing"
+      ],
+      "costOwner": "labor",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "sourceRole": "APPLICATION_REQUIRED_PROVISION_OR_APPLICABILITY_PROFILE_OPEN",
+      "specificationRu": "Применимость пылеподавления и респираторной защиты к загрузке сухого25кгмешка должна быть определена конкретным способом.",
+      "locatorRu": "CollomixXQmanual07044,PDFс13: dustmask recommendation for high dust.",
+      "reasonRu": "Руководство задаёт условную рекомендацию. Малопыльный способ пока не доказан; тип/количество респираторов или отсутствие необходимости не выдумываются.",
+      "requirementsEvidence": [
+        {
+          "file": "COLLOMIX_XQ_230V_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/01%20R%C3%BChrwerke/XQ/BA_XQ1_4_6_230V_Multi_07044_ebook.pdf",
+          "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "drive-dry-cloth",
+      "titleRu": "Сухая ткань для очистки корпуса миксера CT29",
+      "category": "material",
+      "unitId": "pcs",
+      "operations": [
+        "completion"
+      ],
+      "costOwner": "mixer",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "sourceRole": "APPLICATION_REQUIRED_PROVISION_OR_APPLICABILITY_PROFILE_OPEN",
+      "specificationRu": "Сухая очищающая ткань для загрязнений корпусаXQ4; не подмена мойки насадки и не химический детергент.",
+      "locatorRu": "CollomixXQmanual07044,PDFс15: dry cleaning cloth.",
+      "reasonRu": "Способ сухой очистки привода прямо указан. Число пригодных тканей и их предоставление остаются внутренней потребностью, отдельный универсальный моющий состав не назначен.",
+      "requirementsEvidence": [
+        {
+          "file": "COLLOMIX_XQ_230V_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/01%20R%C3%BChrwerke/XQ/BA_XQ1_4_6_230V_Multi_07044_ebook.pdf",
+          "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "coupling-maintenance",
+      "titleRu": "Обслуживание муфты HEXAFIX миксера CT29",
+      "category": "service",
+      "unitId": "item",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "costOwner": "mixer",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "sourceRole": "APPLICATION_REQUIRED_PROVISION_OR_APPLICABILITY_PROFILE_OPEN",
+      "specificationRu": "Чистая свободно действующая муфта; периодическая подходящая смазка по руководству или подтверждённое актуальное обслуживание.",
+      "locatorRu": "CollomixXQmanual07044,PDFс15: clean HEXAFIX and periodic suitable grease.",
+      "reasonRu": "Нужна подтверждённая пригодность/обслуживание муфты. Периодичность не превращается в новую покупку смазки на каждый мешок; применимость и обеспечение обслуживания пока открыты.",
+      "requirementsEvidence": [
+        {
+          "file": "COLLOMIX_XQ_230V_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/01%20R%C3%BChrwerke/XQ/BA_XQ1_4_6_230V_Multi_07044_ebook.pdf",
+          "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "batch-cycle-provision",
+      "titleRu": "Организация замесов и нанесения CT29 в пределах2ч",
+      "category": "service",
+      "unitId": "item",
+      "operations": [
+        "mixing",
+        "application"
+      ],
+      "costOwner": "labor",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "sourceRole": "APPLICATION_REQUIRED_PROVISION_OR_APPLICABILITY_PROFILE_OPEN",
+      "specificationRu": "Проверяемая последовательность целых замесов, передачи/выработки состава до2ч и пауз работыXQ4 в допустимых условиях.",
+      "locatorRu": "CT29en_GL,PDFс2: pot life up to2h; CollomixXQmanual,PDFс14: not continuous operation.",
+      "reasonRu": "Совместимость привода и насадки не задаёт фактических длительностей цикла. Нормативные часы не переведены в минуты дрели; организационная жизнеспособность остаётся самостоятельной внутренней потребностью.",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        },
+        {
+          "file": "COLLOMIX_XQ_230V_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/01%20R%C3%BChrwerke/XQ/BA_XQ1_4_6_230V_Multi_07044_ebook.pdf",
+          "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    },
+    {
+      "id": "curing-labor",
+      "titleRu": "Труд ухода за нанесённым слоем CT29",
+      "category": "labor",
+      "unitId": "man_hour",
+      "operations": [
+        "curing"
+      ],
+      "costOwner": "labor",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "sourceRole": "APPLICATION_REQUIRED_PROVISION_OR_APPLICABILITY_PROFILE_OPEN",
+      "specificationRu": "Применимые действия, продолжительность и граница включённости труда лёгкого распыления и защиты от быстрого высыхания.",
+      "locatorRu": "CT29en_GL,PDFс2 OTHER INFORMATION; geometryR1 openAuthorObligations.",
+      "reasonRu": "Норма труда и его стоимость/включённость требуют отдельного подтверждения. Неизвестный труд не покрывается автоматически основными51,89чел.-ч/100м² и не начисляется вторым платежом до выяснения границы.",
+      "requirementsEvidence": [
+        {
+          "file": "CT29-en_GL.pdf",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+          "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/CT29-en_GL.pdf"
+        }
+      ],
+      "numericEvidenceAccepted": false
+    }
+  ],
+  "notApplicable": [
+    {
+      "id": "external-reinforcement",
+      "operations": [
+        "application"
+      ],
+      "category": "fastener",
+      "reasonRu": "Это один слойCT29en_GLс микроволокном по готовому пригодному основанию; внешний крепёж, уголки и сетка не заданы выбранной технологией. Узел с армированием требует другой совместимой ветви."
+    },
+    {
+      "id": "texturing-float",
+      "operations": [
+        "application"
+      ],
+      "category": "tool",
+      "reasonRu": "Фактурное структурирование войлочным или пенополистирольным полутерком описано как возможность, а заявленный результат здесь — гладкое ручное выравнивание."
+    },
+    {
+      "id": "universal-detergent",
+      "operations": [
+        "completion"
+      ],
+      "category": "consumable",
+      "reasonRu": "Технология не задаёт универсальной химической мойки. Необходимость химикатов нельзя получить только из перечня накладных расходов."
+    }
+  ],
+  "readiness": {
+    "physicalResourceCoverageComplete": false,
+    "fullTechnicalAcceptance": false,
+    "requiredUserTechnicalQuestions": 0,
+    "numericNormsIntroduced": 0,
+    "ruleRu": "Неподтверждённые количества остаются внутренними задачами приложения. Ни1неизвестныйкомплект, ни0, ни цена, ни ссылка на общий труд не подтверждают обеспечение. Конкретные привод, насадка, мерный кувшин и длинная гладилка рассчитаны по совместимым профилям последовательных постов. Вода ухода и остальные открытые потребности этим не закрыты.",
+    "knownPlannedPhysicalComponents": 4,
+    "independentPrimaryManualReviewFindingsAddressed": [
+      "CT29-R3-IR-01",
+      "CT29-R3-IR-02",
+      "CT29-R3-IR-03",
+      "CT29-R3-IR-04",
+      "CT29-R3-IR-05",
+      "CT29-R3-IR-06"
+    ]
+  },
+  "mixingDriveProfile": {
+    "id": "CT29_ONE_SEQUENTIAL_25KG_BATCH_XQ4_WK140HF_R3",
+    "status": "PLANNED_TECHNOLOGICAL_PROVISION_NOT_ACTUAL_SITE_DELIVERY",
+    "organizationRu": "Один одновременно работающий пост приготовления; целые25кгзамесы выполняются последовательно. В каждый момент требуется один привод и одна установленная насадка. Оба предмета затем очищаются, а не покупаются заново для операции очистки. Нет заявления об одновременном снабжении нескольких постов, фактической производительности или времени дрели.",
+    "drive": {
+      "sku": "29018",
+      "model": "Collomix XQ4 HF",
+      "voltageV": 230,
+      "powerW": 1500,
+      "standardPaddleMaxDiameterMm": 140,
+      "maxMixingL": 65,
+      "coupling": "HEXAFIX",
+      "suppliedPaddleSku": "40113-000"
+    },
+    "paddle": {
+      "sku": "40113-000",
+      "model": "WK140HF",
+      "diameterMm": 135,
+      "lengthMm": 590,
+      "minDriveW": 1300,
+      "mixingMinKg": 25,
+      "mixingMaxKg": 35,
+      "coupling": "HEXAFIX",
+      "materialScopeRu": "Готовые строительные растворы/штукатурки мягкопластичной консистенции; перемешивание снизу вверх."
+    },
+    "batch": {
+      "dryKg": 25,
+      "waterMinL": 5.7,
+      "waterMaxL": 6.2,
+      "planningWaterKgPerL": 1,
+      "maximumPlanningWetKg": 31.2
+    },
+    "requiredSimultaneousFunctionalCount": 1,
+    "countExpression": "min(1,ct29_whole_batches)",
+    "costOwnerKey": "mixer",
+    "numericManufacturerCrewNormClaimed": false,
+    "timeTransferFrom65LMixerClaimed": false,
+    "stillOpenRu": [
+      "Подходящая ёмкость с достаточным рабочим объёмом/фиксацией.",
+      "Подтверждённое средство дозирования воды.",
+      "Электропитание, обслуживание/очистка и организационная жизнеспособность всего цикла не закрываются паспортом привода."
+    ],
+    "sources": [
+      {
+        "file": "COLLOMIX_XQ4.html",
+        "url": "https://www.collomix.com/de-de/produkte/ruehrwerke/xq4-ruehrwerk",
+        "sha256": "54e416dc730bc476b1e552f3cf10171ce6c60a083842389c4243b0a13b2690d6",
+        "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ4.html"
+      },
+      {
+        "file": "COLLOMIX_WK.html",
+        "url": "https://www.collomix.com/de-de/produkte/ruehrstaebe-ruehrquirle/wk",
+        "sha256": "071cfcbf72e97839479850cebcc17a8f84719f9128f494b91a0c6a941643e257",
+        "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_WK.html"
+      },
+      {
+        "file": "COLLOMIX_XQ_230V_MANUAL.pdf",
+        "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/01%20R%C3%BChrwerke/XQ/BA_XQ1_4_6_230V_Multi_07044_ebook.pdf",
+        "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+        "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf"
+      },
+      {
+        "file": "COLLOMIX_PADDLES.pdf",
+        "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/02%20R%C3%BChrer/DB_SammelprospektR%C3%BChrer_DE_45004_ebook.pdf",
+        "sha256": "5fc27fe728dccbd25f4a4e6ce42340c5fc24d531948ce61806a953235844a337",
+        "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_PADDLES.pdf"
+      }
+    ],
+    "locatorsRu": [
+      "XQ4official: артикул29018 сWK140HF,1500Вт,230В,65л.",
+      "Паспортнасадок45004DE©2025,PDFс3,40113-000WK140HF:25–35кг,135мм,590мм,HEXAFIX,min1300Вт.",
+      "XQmanual07044,PDFс2:WK140дляXQ4;с12:максимум140ммдляобычныхнасадок;с14:строительныерастворы,не непрерывныйрежим;с15:очистканемедленнопослеработы."
+    ],
+    "compatibilityChecksRu": [
+      "30,7–31,2кгготовогопланацелогомешка находитсявпределах25–35кгнасадки.",
+      "135ммнасадки не превышает140ммпривода;HEXAFIXсовпадает.",
+      "1500Втпривода не ниже1300Втдлянасадки.",
+      "Это выбранный составительский организационный профиль одного поста, а не норма изготовителя на число рабочих или площадь."
+    ]
+  },
+  "handToolProfiles": [
+    {
+      "id": "CT29_ONE_SERIAL_APPLICATION_STAYER0803_R3",
+      "resourceKey": "metal-float",
+      "model": "STAYER0803",
+      "requiredCount": 1,
+      "countExpression": "min(1,ct29_whole_batches)",
+      "operations": [
+        "application",
+        "completion"
+      ],
+      "costOwnerKey": "labor",
+      "specification": {
+        "bladeLengthMm": 480,
+        "bladeWidthMm": 130,
+        "bladeMaterial": "stainless_steel",
+        "integralHandle": "wood",
+        "externalDriveRequired": false
+      },
+      "derivationRu": "Один одновременно работающий ручной пост нанесения. Один цельный длинный полутерок480×130мм переносит и разглаживает раствор; тот же предмет затем очищается. Количество — пик одновременного использования1, не норма износа на м² и не покупка нового полутерка на каждый этап.",
+      "sources": [
+        {
+          "file": "STAYER_0803.html",
+          "url": "https://stayer-tools.com/malyarno-shtukaturnye-instrumenty/shtukaturnyy-instrument/gladilki/shveytsarskie/0803-4e/?ID=960653",
+          "sha256": "9c720feb06e637a70f671e4413992e8ee31ed751e47d3a727223267988d7688a",
+          "bytes": 150919,
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/STAYER_0803.html"
+        }
+      ],
+      "locatorsRu": [
+        "ОфициальнаяSTAYER0803: нержавеющее полотно480×130мм с деревянной рукоятью; применение — нанесение и распределение штукатурных смесей. HenkelCT29en_GLс1: metal long float."
+      ],
+      "limitsRu": [
+        "Доступ, СИЗ, контроль ровности и вода очистки остаются отдельными потребностями. Производительность и срок службы из длины полотна не выведены."
+      ]
+    },
+    {
+      "id": "CT29_ONE_SERIAL_WATER_DOSE_BUERKLE72041000_R3",
+      "resourceKey": "water-measure",
+      "model": "Bürkle7204-1000",
+      "requiredCount": 1,
+      "countExpression": "min(1,ct29_whole_batches)",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "costOwnerKey": "labor",
+      "specification": {
+        "nominalMl": 1000,
+        "graduationMl": 10,
+        "material": "PP",
+        "integralHandle": "closed",
+        "spout": true,
+        "acceptedDoseMl": 6200,
+        "fullFills": 6,
+        "partialFillMl": 200
+      },
+      "derivationRu": "Один последовательный пост замеса. Один чистый мерный кувшин1л отмеряет принятую дозу6,2л как6полных наливов по1л и один налив200мл. Деления10мл позволяют прочитать200мл;7наливов не требуют7кувшинов. Принятая вода750,2л и целые мешки не меняются.",
+      "sources": [
+        {
+          "file": "BUERKLE_7204_1000.html",
+          "url": "https://www.buerkle.de/en/industrial-measuring-jug-with-closed-handle_p7204-1000",
+          "sha256": "c6ca6b7bcbc56120707ce4c624acd3d4aa078546e588859132cf58a3b7499770",
+          "bytes": 405078,
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/BUERKLE_7204_1000.html"
+        }
+      ],
+      "locatorsRu": [
+        "ОфициальнаяBürkle7204-1000: PP,1л,деление10мл,закрытая ручка и носик; две читаемые шкалы. HenkelCT29en_GLс1–2: заранее отмеренная чистая холодная вода5,7–6,2л на25кг."
+      ],
+      "limitsRu": [
+        "Это средство измерения, не источник водоснабжения и не вода промывки. Кувшин выделен чистой воде, не цементному раствору; фактическая чистота/читаемость проверяется перед использованием."
+      ]
+    }
+  ]
+}

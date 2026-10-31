@@ -1,0 +1,1705 @@
+{
+  "contractVersion": "canonical-legacy-operation-display/v1",
+  "version": "fan-five-saved-v4",
+  "entries": [
+    {
+      "revisionId": "10dcc3ab-d37e-45cc-b356-7bda7d7be388",
+      "releaseId": "e09f8912-8ed0-51f8-9fdb-3703d5bf08e8",
+      "checksumSha256": "2a11f4638f6dd152c614bba3225f449a97b6643f772949187e0a15198ff525f6",
+      "expectedResources": [
+        {
+          "rowId": "factory-fan:axial-125-plain:owner",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-plain:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-plain:fixings",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-plain:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-plain:seal",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-plain:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-plain:manual",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-plain:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-plain:box",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-plain:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:site-fixings",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:site-fixings",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Крепление вентилятора к основанию сверх доказанной поставки",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:duct-interface",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:duct-interface",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Воздуховод и примыкание выбранного вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:electrical-cable",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:electrical-cable",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Кабель и материалы электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:isolator",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:isolator",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Устройство полного отключения питания вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:installation-labour",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:installation-labour",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Квалифицированный труд монтажа и электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:drill",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:drill",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Дрель для крепёжных отверстий вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:drill-bit",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:drill-bit",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Сверло по фактическому основанию вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:marking-pencil",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:marking-pencil",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Карандаш для разметки крепления вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:screwdriver",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:screwdriver",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Отвёртка для монтажного крепежа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:electrical-tools",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:electrical-tools",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Инструмент квалифицированного электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:access",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:access",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Безопасный доступ к месту установки вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:ppe",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:ppe",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Средства защиты для монтажа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:delivery-handling",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:delivery-handling",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Доставка, разгрузка и подача вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:cleanup-waste",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:cleanup-waste",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Сбор, погрузка, транспорт и передача упаковки и отходов монтажа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        }
+      ],
+      "replacementRowIds": [
+        "factory-fan:onsite:site-fixings",
+        "factory-fan:onsite:electrical-cable",
+        "factory-fan:onsite:isolator",
+        "factory-fan:onsite:installation-labour",
+        "factory-fan:onsite:drill",
+        "factory-fan:onsite:drill-bit",
+        "factory-fan:onsite:marking-pencil",
+        "factory-fan:onsite:screwdriver",
+        "factory-fan:onsite:electrical-tools",
+        "factory-fan:onsite:access",
+        "factory-fan:onsite:ppe"
+      ],
+      "target": {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "manufacturer-factory:fan-wet",
+        "groupTitleRu": "монтаж вентилятора во влажной зоне",
+        "operationId": "factory-fan:onsite:operation:installation-labour",
+        "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+        "processOrdinal": 30,
+        "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+      },
+      "resourceKindsByRowId": {
+        "factory-fan:onsite:site-fixings": "MATERIAL",
+        "factory-fan:onsite:duct-interface": "MATERIAL",
+        "factory-fan:onsite:electrical-cable": "MATERIAL",
+        "factory-fan:onsite:isolator": "EQUIPMENT",
+        "factory-fan:onsite:installation-labour": "LABOR",
+        "factory-fan:onsite:drill": "TOOL",
+        "factory-fan:onsite:drill-bit": "ACCESSORY",
+        "factory-fan:onsite:marking-pencil": "TOOL",
+        "factory-fan:onsite:screwdriver": "TOOL",
+        "factory-fan:onsite:electrical-tools": "TOOL",
+        "factory-fan:onsite:access": "EQUIPMENT",
+        "factory-fan:onsite:ppe": "PPE",
+        "factory-fan:onsite:delivery-handling": "TRANSPORT",
+        "factory-fan:onsite:cleanup-waste": "SERVICE"
+      },
+      "operationTitlesByRowId": {
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду",
+        "factory-fan:axial-125-plain:owner": "Комплектация вентилятора",
+        "factory-fan:axial-125-plain:fixings": "Комплектация вентилятора",
+        "factory-fan:axial-125-plain:seal": "Комплектация вентилятора",
+        "factory-fan:axial-125-plain:manual": "Комплектация вентилятора",
+        "factory-fan:axial-125-plain:box": "Комплектация вентилятора"
+      },
+      "resourceNamesByRowId": {
+        "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
+        "factory-fan:onsite:electrical-cable": "Кабель и материалы подключения",
+        "factory-fan:onsite:isolator": "Выключатель полного отключения питания",
+        "factory-fan:onsite:drill": "Дрель",
+        "factory-fan:onsite:drill-bit": "Сверло для крепёжных отверстий",
+        "factory-fan:onsite:marking-pencil": "Карандаш для разметки",
+        "factory-fan:onsite:screwdriver": "Отвёртка",
+        "factory-fan:onsite:electrical-tools": "Инструменты электрика",
+        "factory-fan:onsite:ppe": "Средства защиты монтажника",
+        "factory-fan:onsite:installation-labour": "Труд по монтажу и подключению вентилятора",
+        "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
+        "factory-fan:onsite:access": "Оборудование для безопасного доступа",
+        "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа",
+        "factory-fan:axial-125-plain:owner": "Вытяжной вентилятор Ø125 мм, 220–240 В, 50 Гц, без таймера",
+        "factory-fan:axial-125-plain:fixings": "Шурупы и дюбели",
+        "factory-fan:axial-125-plain:seal": "Уплотнительная прокладка",
+        "factory-fan:axial-125-plain:manual": "Инструкция по установке",
+        "factory-fan:axial-125-plain:box": "Упаковочная коробка"
+      }
+    },
+    {
+      "revisionId": "7e205b46-5563-4cc0-a190-bfdd9ab371a0",
+      "releaseId": "e09f8912-8ed0-51f8-9fdb-3703d5bf08e8",
+      "checksumSha256": "4a415b347483552bf8c1b3f676c7c04fd9b4a618407e91806ffc4e8ee0e31479",
+      "expectedResources": [
+        {
+          "rowId": "factory-fan:axial-100-timer:owner",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-100-timer:fixings",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-100-timer:seal",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-100-timer:manual",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-100-timer:box",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-100-timer:setting-screwdriver",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:site-fixings",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:site-fixings",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Крепление вентилятора к основанию сверх доказанной поставки",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:duct-interface",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:duct-interface",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Воздуховод и примыкание выбранного вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:electrical-cable",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:electrical-cable",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Кабель и материалы электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:isolator",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:isolator",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Устройство полного отключения питания вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:installation-labour",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:installation-labour",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Квалифицированный труд монтажа и электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:drill",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:drill",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Дрель для крепёжных отверстий вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:drill-bit",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:drill-bit",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Сверло по фактическому основанию вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:marking-pencil",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:marking-pencil",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Карандаш для разметки крепления вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:screwdriver",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:screwdriver",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Отвёртка для монтажного крепежа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:electrical-tools",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:electrical-tools",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Инструмент квалифицированного электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:access",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:access",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Безопасный доступ к месту установки вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:ppe",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:ppe",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Средства защиты для монтажа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:delivery-handling",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:delivery-handling",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Доставка, разгрузка и подача вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:cleanup-waste",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:cleanup-waste",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Сбор, погрузка, транспорт и передача упаковки и отходов монтажа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        }
+      ],
+      "replacementRowIds": [
+        "factory-fan:onsite:site-fixings",
+        "factory-fan:onsite:electrical-cable",
+        "factory-fan:onsite:isolator",
+        "factory-fan:onsite:installation-labour",
+        "factory-fan:onsite:drill",
+        "factory-fan:onsite:drill-bit",
+        "factory-fan:onsite:marking-pencil",
+        "factory-fan:onsite:screwdriver",
+        "factory-fan:onsite:electrical-tools",
+        "factory-fan:onsite:access",
+        "factory-fan:onsite:ppe"
+      ],
+      "target": {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "manufacturer-factory:fan-wet",
+        "groupTitleRu": "монтаж вентилятора во влажной зоне",
+        "operationId": "factory-fan:onsite:operation:installation-labour",
+        "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+        "processOrdinal": 30,
+        "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+      },
+      "resourceKindsByRowId": {
+        "factory-fan:onsite:site-fixings": "MATERIAL",
+        "factory-fan:onsite:duct-interface": "MATERIAL",
+        "factory-fan:onsite:electrical-cable": "MATERIAL",
+        "factory-fan:onsite:isolator": "EQUIPMENT",
+        "factory-fan:onsite:installation-labour": "LABOR",
+        "factory-fan:onsite:drill": "TOOL",
+        "factory-fan:onsite:drill-bit": "ACCESSORY",
+        "factory-fan:onsite:marking-pencil": "TOOL",
+        "factory-fan:onsite:screwdriver": "TOOL",
+        "factory-fan:onsite:electrical-tools": "TOOL",
+        "factory-fan:onsite:access": "EQUIPMENT",
+        "factory-fan:onsite:ppe": "PPE",
+        "factory-fan:onsite:delivery-handling": "TRANSPORT",
+        "factory-fan:onsite:cleanup-waste": "SERVICE",
+        "factory-fan:axial-100-timer:setting-screwdriver": "TOOL"
+      },
+      "operationTitlesByRowId": {
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду",
+        "factory-fan:axial-100-timer:owner": "Комплектация вентилятора",
+        "factory-fan:axial-100-timer:fixings": "Комплектация вентилятора",
+        "factory-fan:axial-100-timer:seal": "Комплектация вентилятора",
+        "factory-fan:axial-100-timer:manual": "Комплектация вентилятора",
+        "factory-fan:axial-100-timer:box": "Комплектация вентилятора",
+        "factory-fan:axial-100-timer:setting-screwdriver": "Комплектация вентилятора"
+      },
+      "resourceNamesByRowId": {
+        "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
+        "factory-fan:onsite:electrical-cable": "Кабель и материалы подключения",
+        "factory-fan:onsite:isolator": "Выключатель полного отключения питания",
+        "factory-fan:onsite:drill": "Дрель",
+        "factory-fan:onsite:drill-bit": "Сверло для крепёжных отверстий",
+        "factory-fan:onsite:marking-pencil": "Карандаш для разметки",
+        "factory-fan:onsite:screwdriver": "Отвёртка",
+        "factory-fan:onsite:electrical-tools": "Инструменты электрика",
+        "factory-fan:onsite:ppe": "Средства защиты монтажника",
+        "factory-fan:onsite:installation-labour": "Труд по монтажу и подключению вентилятора",
+        "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
+        "factory-fan:onsite:access": "Оборудование для безопасного доступа",
+        "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа",
+        "factory-fan:axial-100-timer:owner": "Вытяжной вентилятор Ø100 мм, 220–240 В, 50 Гц, с таймером",
+        "factory-fan:axial-100-timer:fixings": "Шурупы и дюбели",
+        "factory-fan:axial-100-timer:seal": "Уплотнительная прокладка",
+        "factory-fan:axial-100-timer:manual": "Инструкция по установке",
+        "factory-fan:axial-100-timer:box": "Упаковочная коробка",
+        "factory-fan:axial-100-timer:setting-screwdriver": "Отвёртка для настройки таймера"
+      }
+    },
+    {
+      "revisionId": "d66bced4-e911-4942-9b73-1b1093275ac9",
+      "releaseId": "e09f8912-8ed0-51f8-9fdb-3703d5bf08e8",
+      "checksumSha256": "44716e9c6b602029ec2866419015706d07d9461648ca9507fa42074d9ac42c0b",
+      "expectedResources": [
+        {
+          "rowId": "factory-fan:axial-100-plain:owner",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-plain:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-100-plain:fixings",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-plain:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-100-plain:seal",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-plain:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-100-plain:manual",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-plain:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-100-plain:box",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-100-plain:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:site-fixings",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:site-fixings",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Крепление вентилятора к основанию сверх доказанной поставки",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:duct-interface",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:duct-interface",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Воздуховод и примыкание выбранного вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:electrical-cable",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:electrical-cable",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Кабель и материалы электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:isolator",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:isolator",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Устройство полного отключения питания вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:installation-labour",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:installation-labour",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Квалифицированный труд монтажа и электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:drill",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:drill",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Дрель для крепёжных отверстий вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:drill-bit",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:drill-bit",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Сверло по фактическому основанию вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:marking-pencil",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:marking-pencil",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Карандаш для разметки крепления вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:screwdriver",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:screwdriver",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Отвёртка для монтажного крепежа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:electrical-tools",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:electrical-tools",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Инструмент квалифицированного электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:access",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:access",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Безопасный доступ к месту установки вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:ppe",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:ppe",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Средства защиты для монтажа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:delivery-handling",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:delivery-handling",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Доставка, разгрузка и подача вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:cleanup-waste",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:cleanup-waste",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Сбор, погрузка, транспорт и передача упаковки и отходов монтажа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        }
+      ],
+      "replacementRowIds": [
+        "factory-fan:onsite:site-fixings",
+        "factory-fan:onsite:electrical-cable",
+        "factory-fan:onsite:isolator",
+        "factory-fan:onsite:installation-labour",
+        "factory-fan:onsite:drill",
+        "factory-fan:onsite:drill-bit",
+        "factory-fan:onsite:marking-pencil",
+        "factory-fan:onsite:screwdriver",
+        "factory-fan:onsite:electrical-tools",
+        "factory-fan:onsite:access",
+        "factory-fan:onsite:ppe"
+      ],
+      "target": {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "manufacturer-factory:fan-wet",
+        "groupTitleRu": "монтаж вентилятора во влажной зоне",
+        "operationId": "factory-fan:onsite:operation:installation-labour",
+        "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+        "processOrdinal": 30,
+        "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+      },
+      "resourceKindsByRowId": {
+        "factory-fan:onsite:site-fixings": "MATERIAL",
+        "factory-fan:onsite:duct-interface": "MATERIAL",
+        "factory-fan:onsite:electrical-cable": "MATERIAL",
+        "factory-fan:onsite:isolator": "EQUIPMENT",
+        "factory-fan:onsite:installation-labour": "LABOR",
+        "factory-fan:onsite:drill": "TOOL",
+        "factory-fan:onsite:drill-bit": "ACCESSORY",
+        "factory-fan:onsite:marking-pencil": "TOOL",
+        "factory-fan:onsite:screwdriver": "TOOL",
+        "factory-fan:onsite:electrical-tools": "TOOL",
+        "factory-fan:onsite:access": "EQUIPMENT",
+        "factory-fan:onsite:ppe": "PPE",
+        "factory-fan:onsite:delivery-handling": "TRANSPORT",
+        "factory-fan:onsite:cleanup-waste": "SERVICE"
+      },
+      "operationTitlesByRowId": {
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду",
+        "factory-fan:axial-100-plain:owner": "Комплектация вентилятора",
+        "factory-fan:axial-100-plain:fixings": "Комплектация вентилятора",
+        "factory-fan:axial-100-plain:seal": "Комплектация вентилятора",
+        "factory-fan:axial-100-plain:manual": "Комплектация вентилятора",
+        "factory-fan:axial-100-plain:box": "Комплектация вентилятора"
+      },
+      "resourceNamesByRowId": {
+        "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
+        "factory-fan:onsite:electrical-cable": "Кабель и материалы подключения",
+        "factory-fan:onsite:isolator": "Выключатель полного отключения питания",
+        "factory-fan:onsite:drill": "Дрель",
+        "factory-fan:onsite:drill-bit": "Сверло для крепёжных отверстий",
+        "factory-fan:onsite:marking-pencil": "Карандаш для разметки",
+        "factory-fan:onsite:screwdriver": "Отвёртка",
+        "factory-fan:onsite:electrical-tools": "Инструменты электрика",
+        "factory-fan:onsite:ppe": "Средства защиты монтажника",
+        "factory-fan:onsite:installation-labour": "Труд по монтажу и подключению вентилятора",
+        "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
+        "factory-fan:onsite:access": "Оборудование для безопасного доступа",
+        "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа",
+        "factory-fan:axial-100-plain:owner": "Вытяжной вентилятор Ø100 мм, 220–240 В, 50 Гц, без таймера",
+        "factory-fan:axial-100-plain:fixings": "Шурупы и дюбели",
+        "factory-fan:axial-100-plain:seal": "Уплотнительная прокладка",
+        "factory-fan:axial-100-plain:manual": "Инструкция по установке",
+        "factory-fan:axial-100-plain:box": "Упаковочная коробка"
+      }
+    },
+    {
+      "revisionId": "466f09bb-fbca-4194-bc5e-e6c0df688860",
+      "releaseId": "e09f8912-8ed0-51f8-9fdb-3703d5bf08e8",
+      "checksumSha256": "3899c6518951166e28f2a782ffc4785c5b51ab7f0e76ea8a33fc9c04c8c8e7cf",
+      "expectedResources": [
+        {
+          "rowId": "factory-fan:axial-125-timer:owner",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:fixings",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:seal",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:manual",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:box",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:setting-screwdriver",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:site-fixings",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:site-fixings",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Крепление вентилятора к основанию сверх доказанной поставки",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:duct-interface",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:duct-interface",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Воздуховод и примыкание выбранного вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:electrical-cable",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:electrical-cable",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Кабель и материалы электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:isolator",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:isolator",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Устройство полного отключения питания вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:installation-labour",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:installation-labour",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Квалифицированный труд монтажа и электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:drill",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:drill",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Дрель для крепёжных отверстий вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:drill-bit",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:drill-bit",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Сверло по фактическому основанию вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:marking-pencil",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:marking-pencil",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Карандаш для разметки крепления вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:screwdriver",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:screwdriver",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Отвёртка для монтажного крепежа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:electrical-tools",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:electrical-tools",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Инструмент квалифицированного электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:access",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:access",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Безопасный доступ к месту установки вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:ppe",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:ppe",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Средства защиты для монтажа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:delivery-handling",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:delivery-handling",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Доставка, разгрузка и подача вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:cleanup-waste",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-standard",
+            "operationId": "factory-fan:onsite:operation:cleanup-waste",
+            "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Сбор, погрузка, транспорт и передача упаковки и отходов монтажа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        }
+      ],
+      "replacementRowIds": [
+        "factory-fan:onsite:site-fixings",
+        "factory-fan:onsite:electrical-cable",
+        "factory-fan:onsite:isolator",
+        "factory-fan:onsite:installation-labour",
+        "factory-fan:onsite:drill",
+        "factory-fan:onsite:drill-bit",
+        "factory-fan:onsite:marking-pencil",
+        "factory-fan:onsite:screwdriver",
+        "factory-fan:onsite:electrical-tools",
+        "factory-fan:onsite:access",
+        "factory-fan:onsite:ppe"
+      ],
+      "target": {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "manufacturer-factory:fan-standard",
+        "groupTitleRu": "монтаж вентилятора в стандартной зоне",
+        "operationId": "factory-fan:onsite:operation:installation-labour",
+        "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+        "processOrdinal": 30,
+        "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+      },
+      "resourceKindsByRowId": {
+        "factory-fan:onsite:site-fixings": "MATERIAL",
+        "factory-fan:onsite:duct-interface": "MATERIAL",
+        "factory-fan:onsite:electrical-cable": "MATERIAL",
+        "factory-fan:onsite:isolator": "EQUIPMENT",
+        "factory-fan:onsite:installation-labour": "LABOR",
+        "factory-fan:onsite:drill": "TOOL",
+        "factory-fan:onsite:drill-bit": "ACCESSORY",
+        "factory-fan:onsite:marking-pencil": "TOOL",
+        "factory-fan:onsite:screwdriver": "TOOL",
+        "factory-fan:onsite:electrical-tools": "TOOL",
+        "factory-fan:onsite:access": "EQUIPMENT",
+        "factory-fan:onsite:ppe": "PPE",
+        "factory-fan:onsite:delivery-handling": "TRANSPORT",
+        "factory-fan:onsite:cleanup-waste": "SERVICE",
+        "factory-fan:axial-125-timer:setting-screwdriver": "TOOL"
+      },
+      "operationTitlesByRowId": {
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду",
+        "factory-fan:axial-125-timer:owner": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:fixings": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:seal": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:manual": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:box": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:setting-screwdriver": "Комплектация вентилятора"
+      },
+      "resourceNamesByRowId": {
+        "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
+        "factory-fan:onsite:electrical-cable": "Кабель и материалы подключения",
+        "factory-fan:onsite:isolator": "Выключатель полного отключения питания",
+        "factory-fan:onsite:drill": "Дрель",
+        "factory-fan:onsite:drill-bit": "Сверло для крепёжных отверстий",
+        "factory-fan:onsite:marking-pencil": "Карандаш для разметки",
+        "factory-fan:onsite:screwdriver": "Отвёртка",
+        "factory-fan:onsite:electrical-tools": "Инструменты электрика",
+        "factory-fan:onsite:ppe": "Средства защиты монтажника",
+        "factory-fan:onsite:installation-labour": "Труд по монтажу и подключению вентилятора",
+        "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
+        "factory-fan:onsite:access": "Оборудование для безопасного доступа",
+        "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа",
+        "factory-fan:axial-125-timer:owner": "Вытяжной вентилятор Ø125 мм, 220–240 В, 50 Гц, с таймером",
+        "factory-fan:axial-125-timer:fixings": "Шурупы и дюбели",
+        "factory-fan:axial-125-timer:seal": "Уплотнительная прокладка",
+        "factory-fan:axial-125-timer:manual": "Инструкция по установке",
+        "factory-fan:axial-125-timer:box": "Упаковочная коробка",
+        "factory-fan:axial-125-timer:setting-screwdriver": "Отвёртка для настройки таймера"
+      }
+    },
+    {
+      "revisionId": "c6b5c309-4961-4d0c-bfd3-c27ad3097704",
+      "releaseId": "e09f8912-8ed0-51f8-9fdb-3703d5bf08e8",
+      "checksumSha256": "d18a89fc253c0723d589cc34b3df6d52b70aca8712a74a43ed35df7f7997ac3f",
+      "expectedResources": [
+        {
+          "rowId": "factory-fan:axial-125-timer:owner",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:fixings",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:seal",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:manual",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:box",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:axial-125-timer:setting-screwdriver",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:axial-125-timer:operation:factory-supply",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 0,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Заводское изделие и его состав",
+            "additionalOperations": [
+              {
+                "operationId": "factory-fan:onsite:operation:installation-labour",
+                "processOrdinal": 30,
+                "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+                "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+              }
+            ],
+            "completionCriterionRu": "Изделие обеспечено в точном заводском составе выбранного профиля; монтаж не принят."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:site-fixings",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:site-fixings",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Крепление вентилятора к основанию сверх доказанной поставки",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:duct-interface",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:duct-interface",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Воздуховод и примыкание выбранного вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:electrical-cable",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:electrical-cable",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Кабель и материалы электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:isolator",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:isolator",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Устройство полного отключения питания вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:installation-labour",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:installation-labour",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Квалифицированный труд монтажа и электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:drill",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:drill",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Дрель для крепёжных отверстий вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:drill-bit",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:drill-bit",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Сверло по фактическому основанию вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:marking-pencil",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:marking-pencil",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Карандаш для разметки крепления вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:screwdriver",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:screwdriver",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Отвёртка для монтажного крепежа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:electrical-tools",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:electrical-tools",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Инструмент квалифицированного электрического подключения вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:access",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:access",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Безопасный доступ к месту установки вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:ppe",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:ppe",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Средства защиты для монтажа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:delivery-handling",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:delivery-handling",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Доставка, разгрузка и подача вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        },
+        {
+          "rowId": "factory-fan:onsite:cleanup-waste",
+          "operation": {
+            "groupId": "manufacturer-factory:fan-wet",
+            "operationId": "factory-fan:onsite:operation:cleanup-waste",
+            "groupTitleRu": "монтаж вентилятора во влажной зоне",
+            "processOrdinal": 30,
+            "contractVersion": "canonical-operation-resource/v1",
+            "operationTitleRu": "Сбор, погрузка, транспорт и передача упаковки и отходов монтажа вентилятора",
+            "completionCriterionRu": "Отдельная физическая потребность монтажа сохраняется до подтверждённого расчёта."
+          }
+        }
+      ],
+      "replacementRowIds": [
+        "factory-fan:onsite:site-fixings",
+        "factory-fan:onsite:electrical-cable",
+        "factory-fan:onsite:isolator",
+        "factory-fan:onsite:installation-labour",
+        "factory-fan:onsite:drill",
+        "factory-fan:onsite:drill-bit",
+        "factory-fan:onsite:marking-pencil",
+        "factory-fan:onsite:screwdriver",
+        "factory-fan:onsite:electrical-tools",
+        "factory-fan:onsite:access",
+        "factory-fan:onsite:ppe"
+      ],
+      "target": {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "manufacturer-factory:fan-wet",
+        "groupTitleRu": "монтаж вентилятора во влажной зоне",
+        "operationId": "factory-fan:onsite:operation:installation-labour",
+        "operationTitleRu": "Установка и подключение вытяжного вентилятора",
+        "processOrdinal": 30,
+        "completionCriterionRu": "Известное заводское изделие или штатная часть используется в монтаже; неизвестный труд и дополнительное обеспечение сохраняются."
+      },
+      "resourceKindsByRowId": {
+        "factory-fan:onsite:site-fixings": "MATERIAL",
+        "factory-fan:onsite:duct-interface": "MATERIAL",
+        "factory-fan:onsite:electrical-cable": "MATERIAL",
+        "factory-fan:onsite:isolator": "EQUIPMENT",
+        "factory-fan:onsite:installation-labour": "LABOR",
+        "factory-fan:onsite:drill": "TOOL",
+        "factory-fan:onsite:drill-bit": "ACCESSORY",
+        "factory-fan:onsite:marking-pencil": "TOOL",
+        "factory-fan:onsite:screwdriver": "TOOL",
+        "factory-fan:onsite:electrical-tools": "TOOL",
+        "factory-fan:onsite:access": "EQUIPMENT",
+        "factory-fan:onsite:ppe": "PPE",
+        "factory-fan:onsite:delivery-handling": "TRANSPORT",
+        "factory-fan:onsite:cleanup-waste": "SERVICE",
+        "factory-fan:axial-125-timer:setting-screwdriver": "TOOL"
+      },
+      "operationTitlesByRowId": {
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду",
+        "factory-fan:axial-125-timer:owner": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:fixings": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:seal": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:manual": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:box": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:setting-screwdriver": "Комплектация вентилятора"
+      },
+      "resourceNamesByRowId": {
+        "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
+        "factory-fan:onsite:electrical-cable": "Кабель и материалы подключения",
+        "factory-fan:onsite:isolator": "Выключатель полного отключения питания",
+        "factory-fan:onsite:drill": "Дрель",
+        "factory-fan:onsite:drill-bit": "Сверло для крепёжных отверстий",
+        "factory-fan:onsite:marking-pencil": "Карандаш для разметки",
+        "factory-fan:onsite:screwdriver": "Отвёртка",
+        "factory-fan:onsite:electrical-tools": "Инструменты электрика",
+        "factory-fan:onsite:ppe": "Средства защиты монтажника",
+        "factory-fan:onsite:installation-labour": "Труд по монтажу и подключению вентилятора",
+        "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
+        "factory-fan:onsite:access": "Оборудование для безопасного доступа",
+        "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа",
+        "factory-fan:axial-125-timer:owner": "Вытяжной вентилятор Ø125 мм, 220–240 В, 50 Гц, с таймером",
+        "factory-fan:axial-125-timer:fixings": "Шурупы и дюбели",
+        "factory-fan:axial-125-timer:seal": "Уплотнительная прокладка",
+        "factory-fan:axial-125-timer:manual": "Инструкция по установке",
+        "factory-fan:axial-125-timer:box": "Упаковочная коробка",
+        "factory-fan:axial-125-timer:setting-screwdriver": "Отвёртка для настройки таймера"
+      }
+    }
+  ]
+}

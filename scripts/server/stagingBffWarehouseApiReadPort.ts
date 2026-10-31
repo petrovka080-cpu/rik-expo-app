@@ -1,4 +1,6 @@
-import { Client, type ClientConfig } from "pg";
+import { Client } from "pg";
+import { buildBffPostgresTlsConfig } from "./stagingBffPostgresTls";
+import { applyBffReadonlyRequestIdentity } from "./stagingBffRequestAuth";
 
 import {
   WAREHOUSE_API_BFF_REFERENCE_PAGE_DEFAULTS,
@@ -314,13 +316,6 @@ export function buildWarehouseApiReadQueryPlans(
   ];
 }
 
-const resolvePgSsl = (connectionString: string): ClientConfig["ssl"] => {
-  const url = new URL(connectionString);
-  const sslmode = url.searchParams.get("sslmode") ?? "require";
-  if (sslmode === "disable") return false;
-  return { rejectUnauthorized: sslmode === "verify-full" };
-};
-
 const runPlanRows = async (
   client: Client,
   queryPlan: WarehouseApiBffReadonlyQueryPlan,
@@ -329,6 +324,7 @@ const runPlanRows = async (
   try {
     await client.query("begin read only");
     transactionStarted = true;
+    await applyBffReadonlyRequestIdentity(client);
     const result = await client.query<PgQueryRow>(queryPlan.sql, [...queryPlan.values]);
     await client.query("commit");
     transactionStarted = false;
@@ -373,11 +369,10 @@ const runWarehouseApiRead = async (
   const plans = buildWarehouseApiReadQueryPlans(input);
   const client = new Client({
     application_name: "rik_staging_bff_warehouse_api_readonly",
-    connectionString,
+    ...buildBffPostgresTlsConfig(connectionString),
     connectionTimeoutMillis: DEFAULT_CONNECTION_TIMEOUT_MS,
     query_timeout: DEFAULT_QUERY_TIMEOUT_MS,
     statement_timeout: DEFAULT_QUERY_TIMEOUT_MS,
-    ssl: resolvePgSsl(connectionString),
   });
 
   try {

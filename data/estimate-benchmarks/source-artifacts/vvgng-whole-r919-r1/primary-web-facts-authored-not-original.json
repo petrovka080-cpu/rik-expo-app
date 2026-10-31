@@ -1,0 +1,77 @@
+{
+  "kind": "AUTHORED_PRIMARY_WEB_REVIEW_NOT_ORIGINAL_HTML",
+  "originalArtifactSha256": null,
+  "localFetch": "HTTP403 recorded separately",
+  "sourceAuthorityPromoted": false,
+  "facts": [
+    {
+      "id": "solid-lug",
+      "url": "https://www.klauke.com/gb/en/tubular-cable-lugs-cu-type-for-solid-conductors",
+      "locator": "Compatibility and ordering SR66",
+      "facts": {
+        "material": "ANNEALED_CU_TIN_PLATED",
+        "conductorClass": 1,
+        "areaMm2": 6,
+        "stud": "M6",
+        "part": "SR66",
+        "packQuantity": 25
+      },
+      "notProved": [
+        "actual apparatus",
+        "strip length",
+        "crimp count",
+        "torque",
+        "actual delivery or purchase quantity"
+      ]
+    },
+    {
+      "id": "solid-crimper",
+      "url": "https://www.klauke.com/gb/en/k-94-crimping-tool-f-tubular-cable-lugs-and-connectors-for-solid-conductors-6-10-mm",
+      "locator": "Features / range / K94",
+      "facts": {
+        "part": "K94",
+        "areaMm2": [
+          6,
+          10
+        ],
+        "conductor": "SOLID",
+        "crimp": "HEXAGONAL",
+        "fullCycleRatchet": true
+      },
+      "notProved": [
+        "crimps per lug",
+        "actual tool suitability and calibration",
+        "price coverage"
+      ]
+    },
+    {
+      "id": "wrong-crimper",
+      "url": "https://www.klauke.com/gb/en/k-05-k-05-sp-synchro-crimping-tools-f-din-compression-cable-lugs-a-connectors-6-50-mm",
+      "locator": "Not suitable for",
+      "facts": {
+        "part": "K05D",
+        "excluded": "CLASS1_CU_6_MM2"
+      },
+      "notProved": [
+        "not overridden by a broad 6–50 range or assortment box"
+      ]
+    },
+    {
+      "id": "sheath-web",
+      "url": "https://www.knipex.com/products/wire-strippers-and-stripping-tools/stripping-tools-with-scalpel-blade/stripping-tools-scalpel-blade/1620165SB?sku=1620165SB&v=72010",
+      "locator": "Earlier official web review; local original fetch403; PDF omits diameter and cap",
+      "facts": {
+        "part": "1620165SB",
+        "roundCableDiameterMm": [
+          8,
+          28
+        ],
+        "protectiveCapIncluded": true
+      },
+      "notProved": [
+        "this web capability is not claimed to be in the captured PDF",
+        "current source revision adoption"
+      ]
+    }
+  ]
+}

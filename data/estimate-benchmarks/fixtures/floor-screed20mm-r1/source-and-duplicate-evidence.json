@@ -1,0 +1,133 @@
+{
+  "status": "SOURCE_VERIFIED_BOUNDED_HISTORICAL_COMPARISON_CURRENT_ADMISSION_PENDING",
+  "reviewedAt": "2026-10-19",
+  "norm": "11-01-011-01",
+  "quantityBasis": "100 m2 screed",
+  "exactThicknessMm": 20,
+  "sourceFileSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223",
+  "primaryUrl": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/no11poly_compressed-73969083537959524.32310342.pdf",
+  "technicalLocators": [
+    "Printed/PDF16 table11-01-011 work composition for01 only: prepare base, place+level mortar, curing",
+    "Printed/PDF17 first column11-01-011-01,100m2 measure",
+    "Printed/PDF5 point1.2 aggressive-ground additions excluded by required project scope fact"
+  ],
+  "primaryImages": [
+    {
+      "path": "krer11-page16.png",
+      "sha256": "4cf09daf9c1d1a23f09aecd28e83954c17525fdbc4ca9a29a17a1f7de960adc5"
+    },
+    {
+      "path": "krer11-page17.png",
+      "sha256": "310d47bfec763fd1d5e2a6e2d6d0d1b73ffc89240f51d2fb7148a98b3fecc55f"
+    },
+    {
+      "path": "krer11-page5.png",
+      "sha256": "06f271150724b7ec8088e17470e74c1cde0597972c94d6296e858139d871c3f0"
+    }
+  ],
+  "currentWebVerification": {
+    "status": "ATTEMPTED_PRIMARY_URL_FETCH_FAILED_NOT_REPLACED_BY_SECONDARY",
+    "officialPage": "https://minstroy.gov.kg/ru/kyzmat/427/show",
+    "failure": "Web tool returned502/timeout on official page/pdf on2026-10-19",
+    "archivedPrimaryBytesVerified": true,
+    "allLaterAmendmentsVerified": false
+  },
+  "boundedHistoricalDuplicateCheck": {
+    "headerCount": 9,
+    "passportCount": 8,
+    "notGlobalAbsence": true,
+    "currentReadRequired": true,
+    "definitionReleaseId": "d7fa85c8-5625-5944-9324-ca230164a29b",
+    "searchReleaseId": "4a02da73-a313-54ce-986e-d29df1e54e22",
+    "candidates": [
+      {
+        "catalogId": "canonical-work:base:demolition_interior_screed_remove_large_area",
+        "definitionHash": "848e03b0cb810f49621f75b75c41d1ec40c7a9be9bf7d2bbccc3f17303842299",
+        "physicalResult": "Подтверждённая большая площадь существующей цементно-песчаной стяжки демонтирована, а защита, оборудование и отходы учтены по прямым проектным данным",
+        "disposition": "DIFFERENT_SCOPE_IN_CAPTURED_HEADER_NOT_CURRENT_IDENTITY_ADMISSION"
+      },
+      {
+        "catalogId": "canonical-work:base:demolition_interior_screed_remove_small_area",
+        "definitionHash": "1fea54fc9678e351a331f28e92669723daa677bd542c7334628c61b1fd0683c9",
+        "physicalResult": "Подтверждённая площадь существующей цементно-песчаной стяжки малой площади демонтирована, а защита, оборудование и отходы учтены по прямым проектным данным",
+        "disposition": "DIFFERENT_SCOPE_IN_CAPTURED_HEADER_NOT_CURRENT_IDENTITY_ADMISSION"
+      },
+      {
+        "catalogId": "canonical-work:base:demolition_interior_screed_remove_standard",
+        "definitionHash": "7e43471292092194fddee2e88e9354cbb3522c4c7d1d5ac6462a35a826cf15d7",
+        "physicalResult": "Существующая цементно-песчаная стяжка демонтирована в заданной границе, отходы учтены для передачи",
+        "disposition": "DIFFERENT_SCOPE_IN_CAPTURED_HEADER_NOT_CURRENT_IDENTITY_ADMISSION"
+      },
+      {
+        "catalogId": "canonical-work:base:demolition_interior_screed_remove_wet_zone",
+        "definitionHash": "f97003d938a3fe4df63d052852813a04404717b30415fecef845d37ec658be02",
+        "physicalResult": "Подтверждённая площадь существующей цементно-песчаной стяжки влажной зоны демонтирована, а защита, оборудование и отходы учтены по прямым проектным данным",
+        "disposition": "DIFFERENT_SCOPE_IN_CAPTURED_HEADER_NOT_CURRENT_IDENTITY_ADMISSION"
+      },
+      {
+        "catalogId": "canonical-work:master:ceramic_tile_up_to_10cm_cm11_ct17_indoor_cement_floor_standard",
+        "definitionHash": "fd6c93b988309ac68a2001fa27656a8a910727d8e7aae24488fa599d48a9ea38",
+        "physicalResult": "Раскрыты плитка по реальному артикулу, CM11, CT17, вода и кандидаты CE40/CS25; труд и полный состав швов остаются открытыми.",
+        "disposition": "DIFFERENT_SCOPE_IN_CAPTURED_HEADER_NOT_CURRENT_IDENTITY_ADMISSION"
+      },
+      {
+        "catalogId": "canonical-work:master:cn69_global_25kg_manual_dry_indoor_cement_floor_2_10mm_standard",
+        "definitionHash": "a762cffc9e6d57b27e21bf6d163c68b58dfaf048a60c8753007a9fa86bd8c9ca",
+        "physicalResult": "Раскрыты CN69, CT17, вода и конкретный инструмент; полный труд, контроль и завершение требуют источника.",
+        "disposition": "DIFFERENT_SCOPE_IN_CAPTURED_HEADER_NOT_CURRENT_IDENTITY_ADMISSION"
+      },
+      {
+        "catalogId": "canonical-work:master:demolition_concrete_floor_base_brick_rubble_460400902_standard",
+        "definitionHash": "b6d7f5702360de6e093f5be7f31996575c3c334075cb9dd4aa8178363d825295",
+        "physicalResult": "Разобрано точное бетонное основание; нормативные труд/механизмы/включённое обращение учтены; проектное завершение ограничено.",
+        "disposition": "DIFFERENT_SCOPE_IN_CAPTURED_HEADER_NOT_CURRENT_IDENTITY_ADMISSION"
+      },
+      {
+        "catalogId": "canonical-work:master:demolition_concrete_floor_base_gravel_460400901_standard",
+        "definitionHash": "d120eb253f188cc816f0978a4598c8283cd1b5c554d71819f87773d61dd2dda1",
+        "physicalResult": "Разобрано точное бетонное основание; нормативные труд/механизмы/включённое обращение учтены; проектное завершение ограничено.",
+        "disposition": "DIFFERENT_SCOPE_IN_CAPTURED_HEADER_NOT_CURRENT_IDENTITY_ADMISSION"
+      },
+      {
+        "catalogId": "canonical-work:master:egger_naturesense_aqua_el2240_592958_silenzio_duo_dry_unheated_room_standard",
+        "definitionHash": "19e09677cfd621db6154e216caca6f063b029edf6679a739f619a85eb8852ae4",
+        "physicalResult": "Три прежние материальные потребности преобразованы в точные ресурсные записи по принятой ведомости. Крепёж по подтверждённому комплекту имеет одного владельца цены. Остаток норм раскрыт.",
+        "disposition": "DIFFERENT_SCOPE_IN_CAPTURED_HEADER_NOT_CURRENT_IDENTITY_ADMISSION"
+      }
+    ],
+    "additionalRepoSource": "cn87-separation-screed-s27-54.json: manufacturer CN87 50mm on ready separation layer, not readyM15020mm; source file existence does not establish catalog absence",
+    "requiredNext": "A actual current catalog/group/passport comparison and exact identity/source collision capture before append or successor decision"
+  },
+  "sharedCoreReuse": [
+    "buildAutomaticConstructionOwnerR1",
+    "effectivePurchaseBalanceExpressionsR1",
+    "compileCanonicalEstimateCore",
+    "canonical-operation-resource/v1",
+    "canonical-derived-quantity-edit-policy/v1",
+    "existing independent completeness map validator"
+  ],
+  "resourceOwnership": {
+    "paidOwners": [
+      "whole-labor",
+      "water-order",
+      "ready-mortar-m150-order"
+    ],
+    "sharedLaborStages": [
+      "preparation",
+      "placing",
+      "curing"
+    ],
+    "sharedWaterStages": [
+      "preparation",
+      "placing",
+      "curing"
+    ],
+    "newMachinePaidOwners": 0,
+    "newOperatorPaidOwners": 0
+  },
+  "openNeeds": 5,
+  "fullTechnicalAcceptance": false,
+  "catalogIdentityAdmitted": false,
+  "published": false,
+  "astraCalls": 0
+}

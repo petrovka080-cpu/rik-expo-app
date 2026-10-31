@@ -28,7 +28,7 @@ const currentRelease = JSON.parse(readFileSync(currentReleasePath, "utf8")) as {
   searchReleaseId?: unknown;
 };
 const variantKey = String(
-  process.env.S276_F09_FIRE_ALARM_PREPARATION_VARIANT ?? "large_area",
+  process.env.S276_F09_FIRE_ALARM_PREPARATION_VARIANT ?? "standard",
 ) as FireAlarmProjectPreparationVariantKey;
 const variant = resolveFireAlarmProjectPreparationVariant(variantKey);
 const variantToken = variantKey.toUpperCase();

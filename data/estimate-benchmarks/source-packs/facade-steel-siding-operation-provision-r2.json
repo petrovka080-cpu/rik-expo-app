@@ -1,0 +1,2895 @@
+{
+  "contract": "gox-build.facade-steel-siding-historical-06501/r2",
+  "generatedFromCurrentRows": false,
+  "categoryKeys": [
+    "substrate",
+    "subsystem",
+    "insulation",
+    "membrane",
+    "cladding",
+    "anchors-fasteners",
+    "junctions-fire",
+    "mixture-water",
+    "tools-working-parts",
+    "access-lifting",
+    "labour-operators",
+    "qc-services",
+    "waste",
+    "logistics"
+  ],
+  "operations": [
+    {
+      "operationKey": "layout",
+      "titleRu": "Разметка проектного положения металлического каркаса",
+      "sourceOrdinal": 1,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+      ],
+      "wholeLabourOwner": "facade:steel-siding:krer15-06501:r2:labour",
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [
+            "labour"
+          ],
+          "sourceQuantityRules": {
+            "labour": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "drilling",
+      "titleRu": "Сверление отверстий для установки кронштейнов",
+      "sourceOrdinal": 2,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [
+        "perforator"
+      ],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+        "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+        "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+      ],
+      "wholeLabourOwner": "facade:steel-siding:krer15-06501:r2:labour",
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [
+            "labour"
+          ],
+          "sourceQuantityRules": {
+            "labour": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "brackets",
+      "titleRu": "Установка кронштейнов",
+      "sourceOrdinal": 3,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [
+        "screwdriver",
+        "dowel-screw",
+        "levelling-bracket",
+        "expansion-dowel"
+      ],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+        "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+        "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+      ],
+      "wholeLabourOwner": "facade:steel-siding:krer15-06501:r2:labour",
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [
+            "levelling-bracket"
+          ],
+          "sourceQuantityRules": {
+            "levelling-bracket": "ABSOLUTE_REAL_PROJECT_BOM"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [
+            "dowel-screw",
+            "expansion-dowel"
+          ],
+          "sourceQuantityRules": {
+            "dowel-screw": "ABSOLUTE_REAL_PROJECT_BOM",
+            "expansion-dowel": "ABSOLUTE_REAL_PROJECT_BOM"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [
+            "labour"
+          ],
+          "sourceQuantityRules": {
+            "labour": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "insulation",
+      "titleRu": "Монтаж утеплителя",
+      "sourceOrdinal": 4,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [
+        "insulation"
+      ],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+        "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+      ],
+      "wholeLabourOwner": "facade:steel-siding:krer15-06501:r2:labour",
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [
+            "insulation"
+          ],
+          "sourceQuantityRules": {
+            "insulation": "ABSOLUTE_REAL_PROJECT_BOM"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [
+            "labour"
+          ],
+          "sourceQuantityRules": {
+            "labour": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "membrane",
+      "titleRu": "Монтаж ветрогидрозащитной плёнки с подрезкой",
+      "sourceOrdinal": 5,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [
+        "weather-membrane"
+      ],
+      "independentToolNeeds": [],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+      ],
+      "wholeLabourOwner": "facade:steel-siding:krer15-06501:r2:labour",
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [
+            "weather-membrane"
+          ],
+          "sourceQuantityRules": {
+            "weather-membrane": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [
+            "labour"
+          ],
+          "sourceQuantityRules": {
+            "labour": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "profiles",
+      "titleRu": "Резка, монтаж и крепление профилей к кронштейнам",
+      "sourceOrdinal": 6,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [
+        "screwdriver",
+        "electric-grinding-machine",
+        "stud-profile"
+      ],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+        "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+        "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+        "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+        "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+        "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+      ],
+      "wholeLabourOwner": "facade:steel-siding:krer15-06501:r2:labour",
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [
+            "stud-profile"
+          ],
+          "sourceQuantityRules": {
+            "stud-profile": "ABSOLUTE_REAL_PROJECT_BOM"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [
+            "labour"
+          ],
+          "sourceQuantityRules": {
+            "labour": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "starter",
+      "titleRu": "Установка начальной планки и цокольного слива",
+      "sourceOrdinal": 7,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [
+        "screwdriver",
+        "screw",
+        "starter-strip"
+      ],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+        "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+      ],
+      "wholeLabourOwner": "facade:steel-siding:krer15-06501:r2:labour",
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [
+            "screw"
+          ],
+          "sourceQuantityRules": {
+            "screw": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [
+            "starter-strip"
+          ],
+          "sourceQuantityRules": {
+            "starter-strip": "ABSOLUTE_REAL_PROJECT_BOM"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [
+            "labour"
+          ],
+          "sourceQuantityRules": {
+            "labour": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "cladding",
+      "titleRu": "Монтаж сайдинга",
+      "sourceOrdinal": 8,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [
+        "screwdriver",
+        "screw",
+        "steel-siding"
+      ],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+        "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+        "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+        "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+        "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+      ],
+      "wholeLabourOwner": "facade:steel-siding:krer15-06501:r2:labour",
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [
+            "steel-siding"
+          ],
+          "sourceQuantityRules": {
+            "steel-siding": "ABSOLUTE_REAL_PROJECT_BOM"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [
+            "screw"
+          ],
+          "sourceQuantityRules": {
+            "screw": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [
+            "labour"
+          ],
+          "sourceQuantityRules": {
+            "labour": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "handling",
+      "titleRu": "Доставка, разгрузка, складирование и подача",
+      "sourceOrdinal": null,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [
+        "flatbed"
+      ],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+        "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+        "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+      ],
+      "wholeLabourOwner": null,
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [
+            "flatbed"
+          ],
+          "sourceQuantityRules": {
+            "flatbed": "LITERAL_NORMATIVE_RATE_NOT_FULL_PROVISION"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "access",
+      "titleRu": "Доступ, рабочие места, электропитание и защита",
+      "sourceOrdinal": null,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+      ],
+      "wholeLabourOwner": null,
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "junctions",
+      "titleRu": "Углы, проёмы, цоколь, кровля и примыкания",
+      "sourceOrdinal": null,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [
+        "cover-strip",
+        "corner-strip"
+      ],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+        "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+        "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+        "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+      ],
+      "wholeLabourOwner": null,
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [
+            "cover-strip",
+            "corner-strip"
+          ],
+          "sourceQuantityRules": {
+            "cover-strip": "ABSOLUTE_REAL_PROJECT_BOM",
+            "corner-strip": "ABSOLUTE_REAL_PROJECT_BOM"
+          },
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "SOURCE_PART_WITH_VISIBLE_REMAINDER",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "fire",
+      "titleRu": "Пожарные узлы и вентиляция",
+      "sourceOrdinal": null,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [],
+      "independentToolNeeds": [],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+      ],
+      "wholeLabourOwner": null,
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "quality",
+      "titleRu": "Входной, операционный, скрытый и приёмочный контроль",
+      "sourceOrdinal": null,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [],
+      "independentToolNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+        "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+        "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments"
+      ],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+        "facade:steel-siding:krer15-06501:r2:need:qc-services"
+      ],
+      "wholeLabourOwner": null,
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    },
+    {
+      "operationKey": "cleanup",
+      "titleRu": "Очистка, отходы и внешняя логистика",
+      "sourceOrdinal": null,
+      "allCategories": [
+        "substrate",
+        "subsystem",
+        "insulation",
+        "membrane",
+        "cladding",
+        "anchors-fasteners",
+        "junctions-fire",
+        "mixture-water",
+        "tools-working-parts",
+        "access-lifting",
+        "labour-operators",
+        "qc-services",
+        "waste",
+        "logistics"
+      ],
+      "expectedSourceResources": [],
+      "independentToolNeeds": [],
+      "independentGeneralNeeds": [
+        "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+      ],
+      "wholeLabourOwner": null,
+      "noLabourSplit": true,
+      "provisionByCategory": [
+        {
+          "category": "substrate",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "subsystem",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "insulation",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "membrane",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "cladding",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "anchors-fasteners",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "junctions-fire",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+            "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "mixture-water",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "tools-working-parts",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "access-lifting",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "labour-operators",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "qc-services",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:qc-services",
+            "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "waste",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        },
+        {
+          "category": "logistics",
+          "sourceResourceKeys": [],
+          "sourceQuantityRules": {},
+          "remainingNeedIds": [
+            "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+            "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+          ],
+          "disposition": "NO_COMPLETE_CATEGORY_NORM_PROVEN",
+          "absenceIsNotZero": true,
+          "fullCategoryClosed": false
+        }
+      ]
+    }
+  ],
+  "fullTechnicalAcceptance": false,
+  "newFULL": 0,
+  "sourceRole": "Independent source operation/resource expectations before implementation",
+  "checks": "UNRUN"
+}

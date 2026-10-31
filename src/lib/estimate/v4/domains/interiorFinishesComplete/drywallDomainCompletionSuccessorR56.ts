@@ -173,7 +173,7 @@ function sha256(value: unknown): string {
 }
 
 function parseCatalogId(catalogId: string): ParsedId {
-  const match = catalogId.match(/^drywall_ceiling_interior_(.+)_(prepare|frame|align|insulate|clad|finish_joint|repair|install)_(large_area|small_area|standard|technical_room|wet_zone|high_load)$/u);
+  const match = catalogId.match(/^drywall_ceiling_interior_(.+)_(prepare|frame|align|insulate|clad|finish_joint|repair|install)_(standard|technical_room|wet_zone|high_load)$/u);
   if (!match) throw new Error(`BATCH004_R56_ID_PARSE_RED:${catalogId}`);
   return {
     family: match[1] as DrywallDomainCompletionFamilyV7,
@@ -337,8 +337,6 @@ const OPERATION_SCOPE: Readonly<Record<DrywallDomainCompletionOperationV7, {
 
 const VARIANT_APPLICABILITY: Readonly<Record<DrywallDomainCompletionVariantV7, string>> = {
   standard: "Стандартная конфигурация без дополнительных variant-ресурсов.",
-  large_area: "Большая площадь: деформационные швы учитываются только по явной проектной длине.",
-  small_area: "Малая площадь: подрезанные кромки учитываются только по явной длине.",
   technical_room: "Техническое помещение: усиление проёмов считается по количеству и периметру.",
   wet_zone: "Влажная зона: совместимый влагозащитный материал считается по явной норме.",
   high_load: "Высокая нагрузка: усиление учитывается только по проектной длине в явно выбранном CLAD или INSTALL catalog variant.",
@@ -436,8 +434,8 @@ function operationBlueprints(parsed: ParsedId, measure: MeasureProfile): Resourc
 function variantBlueprints(parsed: ParsedId, measure: MeasureProfile): ResourceBlueprint[] {
   const primary = measure.parameterId;
   if (parsed.variant === "standard") return [];
-  if (parsed.variant === "large_area") return [{ key: "large_area_control_joint", sectionRu: "Материалы варианта", category: "material", titleRu: "Профиль деформационного шва большой площади", expression: "control_joint_length_m", inputs: ["control_joint_length_m"], unitId: "m", procurementEligible: true, resourceClass: "large-area control-joint profile" }];
-  if (parsed.variant === "small_area") return [{ key: "small_area_edge_profile", sectionRu: "Материалы варианта", category: "material", titleRu: "Профиль или лента подрезанных кромок малого участка", expression: "small_area_edge_length_m", inputs: ["small_area_edge_length_m"], unitId: "m", procurementEligible: true, resourceClass: "small-area cut-edge treatment" }];
+
+
   if (parsed.variant === "technical_room") return [{ key: "technical_opening_reinforcement", sectionRu: "Материалы варианта", category: "material", titleRu: "Профиль усиления инженерных проёмов технического помещения", expression: "technical_opening_count * technical_opening_perimeter_m", inputs: ["technical_opening_count", "technical_opening_perimeter_m"], unitId: "m", procurementEligible: true, resourceClass: "technical-room opening reinforcement" }];
   if (parsed.variant === "high_load") return [{ key: "high_load_reinforcement", sectionRu: "Материалы варианта", category: "material", titleRu: "Проектное усиление зоны высокой нагрузки", expression: "high_load_reinforcement_length_m", inputs: ["high_load_reinforcement_length_m"], unitId: "m", procurementEligible: true, resourceClass: "high-load project reinforcement" }];
   const wetUnit = ["CLAD", "INSULATE", "INSTALL"].includes(parsed.operation) ? "m2" : "kg";

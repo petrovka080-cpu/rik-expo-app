@@ -1,5 +1,5 @@
 import type {CanonicalEstimateCatalogItem} from '../../lib/estimate/backendPlatform/contracts';
-import {buildCanonicalBaselinePlan} from './consumerCanonicalBaselineCompile';
+import {buildCanonicalBaselinePlan} from '../../lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1';
 import {aggressiveFloorCompleteBindingS2769 as pack} from '../../lib/estimate/v4/aggressiveFloorProtectionDustCompleteS2769';
 import {aggressiveFloorWorkScopeIdS2769 as work} from '../../lib/estimate/v4/aggressiveFloorActualThicknessScopeS2769';
 

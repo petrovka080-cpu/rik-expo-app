@@ -19,18 +19,6 @@ export const CEMENT_SAND_SCREED_DEMOLITION_VARIANTS = Object.freeze({
     catalogVariant: "STANDARD",
     canonicalNameRu: "Демонтаж существующей цементно-песчаной стяжки",
   }),
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:demolition_interior_screed_remove_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY",
-    canonicalNameRu:
-      "Демонтаж существующей цементно-песчаной стяжки — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:demolition_interior_screed_remove_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu:
-      "Демонтаж существующей цементно-песчаной стяжки — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId: "canonical-work:base:demolition_interior_screed_remove_wet_zone",
     catalogVariant: "WET_ZONE_SEARCH_IDENTITY",

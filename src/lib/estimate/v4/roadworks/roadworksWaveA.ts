@@ -13,11 +13,7 @@ export type RoadworksWaveAOperation =
   | "finish";
 
 export type RoadworksWaveAScope =
-  | "standard"
-  | "small_area"
-  | "large_area"
-  | "wet_zone"
-  | "technical_room";
+  "standard" | "wet_zone" | "technical_room";
 
 export type RoadworksWaveAScopeExecutionProfile = {
   applicationContext: string;
@@ -34,18 +30,6 @@ export const ROADWORKS_WAVE_A_SCOPE_EXECUTION_PROFILES: Readonly<
     executionMethod: "Стандартный механизированный технологический поток по утверждённому проекту",
     applicabilitySourceIds: ["kg_snip_32_01_2004_road_design", "kg_nism_gost_9128_2013"],
     exclusions: ["Не включает основание и полный комплекс дорожной инфраструктуры, если они не выбраны отдельным scope"],
-  },
-  small_area: {
-    applicationContext: "Локальный или стеснённый наружный участок дорожного покрытия с ограниченным доступом крупной техники",
-    executionMethod: "Малый механизированный комплект и ручная доработка кромок; производительность задаётся проектным вводом",
-    applicabilitySourceIds: ["kg_snip_32_01_2004_road_design", "kg_nism_gost_9128_2013"],
-    exclusions: ["Не применяется как скрытый коэффициент к стандартной площади; доступ и производительность подтверждаются пользователем"],
-  },
-  large_area: {
-    applicationContext: "Протяжённый или крупноплощадной наружный фронт дорожных работ",
-    executionMethod: "Непрерывный механизированный поток укладки/обработки с поточным контролем захваток",
-    applicabilitySourceIds: ["kg_snip_32_01_2004_road_design", "kg_nism_gost_9128_2013"],
-    exclusions: ["Не включает дополнительные слои дорожной одежды без явного выбора полного pavement scope"],
   },
   wet_zone: {
     applicationContext: "Наружная асфальтированная площадка, проезд или парковочная поверхность с периодическим увлажнением осадками и проектным поверхностным водоотводом",
@@ -243,8 +227,6 @@ export const ROADWORKS_WAVE_A_SCOPE_APPLICABILITY_PARAMETER_KEYS: Readonly<
   Record<RoadworksWaveAScope, readonly RoadworksWaveAApplicabilityInputKey[]>
 > = Object.freeze({
   standard: [],
-  small_area: [],
-  large_area: [],
   wet_zone: ["exterior_surface_kind", "drainage_outfall_confirmed", "base_dry_and_accepted"],
   technical_room: ["floor_mechanical_impact_class", "floor_liquid_exposure_class", "approved_floor_mix_type"],
 });
@@ -254,7 +236,7 @@ export const ROADWORKS_WAVE_A_OPERATIONS: readonly RoadworksWaveAOperation[] = [
   "install", "lay", "compact", "repair", "prepare", "level", "drain", "finish",
 ];
 export const ROADWORKS_WAVE_A_SCOPES: readonly RoadworksWaveAScope[] = [
-  "standard", "small_area", "large_area", "wet_zone", "technical_room",
+  "standard", "wet_zone", "technical_room",
 ];
 
 const OPERATION_META: Record<RoadworksWaveAOperation, {
@@ -354,8 +336,6 @@ function parseIdentity(item: CatalogItem): { operation: RoadworksWaveAOperation;
 function scopeClass(scope: RoadworksWaveAScope): string {
   return ({
     standard: "unrestricted_standard_area",
-    small_area: "small_area_manual_constraints",
-    large_area: "large_area_mechanized",
     wet_zone: "wet_exposure_area",
     technical_room: "restricted_indoor_technical_area",
   } satisfies Record<RoadworksWaveAScope, string>)[scope];
@@ -842,11 +822,7 @@ export function compileRoadworksWaveAWork(
       row("handover_control", "test", "Контроль готовности покрытия к сдаче и безопасной эксплуатации", "pcs", Math.max(1, Math.ceil(area / input.acceptance_lot_m2)), "ceil(area_m2/acceptance_lot_m2)", ["area_m2", "acceptance_lot_m2"], "laboratory"),
     ],
   };
-  const scopeRows: RoadworksWaveARow[] = scopeProfile === "small_area"
-    ? [row("restricted_area_execution", "service", "Организация работ на малой площади", "m2", area, "area_m2", ["area_m2"], "contractor")]
-    : scopeProfile === "large_area"
-      ? [row("large_area_mechanized_execution", "service", "Организация работы катков на большой площадке", "m2", area, "area_m2", ["area_m2"], "contractor")]
-      : scopeProfile === "wet_zone"
+  const scopeRows: RoadworksWaveARow[] = scopeProfile === "wet_zone"
         ? [
           row("wet_zone_execution", "service", `Организация работ на наружной поверхности ${input.exterior_surface_kind} после подтверждения сухости основания и водоотвода`, "m2", area, "area_m2", ["area_m2", "exterior_surface_kind", "drainage_outfall_confirmed", "base_dry_and_accepted"], "contractor"),
           row("wet_zone_acceptance", "test", "Контроль уклонов, водоотвода и пригодности основания", "pcs", Math.max(1, Math.ceil(area / input.acceptance_lot_m2)), "ceil(area_m2/acceptance_lot_m2)", ["area_m2", "acceptance_lot_m2", "drainage_outfall_confirmed", "base_dry_and_accepted"], "laboratory"),
@@ -874,13 +850,7 @@ export function compileRoadworksWaveAWork(
         costTreatment: "INCLUDED_IN_RESOURCE_ROWS",
       };
     }
-    if (compiledRow.rowId.endsWith(":large_area_mechanized_execution")) {
-      return {
-        ...compiledRow,
-        payable: false,
-        costTreatment: "INFORMATIONAL_SCOPE",
-      };
-    }
+
     return compiledRow;
   });
   return {

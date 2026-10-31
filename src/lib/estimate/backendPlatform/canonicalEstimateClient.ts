@@ -1,7 +1,13 @@
+import {canonicalProfessionalArtifactPurposeMatchesV1} from './canonicalEstimateArtifactContract';
+import {assertCanonicalCatalogPromptExtractionV1,assertCanonicalCatalogPromptBytesV1,
+  MAX_CANONICAL_CATALOG_PROMPT_REQUEST_BYTES_V1,readCanonicalCatalogPromptJsonV1} from "./canonicalCatalogPromptExtractionV1";
+import type {CanonicalCatalogPromptExtractionV1} from "./contracts";
 import type { CanonicalEstimateParameterSessionSnapshot } from "./canonicalEstimateParameterSessionSnapshot";
+import {canonicalFormulaOutputBoundsPublicReasonRu} from './canonicalFormulaOutputBounds';
 import { fetchWithRequestTimeout } from "../../requestTimeoutPolicy";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../supabaseClient";
 import type { ConsumerEstimateHydrationTrace, ConsumerEstimateTransportPhase } from "../../consumerRequests/consumerEstimateHydrationTrace";
+import {withCanonicalSourceProfileCalculationConsumersV1} from './canonicalDefinitionParameterConsumersR1';
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateArtifactView,
@@ -194,6 +200,7 @@ async function invoke<T>(path: string, options: {
   signal?: AbortSignal | null;
   requestClass?: "lightweight_lookup" | "ui_scope_load" | "mutation_request";
   hydrationTrace?: ConsumerEstimateHydrationTrace;
+  boundedCatalogPromptResponse?: boolean;
 } = {}): Promise<T> {
   const method = options.method ?? "GET";
   // Optional fixed-phase diagnostics for snapshot hydration only. No token,
@@ -233,7 +240,11 @@ async function invoke<T>(path: string, options: {
     response = await execute(token);
   }
   let payload: unknown = null;
-  try { payload = await measureTransport("PARAMETER_TRANSPORT_DECODE", () => response.json()); } catch { /* normalized below */ }
+  if(options.boundedCatalogPromptResponse){
+    payload=await measureTransport("PARAMETER_TRANSPORT_DECODE",()=>readCanonicalCatalogPromptJsonV1(response,"response"));
+  }else{
+    try { payload = await measureTransport("PARAMETER_TRANSPORT_DECODE", () => response.json()); } catch { /* normalized below */ }
+  }
   if (!response.ok) {
     const envelope = (payload ?? {}) as ApiErrorEnvelope;
     throw new CanonicalEstimateApiError(
@@ -391,15 +402,38 @@ export async function getCanonicalEstimateCatalogItem(
     `catalog/${encodeURIComponent(catalogId)}${releaseQuery}`,
     { signal, requestClass: "ui_scope_load" },
   );
-  if (result.item.contentAdmission?.allowed !== true
-    || result.item.contentAdmission.contractVersion !== "estimate-admission-r3") {
+  return admittedCanonicalCatalogItem(result.item);
+}
+
+function admittedCanonicalCatalogItem(item:CanonicalEstimateCatalogItem){
+  if (item.contentAdmission?.allowed !== true
+    || item.contentAdmission.contractVersion !== "estimate-admission-r3") {
     throw new CanonicalEstimateApiError(
       "Эта смета проходит обновление состава и временно недоступна для нового расчёта.",
       { code: "ESTIMATE_ADMISSION_DENIED", httpStatus: 409 },
     );
   }
-  return result.item;
+  const parameterSchema=withCanonicalSourceProfileCalculationConsumersV1(
+    item.parameterSchema,item.applicability.sourceProfileSelectionV1);
+  return parameterSchema===item.parameterSchema?item:{...item,parameterSchema};
 }
+
+export async function getCanonicalEstimateCatalogItemForPrompt(catalogId:string,prompt:string,
+  signal?:AbortSignal|null,releaseId?:string|null){
+  const body={prompt,...(releaseId?.trim()?{releaseId:releaseId.trim()}:{})};
+  assertCanonicalCatalogPromptBytesV1(JSON.stringify(body),MAX_CANONICAL_CATALOG_PROMPT_REQUEST_BYTES_V1,"request");
+  const result=await invoke<{item:CanonicalEstimateCatalogItem;promptExtraction:CanonicalCatalogPromptExtractionV1}>(
+    `catalog/${encodeURIComponent(catalogId)}`,{method:"POST",body,
+      signal,requestClass:"ui_scope_load",boundedCatalogPromptResponse:true});
+  const item=admittedCanonicalCatalogItem(result.item);
+  if(item.catalogId!==catalogId||(releaseId?.trim()&&item.releaseId!==releaseId.trim())){
+    throw new CanonicalEstimateApiError("Ответ не соответствует выбранной версии работы.",
+      {code:"CATALOG_PROMPT_BINDING_INVALID",httpStatus:409});
+  }
+  assertCanonicalCatalogPromptExtractionV1(result.promptExtraction,item,prompt);
+  return{item,promptExtraction:result.promptExtraction};
+}
+
 
 export function createCanonicalEstimate(request: CanonicalEstimateCreateRequest, signal?: AbortSignal | null) {
   return invoke<CanonicalEstimateJobAccepted>("jobs/compile", {
@@ -452,8 +486,16 @@ export async function waitForCanonicalEstimateJob(input: {
     input.onProgress?.(job);
     if (TERMINAL_JOB_STATES.has(job.status)) {
       if (job.status !== "succeeded" || (input.requireRevisionResult !== false && !job.resultRevisionId)) {
-        const message = job.errorCode === 'PROJECT_GEOMETRY_PARAMETER_CONFLICT'
+        const boundsReason=canonicalFormulaOutputBoundsPublicReasonRu(job.errorCode,job.errorUserMessageRu);
+        const message = job.errorCode === 'EMPTY_ESTIMATE_COMPOSITION'
+          ? 'В смете нет позиций. Укажите объём работ больше нуля и проверьте выбранный состав. Введённые данные сохранены.'
+          : job.errorCode === 'FORMULA_OUTPUT_BOUNDS_FAILED'
+          ? boundsReason ? `Расчёт не выполнен: ${boundsReason} Введённые данные сохранены.`
+            : 'Расчёт не выполнен. Проверьте согласованность введённых количеств. Введённые данные сохранены.'
+          : job.errorCode === 'PROJECT_GEOMETRY_PARAMETER_CONFLICT'
           ? 'Выбранная схема трассы противоречит введённым количествам. Выберите проектную раскладку или уточните количества фитингов. Ввод сохранён.'
+          : job.errorCode === 'COMPOSITION_SELECTION_INVALID'
+            ? 'Изменение состава не выполнено. Для выбранной подработы нужно проверить общие ресурсы и применимость состава. Исходная смета и ручные данные сохранены.'
           : `Расчёт не завершён: ${job.errorCode ?? job.status}`;
         throw new CanonicalEstimateApiError(message, {
           code: job.errorCode ?? `JOB_${job.status.toUpperCase()}`,
@@ -500,13 +542,21 @@ export function migrateCanonicalEstimateLegacyRevision(
   });
 }
 
+function assertArtifactPurposeInputV1(input:{kind:string;documentProfile?:string;issuancePurpose?:unknown}):void {
+  if(input.issuancePurpose!==undefined&&input.issuancePurpose!=='STANDARD'&&input.issuancePurpose!=='PRELIMINARY_REVIEW'
+    ||input.issuancePurpose==='PRELIMINARY_REVIEW'&&(input.kind!=='pdf'||input.documentProfile!=='professional_v1'))
+    throw new CanonicalEstimateApiError('Некорректный режим PDF.',{code:'ARTIFACT_PURPOSE_INVALID',httpStatus:400});
+}
 export function createCanonicalEstimateArtifact(input: {
   revisionId: string;
   kind: "pdf" | "procurement";
   documentProfile?: "professional_v1";
+  issuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
+  reviewRequest?:import('./contracts').CanonicalProfessionalPdfReviewRequestV1;
   idempotencyKey: string;
   signal?: AbortSignal | null;
 }) {
+  assertArtifactPurposeInputV1(input);
   return invoke<CanonicalEstimateJobAccepted & { artifactId: string; artifactStatus: string }>(
     `revisions/${encodeURIComponent(input.revisionId)}/artifacts/${input.kind}`,
     {
@@ -514,6 +564,8 @@ export function createCanonicalEstimateArtifact(input: {
       body: {
         idempotencyKey: input.idempotencyKey,
         ...(input.documentProfile ? { documentProfile: input.documentProfile } : {}),
+        ...(input.issuancePurpose?{issuancePurpose:input.issuancePurpose}:{}),
+        ...(input.reviewRequest?{reviewRequest:input.reviewRequest}:{}),
       },
       signal: input.signal,
       requestClass: "mutation_request",
@@ -525,13 +577,17 @@ export function getCanonicalEstimateArtifact(input: {
   revisionId: string;
   kind: "pdf" | "procurement";
   documentProfile?: "professional_v1";
+  issuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
+  reviewRequest?:import('./contracts').CanonicalProfessionalPdfReviewRequestV1;
   signal?: AbortSignal | null;
 }) {
+  assertArtifactPurposeInputV1(input);
   const profileQuery = input.documentProfile
     ? `?documentProfile=${encodeURIComponent(input.documentProfile)}`
     : "";
+  const purposeQuery=input.issuancePurpose?`${profileQuery?'&':'?'}issuancePurpose=${encodeURIComponent(input.issuancePurpose)}`:'';
   return invoke<CanonicalEstimateArtifactView>(
-    `revisions/${encodeURIComponent(input.revisionId)}/artifacts/${input.kind}${profileQuery}`,
+    `revisions/${encodeURIComponent(input.revisionId)}/artifacts/${input.kind}${profileQuery}${purposeQuery}`,
     { signal: input.signal, requestClass: "ui_scope_load" },
   );
 }
@@ -540,6 +596,8 @@ export async function buildCanonicalEstimateArtifact(input: {
   revisionId: string;
   kind: "pdf" | "procurement";
   documentProfile?: "professional_v1";
+  issuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
+  reviewRequest?:import('./contracts').CanonicalProfessionalPdfReviewRequestV1;
   idempotencyKey: string;
   signal?: AbortSignal | null;
 }) {
@@ -561,9 +619,12 @@ export function assertCanonicalEstimateArtifactIdentity(input: {
   revision: CanonicalEstimateRevisionView;
   expectedKind: "pdf" | "procurement";
   expectedDocumentProfile?: "professional_v1";
+  expectedIssuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
   expectedCatalogId?: string | null;
   expectedRowCount?: number | null;
 }): void {
+  if(!canonicalProfessionalArtifactPurposeMatchesV1(input.artifact.metadata,input.expectedIssuancePurpose))
+    throw new CanonicalEstimateApiError('Документ сформирован для другого режима проверки.',{code:'ARTIFACT_PURPOSE_CONFLICT',httpStatus:409});
   const metadataCatalogId = String(input.artifact.metadata?.sourceCatalogId ?? "").trim();
   const metadataRowCount = Number(input.artifact.metadata?.sourceRowCount);
   const metadataChecksum = String(
@@ -606,8 +667,16 @@ export function assertCanonicalEstimateArtifactIdentity(input: {
   );
 }
 
-export function getCanonicalEstimateRevision(revisionId: string, signal?: AbortSignal | null) {
-  return invoke<CanonicalEstimateRevisionView>(`revisions/${encodeURIComponent(revisionId)}`, {
+export function getCanonicalEstimateRevision(revisionId: string, options?: AbortSignal | null | {
+  issuancePurpose: 'PRELIMINARY_REVIEW'; signal?: AbortSignal | null;
+}) {
+  const reportOptions = options != null && 'issuancePurpose' in options ? options : null;
+  if (reportOptions && reportOptions.issuancePurpose !== 'PRELIMINARY_REVIEW') {
+    throw new CanonicalEstimateApiError('Invalid revision read purpose', {code:'ARTIFACT_PURPOSE_INVALID',httpStatus:400});
+  }
+  const signal = options != null && 'issuancePurpose' in options ? options.signal : options;
+  const query = reportOptions ? '?issuancePurpose=PRELIMINARY_REVIEW' : '';
+  return invoke<CanonicalEstimateRevisionView>(`revisions/${encodeURIComponent(revisionId)}${query}`, {
     signal,
     requestClass: "ui_scope_load",
   });

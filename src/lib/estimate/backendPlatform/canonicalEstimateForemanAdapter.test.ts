@@ -190,6 +190,8 @@ describe("canonical estimate consumer professional proof", () => {
       titleRu: "Аренда шлифмашины",
       quantity: null,
       unitPrice: 900,
+      priceStatus: "USER_ENTERED_PRICE",
+      priceSource: "user",
       sourceParameters: {
         rowCode: "manual:catalog-rental",
         canonicalBackendOwnershipStatus: "PRELIMINARY_NEED",
@@ -199,6 +201,10 @@ describe("canonical estimate consumer professional proof", () => {
         includedInProcurement: true,
         payable: false,
       },
+    });
+    expect(JSON.parse(JSON.stringify(draft.items[0]))).toMatchObject({
+      unitPrice: 900, priceStatus: "USER_ENTERED_PRICE", priceSource: "user",
+      sourceParameters: { canonicalPreliminaryNeed: true, payable: false },
     });
   });
 

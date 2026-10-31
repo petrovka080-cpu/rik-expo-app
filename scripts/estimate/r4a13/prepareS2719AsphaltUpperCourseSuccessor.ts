@@ -7,7 +7,7 @@ import {
   ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,
   ASPHALT_INSTALL_KRER27_RUNTIME_INPUT,
   ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS,
-} from "../../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1";
+} from "../../../src/lib/estimate/v4/asphaltInstallKrer27ProfileR1";
 import {
   ASPHALT_UPPER_COURSE_ACCEPTANCE_INPUT,
   ASPHALT_UPPER_COURSE_CATALOG_ID,
@@ -151,7 +151,7 @@ void runMasterSingleDefinitionSuccessorR1({
     "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
     "src/lib/estimate/v4/stripFoundationConcretePlacementPreliminaryProfileR1.ts",
     "data/estimate-benchmarks/source-packs/asphalt-install-large-area-krer27-profile-r1.json",
-    "src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1.ts",
+    "src/lib/estimate/v4/asphaltInstallKrer27ProfileR1.ts",
     "src/lib/estimate/v4/asphaltUpperCourseR1.ts",
     "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
     "src/lib/estimate/backendPlatform/formulaGraph.ts",

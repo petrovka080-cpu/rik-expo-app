@@ -1,10 +1,13 @@
-import { Client, type ClientConfig } from "pg";
+import { Client } from "pg";
+import { buildBffPostgresTlsConfig } from "./stagingBffPostgresTls";
+import { applyBffReadonlyRequestIdentity } from "./stagingBffRequestAuth";
 
 import {
   ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS,
   ASSISTANT_STORE_READ_BFF_MARKET_PAGE_DEFAULTS,
   ASSISTANT_STORE_READ_BFF_REFERENCE_PAGE_DEFAULTS,
   ASSISTANT_STORE_READ_BFF_SUPPLIER_SHOWCASE_PAGE_DEFAULTS,
+  normalizeChatMessageCursor,
   type AssistantStoreReadBffOperation,
   type AssistantStoreReadBffReadErrorDto,
   type AssistantStoreReadBffReadResultDto,
@@ -211,18 +214,21 @@ export function buildAssistantStoreReadQueryPlans(
   }
 
   if (input.operation === "chat.listing.messages.list") {
+    const cursor = input.args.before == null ? null : normalizeChatMessageCursor(input.args.before);
+    if (input.args.before != null && !cursor) throw new Error("CHAT_CURSOR_INVALID");
     return [
       plan(
         input.operation,
         [
-          "select *",
-          "from public.chat_messages",
-          "where supplier_id::text = $1",
-          "and is_deleted = false",
-          "order by created_at asc, id asc",
+          "select m.*, to_char(m.created_at at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') as created_at",
+          "from public.chat_messages m",
+          "where m.supplier_id = $1::uuid",
+          "and m.is_deleted = false",
+          ...(cursor ? ["and (m.created_at, m.id) < ($3::timestamptz, $4::uuid)"] : []),
+          "order by m.created_at desc, m.id desc",
           "limit $2",
         ].join(" "),
-        [safeText(input.args.listingId), chatLimit(input.args.pageSize)],
+        [safeText(input.args.listingId), chatLimit(input.args.pageSize), ...(cursor ? [cursor.createdAt, cursor.id] : [])],
         ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS.maxRows,
       ),
     ];
@@ -401,13 +407,6 @@ export function buildAssistantStoreReadQueryPlans(
   ];
 }
 
-const resolvePgSsl = (connectionString: string): ClientConfig["ssl"] => {
-  const url = new URL(connectionString);
-  const sslmode = url.searchParams.get("sslmode") ?? "require";
-  if (sslmode === "disable") return false;
-  return { rejectUnauthorized: sslmode === "verify-full" };
-};
-
 const runPlanRows = async (
   client: Client,
   queryPlan: AssistantStoreReadQueryPlan,
@@ -416,6 +415,7 @@ const runPlanRows = async (
   try {
     await client.query("begin read only");
     transactionStarted = true;
+    await applyBffReadonlyRequestIdentity(client);
     const result = await client.query<PgQueryRow>(queryPlan.sql, [...queryPlan.values]);
     await client.query("commit");
     transactionStarted = false;
@@ -442,11 +442,10 @@ const runAssistantStoreRead = async (
   const plans = buildAssistantStoreReadQueryPlans(input);
   const client = new Client({
     application_name: "rik_staging_bff_assistant_store_readonly",
-    connectionString,
+    ...buildBffPostgresTlsConfig(connectionString),
     connectionTimeoutMillis: DEFAULT_CONNECTION_TIMEOUT_MS,
     query_timeout: DEFAULT_QUERY_TIMEOUT_MS,
     statement_timeout: DEFAULT_QUERY_TIMEOUT_MS,
-    ssl: resolvePgSsl(connectionString),
   });
 
   try {

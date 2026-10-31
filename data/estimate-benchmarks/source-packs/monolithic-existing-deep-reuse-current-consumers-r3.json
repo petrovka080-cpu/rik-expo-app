@@ -1,0 +1,127 @@
+{
+  "contract": "monolithic-existing-deep-assembly-current-consumers/r3",
+  "status": "SOURCE_BINDING_CHECKED_NOT_PUBLISHED_NOT_FULL",
+  "scope": "Reuse the exact previously built six-part IRFU45/230/5 non-GV assembly through the existing canonical compiler and publisher. No new equipment/labour/machine-hour quantity norm.",
+  "sourceNormSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+  "deviceArtifactSha256": "073ec0408dd3ce713074218d62fc25a1f0cb8e885ffb879634e32429bec5b89e",
+  "wallFlexibleShaftNeedRemainsUnresolved": true,
+  "engineeringCountNotInferredFromVolumeOrHours": true,
+  "internationalManufacturerIdentityIsNotLocalComplianceClaim": true,
+  "targets": [
+    {
+      "kind": "slab",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "canonicalRuName": "Бетонирование фундаментной плиты",
+      "definitionId": "974aa5c7-f363-5424-a153-b65af40f52cb",
+      "baselineId": "5a90a659-bc3b-59bc-9644-8dc119ae5e5c",
+      "shape": [
+        616,
+        507,
+        492
+      ],
+      "capturePath": "data/estimate-benchmarks/fixtures/monolithic-deep-reuse-publisher-parents-r3.json",
+      "captureSha256": "f3c00dd3cb40378fbb82fa8ebdf9ef10ecf3a60afb1e523ad21b2fb67dc957d0",
+      "aggregateCapture": true,
+      "consumerNeedRowIds": null,
+      "simpleGeometryParameterIds": [
+        "m212_concrete_net_volume_m3",
+        "m212_preparation_net_volume_m3"
+      ]
+    },
+    {
+      "kind": "strip",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+      "canonicalRuName": "Бетонирование ленточного фундамента",
+      "definitionId": "60bca5c0-cc41-5b8b-b754-18ce115a4d14",
+      "baselineId": "b46b765d-3fd0-5fe4-951a-0221afc19609",
+      "shape": [
+        789,
+        410,
+        414
+      ],
+      "capturePath": "data/estimate-benchmarks/fixtures/monolithic-deep-reuse-publisher-parents-r3.json",
+      "captureSha256": "f3c00dd3cb40378fbb82fa8ebdf9ef10ecf3a60afb1e523ad21b2fb67dc957d0",
+      "aggregateCapture": true,
+      "consumerNeedRowIds": null,
+      "simpleGeometryParameterIds": [
+        "m212_concrete_net_volume_m3",
+        "m212_preparation_net_volume_m3"
+      ]
+    },
+    {
+      "kind": "beam",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+      "canonicalRuName": "Монолитная железобетонная балка",
+      "definitionId": "f0b798f2-dc0d-53ad-9989-9b3118f28dee",
+      "baselineId": "c942035a-d318-5e5f-bdec-de4dd517fa8e",
+      "shape": [
+        517,
+        384,
+        386
+      ],
+      "capturePath": "data/estimate-benchmarks/fixtures/monolithic-deep-reuse-beam-publisher-parent-r3.json",
+      "captureSha256": "52879509b9bd4a0c92e7d5728876411b5a6f45deacb8b13716d0cd7437b7bd10",
+      "aggregateCapture": false,
+      "consumerNeedRowIds": [
+        "monolithic-family:krer06:r1:beam-109-03:need-leaf:deep-vibrator-working-part",
+        "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:deep-vibrator-working-part"
+      ],
+      "simpleGeometryParameterIds": [
+        "mono_r1_beam_volume_m3",
+        "mono_r1_beam_depth_mm",
+        "mono_r1_beam_support_height_m",
+        "mono_r1_beam_work_elevation_m"
+      ]
+    },
+    {
+      "kind": "column",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_column_standard",
+      "canonicalRuName": "Монолитная железобетонная колонна",
+      "definitionId": "28803151-4a5a-57ae-b288-28c500695c0a",
+      "baselineId": "446b223f-8294-57de-b5b2-283c517ed170",
+      "shape": [
+        511,
+        380,
+        382
+      ],
+      "capturePath": "data/estimate-benchmarks/fixtures/monolithic-deep-reuse-column-publisher-parent-r3.json",
+      "captureSha256": "c2b4bb8a56da967347a9b3a94a5c260ddf3af24078114cb8975a14d7d6e3ee96",
+      "aggregateCapture": false,
+      "consumerNeedRowIds": [
+        "monolithic-family:krer06:r1:column-107-02:need-leaf:deep-vibrator-working-part",
+        "monolithic-remaining:krer06:r1:column-107-01:need-leaf:deep-vibrator-working-part"
+      ],
+      "simpleGeometryParameterIds": [
+        "mono_r1_column_volume_m3",
+        "mono_r1_column_height_m",
+        "mono_r1_column_perimeter_m",
+        "mono_r1_column_work_elevation_m"
+      ]
+    },
+    {
+      "kind": "wall",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+      "canonicalRuName": "Монолитная железобетонная стена",
+      "definitionId": "f5cbff31-80c2-5799-831b-5b97e560a14b",
+      "baselineId": "096047f6-5bb1-5f02-baa7-54f16ba4d199",
+      "shape": [
+        362,
+        269,
+        270
+      ],
+      "capturePath": "data/estimate-benchmarks/fixtures/monolithic-deep-reuse-wall-publisher-parent-r3.json",
+      "captureSha256": "366be1f270c83eea7bf62225ee1a17677bf7b16975838508c43a5c487c213499",
+      "aggregateCapture": false,
+      "consumerNeedRowIds": [
+        "master212:family-b:krer06-01-031-04:r1:need:vibrator-working-kit"
+      ],
+      "simpleGeometryParameterIds": [
+        "m212_family_b_wall04_net_concrete_volume_m3",
+        "m212_family_b_wall04_thickness_m",
+        "m212_family_b_wall04_height_from_support_m",
+        "m212_family_b_wall04_work_elevation_m"
+      ]
+    }
+  ],
+  "captureSessionTimeZone": "UTC"
+}

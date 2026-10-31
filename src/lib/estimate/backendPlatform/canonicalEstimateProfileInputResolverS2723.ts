@@ -1,3 +1,7 @@
+import {resolveCanonicalSourceProfileSelectionV1 as resolveSourceProfileSelectionV1} from './canonicalSourceProfileSelectionV1';
+import type {CanonicalSourceProfileResolutionV1,CanonicalSourceProfileParameterV1} from './canonicalSourceProfileSelectionV1';
+export {CANONICAL_SOURCE_PROFILE_SELECTION_V1,CANONICAL_SOURCE_GEOMETRY_COPY_V1,CANONICAL_SOURCE_PROFILE_PRODUCER_V1} from './canonicalSourceProfileSelectionV1';
+export type {CanonicalSourceProfileSelectionV1,CanonicalSourceProfileParameterV1,CanonicalSourceProfileProducerV1} from './canonicalSourceProfileSelectionV1';
 import {
   STRIP_FOUNDATION_AUTOMATIC_PROFILE_S2723_ID,
   deriveStripFoundationAutomaticInputS2723,
@@ -12,15 +16,11 @@ export const STRIP_FOUNDATION_FULL_SCOPE_CATALOG_ID_S2723 =
 export const ASPHALT_FULL_CYCLE_CATALOG_ID_S2723 =
   "canonical-work:expanded:asphalt_concrete_pavement";
 export const DRYWALL_CEILING_P113_FRAME_CATALOG_ID_S2723 =
-  "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_frame_large_area";
+  "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_frame_standard";
 export const DRYWALL_CEILING_P113_AREA_ONLY_PROFILE_S2723_ID =
   "profile:drywall-ceiling-frame:p113-area-only-unknown-perimeter:s27-23";
 
-export type CanonicalEstimateProfileInputResolutionS2723 = Readonly<{
-  applied: boolean;
-  profileId: string | null;
-  confirmedParameters: Readonly<Record<string, unknown>>;
-}>;
+export type CanonicalEstimateProfileInputResolutionS2723 = CanonicalSourceProfileResolutionV1;
 
 function scalarProfileOverrides(
   values: Readonly<Record<string, unknown>>,
@@ -40,7 +40,13 @@ export function resolveCanonicalEstimateProfileInputsS2723(input: Readonly<{
   catalogId: string;
   confirmedParameters: Readonly<Record<string, unknown>>;
   effectiveUserParameters: Readonly<Record<string, unknown>>;
+  sourceProfileSelectionMetadata?: unknown;
+  parameterSchema?: readonly CanonicalSourceProfileParameterV1[];
 }>): CanonicalEstimateProfileInputResolutionS2723 {
+  if (input.sourceProfileSelectionMetadata !== undefined
+    || input.parameterSchema?.some(p => p.provenance?.source_geometry_copy_v1 !== undefined)) {
+    return resolveSourceProfileSelectionV1(input);
+  }
   if (input.catalogId === DRYWALL_CEILING_P113_FRAME_CATALOG_ID_S2723) {
     const areaM2 = Number(
       input.effectiveUserParameters.area_m2

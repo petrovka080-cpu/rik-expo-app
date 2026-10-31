@@ -1,0 +1,1175 @@
+{
+  "contract": "fan.prepared-opening.project-system-reference-method/r610-r1",
+  "status": "DEMO_SOURCE_OWNED_PROJECT_SYSTEM_NOT_OBJECT_AUTHENTICATED_NOT_ADMITTED",
+  "sourceId": "project_system_fan_prepared_opening_reference_r610",
+  "sourceKind": "PROJECT_SYSTEM",
+  "generatedFromCurrentRows": false,
+  "catalogId": "canonical-work:base:ventilation_interior_fan_install_standard",
+  "manufacturerProfileKey": "axial-100-plain",
+  "manufacturerManualSha256": "ada45cc4e9a23788e56f6983689ae499542a267461b7b3bd9d8799279fd8e595",
+  "fixed24SourceInventorySha256": "0fe8909e6ce91e5a01e5b60b882da22eea3ddf30c21cb182578399063f4fc821",
+  "selectedToolKeys": [
+    "driver-ph1",
+    "driver-slot15",
+    "voltage-indicator",
+    "indicator-prods",
+    "indicator-lead",
+    "prod-shrouds",
+    "prover",
+    "prover-cells",
+    "prover-hanger",
+    "instrument-case",
+    "clean-cloth"
+  ],
+  "fixed24SourceInventoryChanged": false,
+  "primaryCountId": "fan_reference_r610_new_unit_count",
+  "frontCountId": "fan_reference_r610_usable_tool_fronts",
+  "selectorId": "fan_reference_r610_method",
+  "selectorValue": "Вентилятор Ø100 мм без таймера: готовый проём, готовое питание и доступ с пола",
+  "projectReferenceId": "fan_reference_r610_project_reference",
+  "scopeChoices": [
+    {
+      "parameterId": "fan_reference_r610_prepared_scope_fit",
+      "titleRu": "Подтверждение применимости готового объекта",
+      "value": "Подтверждены готовый совместимый проём и отверстия, готовый кабель и отключающее устройство, доступ с пола, пригодность оснащения и точное соответствие жал PH1 и SL1,5 крепежу и клеммам"
+    },
+    {
+      "parameterId": "fan_reference_r610_delivery_scope",
+      "titleRu": "Граница доставки и подачи",
+      "value": "Изделие уже на объекте; только безопасная ручная подача с пола по ППР, без перевозки, складирования и грузоподъёмных машин"
+    },
+    {
+      "parameterId": "fan_reference_r610_packaging_scope",
+      "titleRu": "Судьба упаковки и отходов",
+      "value": "Заводская коробка сохраняется; новое сверление и резка не выполняются; иных монтажных отходов в этой ветви нет"
+    },
+    {
+      "parameterId": "fan_reference_r610_environment_and_initial_post",
+      "titleRu": "Условия среды и начальная пригодность измерительного поста",
+      "value": "Сухое помещение +1…+40 °C, влажность не более 70 %, высота не более 2000 м; указатель и согласованный проверочный прибор исправны, осмотрены, с пригодным начальным питанием и действующими документами; ремонт и обновление питания не требуются"
+    }
+  ],
+  "sourceScope": [
+    "DEMO conditions are authored project method assumptions, not captured site facts. No defaults or old estimate migration.",
+    "Quiet100 plain220–240V50Hz ClassII only; exact existing shaft/opening, no new duct, no connection fittings BOM invented.",
+    "Existing prepared compatible cable and all-pole isolation, proven before contact; no live work, no new cable selection or strip-length invented.",
+    "Ground-level access; no drilling/cutting, no external vehicle or storage/lifting work in this explicit branch. Manual handling must be suitable for actual confirmed unit mass/packaging and manufacturer instructions; otherwise this branch is not applicable.",
+    "Actual fit of PH1 and SL1.5 must be confirmed; source physical availability does not prove screw/terminal fit. Own PPE specification and actual accepted test programme must be documented.",
+    "Initial tool post usable with current documents and power; battery renewal, tool maintenance and periodic testing are outside this installation scope, not unconditional extra stages.",
+    "If further statutory tests, lifting devices, new holes/duct/line, waste or transport are required, this reference scope is inapplicable until those real needs are separately authored.",
+    "Operating environment is the exact intersection of selected fan and matched proving-unit limits: dry indoors,+1..+40C,max70%RH,up to2000m. Primary tool sources remain authority, not the older erroneous locator glyph.",
+    "The ready all-pole isolator must have an actually compatible individual lock. The lock is a separate own PROJECT_SYSTEM physical need; it is not supplied by VIPD150-S.",
+    "Voltage indicator maximum ON30s, OFF240s or8:1 duty; proving unit output/cycle restrictions from exact manuals remain applicable procedural limits, never a test-count/battery-consumption norm.",
+    "Mechanical protective gloves are not claimed to be dielectric PPE. No live work is permitted. Any further PPE or statutory test requirements invalidate this narrow demo scope until separately authored."
+  ],
+  "operationRoster": [
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "fan-reference:prepared-opening:r610",
+      "groupTitleRu": "Монтаж вентилятора в готовом проёме",
+      "operationId": "fan-reference:prepared-opening:r610:delivery",
+      "operationTitleRu": "Ручная подача вентилятора к месту монтажа",
+      "processOrdinal": 10,
+      "processRole": "PROCESS",
+      "completionCriterionRu": "Вентилятор подан в заводской упаковке без повреждений; место ручной подачи освобождено, упаковка сохранена."
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "fan-reference:prepared-opening:r610",
+      "groupTitleRu": "Монтаж вентилятора в готовом проёме",
+      "operationId": "fan-reference:prepared-opening:r610:isolate",
+      "operationTitleRu": "Отключение питания и проверка отсутствия напряжения",
+      "processOrdinal": 20,
+      "processRole": "PROCESS",
+      "completionCriterionRu": "Все источники питания отключены, повторное включение предотвращено; исправность согласованного указателя подтверждена до и после проверки, отсутствие напряжения проверено в точках работ."
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "fan-reference:prepared-opening:r610",
+      "groupTitleRu": "Монтаж вентилятора в готовом проёме",
+      "operationId": "fan-reference:prepared-opening:r610:mount",
+      "operationTitleRu": "Крепление вентилятора в готовом проёме",
+      "processOrdinal": 30,
+      "processRole": "PROCESS",
+      "completionCriterionRu": "Вентилятор закреплён штатным крепежом в совместимых готовых отверстиях; штатная прокладка установлена, корпус не сжат, крыльчатка и отверстия свободны."
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "fan-reference:prepared-opening:r610",
+      "groupTitleRu": "Монтаж вентилятора в готовом проёме",
+      "operationId": "fan-reference:prepared-opening:r610:connect",
+      "operationTitleRu": "Подключение готового кабеля к вентилятору",
+      "processOrdinal": 40,
+      "processRole": "PROCESS",
+      "completionCriterionRu": "Готовые совместимые проводники присоединены к L и N выбранного plain-изделия по схеме; соединения проверены, крышки и ограждения установлены."
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "fan-reference:prepared-opening:r610",
+      "groupTitleRu": "Монтаж вентилятора в готовом проёме",
+      "operationId": "fan-reference:prepared-opening:r610:function-check",
+      "operationTitleRu": "Проверка работы вентилятора",
+      "processOrdinal": 50,
+      "processRole": "PROCESS",
+      "completionCriterionRu": "После восстановления крышек питание включено штатным аппаратом; вентилятор запускается и работает без задевания, посторонних предметов и выявленных повреждений."
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "fan-reference:prepared-opening:r610",
+      "groupTitleRu": "Монтаж вентилятора в готовом проёме",
+      "operationId": "fan-reference:prepared-opening:r610:cleanup",
+      "operationTitleRu": "Освобождение места монтажа и сохранение упаковки",
+      "processOrdinal": 60,
+      "processRole": "PROCESS",
+      "completionCriterionRu": "Место монтажа освобождено от упаковки и инструмента; коробка сохранена в указанном месте, отсутствие иных отходов подтверждено для этой ветви."
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "fan-reference:prepared-opening:r610",
+      "groupTitleRu": "Монтаж вентилятора в готовом проёме",
+      "operationId": "fan-reference:prepared-opening:r610:handover",
+      "operationTitleRu": "Передача инструкции и завершение монтажа",
+      "processOrdinal": 70,
+      "processRole": "PROCESS",
+      "completionCriterionRu": "Инструкция передана ответственному лицу; сообщены порядок отключения и обслуживания, зафиксированы фактические результаты работы и проверки."
+    }
+  ],
+  "operationRequirements": [
+    {
+      "operationId": "fan-reference:prepared-opening:r610:delivery",
+      "sourceId": "project_system_fan_prepared_opening_reference_r610",
+      "requirements": {
+        "MATERIAL": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:axial-100-plain:owner",
+            "factory-fan:axial-100-plain:box"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "CONSUMABLE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Метод этапа исключает сверление, резку, склейку, смазку и влажную обработку; отдельный расходный материал не применяется. Начальные батареи и ткань учтены именно на этапе проверки оснащения."
+        },
+        "TOOL": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "На этом этапе метод предписывает ручное действие без дополнительного инструмента; все отдельные отвёртки и измерительный комплект перечислены на своих реальных этапах."
+        },
+        "ACCESSORY": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Метод не применяет отдельные биты, насадки, подвесы или соединительную оснастку на этом этапе; принадлежности согласованного измерительного комплекта перечислены отдельно на этапе проверки отсутствия напряжения."
+        },
+        "EQUIPMENT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Готовый проём, готовые отверстия и доступ с пола исключают оборудование доступа и обработки; исправные указатель, проверочный прибор и аппарат отключения учтены на использующих их этапах."
+        },
+        "MECHANISM": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Узкий проектный метод допускается только при документированно безопасной ручной подаче с пола, уже находящемся на объекте изделии и готовых отверстиях; подъёмные машины, станки, дрель и механизированная подача не выполняются. Это условие метода, а не универсальное следствие умолчания TDS."
+        },
+        "LABOR": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:installation-labour"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "SERVICE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Все действия выполняет принятая собственная бригада в едином труде; отдельный подряд, аренда, лабораторная услуга или плата за обслуживание в этом ограниченном методе не предусмотрены. Дополнительная обязательная программа испытаний делает этот профиль неприменимым до её отдельного обеспечения."
+        },
+        "TRANSPORT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Явный выбор объекта подтверждает изделие на объекте и только ручную подачу с пола; внешняя перевозка, рейсы и транспортная услуга не входят в эту ветвь. При их необходимости выбирается другой предметный scope, не нулевой рейс."
+        },
+        "PPE": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:ppe"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        }
+      }
+    },
+    {
+      "operationId": "fan-reference:prepared-opening:r610:isolate",
+      "sourceId": "project_system_fan_prepared_opening_reference_r610",
+      "requirements": {
+        "MATERIAL": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:electrical-cable"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "CONSUMABLE": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "fan-electrical:station-r1:prover-cells",
+            "fan-electrical:station-r1:clean-cloth"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "TOOL": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "На этом этапе метод предписывает ручное действие без дополнительного инструмента; все отдельные отвёртки и измерительный комплект перечислены на своих реальных этапах."
+        },
+        "ACCESSORY": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "fan-electrical:station-r1:indicator-prods",
+            "fan-electrical:station-r1:indicator-lead",
+            "fan-electrical:station-r1:prod-shrouds",
+            "fan-electrical:station-r1:prover-hanger",
+            "fan-electrical:station-r1:instrument-case",
+            "factory-fan:onsite:reference-isolation-lock"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "EQUIPMENT": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "fan-electrical:station-r1:voltage-indicator",
+            "fan-electrical:station-r1:prover",
+            "factory-fan:onsite:isolator"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "MECHANISM": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Узкий проектный метод допускается только при документированно безопасной ручной подаче с пола, уже находящемся на объекте изделии и готовых отверстиях; подъёмные машины, станки, дрель и механизированная подача не выполняются. Это условие метода, а не универсальное следствие умолчания TDS."
+        },
+        "LABOR": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:installation-labour"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "SERVICE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Все действия выполняет принятая собственная бригада в едином труде; отдельный подряд, аренда, лабораторная услуга или плата за обслуживание в этом ограниченном методе не предусмотрены. Дополнительная обязательная программа испытаний делает этот профиль неприменимым до её отдельного обеспечения."
+        },
+        "TRANSPORT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Явный выбор объекта подтверждает изделие на объекте и только ручную подачу с пола; внешняя перевозка, рейсы и транспортная услуга не входят в эту ветвь. При их необходимости выбирается другой предметный scope, не нулевой рейс."
+        },
+        "PPE": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:ppe"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        }
+      }
+    },
+    {
+      "operationId": "fan-reference:prepared-opening:r610:mount",
+      "sourceId": "project_system_fan_prepared_opening_reference_r610",
+      "requirements": {
+        "MATERIAL": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:axial-100-plain:owner",
+            "factory-fan:axial-100-plain:fixings",
+            "factory-fan:axial-100-plain:seal"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "CONSUMABLE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Метод этапа исключает сверление, резку, склейку, смазку и влажную обработку; отдельный расходный материал не применяется. Начальные батареи и ткань учтены именно на этапе проверки оснащения."
+        },
+        "TOOL": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "fan-electrical:station-r1:driver-ph1"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "ACCESSORY": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:reference-isolation-lock"
+          ],
+          "reasonRu": "Индивидуальный совместимый замок прямо требуется данным проектным методом предотвращения повторного включения; не входит в исходный измерительный комплект."
+        },
+        "EQUIPMENT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Готовый проём, готовые отверстия и доступ с пола исключают оборудование доступа и обработки; исправные указатель, проверочный прибор и аппарат отключения учтены на использующих их этапах."
+        },
+        "MECHANISM": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Узкий проектный метод допускается только при документированно безопасной ручной подаче с пола, уже находящемся на объекте изделии и готовых отверстиях; подъёмные машины, станки, дрель и механизированная подача не выполняются. Это условие метода, а не универсальное следствие умолчания TDS."
+        },
+        "LABOR": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:installation-labour"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "SERVICE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Все действия выполняет принятая собственная бригада в едином труде; отдельный подряд, аренда, лабораторная услуга или плата за обслуживание в этом ограниченном методе не предусмотрены. Дополнительная обязательная программа испытаний делает этот профиль неприменимым до её отдельного обеспечения."
+        },
+        "TRANSPORT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Явный выбор объекта подтверждает изделие на объекте и только ручную подачу с пола; внешняя перевозка, рейсы и транспортная услуга не входят в эту ветвь. При их необходимости выбирается другой предметный scope, не нулевой рейс."
+        },
+        "PPE": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:ppe"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        }
+      }
+    },
+    {
+      "operationId": "fan-reference:prepared-opening:r610:connect",
+      "sourceId": "project_system_fan_prepared_opening_reference_r610",
+      "requirements": {
+        "MATERIAL": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:axial-100-plain:owner",
+            "factory-fan:onsite:electrical-cable"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "CONSUMABLE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Метод этапа исключает сверление, резку, склейку, смазку и влажную обработку; отдельный расходный материал не применяется. Начальные батареи и ткань учтены именно на этапе проверки оснащения."
+        },
+        "TOOL": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "fan-electrical:station-r1:driver-slot15"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "ACCESSORY": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:reference-isolation-lock"
+          ],
+          "reasonRu": "Индивидуальный совместимый замок прямо требуется данным проектным методом предотвращения повторного включения; не входит в исходный измерительный комплект."
+        },
+        "EQUIPMENT": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:isolator"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "MECHANISM": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Узкий проектный метод допускается только при документированно безопасной ручной подаче с пола, уже находящемся на объекте изделии и готовых отверстиях; подъёмные машины, станки, дрель и механизированная подача не выполняются. Это условие метода, а не универсальное следствие умолчания TDS."
+        },
+        "LABOR": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:installation-labour"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "SERVICE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Все действия выполняет принятая собственная бригада в едином труде; отдельный подряд, аренда, лабораторная услуга или плата за обслуживание в этом ограниченном методе не предусмотрены. Дополнительная обязательная программа испытаний делает этот профиль неприменимым до её отдельного обеспечения."
+        },
+        "TRANSPORT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Явный выбор объекта подтверждает изделие на объекте и только ручную подачу с пола; внешняя перевозка, рейсы и транспортная услуга не входят в эту ветвь. При их необходимости выбирается другой предметный scope, не нулевой рейс."
+        },
+        "PPE": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:ppe"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        }
+      }
+    },
+    {
+      "operationId": "fan-reference:prepared-opening:r610:function-check",
+      "sourceId": "project_system_fan_prepared_opening_reference_r610",
+      "requirements": {
+        "MATERIAL": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:axial-100-plain:owner",
+            "factory-fan:onsite:electrical-cable"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "CONSUMABLE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Метод этапа исключает сверление, резку, склейку, смазку и влажную обработку; отдельный расходный материал не применяется. Начальные батареи и ткань учтены именно на этапе проверки оснащения."
+        },
+        "TOOL": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "На этом этапе метод предписывает ручное действие без дополнительного инструмента; все отдельные отвёртки и измерительный комплект перечислены на своих реальных этапах."
+        },
+        "ACCESSORY": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:reference-isolation-lock"
+          ],
+          "reasonRu": "Индивидуальный совместимый замок прямо требуется данным проектным методом предотвращения повторного включения; не входит в исходный измерительный комплект."
+        },
+        "EQUIPMENT": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:isolator"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "MECHANISM": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Узкий проектный метод допускается только при документированно безопасной ручной подаче с пола, уже находящемся на объекте изделии и готовых отверстиях; подъёмные машины, станки, дрель и механизированная подача не выполняются. Это условие метода, а не универсальное следствие умолчания TDS."
+        },
+        "LABOR": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:installation-labour"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "SERVICE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Все действия выполняет принятая собственная бригада в едином труде; отдельный подряд, аренда, лабораторная услуга или плата за обслуживание в этом ограниченном методе не предусмотрены. Дополнительная обязательная программа испытаний делает этот профиль неприменимым до её отдельного обеспечения."
+        },
+        "TRANSPORT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Явный выбор объекта подтверждает изделие на объекте и только ручную подачу с пола; внешняя перевозка, рейсы и транспортная услуга не входят в эту ветвь. При их необходимости выбирается другой предметный scope, не нулевой рейс."
+        },
+        "PPE": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:ppe"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        }
+      }
+    },
+    {
+      "operationId": "fan-reference:prepared-opening:r610:cleanup",
+      "sourceId": "project_system_fan_prepared_opening_reference_r610",
+      "requirements": {
+        "MATERIAL": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:axial-100-plain:box"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "CONSUMABLE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Метод этапа исключает сверление, резку, склейку, смазку и влажную обработку; отдельный расходный материал не применяется. Начальные батареи и ткань учтены именно на этапе проверки оснащения."
+        },
+        "TOOL": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "На этом этапе метод предписывает ручное действие без дополнительного инструмента; все отдельные отвёртки и измерительный комплект перечислены на своих реальных этапах."
+        },
+        "ACCESSORY": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Метод не применяет отдельные биты, насадки, подвесы или соединительную оснастку на этом этапе; принадлежности согласованного измерительного комплекта перечислены отдельно на этапе проверки отсутствия напряжения."
+        },
+        "EQUIPMENT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Готовый проём, готовые отверстия и доступ с пола исключают оборудование доступа и обработки; исправные указатель, проверочный прибор и аппарат отключения учтены на использующих их этапах."
+        },
+        "MECHANISM": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Узкий проектный метод допускается только при документированно безопасной ручной подаче с пола, уже находящемся на объекте изделии и готовых отверстиях; подъёмные машины, станки, дрель и механизированная подача не выполняются. Это условие метода, а не универсальное следствие умолчания TDS."
+        },
+        "LABOR": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:installation-labour"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "SERVICE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Все действия выполняет принятая собственная бригада в едином труде; отдельный подряд, аренда, лабораторная услуга или плата за обслуживание в этом ограниченном методе не предусмотрены. Дополнительная обязательная программа испытаний делает этот профиль неприменимым до её отдельного обеспечения."
+        },
+        "TRANSPORT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Явный выбор объекта подтверждает изделие на объекте и только ручную подачу с пола; внешняя перевозка, рейсы и транспортная услуга не входят в эту ветвь. При их необходимости выбирается другой предметный scope, не нулевой рейс."
+        },
+        "PPE": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:ppe"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        }
+      }
+    },
+    {
+      "operationId": "fan-reference:prepared-opening:r610:handover",
+      "sourceId": "project_system_fan_prepared_opening_reference_r610",
+      "requirements": {
+        "MATERIAL": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:axial-100-plain:manual"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "CONSUMABLE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Метод этапа исключает сверление, резку, склейку, смазку и влажную обработку; отдельный расходный материал не применяется. Начальные батареи и ткань учтены именно на этапе проверки оснащения."
+        },
+        "TOOL": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "На этом этапе метод предписывает ручное действие без дополнительного инструмента; все отдельные отвёртки и измерительный комплект перечислены на своих реальных этапах."
+        },
+        "ACCESSORY": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Метод не применяет отдельные биты, насадки, подвесы или соединительную оснастку на этом этапе; принадлежности согласованного измерительного комплекта перечислены отдельно на этапе проверки отсутствия напряжения."
+        },
+        "EQUIPMENT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Готовый проём, готовые отверстия и доступ с пола исключают оборудование доступа и обработки; исправные указатель, проверочный прибор и аппарат отключения учтены на использующих их этапах."
+        },
+        "MECHANISM": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Узкий проектный метод допускается только при документированно безопасной ручной подаче с пола, уже находящемся на объекте изделии и готовых отверстиях; подъёмные машины, станки, дрель и механизированная подача не выполняются. Это условие метода, а не универсальное следствие умолчания TDS."
+        },
+        "LABOR": {
+          "status": "REQUIRED",
+          "rowIds": [
+            "factory-fan:onsite:installation-labour"
+          ],
+          "reasonRu": "Конкретные предметы и их совместное использование прямо объявлены в данном PROJECT_SYSTEM reference method и приведённых первичных BOM/tool manuals."
+        },
+        "SERVICE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Все действия выполняет принятая собственная бригада в едином труде; отдельный подряд, аренда, лабораторная услуга или плата за обслуживание в этом ограниченном методе не предусмотрены. Дополнительная обязательная программа испытаний делает этот профиль неприменимым до её отдельного обеспечения."
+        },
+        "TRANSPORT": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Явный выбор объекта подтверждает изделие на объекте и только ручную подачу с пола; внешняя перевозка, рейсы и транспортная услуга не входят в эту ветвь. При их необходимости выбирается другой предметный scope, не нулевой рейс."
+        },
+        "PPE": {
+          "status": "NOT_APPLICABLE",
+          "reasonRu": "Этот этап передачи документа не выполняет монтажных, электрических или грузовых действий; принятые защитные перчатки показаны на всех фактически использующих их ручных этапах."
+        }
+      }
+    }
+  ],
+  "rows": [
+    {
+      "rowId": "factory-fan:axial-100-plain:owner",
+      "formulaId": "factory-fan:axial-100-plain:owner:reference-formula-r610",
+      "sourceTitleRu": "Заводской комплект вытяжного вентилятора Ø100 мм, 220–240 В, 50 Гц, без таймера",
+      "publicNameRu": "Вытяжной вентилятор Ø100 мм, 220–240 В, 50 Гц, без таймера",
+      "resourceKind": "MATERIAL",
+      "category": "material",
+      "unitId": "set",
+      "expression": "fan_reference_r610_new_unit_count",
+      "operationKeys": [
+        "delivery",
+        "mount",
+        "connect",
+        "function-check"
+      ],
+      "costTreatment": "OWN_COST",
+      "costOwnerRowId": "factory-fan:axial-100-plain:owner",
+      "procurement": true,
+      "sourceLineage": {
+        "kind": "FACTORY_OWNER",
+        "profileKey": "axial-100-plain",
+        "sourceRowId": "factory-fan:axial-100-plain:owner"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "factory-fan:axial-100-plain:fixings",
+      "formulaId": "factory-fan:axial-100-plain:fixings:reference-formula-r610",
+      "sourceTitleRu": "Заводской крепёж вентилятора: шурупы и дюбели",
+      "publicNameRu": "Шурупы и дюбели",
+      "resourceKind": "MATERIAL",
+      "category": "material",
+      "unitId": "set",
+      "expression": "fan_reference_r610_new_unit_count*1",
+      "operationKeys": [
+        "mount"
+      ],
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "costOwnerRowId": "factory-fan:axial-100-plain:owner",
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FACTORY_COMPONENT",
+        "profileKey": "axial-100-plain",
+        "sourceRowId": "factory-fan:axial-100-plain:fixings",
+        "countPerFactoryUnit": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "factory-fan:axial-100-plain:seal",
+      "formulaId": "factory-fan:axial-100-plain:seal:reference-formula-r610",
+      "sourceTitleRu": "Заводская уплотнительная прокладка вентилятора",
+      "publicNameRu": "Уплотнительная прокладка",
+      "resourceKind": "MATERIAL",
+      "category": "material",
+      "unitId": "item",
+      "expression": "fan_reference_r610_new_unit_count*1",
+      "operationKeys": [
+        "mount"
+      ],
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "costOwnerRowId": "factory-fan:axial-100-plain:owner",
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FACTORY_COMPONENT",
+        "profileKey": "axial-100-plain",
+        "sourceRowId": "factory-fan:axial-100-plain:seal",
+        "countPerFactoryUnit": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "factory-fan:axial-100-plain:manual",
+      "formulaId": "factory-fan:axial-100-plain:manual:reference-formula-r610",
+      "sourceTitleRu": "Руководство из заводской поставки вентилятора",
+      "publicNameRu": "Инструкция по установке",
+      "resourceKind": "MATERIAL",
+      "category": "material",
+      "unitId": "item",
+      "expression": "fan_reference_r610_new_unit_count*1",
+      "operationKeys": [
+        "handover"
+      ],
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "costOwnerRowId": "factory-fan:axial-100-plain:owner",
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FACTORY_COMPONENT",
+        "profileKey": "axial-100-plain",
+        "sourceRowId": "factory-fan:axial-100-plain:manual",
+        "countPerFactoryUnit": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "factory-fan:axial-100-plain:box",
+      "formulaId": "factory-fan:axial-100-plain:box:reference-formula-r610",
+      "sourceTitleRu": "Коробка заводской поставки вентилятора",
+      "publicNameRu": "Упаковочная коробка",
+      "resourceKind": "MATERIAL",
+      "category": "material",
+      "unitId": "item",
+      "expression": "fan_reference_r610_new_unit_count*1",
+      "operationKeys": [
+        "delivery",
+        "cleanup"
+      ],
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "costOwnerRowId": "factory-fan:axial-100-plain:owner",
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FACTORY_COMPONENT",
+        "profileKey": "axial-100-plain",
+        "sourceRowId": "factory-fan:axial-100-plain:box",
+        "countPerFactoryUnit": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:driver-ph1",
+      "formulaId": "fan-electrical:station-r1:driver-ph1:reference-formula-r610",
+      "sourceTitleRu": "Изолированная отвёртка PH1",
+      "publicNameRu": "Изолированная отвёртка PH1",
+      "resourceKind": "TOOL",
+      "category": "equipment",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*1",
+      "operationKeys": [
+        "mount"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "driver-ph1",
+        "sourceRowId": "fan-electrical:station-r1:driver-ph1",
+        "perFront": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:driver-slot15",
+      "formulaId": "fan-electrical:station-r1:driver-slot15:reference-formula-r610",
+      "sourceTitleRu": "Изолированная точная отвёртка шлицевая 1,5 мм",
+      "publicNameRu": "Изолированная точная отвёртка шлицевая 1,5 мм",
+      "resourceKind": "TOOL",
+      "category": "equipment",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*1",
+      "operationKeys": [
+        "connect"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "driver-slot15",
+        "sourceRowId": "fan-electrical:station-r1:driver-slot15",
+        "perFront": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:voltage-indicator",
+      "formulaId": "fan-electrical:station-r1:voltage-indicator:reference-formula-r610",
+      "sourceTitleRu": "Двухполюсный указатель напряжения 50–1000 В",
+      "publicNameRu": "Двухполюсный указатель напряжения 50–1000 В",
+      "resourceKind": "EQUIPMENT",
+      "category": "equipment",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*1",
+      "operationKeys": [
+        "isolate"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "voltage-indicator",
+        "sourceRowId": "fan-electrical:station-r1:voltage-indicator",
+        "perFront": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:indicator-prods",
+      "formulaId": "fan-electrical:station-r1:indicator-prods:reference-formula-r610",
+      "sourceTitleRu": "Штатные контактные щупы двухполюсного указателя",
+      "publicNameRu": "Штатные контактные щупы двухполюсного указателя",
+      "resourceKind": "ACCESSORY",
+      "category": "equipment",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*2",
+      "operationKeys": [
+        "isolate"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "indicator-prods",
+        "sourceRowId": "fan-electrical:station-r1:indicator-prods",
+        "perFront": "2"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:indicator-lead",
+      "formulaId": "fan-electrical:station-r1:indicator-lead:reference-formula-r610",
+      "sourceTitleRu": "Штатный соединительный провод указателя с двойной изоляцией",
+      "publicNameRu": "Штатный соединительный провод указателя с двойной изоляцией",
+      "resourceKind": "ACCESSORY",
+      "category": "equipment",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*1",
+      "operationKeys": [
+        "isolate"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "indicator-lead",
+        "sourceRowId": "fan-electrical:station-r1:indicator-lead",
+        "perFront": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:prod-shrouds",
+      "formulaId": "fan-electrical:station-r1:prod-shrouds:reference-formula-r610",
+      "sourceTitleRu": "Штатные выдвижные защитные кожухи контактных щупов",
+      "publicNameRu": "Штатные выдвижные защитные кожухи контактных щупов",
+      "resourceKind": "ACCESSORY",
+      "category": "equipment",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*2",
+      "operationKeys": [
+        "isolate"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "prod-shrouds",
+        "sourceRowId": "fan-electrical:station-r1:prod-shrouds",
+        "perFront": "2"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:prover",
+      "formulaId": "fan-electrical:station-r1:prover:reference-formula-r610",
+      "sourceTitleRu": "Устройство функциональной проверки двухполюсного указателя",
+      "publicNameRu": "Прибор проверки указателя напряжения",
+      "resourceKind": "EQUIPMENT",
+      "category": "equipment",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*1",
+      "operationKeys": [
+        "isolate"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "prover",
+        "sourceRowId": "fan-electrical:station-r1:prover",
+        "perFront": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:prover-cells",
+      "formulaId": "fan-electrical:station-r1:prover-cells:reference-formula-r610",
+      "sourceTitleRu": "Батареи устройства функциональной проверки, AA 1,5 В",
+      "publicNameRu": "Батареи устройства функциональной проверки, AA 1,5 В",
+      "resourceKind": "CONSUMABLE",
+      "category": "material",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*6",
+      "operationKeys": [
+        "isolate"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "prover-cells",
+        "sourceRowId": "fan-electrical:station-r1:prover-cells",
+        "perFront": "6"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:prover-hanger",
+      "formulaId": "fan-electrical:station-r1:prover-hanger:reference-formula-r610",
+      "sourceTitleRu": "Штатный магнитный подвес устройства функциональной проверки",
+      "publicNameRu": "Штатный магнитный подвес устройства функциональной проверки",
+      "resourceKind": "ACCESSORY",
+      "category": "equipment",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*1",
+      "operationKeys": [
+        "isolate"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "prover-hanger",
+        "sourceRowId": "fan-electrical:station-r1:prover-hanger",
+        "perFront": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:instrument-case",
+      "formulaId": "fan-electrical:station-r1:instrument-case:reference-formula-r610",
+      "sourceTitleRu": "Защитный футляр указателя и устройства его проверки",
+      "publicNameRu": "Футляр указателя напряжения и проверочного прибора",
+      "resourceKind": "ACCESSORY",
+      "category": "equipment",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*1",
+      "operationKeys": [
+        "isolate"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "instrument-case",
+        "sourceRowId": "fan-electrical:station-r1:instrument-case",
+        "perFront": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "fan-electrical:station-r1:clean-cloth",
+      "formulaId": "fan-electrical:station-r1:clean-cloth:reference-formula-r610",
+      "sourceTitleRu": "Салфетка ухода за измерительным инструментом",
+      "publicNameRu": "Салфетка ухода за измерительным инструментом",
+      "resourceKind": "CONSUMABLE",
+      "category": "material",
+      "unitId": "item",
+      "expression": "fan_reference_r610_usable_tool_fronts*1",
+      "operationKeys": [
+        "isolate"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "FIXED24_INITIAL_TOOL_PART",
+        "sourceKey": "clean-cloth",
+        "sourceRowId": "fan-electrical:station-r1:clean-cloth",
+        "perFront": "1"
+      },
+      "quantityParameterId": null,
+      "quantityUnknown": false
+    },
+    {
+      "rowId": "factory-fan:onsite:electrical-cable",
+      "formulaId": "factory-fan:onsite:electrical-cable:reference-formula-r610",
+      "sourceTitleRu": "Готовый питающий кабель вентилятора",
+      "publicNameRu": "Готовый питающий кабель вентилятора",
+      "resourceKind": "MATERIAL",
+      "category": "material",
+      "unitId": "m",
+      "expression": "fan_reference_r610_unknown_electrical_cable",
+      "operationKeys": [
+        "isolate",
+        "connect",
+        "function-check"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "PROJECT_SYSTEM_REFERENCE_NEED",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, actual quantities unknown; measurement units separately defined by this project method."
+      },
+      "quantityParameterId": "fan_reference_r610_unknown_electrical_cable",
+      "quantityUnknown": true,
+      "measurementBasis": {
+        "kind": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "methodVersion": "fan-prepared-opening-measurement-basis/r618-r1",
+        "unitId": "m",
+        "ruleRu": "Длина готового питающего кабеля, фактически используемого выбранной ветвью, измеряется вдоль его оси в метрах. Это не длина закупки, запас или новая прокладка.",
+        "quantityKnown": false,
+        "consumptionNormClaimed": false,
+        "procurementQuantityClaimed": false,
+        "legacyMigrationAllowed": false
+      }
+    },
+    {
+      "rowId": "factory-fan:onsite:isolator",
+      "formulaId": "factory-fan:onsite:isolator:reference-formula-r610",
+      "sourceTitleRu": "Аппарат отключения питания вентилятора",
+      "publicNameRu": "Аппарат отключения питания вентилятора",
+      "resourceKind": "EQUIPMENT",
+      "category": "equipment",
+      "unitId": "pcs",
+      "expression": "fan_reference_r610_unknown_isolator",
+      "operationKeys": [
+        "isolate",
+        "connect",
+        "function-check"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "PROJECT_SYSTEM_REFERENCE_NEED",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, actual quantities unknown; measurement units separately defined by this project method."
+      },
+      "quantityParameterId": "fan_reference_r610_unknown_isolator",
+      "quantityUnknown": true,
+      "measurementBasis": {
+        "kind": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "methodVersion": "fan-prepared-opening-measurement-basis/r618-r1",
+        "unitId": "pcs",
+        "ruleRu": "Число физических готовых аппаратов полного отключения, участвующих в выбранной схеме питания. Число полюсов не превращается в число аппаратов.",
+        "quantityKnown": false,
+        "consumptionNormClaimed": false,
+        "procurementQuantityClaimed": false,
+        "legacyMigrationAllowed": false
+      }
+    },
+    {
+      "rowId": "factory-fan:onsite:installation-labour",
+      "formulaId": "factory-fan:onsite:installation-labour:reference-formula-r610",
+      "sourceTitleRu": "Работа монтажника и электрика",
+      "publicNameRu": "Работа монтажника и электрика",
+      "resourceKind": "LABOR",
+      "category": "work",
+      "unitId": "man_hour",
+      "expression": "fan_reference_r610_unknown_installation_labour",
+      "operationKeys": [
+        "delivery",
+        "isolate",
+        "mount",
+        "connect",
+        "function-check",
+        "cleanup",
+        "handover"
+      ],
+      "costTreatment": "OWN_COST",
+      "costOwnerRowId": "factory-fan:onsite:installation-labour",
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "PROJECT_SYSTEM_REFERENCE_NEED",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, actual quantities unknown; measurement units separately defined by this project method."
+      },
+      "quantityParameterId": "fan_reference_r610_unknown_installation_labour",
+      "quantityUnknown": true,
+      "measurementBasis": {
+        "kind": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "methodVersion": "fan-prepared-opening-measurement-basis/r618-r1",
+        "unitId": "man_hour",
+        "ruleRu": "Сумма фактических человеко-часов исполнителей семи операций выбранной ветви; один и тот же интервал одного исполнителя учитывается один раз. Нормативная трудоёмкость и длительность не назначены.",
+        "quantityKnown": false,
+        "consumptionNormClaimed": false,
+        "procurementQuantityClaimed": false,
+        "legacyMigrationAllowed": false
+      }
+    },
+    {
+      "rowId": "factory-fan:onsite:ppe",
+      "formulaId": "factory-fan:onsite:ppe:reference-formula-r610",
+      "sourceTitleRu": "Защитные перчатки",
+      "publicNameRu": "Защитные перчатки",
+      "resourceKind": "PPE",
+      "category": "equipment",
+      "unitId": "pair",
+      "expression": "fan_reference_r610_unknown_ppe",
+      "operationKeys": [
+        "delivery",
+        "isolate",
+        "mount",
+        "connect",
+        "function-check",
+        "cleanup"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "PROJECT_SYSTEM_REFERENCE_NEED",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, actual quantities unknown; measurement units separately defined by this project method."
+      },
+      "quantityParameterId": "fan_reference_r610_unknown_ppe",
+      "quantityUnknown": true,
+      "measurementBasis": {
+        "kind": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "methodVersion": "fan-prepared-opening-measurement-basis/r618-r1",
+        "unitId": "pair",
+        "ruleRu": "Число физических пар защитных перчаток выбранного механического назначения: одна левая и одна правая перчатка образуют одну пару. Это не расход пар на вентилятор и не заявление диэлектрической защиты.",
+        "quantityKnown": false,
+        "consumptionNormClaimed": false,
+        "procurementQuantityClaimed": false,
+        "legacyMigrationAllowed": false
+      }
+    },
+    {
+      "rowId": "factory-fan:onsite:reference-isolation-lock",
+      "formulaId": "factory-fan:onsite:reference-isolation-lock:reference-formula-r610",
+      "sourceTitleRu": "Замок блокировки аппарата отключения",
+      "publicNameRu": "Замок блокировки питания",
+      "resourceKind": "ACCESSORY",
+      "category": "equipment",
+      "unitId": "pcs",
+      "expression": "fan_reference_r610_unknown_isolation_lock",
+      "operationKeys": [
+        "isolate",
+        "mount",
+        "connect",
+        "function-check"
+      ],
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwnerRowId": null,
+      "procurement": false,
+      "sourceLineage": {
+        "kind": "PROJECT_SYSTEM_REFERENCE_NEED",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "meaning": "Own project method requires actual compatible individual lock on ready isolator; no manufacturer kit supply, new purchase or normative count is claimed."
+      },
+      "quantityParameterId": "fan_reference_r610_unknown_isolation_lock",
+      "quantityUnknown": true,
+      "measurementBasis": {
+        "kind": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "methodVersion": "fan-prepared-opening-measurement-basis/r618-r1",
+        "unitId": "pcs",
+        "ruleRu": "Число отдельных совместимых замков предотвращения повторного включения. Ключи и полюса аппарата не считаются дополнительными замками.",
+        "quantityKnown": false,
+        "consumptionNormClaimed": false,
+        "procurementQuantityClaimed": false,
+        "legacyMigrationAllowed": false
+      }
+    }
+  ],
+  "unknownQuantityRows": [
+    "factory-fan:onsite:electrical-cable",
+    "factory-fan:onsite:isolator",
+    "factory-fan:onsite:installation-labour",
+    "factory-fan:onsite:ppe",
+    "factory-fan:onsite:reference-isolation-lock"
+  ],
+  "actualExecutionProved": false,
+  "referenceDemoInput": {
+    "fan_reference_r610_method": "Вентилятор Ø100 мм без таймера: готовый проём, готовое питание и доступ с пола",
+    "fan_reference_r610_new_unit_count": 2,
+    "fan_reference_r610_usable_tool_fronts": 1,
+    "fan_reference_r610_project_reference": "DEMO_REFERENCE_METHOD_ONLY_NOT_ACTUAL_PROJECT",
+    "fan_reference_r610_prepared_scope_fit": "Подтверждены готовый совместимый проём и отверстия, готовый кабель и отключающее устройство, доступ с пола, пригодность оснащения и точное соответствие жал PH1 и SL1,5 крепежу и клеммам",
+    "fan_reference_r610_delivery_scope": "Изделие уже на объекте; только безопасная ручная подача с пола по ППР, без перевозки, складирования и грузоподъёмных машин",
+    "fan_reference_r610_packaging_scope": "Заводская коробка сохраняется; новое сверление и резка не выполняются; иных монтажных отходов в этой ветви нет",
+    "fan_reference_r610_environment_and_initial_post": "Сухое помещение +1…+40 °C, влажность не более 70 %, высота не более 2000 м; указатель и согласованный проверочный прибор исправны, осмотрены, с пригодным начальным питанием и действующими документами; ремонт и обновление питания не требуются"
+  },
+  "remainingActualAdmissionNeeds": [
+    "ROOT actual source registry admission and selected current tuple",
+    "Authentic object/PPR readiness, actual tool/terminal/fixing/PPE compatibility and accepted applicable checks programme",
+    "Manufacturer-compatible manual handling applicability; not a universal exemption from PDF10 suitable machinery",
+    "Unknown labour and existing-material/PPE quantities remain visible in author-defined measurement units; no price or norm claimed."
+  ],
+  "measurementMethod": {
+    "contract": "fan-prepared-opening-measurement-basis/r618-r1",
+    "authority": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+    "sourceKind": "PROJECT_SYSTEM",
+    "appliesOnlyTo": "This independent new-root reference method, not legacy rows or saved estimates",
+    "allFiveQuantityParametersRemainUnknown": true,
+    "newConsumptionNorms": 0,
+    "priceAndProcurementChanged": false,
+    "unitAuthorityPrerequisite": "Shared professional unit authority must support pair as a pair; never map pair to set or pcs."
+  }
+}

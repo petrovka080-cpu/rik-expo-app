@@ -56,7 +56,9 @@ function createSerialMetroCacheReadStore(store) {
 }
 
 function withLocalSerialMetroCacheReads(config, runtime = process) {
-  if (runtime.platform !== "win32" || runtime.env.LOCAL_DEVELOPER_REVIEW !== "1") {
+  const localReview = runtime.env.LOCAL_DEVELOPER_REVIEW === "1"
+    || runtime.env.EXPO_PUBLIC_RELEASE_LABEL === "STAGING_WHOLE_APP_WITH_LOCAL_ESTIMATE";
+  if (runtime.platform !== "win32" || !localReview) {
     return config;
   }
   // The installed Expo config has one FileStore. Do not silently schedule a
@@ -116,13 +118,44 @@ function localDeveloperMetroConfig() {
   return getSentryExpoConfig(__dirname);
 }
 
+// Production Expo inlines EXPO_PUBLIC_* values inside transformed modules.
+// Metro's ordinary file cache key does not include those process values.
+function withPublicEnvTransformCache(config, runtime = process) {
+  const entries = Object.keys(runtime.env)
+    .filter((name) => name.startsWith("EXPO_PUBLIC_") && typeof runtime.env[name] === "string")
+    .sort()
+    .map((name) => [name, runtime.env[name]]);
+  if (entries.length === 0) return config;
+  const digest = require("node:crypto").createHash("sha256")
+    .update(JSON.stringify(entries)).digest("hex");
+  config.cacheVersion = [config.cacheVersion ?? "", "expo-public-env-v1", digest].join(":");
+  return config;
+}
+
 const config = localDeveloperMetroConfig();
+withPublicEnvTransformCache(config);
+// Verification reports and archived source copies are never application modules.
+// Keep the files intact, but do not index them in either Expo/Sentry Metro mode.
+const generatedRuntimeRoot = require("node:path").resolve(__dirname, ".release-runtime");
+const generatedRuntimePath = generatedRuntimeRoot.split(/[\\/]/)
+  .map((segment) => segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+  .join("[\\\\/]");
+const inheritedBlockList = config.resolver.blockList;
+config.resolver.blockList = [
+  ...(Array.isArray(inheritedBlockList) ? inheritedBlockList
+    : inheritedBlockList ? [inheritedBlockList] : []),
+  new RegExp(`^${generatedRuntimePath}(?:[\\\\/]|$)`),
+];
 require("./scripts/dev/metroAndroidBundleTransport.cjs").withLocalAndroidBundleTransport(config);
 require("./scripts/dev/metroNavigationAndroidAssets.cjs").withNavigationAndroidAssets(config, __dirname);
 
 withLocalSerialMetroCacheReads(config);
+const compactLocalOutput = process.env.LOCAL_DEVELOPER_REVIEW === "1"
+  || (process.platform === "win32"
+    && process.env.EXPO_PUBLIC_RELEASE_LABEL === "STAGING_WHOLE_APP_WITH_LOCAL_ESTIMATE");
 config.transformer = {
   ...config.transformer,
+  ...(compactLocalOutput ? { unstable_compactOutput: true } : {}),
   getTransformOptions: async () => ({
     transform: {
       experimentalImportSupport: false,

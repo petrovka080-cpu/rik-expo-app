@@ -1,3 +1,4 @@
+import {consumerEstimateManualCommitRevisionMatches} from './consumerEstimateManualQuantityApproval';
 import { CONSUMER_REPAIR_CONTEXT, assertConsumerRepairScope } from "./consumerRequestAccessPolicy";
 import {
   assertConsumerRepairCanonicalDraftWriteSource,
@@ -65,11 +66,9 @@ import {
   type EstimateDraftSessionParameterValue,
   type EstimateDraftScopeRequirement,
 } from "../estimate/draftSession/estimateDraftSession";
-import {
-  ASPHALT_REFERENCE_V1_PROFILE,
-  extractAsphaltUserFactsV4,
-  type AsphaltScopeSelectionIdV5,
-} from "../estimate/v4/asphalt";
+import { ASPHALT_REFERENCE_V1_PROFILE } from "../estimate/v4/asphalt/asphaltReferenceV1";
+import { extractAsphaltUserFactsV4 } from "../estimate/v4/asphalt/extractAsphaltUserFactsV4";
+import type { AsphaltScopeSelectionIdV5 } from "../estimate/v4/asphalt/roadScopeTruthV4";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
@@ -1083,6 +1082,51 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
   return canonicalBackendRequired("legacy_parameter_batch_recalculate");
 }
 
+/** Notes are request metadata. They never create calculation or procurement rows. */
+export function saveConsumerRepairEstimateNote(input: {
+  requestDraftId: string;
+  ownerUserId: string;
+  revisionId: string | null;
+  text: string;
+  deleteCommentId?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  // Metadata can coexist with an unbound legacy/manual item. Keep the strict
+  // all-items binding for calculation mutations; for notes every item that
+  // claims canonical ownership must still provide the same complete pair.
+  const canonicalItems = bundle.items.filter(item => Boolean(
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
+    || String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim(),
+  ));
+  const binding = canonicalBackendBindingForItems(canonicalItems);
+  const revisionId = binding?.revisionId ?? bundle.durableHistorySummary?.sourceRevisionId ?? null;
+  if ((canonicalItems.length > 0 && !binding)
+    || bundle.draft.consumerUserId !== input.ownerUserId || revisionId !== input.revisionId) {
+    throw new Error("Заметка не сохранена: выбрана другая смета или её версия.");
+  }
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "add_item" });
+  const text = input.text.trim();
+  const comments = bundle.estimateComments ?? [];
+  if (input.deleteCommentId) {
+    const comment = comments.find(candidate => candidate.id === input.deleteCommentId);
+    if (!comment || comment.ownerUserId !== input.ownerUserId || comment.estimateId !== bundle.draft.id
+      || comment.revisionId !== revisionId || comment.deleted) {
+      throw new Error("Заметка не удалена: она не принадлежит выбранной версии сметы.");
+    }
+  } else if (!text || text.length > 4000) {
+    throw new Error("Введите заметку длиной от 1 до 4000 символов.");
+  }
+  const now = new Date().toISOString();
+  const estimateComments = input.deleteCommentId
+    ? comments.map(comment => comment.id === input.deleteCommentId ? { ...comment, deleted: true, updatedAt: now } : comment)
+    : [...comments, { id: id("consumer_estimate_note"), ownerUserId: input.ownerUserId,
+      estimateId: bundle.draft.id, revisionId, rowId: null, text, createdAt: now, updatedAt: now, deleted: false }];
+  return saveConsumerRepairBundle(withEvent({ ...bundle, estimateComments }, createConsumerRepairEvent({
+    requestDraftId: bundle.draft.id, actorType: "consumer", actorUserId: input.ownerUserId,
+    eventType: input.deleteCommentId ? "estimate_note_deleted" : "estimate_note_added",
+  })));
+}
+
 export function addConsumerRepairRequestItem(input: {
   requestDraftId: string;
   titleRu: string;
@@ -1635,7 +1679,10 @@ export function approveConsumerRepairRequestDraft(input: {
   requestDraftId: string;
   userId?: string;
   generatedAt?: string;
+  manualQuantityApproval?: import('./consumerEstimateManualQuantityApproval').ConsumerEstimateManualQuantityApproval;
+  savedRevisionRead?:import('../estimate/backendPlatform/contracts').CanonicalEstimateRevisionView;
   canonicalArtifact?: {
+    issuancePurpose?:'STANDARD'|'PRELIMINARY_REVIEW';
     artifactId: string;
     revisionId: string;
     releaseId: string;
@@ -1645,7 +1692,10 @@ export function approveConsumerRepairRequestDraft(input: {
 }): ConsumerRepairDraftBundle {
   let bundle = getConsumerRepairBundle(input.requestDraftId);
   const userId = input.userId ?? bundle.draft.consumerUserId;
-  const validation = validateConsumerRepairRequestForApprove(input.requestDraftId, userId);
+  if(input.manualQuantityApproval&&!consumerEstimateManualCommitRevisionMatches(bundle,input.manualQuantityApproval,input.savedRevisionRead))
+    throw new ConsumerRepairValidationError([{code:'ESTIMATE_CURRENT_ITEMS_PARITY_REQUIRED',
+      messageRu:'Перед ручным подтверждением нужна свежая проверка той же сохранённой версии. Версия изменилась, недоступна или отозвана.',field:'canonicalRevision'}]);
+  const validation = validateConsumerRepairRequestForApprove(input.requestDraftId, userId, input.manualQuantityApproval,input.savedRevisionRead);
   if (!validation.ok) {
     bundle = saveConsumerRepairBundle(withEvent(
       {
@@ -1669,9 +1719,20 @@ export function approveConsumerRepairRequestDraft(input: {
 
   const canonicalBinding = canonicalBackendBindingForItems(bundle.items);
   if (canonicalBinding) {
+    if(input.manualQuantityApproval){
+      if(bundle.draft.status==='consumer_approved')return cloneConsumerRepairValue(bundle);
+      assertConsumerRepairDraftActionAllowed({currentStatus:bundle.draft.status,action:'approve'});
+      const draft=approveDraftRecord(bundle.draft),ack=input.manualQuantityApproval;
+      return saveConsumerRepairBundle(withEvent({...bundle,draft},createConsumerRepairEvent({
+        requestDraftId:input.requestDraftId,eventType:ack.mode==='MANUAL_PRELIMINARY'?'consumer_approved_canonical_preliminary':'consumer_approved_canonical_manual_quantities',actorType:'consumer',actorUserId:userId,
+        payload:{revisionId:ack.revisionId,releaseId:ack.releaseId,checksumSha256:ack.checksumSha256,manualQuantityApproval:ack,
+          unknownQuantityCount:ack.unresolvedQuantityRowIds?.length??0,acknowledgmentOnly:true,pdfArtifactCreated:false,
+          sourceAdmission:false,paymentAdmission:false,procurementAdmission:false,full:false},
+      })));
+    }
     const artifact = input.canonicalArtifact;
     if (
-      !artifact || artifact.status !== "ready" || !artifact.artifactId.trim() ||
+      !artifact || (artifact.issuancePurpose??'STANDARD')!=='STANDARD' || artifact.status !== "ready" || !artifact.artifactId.trim() ||
       artifact.revisionId !== canonicalBinding.revisionId ||
       artifact.releaseId !== canonicalBinding.releaseId
     ) {
@@ -1708,6 +1769,7 @@ export function approveConsumerRepairRequestDraft(input: {
         revisionId: canonicalBinding.revisionId,
         releaseId: canonicalBinding.releaseId,
         sha256: artifact.sha256,
+        ...(input.manualQuantityApproval ? { manualQuantityApproval: input.manualQuantityApproval } : {}),
       },
     })));
   }

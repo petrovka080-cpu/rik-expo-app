@@ -30,17 +30,21 @@ async function readResource(fetchImpl, url, timeoutMs, maxBytes, headers = {}) {
     contentType: response.headers.get('content-type') || '' };
 }
 
-async function warmWholeAppDeveloperRuntime({ port, root, fetchImpl = fetch, readFile = fs.readFileSync }) {
+async function warmWholeAppDeveloperRuntime({ port, root, target = 'combined', fetchImpl = fetch, readFile = fs.readFileSync }) {
   if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('WHOLE_APP_WARMUP_PORT_INVALID');
+  if (!['combined', 'web'].includes(target)) throw new Error('WHOLE_APP_WARMUP_TARGET_INVALID');
   const origin = `http://127.0.0.1:${port}`;
+  let android = null;
+  if (target === 'combined') {
   const response = await fetchImpl(origin + '/', { headers: { 'expo-platform': 'android', accept: 'application/expo+json' },
     redirect: 'error', signal: AbortSignal.timeout(15000) });
   if (!response.ok) throw new Error('WHOLE_APP_ANDROID_MANIFEST_FAILED');
   const bundleUrl = androidBundleUrl(await response.json(), origin);
   // Stream rather than retaining a second large copy of the Android bundle.
-  const android = await readResource(fetchImpl, bundleUrl, 180000, 128 * 1024 * 1024, { accept: 'application/javascript' });
+  android = await readResource(fetchImpl, bundleUrl, 180000, 128 * 1024 * 1024, { accept: 'application/javascript' });
   if (!/^(application\/(javascript|octet-stream)|text\/javascript)(;|$)/i.test(android.contentType)) {
     throw new Error('WHOLE_APP_ANDROID_BUNDLE_CONTENT_INVALID');
+  }
   }
   const pdfAssets = [];
   for (const file of ['pdf.mjs', 'pdf.worker.mjs']) {
@@ -49,14 +53,16 @@ async function warmWholeAppDeveloperRuntime({ port, root, fetchImpl = fetch, rea
     if (resource.sha256 !== expectedHash) throw new Error('WHOLE_APP_PDF_ASSET_BYTES_MISMATCH');
     pdfAssets.push({ file, ...resource });
   }
-  return { status: 'WHOLE_APP_WEB_ANDROID_PDF_TRANSPORT_READY', capturedAt: new Date().toISOString(),
+  return { status: target === 'combined' ? 'WHOLE_APP_WEB_ANDROID_PDF_TRANSPORT_READY'
+    : 'WHOLE_APP_WEB_PDF_TRANSPORT_READY_ANDROID_NOT_CHECKED', capturedAt: new Date().toISOString(),
+    target, androidTransportReady: target === 'combined',
     android, pdfAssets, catalogMutation: false, viewerRenderTimeoutChanged: false };
 }
 
 module.exports = { androidBundleUrl, warmWholeAppDeveloperRuntime };
 if (require.main === module) {
-  const [port, root, receiptPath] = process.argv.slice(2);
-  warmWholeAppDeveloperRuntime({ port: Number(port), root }).then(receipt => {
+  const [port, root, receiptPath, target = 'combined'] = process.argv.slice(2);
+  warmWholeAppDeveloperRuntime({ port: Number(port), root, target }).then(receipt => {
     fs.writeFileSync(receiptPath, JSON.stringify(receipt, null, 2));
     console.log(receipt.status);
   }).catch(error => { console.error(error.message); process.exitCode = 1; });

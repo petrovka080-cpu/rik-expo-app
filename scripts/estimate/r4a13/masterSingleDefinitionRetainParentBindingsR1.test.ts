@@ -3,7 +3,11 @@ import {createHash} from "node:crypto";
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {createCanonicalDefinitionClonePlan} from "./canonicalDefinitionPublisherR1";
+import {resolveMasterExistingNormativeRegistryReuseR1,assertMasterExistingNormativeRegistrySnapshotR1}
+  from "./prepareMasterSingleDefinitionSuccessorR1";
 import {
+  masterProjectScopeMetadataCompactR1, masterRetainedLineageValueSha256V1,
+  type MasterProjectScopeMetadataOnlyV1,
   masterRetainParentBindingsOptInR1, masterRetainedParentCaptureSha256R1, assertMasterRetainedParentComputationR1,
   prepareMasterRetainedBindingRepresentativeR1, assertMasterRetainedBindingSnapshotR1,
   assertMasterRetainedBindingPreflightUnchangedR1, assertMasterRetainedBindingPlanR1,
@@ -12,7 +16,7 @@ import {
 } from "./masterSingleDefinitionRetainParentBindingsR1";
 
 type Json=Record<string,any>;
-const fixtureRaw=readFileSync(resolve(process.cwd(),
+const fixtureRaw=readFileSync(resolve(__dirname,'../../..',
   "data/estimate-benchmarks/fixtures/elecor-mechanical-fixings-current-parent-r2.json"));
 const fixture=JSON.parse(fixtureRaw.toString("utf8"));
 const copy=<T,>(v:T):T=>JSON.parse(JSON.stringify(v));
@@ -245,6 +249,37 @@ describe("existing publisher normal/locked read and lock-only lifecycle",()=>{
   expect(actual.capture.bindings).toHaveLength(18);expect(actual.capture.formulas).toHaveLength(26);
   expect(f.seen.some(sql=>sql.includes("select * from public.estimate_formula_graph"))).toBe(true);
  });
+ function existingRegistryReader(s:ReturnType<typeof setup>,mode="normal") {
+  const fallback=readerFake(s),target=copy(s.input.newLocators[0]),sibling={...copy(target),id:"33333333-3333-5333-8333-333333333333",locator_key:"other-untouched-operation"};
+  const source={...copy(s.input.newSource),created_at:"2026-10-20T00:00:00.123456+00:00"};
+  const declaration={contract:"master-existing-normative-registry-reuse/r1",locatorExcerptHashKind:"SOURCE_LOCATOR_TEXT_SHA256",source,locators:[copy(target)]};
+  (s.input.config.binding as any).reuseExistingNormativeRegistry=declaration;
+  const all=mode==="key-collision"?[{...target,id:sibling.id}]:mode==="wrong-source"?[{...target,source_id:sibling.id}]
+    :mode==="payload"?[{...target,locator:{changed:true}}]:[target,sibling];
+  const reads:Array<{sql:string;values:any[]}>=[];
+  return {reads,client:{query:async(sql:string,values:any[])=>{
+   if(sql.includes("select * from public.estimate_normative_source")&&typeof values[0]==="string")return{rows:[{raw:JSON.stringify(source)}]};
+   if(sql.includes("select * from public.estimate_normative_locator")&&values[0][0]===target.id){
+    reads.push({sql,values});const rows=all.filter(locator=>values[0].includes(locator.id)
+      ||locator.source_id===values[1]&&(!sql.includes("locator_key=any($3::text[])")||values[2].includes(locator.locator_key)));
+    return{rows:rows.map(row=>({raw:JSON.stringify(row)}))};
+   }
+   return fallback.client.query(sql,values);
+  }}};
+ }
+ test.each(["BEFORE","REGISTERED"] as const)("existing-source %s reuse permits another operation without reading or rebinding it",async phase=>{
+  const s=setup(),f=existingRegistryReader(s),snapshot=await readMasterRetainedBindingPreconditionsR1(f.client as any,s.input,phase);
+  expect(snapshot.newLocators).toEqual(s.input.newLocators);expect(snapshot.newSources[0].created_at).toBe("2026-10-20T00:00:00.123456+00:00");
+  expect(f.reads).toHaveLength(1);expect(f.reads[0].values[2]).toEqual(s.input.newLocators.map((locator:Json)=>locator.locator_key));
+  expect(f.reads[0].sql).toContain("id=any($1::uuid[]) or (source_id=$2 and locator_key=any($3::text[]))");
+ });
+ test.each(["key-collision","wrong-source","payload"])("existing-source scope rejects %s instead of accepting a partial locator match",async mode=>{
+  const s=setup(),f=existingRegistryReader(s,mode);await expect(readMasterRetainedBindingPreconditionsR1(f.client as any,s.input)).rejects.toThrow("RETAIN_NEW_LOCATOR_NOT_EXACT");
+ });
+ test("omitted reuse still rejects a second locator on a newly managed source",async()=>{
+  const s=setup(),f=existingRegistryReader(s);delete (s.input.config.binding as any).reuseExistingNormativeRegistry;
+  await expect(readMasterRetainedBindingPreconditionsR1(f.client as any,s.input)).rejects.toThrow("RETAIN_READ_CAP");
+ });
  test("reader26+1 formula cap refuses phantom instead of truncating to26",async()=>{const s=setup(),f=readerFake(s,false,true);
   await expect(readMasterRetainedBindingPreconditionsR1(f.client as any,s.input)).rejects.toThrow("RETAIN_READ_CAP");
  });
@@ -397,4 +432,284 @@ describe("R2 only exact NEW compiler effective output may keep DERIVED[]",()=>{
  test("PLAN newcontrol unit drift cannot use previously approved empty array",()=>{const {s}=withEmptyControl(),{plan,expected}=planFor(s);
   plan.parameters.find(p=>p.parameter_id==="test_fixing_order_effective")!.unit_id="m";
   expect(()=>assertMasterRetainedBindingPlanR1(s.input,plan,expected)).toThrow("RETAIN_EMPTY_DERIVED_CONTROL_INVALID");});
+});
+
+
+// ROOT_CURRENT_PROJECT_SCOPE_R1: actual current bytes are fixtures, never new
+// object facts or publication IDs. Original suite setup/hooks are unchanged.
+// Historical captured JSON bytes remain unchanged. Only this cloned test
+// view applies the explicit bounded identity SOURCE_FORWARD, never DB facts.
+function applyNativeIdentityTestForwardR478(record:Json,family:'scs'|'acs'):Json {
+ const overlay=JSON.parse(readFileSync(resolve(__dirname,'../../..','data/estimate-benchmarks/fixtures/low-current-project-scope-native-parameter-identity-source-forward-r478.json'),'utf8')),a=overlay.families[family];
+ if(overlay.contract!=='source-only-low-current-native-parameter-identity-forward/r478'
+  ||record.declaration.newProjectParametersSha256!==a.beforeCodeOwnedHashes.newProjectParametersSha256
+  ||record.actualPureOutput.candidateComputationSha256!==a.beforeCodeOwnedHashes.representativeComputationSha256)
+  throw Error('EXACT_HISTORICAL_SOURCE_FORWARD_PREIMAGE_REQUIRED');
+ for(const leaf of a.identityLeaves){const p=record.actualPureOutput.sourceOnlyDefinition.parameters.find((p:Json)=>p.parameter_id===leaf.parameterId);
+  if(!p||p.truth_metadata.contract!==leaf.before.contract||p.truth_metadata.semantic_parameter_key!==leaf.before.semantic_parameter_key)
+   throw Error('EXACT_NEW_PARAMETER_IDENTITY_PREIMAGE_REQUIRED');
+  p.truth_metadata={...p.truth_metadata,...leaf.after};
+ }
+ record.declaration.newProjectParametersSha256=a.afterCodeOwnedHashes.newProjectParametersSha256;
+ record.actualPureOutput.candidateComputationSha256=a.afterCodeOwnedHashes.representativeComputationSha256;
+ record.sourceIdentityTestForwardR478=overlay.contract;return record;
+}
+function currentScopeSetupR1(family:'scs'|'acs'='scs') {
+  const record=applyNativeIdentityTestForwardR478(JSON.parse(readFileSync(resolve(__dirname,'../../..',
+    `data/estimate-benchmarks/fixtures/low-current-project-scope-current-${family}-r1.json`),'utf8')),family);
+  const c=copy(record.actualCurrentCapture.capture),candidate=copy(record.actualPureOutput.sourceOnlyDefinition);
+  const mode:MasterProjectScopeMetadataOnlyV1=copy(record.declaration);
+  const opt={capturedParent:c,capturedParentSha256:record.actualPureOutput.capturedParentSha256,
+    newParameterSources:{},projectScopeMetadataOnlyV1:mode};
+  const locator=c.normativeLocators.find((l:Json)=>c.normativeSources.some((s:Json)=>s.id===l.source_id));
+  const source=c.normativeSources.find((s:Json)=>s.id===locator.source_id);
+  const {created_at:_created,...managed}=source;
+  const input:MasterRetainedBindingGuardInputR1={config:{stopCode:'CURRENT_SCOPE_SOURCE_TEST',catalogId:c.definition.catalog_id,
+    parentReleaseId:record.currentContext.definitionReleaseId,parentSearchReleaseId:record.currentContext.searchReleaseId,
+    binding:{retainParentBindings:opt,reuseExistingNormativeRegistry:{contract:'master-existing-normative-registry-reuse/r1',
+      locatorExcerptHashKind:'CAPTURED_PARENT_PROJECT_SCOPE_METADATA_ONLY_V1',source:copy(source),
+      locators:copy(c.normativeLocators.filter((l:Json)=>l.source_id===source.id))}}},
+    newSource:copy(managed),newLocators:copy(c.normativeLocators.filter((l:Json)=>l.source_id===source.id))};
+  const next={parameters:candidate.parameters as Json[],formulas:candidate.formulas as Json[],resources:candidate.resources as Json[],
+    newBindings:[] as Json[],successorProvenance:{contract:record.actualPureOutput.contract,parentDefinitionId:c.definition.id,
+      parentBaselineId:c.baseline.id,capturedParentSha256:opt.capturedParentSha256,
+      sourceFingerprint:record.actualPureOutput.candidateComputationSha256,projectScopeMetadataOnlyV1:masterProjectScopeMetadataCompactR1(opt)}};
+  // A mutable hostile-input view of the same object, confined to this test.
+  const mutableOpt:Json=opt,mutableConfig:Json=input.config;
+  return {record,c,opt,mode,input,next,mutableOpt,mutableConfig};
+}
+function currentScopePlanR1(s:ReturnType<typeof currentScopeSetupR1>) {
+  const expected=prepareMasterRetainedBindingRepresentativeR1(s.input,s.next),c=s.c,p=s.mode.capturedContentPassport;
+  // Exercise the REAL clone-plan projection. Reuse existing fixture IDs here;
+  // stable new IDs remain the existing publisher's separately gated job.
+  const plan=createCanonicalDefinitionClonePlan({contract:s.next.successorProvenance.contract,definition:{
+    id:c.definition.id,releaseId:s.record.currentContext.definitionReleaseId,catalogId:c.definition.catalog_id,
+    definitionVersion:c.definition.definition_version,passport:copy(c.definition.passport),applicability:copy(c.definition.applicability),
+    definitionSha256:c.definition.definition_sha256,sourceMetadata:copy(expected.sourceMetadata)},
+    representative:{parameters:copy(s.next.parameters),formulas:copy(s.next.formulas),resources:copy(s.next.resources),
+      bindings:[...copy(expected.bindings)],baseline:{...copy(c.baseline),
+        parameter_schema_sha256:masterRetainedLineageValueSha256V1(s.next.parameters),normative_source_ids:copy(expected.normativeSourceIds)},
+      passport:copy(p)},parameterTruthMetadata:parameter=>copy(parameter.truth_metadata),resourceId:resource=>String(resource.id),
+    resourceSemanticOwner:resource=>String(resource.semantic_owner),resourceSha256:resource=>String(resource.row_sha256),
+    baseline:{id:c.baseline.id,key:c.baseline.baseline_key,sourceDefinitionVersionId:c.definition.id,
+      validationScenarioRefs:copy(c.baseline.validation_scenario_refs),acceptanceEvidenceSha256:c.baseline.acceptance_evidence_sha256,
+      acceptedReleaseId:s.record.currentContext.definitionReleaseId,supersedesBaselineId:c.baseline.id},
+    passport:{physicalResultRu:p.physical_result_ru,excludedScopeRu:copy(p.excluded_scope_ru),decision:copy(p.decision),
+      payloadSha256:p.payload_sha256,sourceHead:p.source_head,sourceTree:p.source_tree},
+    bindingApplicability:binding=>copy(binding.applicability),expectedNormativeBindingCount:expected.expectedNormativeBindingCount});
+  return {plan,expected};
+}
+describe('ROOT_CURRENT_PROJECT_SCOPE_R1',()=>{
+  test.each(['scs','acs'] as const)('real PLAN preserves absent schema-only fields and all native baseline maps: %s',family=>{
+    const s=currentScopeSetupR1(family),before=JSON.stringify(s.c),{plan,expected}=currentScopePlanR1(s);
+    assertMasterRetainedBindingPlanR1(s.input,plan,expected);
+    expect(plan.resources).toHaveLength(s.c.resources.length);expect(plan.bindings).toHaveLength(s.c.bindings.length);
+    expect(plan.parameters.slice(s.c.parameters.length).map(p=>p.parameter_id)).toEqual(s.mode.newProjectParameterIds);
+    for(const key of ['input_values','input_classification','uom_by_parameter','formula_consumer_ids','resource_consumer_row_ids',
+      'normative_source_ids','guide_provenance_ru','proposal_source_refs','validation_scenario_refs'] as const)
+      expect(plan.baseline[key]).toEqual(s.c.baseline[key]);
+    for(const id of s.mode.newProjectParameterIds)for(const key of ['input_values','input_classification','normative_source_ids'] as const)
+      expect(Object.hasOwn(plan.baseline[key],id)).toBe(false);
+    expect(plan.passport.decision.quantityScope).toBe(s.mode.capturedContentPassport.decision.quantityScope);
+    expect(plan.passport.parameter_count).toBe(s.c.parameters.length+s.mode.newProjectParameterIds.length);
+    expect(plan.passport.formula_count).toBe(s.c.formulas.length);expect(plan.passport.resource_count).toBe(s.c.resources.length);
+    const wrongDecision=copy(plan);wrongDecision.passport.decision.quantityScope='HOSTILE_TEST';
+    expect(()=>assertMasterRetainedBindingPlanR1(s.input,wrongDecision,expected)).toThrow('SCOPE_METADATA_QUANTITATIVE_PASSPORT_UNCHANGED');
+    for(const key of ['parameter_count','formula_count','resource_count'] as const){const wrongCount=copy(plan);wrongCount.passport[key]++;
+      expect(()=>assertMasterRetainedBindingPlanR1(s.input,wrongCount,expected)).toThrow('SCOPE_METADATA_EXACT_CLONE_PASSPORT_COUNTS');}
+    expect(plan.resources.find(r=>r.resource_graph.scopeRequirementV1)?.resource_graph.scopeRequirementV1.kind).toBe('OBJECT_SCOPE');
+    expect(JSON.stringify(s.c)).toBe(before);
+  });
+  const mutations:readonly (readonly [string,(s:ReturnType<typeof currentScopeSetupR1>)=>void])[]=[
+    ['wrong_parent_sha',s=>{s.mutableOpt.capturedParentSha256='0'.repeat(64);}],
+    ['wrong_definition_id',s=>{s.c.definition.id=s.c.baseline.id;}],
+    ['wrong_selected_release',s=>{s.mutableConfig.parentReleaseId=s.record.currentContext.searchReleaseId;}],
+    ['wrong_baseline',s=>{s.c.baseline.id=s.c.definition.id;}],
+    ['wrong_passport',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.capturedContentPassport.decision.allowed=false;}],
+    ['native_row_removed',s=>{s.next.resources.pop();}],
+    ['native_row_added',s=>{s.next.resources.push(copy(s.next.resources[0]!));}],
+    ['duplicate_native_id',s=>{s.next.resources[1]!.id=s.next.resources[0]!.id;}],
+    ['changed_unit',s=>{s.next.resources[0]!.unit_id='m';}],
+    ['changed_formula',s=>{s.next.formulas[0]!.expression_source+=' + 1';}],
+    ['changed_inclusion',s=>{s.next.resources[0]!.inclusion_ast={kind:'literal',value:false};}],
+    ['changed_owner',s=>{s.next.resources[1]!.cost_owner_id=s.next.resources[2]!.row_id;}],
+    ['changed_procurement',s=>{s.next.resources[0]!.procurement_eligible=!s.next.resources[0]!.procurement_eligible;}],
+    ['changed_source_metadata',s=>{s.next.resources[0]!.source_metadata={...s.next.resources[0]!.source_metadata,hostile:true};}],
+    ['changed_old_binding',s=>{s.c.bindings[0].applicability={...s.c.bindings[0].applicability,hostile:true};}],
+    ['paid_scope_carrier',s=>{s.next.resources.find(r=>r.resource_graph.scopeRequirementV1)!.resource_graph.costTreatment='OWN_COST';}],
+    ['existing_primary_overwrite',s=>{s.next.resources.find(r=>r.resource_graph.scopeRequirementV1)!.resource_graph.scopeRequirementV1.kind='INCLUDED';}],
+    ['unregistered_parameter',s=>{s.next.parameters.push({...copy(s.next.parameters.at(-1)!),parameter_id:'hostile_unregistered_project_field'});}],
+    ['nonnull_project_default',s=>{s.next.parameters[s.c.parameters.length]!.default_value='HOSTILE_TEST_NOT_AN_OBJECT_FACT';}],
+    ['quantity_project_field',s=>{s.next.parameters[s.c.parameters.length]!.value_type='decimal';}],
+    ['source_role_forgery',s=>{s.next.parameters[s.c.parameters.length]!.truth_metadata.value_source_role='MANDATORY_NORM_VALUE';}],
+    ['field_empty_source_bypass',s=>{s.mutableOpt.newParameterSources[s.mode.newProjectParameterIds[0]!]={kind:'KNOWN',sourceIds:[]};}],
+    ['extra_graph_key',s=>{s.next.resources[0]!.resource_graph.hostileUnregisteredMetadata=true;}],
+    ['wrong_delta_hash',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.resourceGraphChangesSha256='0'.repeat(64);}],
+    ['input_without_scope_consumer',s=>{s.next.parameters[s.c.parameters.length]!.truth_metadata.resource_branch_consumers=[];}],
+    ['scope_without_parameter',s=>{s.next.parameters.splice(s.c.parameters.length,1);}],
+    ['mixed_mode',s=>{s.mutableOpt.operationCompositionOnly={};}],
+    ['present_malformed_mode',s=>{s.mutableOpt.projectScopeMetadataOnlyV1={contract:s.mode.contract};}],
+    ['registered_source_rewrite',s=>{s.input.newSource.metadata={...s.input.newSource.metadata,hostile:true};}],
+    ['full_scope_claim',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.engineeringAcceptance=true;}],
+  ];
+  test.each(mutations)('rejects one real-current mutation: %s',(_name,mutate)=>{
+    const s=currentScopeSetupR1();prepareMasterRetainedBindingRepresentativeR1(s.input,s.next);
+    mutate(s);expect(()=>prepareMasterRetainedBindingRepresentativeR1(s.input,s.next)).toThrow();
+  });
+  test('baseline_append_fact rejects a real PLAN omission violation',()=>{
+    const s=currentScopeSetupR1(),{plan,expected}=currentScopePlanR1(s);
+    assertMasterRetainedBindingPlanR1(s.input,plan,expected);
+    plan.baseline.input_values[s.mode.newProjectParameterIds[0]!]='HOSTILE_TEST_NOT_AN_OBJECT_FACT';
+    expect(()=>assertMasterRetainedBindingPlanR1(s.input,plan,expected)).toThrow('SCOPE_METADATA_ALL_OLD_BASELINE_MAPS');
+  });
+  test('omitted_mode_legacy preserves the existing normal new-binding guard',()=>{
+    const legacy=setup();prepareMasterRetainedBindingRepresentativeR1(legacy.input,legacy.next);
+    legacy.next.newBindings=[];
+    expect(()=>prepareMasterRetainedBindingRepresentativeR1(legacy.input,legacy.next)).toThrow('NEW_BINDING_MUST_USE_NEW_ROW_AND_SOURCE');
+  });
+  test('locked_capture_drift rejects a changed actual native row after an exact positive snapshot',()=>{
+    const s=currentScopeSetupR1(),snapshot:MasterRetainedBindingSnapshotR1={membership:[{release_id:s.input.config.parentReleaseId,
+      catalog_id:s.input.config.catalogId,definition_version_id:s.c.definition.id,approved_template_baseline_id:s.c.baseline.id,
+      definition_hash:s.c.definition.definition_sha256}],capture:copy(s.c),newSources:s.c.normativeSources.filter((r:Json)=>r.id===s.input.newSource.id),
+      newLocators:copy(s.input.newLocators),contentPassport:copy(s.mode.capturedContentPassport)};
+    assertMasterRetainedBindingSnapshotR1(s.input,snapshot);
+    snapshot.capture.resources[0]!.unit_id='m';
+    expect(()=>assertMasterRetainedBindingSnapshotR1(s.input,snapshot)).toThrow('PARENT_FULL_CAPTURE_DRIFT');
+  });
+  test('old_approved_replay leaves the existing ordinary clone and its retained baseline semantics unchanged',()=>{
+    const legacy=setup(),before=JSON.stringify(legacy.opt.capturedParent),{plan,expected}=planFor(legacy);
+    assertMasterRetainedBindingPlanR1(legacy.input,plan,expected);
+    expect(JSON.stringify(legacy.opt.capturedParent)).toBe(before);
+  });
+});
+
+
+// SOURCE unit controls only. First tuple is the actual R451 ROOT pointer;
+// second tuple is explicitly hypothetical, not a claimed existing DB release.
+// These tests never establish current-pointer/header authority or publish IDs.
+const scopeActiveTuplesR444=[
+  {definitionReleaseId:'679d75f0-6a6b-584b-9458-683bb1fe3edc',searchReleaseId:'2693a339-4262-5709-afcc-ffa2793b4945'},
+  {definitionReleaseId:'SOURCE_TEST_ONLY_SECOND_UNRELATED_RELEASE',searchReleaseId:'SOURCE_TEST_ONLY_SECOND_UNRELATED_SEARCH'},
+] as const;
+function scopeOriginSetupR444(family:'scs'|'acs'='scs') {
+  const s=currentScopeSetupR1(family);
+  s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1={
+    contract:'master-project-scope-origin-current-membership/r1',
+    frozenOriginDefinitionReleaseId:s.record.currentContext.definitionReleaseId,
+    frozenOriginSearchReleaseId:s.record.currentContext.searchReleaseId,
+    nativeCaptureSha256:s.opt.capturedParentSha256};
+  s.next.successorProvenance.projectScopeMetadataOnlyV1=masterProjectScopeMetadataCompactR1(s.opt);
+  s.mutableConfig.parentReleaseId=scopeActiveTuplesR444[0].definitionReleaseId;
+  s.mutableConfig.parentSearchReleaseId=scopeActiveTuplesR444[0].searchReleaseId;
+  return s;
+}
+function scopeSnapshotR444(s:ReturnType<typeof currentScopeSetupR1>):MasterRetainedBindingSnapshotR1 {
+  return {membership:[{release_id:s.input.config.parentReleaseId,catalog_id:s.input.config.catalogId,
+    definition_version_id:s.c.definition.id,approved_template_baseline_id:s.c.baseline.id,
+    definition_hash:s.c.definition.definition_sha256}],capture:copy(s.c),
+    newSources:copy(s.c.normativeSources.filter((r:Json)=>r.id===s.input.newSource.id)),
+    newLocators:copy(s.input.newLocators),contentPassport:copy(s.mode.capturedContentPassport)};
+}
+function scopeExistingReadSetR444(s:ReturnType<typeof currentScopeSetupR1>,before:MasterRetainedBindingSnapshotR1,
+  locked:MasterRetainedBindingSnapshotR1=copy(before)) {
+  const reuse=resolveMasterExistingNormativeRegistryReuseR1({...s.input,config:{...s.input.config,
+    binding:{...s.input.config.binding,reuseExistingNormativeRegistry:s.mutableConfig.binding.reuseExistingNormativeRegistry}}});
+  expect(reuse).not.toBeNull();
+  assertMasterRetainedBindingSnapshotR1(s.input,before);
+  assertMasterExistingNormativeRegistrySnapshotR1(reuse,before);
+  assertMasterRetainedBindingPreflightUnchangedR1(s.input,before,locked);
+  assertMasterExistingNormativeRegistrySnapshotR1(reuse,locked);
+  assertMasterRetainedBindingSnapshotR1(s.input,locked,'REGISTERED');
+  assertMasterExistingNormativeRegistrySnapshotR1(reuse,locked);
+}
+describe('ROOT_SCOPE_ORIGIN_ACTIVE_R444',()=>{
+  test.each(['scs','acs'] as const)('two successive unrelated tuple controls preserve exact native origin: %s',family=>{
+    const s=scopeOriginSetupR444(family),origin=JSON.stringify(s.c),declaration=copy(s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1);
+    for(const tuple of scopeActiveTuplesR444){
+      s.mutableConfig.parentReleaseId=tuple.definitionReleaseId;s.mutableConfig.parentSearchReleaseId=tuple.searchReleaseId;
+      const expected=prepareMasterRetainedBindingRepresentativeR1(s.input,s.next),snapshot=scopeSnapshotR444(s);
+      scopeExistingReadSetR444(s,snapshot);
+      expect(JSON.stringify(s.c)).toBe(origin);
+      expect(s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1).toEqual(declaration);
+      expect(expected.bindings).toHaveLength(s.c.bindings.length);
+      expect(s.next.newBindings).toEqual([]);
+      expect(s.mode.sourceAdmission).toBe(false);expect(s.mode.engineeringAcceptance).toBe(false);
+    }
+  });
+  test('absent origin descriptor preserves the exact original tuple result and bytes',()=>{
+    const s=currentScopeSetupR1(),before=JSON.stringify(s.opt);
+    prepareMasterRetainedBindingRepresentativeR1(s.input,s.next);scopeExistingReadSetR444(s,scopeSnapshotR444(s));
+    expect(JSON.stringify(s.opt)).toBe(before);
+    expect(masterProjectScopeMetadataCompactR1(s.opt)).not.toHaveProperty('originCurrentMembershipV1');
+  });
+  test('advanced tuple without explicit descriptor keeps old refusal',()=>{
+    const s=currentScopeSetupR1();s.mutableConfig.parentReleaseId=scopeActiveTuplesR444[0].definitionReleaseId;
+    s.mutableConfig.parentSearchReleaseId=scopeActiveTuplesR444[0].searchReleaseId;
+    expect(()=>prepareMasterRetainedBindingRepresentativeR1(s.input,s.next)).toThrow('SCOPE_METADATA_CURRENT_RELEASE_TUPLE');
+  });
+  const invalidOrigins:readonly (readonly [string,(s:ReturnType<typeof scopeOriginSetupR444>)=>void])[]=[
+    ['null',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1=null;}],
+    ['present_undefined',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1=undefined;}],
+    ['array',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1=[];}],
+    ['wrong_contract',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1.contract='unbound';}],
+    ['extra_active_authority',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1.activeDefinitionReleaseId=s.input.config.parentReleaseId;}],
+    ['origin_release_relabel',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1.frozenOriginDefinitionReleaseId=s.input.config.parentReleaseId;}],
+    ['origin_search_relabel',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1.frozenOriginSearchReleaseId=s.input.config.parentSearchReleaseId;}],
+    ['wrong_native_capture',s=>{s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1.nativeCaptureSha256='0'.repeat(64);}],
+  ];
+  test.each(invalidOrigins)('explicit malformed or unbound origin rejects: %s',(_name,mutate)=>{
+    const s=scopeOriginSetupR444();prepareMasterRetainedBindingRepresentativeR1(s.input,s.next);mutate(s);
+    expect(()=>prepareMasterRetainedBindingRepresentativeR1(s.input,s.next)).toThrow();
+  });
+  const wrongMembership:readonly (readonly [string,(actual:MasterRetainedBindingSnapshotR1)=>void])[]=[
+    ['release',a=>{a.membership[0]!.release_id=scopeActiveTuplesR444[1].definitionReleaseId;}],
+    ['catalog',a=>{a.membership[0]!.catalog_id='canonical-work:expanded:foreign';}],
+    ['definition',a=>{a.membership[0]!.definition_version_id='SOURCE_TEST_ONLY_FOREIGN_DEFINITION';}],
+    ['baseline',a=>{a.membership[0]!.approved_template_baseline_id='SOURCE_TEST_ONLY_FOREIGN_BASELINE';}],
+    ['definition_hash',a=>{a.membership[0]!.definition_hash='0'.repeat(64);}],
+  ];
+  test.each(wrongMembership)('same requested active tuple cannot authorize wrong membership: %s',(_name,mutate)=>{
+    const s=scopeOriginSetupR444(),actual=scopeSnapshotR444(s);scopeExistingReadSetR444(s,actual);mutate(actual);
+    expect(()=>scopeExistingReadSetR444(s,actual)).toThrow('MANIFEST_ANCHOR_DRIFT');
+  });
+  const wrongCapture:readonly (readonly [string,(actual:MasterRetainedBindingSnapshotR1)=>void])[]=[
+    ['resource',a=>{a.capture.resources[0]!.unit_id='FOREIGN_UNIT';}],
+    ['parameter',a=>{a.capture.parameters[0]!.default_value='FOREIGN_VALUE';}],
+    ['baseline',a=>{a.capture.baseline.acceptance_evidence_sha256='0'.repeat(64);}],
+    ['source',a=>{a.capture.normativeSources[0]!.source_key+=':hostile';}],
+    ['locator',a=>{a.capture.normativeLocators[0]!.excerpt_sha256='0'.repeat(64);}],
+  ];
+  test.each(wrongCapture)('exact active membership cannot authorize changed native capture: %s',(_name,mutate)=>{
+    const s=scopeOriginSetupR444(),actual=scopeSnapshotR444(s);scopeExistingReadSetR444(s,actual);mutate(actual);
+    expect(()=>scopeExistingReadSetR444(s,actual)).toThrow('PARENT_FULL_CAPTURE_DRIFT');
+  });
+  test('unchanged native capture still requires exact quantitative passport',()=>{
+    const s=scopeOriginSetupR444(),actual=scopeSnapshotR444(s);scopeExistingReadSetR444(s,actual);
+    actual.contentPassport!.decision.allowed=false;
+    expect(()=>scopeExistingReadSetR444(s,actual)).toThrow('SCOPE_METADATA_CONTENT_PASSPORT_DRIFT');
+  });
+  test.each(['source','locator'] as const)('existing registry closure rejects missing %s despite exact native capture',kind=>{
+    const s=scopeOriginSetupR444(),actual=scopeSnapshotR444(s);scopeExistingReadSetR444(s,actual);
+    const missing=kind==='source'?{...actual,newSources:[],newLocators:[]}:{...actual,newLocators:[]};
+    expect(()=>scopeExistingReadSetR444(s,missing)).toThrow(kind==='source'?'FULL_EXISTING_SOURCE_REQUIRED':'FULL_EXISTING_LOCATORS_REQUIRED');
+  });
+  test('normal membership cannot be reused after a locked pointer-relative membership change',()=>{
+    const s=scopeOriginSetupR444(),before=scopeSnapshotR444(s),locked=copy(before);scopeExistingReadSetR444(s,before,locked);
+    locked.membership[0]!.release_id=scopeActiveTuplesR444[1].definitionReleaseId;
+    expect(()=>scopeExistingReadSetR444(s,before,locked)).toThrow('MANIFEST_ANCHOR_DRIFT');
+  });
+  test('compact marker persists frozen origin only and cannot claim active pointer authority',()=>{
+    const s=scopeOriginSetupR444(),compact=masterProjectScopeMetadataCompactR1(s.opt)!;
+    expect(compact.originCurrentMembershipV1).toEqual(s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1);
+    const original=copy(compact);s.mutableConfig.parentReleaseId=scopeActiveTuplesR444[1].definitionReleaseId;
+    s.mutableConfig.parentSearchReleaseId=scopeActiveTuplesR444[1].searchReleaseId;
+    expect(masterProjectScopeMetadataCompactR1(s.opt)).toEqual(original);
+    expect(compact.originCurrentMembershipV1).not.toHaveProperty('activeDefinitionReleaseId');
+  });
+  test('fresh caller hash of a replaced family cannot relabel the registered native origin',()=>{
+    const s=scopeOriginSetupR444();prepareMasterRetainedBindingRepresentativeR1(s.input,s.next);
+    s.c.definition.definition_version++;s.mutableOpt.capturedParentSha256=masterRetainedParentCaptureSha256R1(s.c);
+    s.mutableOpt.projectScopeMetadataOnlyV1.originCurrentMembershipV1.nativeCaptureSha256=s.mutableOpt.capturedParentSha256;
+    expect(()=>prepareMasterRetainedBindingRepresentativeR1(s.input,s.next)).toThrow();
+  });
 });

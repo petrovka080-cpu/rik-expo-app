@@ -1,0 +1,59 @@
+{
+  "contract": "normal-hand-preparation-provision.r1",
+  "titleRu": "Обычная подготовка рук перед нанесением защиты кожи",
+  "published": false,
+  "doseMl": "0.7",
+  "cartridgeL": "1",
+  "cartridgeCode": "CLR1L",
+  "dispenserCode": "TPW1LDS",
+  "simultaneousPreparations": 1,
+  "dispenserFunctionalCount": 1,
+  "doseScopeRu": "Один обычный подготовительный цикл мытья перед каждым запланированным нанесением MARLY SKIN. Количество подготовок задаёт уже принятый source schedule потребителя; helper не назначает число работников, часов, фаз или личных моек.",
+  "applicationRu": "Ручной пост с обычной подготовкой рук перед защитой кожи. Нанести одну заводскую дозу0,7мл, распределить, мыть не менее30с без сушки, смыть чистой водой, тщательно высушить. Промышленная дезактивация, аварийные и дополнительные личные мойки не входят в эту дозовую строку; они не объявлены обеспеченными.",
+  "functionalAvailabilityRu": "Один действующий установленный механический дозатор TPW1LDS в сборе с совместимым креплением на последовательный пост. Это выбранный предмет постоянной функциональной обеспеченности владельца поста; не утверждается, что крепёж входит в заводскую поставку, и не назначается отдельный монтаж на неизвестной стене. Пополнение картриджа и замена/ремонт повреждённого действующего узла по состоянию выполняются владельцем в составе обеспечения. Число новых покупок и срок износа не назначаются.",
+  "costPolicy": "INCLUDED_IN_EXISTING_WHOLE_WORK_OWNER_NO_DUPLICATE_PROCUREMENT",
+  "waterQuantityClosed": false,
+  "dryingQuantityClosed": false,
+  "fullPpeClosed": false,
+  "sources": [
+    {
+      "name": "scjp-clear-foam-pure-uk-202504.pdf",
+      "url": "https://pi.scjp.com/uk/clear-foam-pure-uk.pdf",
+      "path": ".release-runtime/r568/interior-wall-finishing-provision-r7/sources/scjp-clear-foam-pure-uk-202504.pdf",
+      "sha256": "2af6e929fee5a8d5ead3189921baef529b6d69f1ea0ccd4f7ef913c607da7885",
+      "bytes": 685371,
+      "id": "scjp-clear-foam-pure-normal-preparation-r1",
+      "title": "SCJP CLEAR FOAM PURE product information 04/25",
+      "locatorRu": "PDF1: один полный дозированный приём обычной мойки, не менее30с без сушки, смыть чистой водой и тщательно высушить; PDF2: испытанная одна доза0,7мл, CLR1L1л и совместимыеTPW1LDS/TPB1LDS/WHB1LDS. Это обычная подготовка рук перед защитой кожи, не очистка от промышленных загрязнений.",
+      "role": "MANUFACTURER_NORMAL_PREPARATION_DOSE_AND_EXACT_COMPATIBLE_CARTRIDGE_DISPENSER"
+    },
+    {
+      "name": "scjp-manual-skincare-dispensers-us-202207.pdf",
+      "url": "https://www.scjp.com/sites/default/files/2022-08/G121657-Manual%20Skincare%20Dispensers-V2.pdf",
+      "path": ".release-runtime/r568/interior-wall-finishing-provision-r7/sources/scjp-manual-skincare-dispensers-us-202207.pdf",
+      "sha256": "54eafe903853a68ae6baed447a5392e057e156a5061f57401c86671d3b3538a3",
+      "bytes": 255165,
+      "id": "scjp-manual-dispenser-functional-primary-r1",
+      "title": "SCJP Manual Skincare Dispensers July2022, US",
+      "locatorRu": "PDF1:фиксированная доза, запечатанные безвоздушные картриджи с насосом, ручная смена, ремонт по состоянию;PDF3:точныйTPW1LDS совместим с1л картриджами и уход влажной ветошью. ГарантияUSA не переносится в выбранный профиль; нет источника числа новых закупок.",
+      "role": "EXACT_MODEL_FUNCTIONAL_AVAILABILITY_AND_MAINTENANCE_BOUNDARY"
+    },
+    {
+      "name": "scjp-washroom-manual-dispensers-dk-201904.pdf",
+      "url": "https://pi.scjp.com/dk/washroom-and-shower-manual-dispensers-dk.pdf",
+      "path": ".release-runtime/r568/interior-wall-finishing-provision-r7/sources/scjp-washroom-manual-dispensers-dk-201904.pdf",
+      "sha256": "8b8d8d654572c0a31fcab9de9fa39d4c3ecf099820eb7c2682b56a8441cc7a2a",
+      "bytes": 611090,
+      "id": "scjp-tpw1lds-metered-foam-primary-r1",
+      "title": "SCJP Washroom and Shower Manual Dispensers April2019, DK",
+      "locatorRu": "PDF2 exact TPW1LDS:1л,0,70мл foam/1мл lotion,1429/1000нажатий/картридж. Для CLR1L выбран foam, не lotion. PDF1:точное дозирование, закрытая насосная система и ручная смена картриджа. Срок2019 не подменяет актуальныйUK2025 список совместимости; один и тот же TPW1LDS подтверждён обоими.",
+      "role": "EXACT_SAME_MODEL_METERED_FOAM_DOSE_AND_SEALED_CARTRIDGE"
+    }
+  ],
+  "functionalAssetIncludesRu": [
+    "РаботоспособныйTPW1LDS с ключом и действующим совместимым креплением как один установленный предмет владельца",
+    "Насос входит в закрытый картриджCLR1L; отдельный сменный насос не изобретается",
+    "Уход влажной ветошью из уже учтённого общего ресурса уборки; не новые абразивные/кислотные/щелочные/растворяющие составы"
+  ],
+  "cartonQuantityIsNotProjectDemand": true
+}

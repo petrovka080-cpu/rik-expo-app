@@ -9,17 +9,11 @@ import {
   loadProfileScreenData,
 } from "../profile/profile.services";
 import {
-  OFFICE_BOOTSTRAP_ROLE,
-  buildOfficeBootstrapProfilePayload,
-} from "./officeAccess.model";
-import {
   buildOfficeMembersPagination,
   normalizeOfficeMembersPageParams,
 } from "./officeAccess.types";
-import {
-  insertOfficeCompanyMember,
-  insertOfficeCompanyProfile,
-} from "./officeAccess.transport";
+import { createOfficeCompanyAtomically } from "./officeAccess.transport";
+import { OFFICE_BOOTSTRAP_ROLE } from "./officeAccess.model";
 import type {
   CreateCompanyDraft,
   CreateInviteDraft,
@@ -78,12 +72,10 @@ const buildPhoneOverflow = (phones: string[]): string | null => {
 };
 
 const buildCompanyInsertPayload = (params: {
-  userId: string;
   profileEmail: string | null;
   profileCity: string | null;
   draft: CreateCompanyDraft;
 }) => ({
-  owner_user_id: params.userId,
   name: params.draft.name.trim(),
   city: normalizeText(params.profileCity) || null,
   address: normalizeText(params.draft.legalAddress) || null,
@@ -105,23 +97,6 @@ const buildDefaultOfficeMembersPage = (): OfficeMembersPageResult => ({
     total: 0,
     loadedCount: 0,
   }),
-});
-
-const buildCompanyProfileInsertPayload = (params: {
-  companyId: string;
-  userId: string;
-  profileEmail: string | null;
-  draft: CreateCompanyDraft;
-}) => ({
-  id: params.companyId,
-  user_id: params.userId,
-  owner_user_id: params.userId,
-  name: params.draft.name.trim(),
-  inn: normalizeText(params.draft.inn) || null,
-  legal_address: normalizeText(params.draft.legalAddress) || null,
-  phone: normalizeText(params.draft.phoneMain) || null,
-  email: normalizeText(params.draft.email) || params.profileEmail,
-  site_address: normalizeText(params.draft.siteAddress) || null,
 });
 
 const mapInviteRow = (row: CompanyInviteRow): OfficeAccessInvite => ({
@@ -278,7 +253,8 @@ export async function loadOfficeAccessScreenData(): Promise<OfficeAccessScreenDa
           ...baseProfile.accessSourceSnapshot,
           developerOverride,
           ownedCompanyId:
-            baseProfile.accessSourceSnapshot.ownedCompanyId ?? company.id,
+            baseProfile.accessSourceSnapshot.ownedCompanyId ??
+            (company.owner_user_id === authUser.id ? company.id : null),
         }
       : {
           ...baseProfile.accessSourceSnapshot,
@@ -301,58 +277,31 @@ export async function createOfficeCompany(params: {
     throw new Error("Укажите наименование компании.");
   }
 
-  const existingCompany = await supabase
-    .from("companies")
-    .select("id")
-    .eq("owner_user_id", user.id)
-    .maybeSingle();
-  if (existingCompany.error) throw existingCompany.error;
-  if (existingCompany.data?.id) {
-    throw new Error(
-      "Компания уже создана. Откройте Office и продолжайте работу как директор.",
-    );
+  if (params.profile.user_id !== user.id) {
+    throw new Error("Профиль относится к другой сессии. Обновите Office.");
   }
-
-  const { data: companyData, error: companyError } = await supabase
-    .from("companies")
-    .insert(
-      buildCompanyInsertPayload({
-        userId: user.id,
-        profileEmail: params.profileEmail,
-        profileCity: params.profile.city ?? null,
-        draft: params.draft,
-      }),
-    )
-    .select(OFFICE_COMPANY_SELECT)
-    .single();
-
-  if (companyError) throw companyError;
-
-  const company = companyData as Company;
-
-  const membershipResult = await insertOfficeCompanyMember({
-    company_id: company.id,
-    user_id: user.id,
-    role: OFFICE_BOOTSTRAP_ROLE,
-  });
-  if (membershipResult.error) throw membershipResult.error;
-
-  const companyProfileResult = await insertOfficeCompanyProfile(
-    buildCompanyProfileInsertPayload({
-      companyId: company.id,
-      userId: user.id,
+  const result = await createOfficeCompanyAtomically({
+    company: buildCompanyInsertPayload({
       profileEmail: params.profileEmail,
+      profileCity: params.profile.city ?? null,
       draft: params.draft,
     }),
-  );
-  if (companyProfileResult.error) throw companyProfileResult.error;
-
-  const profilePayload = buildOfficeBootstrapProfilePayload(params.profile);
-  const profileResult = await supabase
-    .from("user_profiles")
-    .upsert(profilePayload, { onConflict: "user_id" });
-
-  if (profileResult.error) throw profileResult.error;
+    profile: {
+      full_name: params.profile.full_name,
+      phone: params.profile.phone,
+      city: params.profile.city,
+      usage_market: params.profile.usage_market,
+      bio: params.profile.bio ?? null,
+      telegram: params.profile.telegram ?? null,
+      whatsapp: params.profile.whatsapp ?? null,
+      position: params.profile.position ?? null,
+    },
+  });
+  if (result.error) throw result.error;
+  if (typeof result.data !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(result.data)) {
+    throw new Error("Не удалось подтвердить создание компании. Обновите Office и повторите.");
+  }
 }
 
 export async function createOfficeInvite(params: {

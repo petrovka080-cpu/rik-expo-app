@@ -38,18 +38,6 @@ const normalizeRole = (value: unknown) => {
   return normalized || null;
 };
 
-const asObject = (value: unknown): Record<string, unknown> | null =>
-  value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-
-const readRoleFromUserMetadata = (user: User | null | undefined) => {
-  if (!user) return null;
-  const appMetadata = asObject(user.app_metadata);
-  const userMetadata = asObject(user.user_metadata);
-  return normalizeRole(appMetadata?.role) || normalizeRole(userMetadata?.role);
-};
-
 const createResolution = (
   userId: string | null,
   role: string | null,
@@ -70,12 +58,6 @@ let inflightWarmup:
       promise: Promise<SessionRoleResolution>;
     }
   | null = null;
-
-const isCachedResolutionUsable = (
-  resolution: SessionRoleResolution | null,
-  userId: string,
-  ensureProfile: boolean,
-) => Boolean(resolution && resolution.userId === userId && (!ensureProfile || resolution.profileEnsured));
 
 const cacheResolution = (resolution: SessionRoleResolution) => {
   cachedResolution = resolution.userId ? resolution : null;
@@ -102,13 +84,9 @@ async function resolveRoleViaRpcPath(
   ensureProfile: boolean,
 ): Promise<SessionRoleResolution> {
   const userId = trimText(user.id) || null;
-  const sessionRole = readRoleFromUserMetadata(user);
-  if (!userId) return createResolution(null, sessionRole, sessionRole ? "session_metadata" : "none", false);
+  if (!userId) return createResolution(null, null, "none", false);
 
-  if (sessionRole && !ensureProfile) {
-    return createResolution(userId, sessionRole, "session_metadata", false);
-  }
-
+  // Neither editable user metadata nor a stale session claim can grant a role.
   const rpcRole = normalizeRole(await getMyRole());
   if (rpcRole) return createResolution(userId, rpcRole, "rpc", false);
 
@@ -118,7 +96,7 @@ async function resolveRoleViaRpcPath(
     if (ensuredRole) return createResolution(userId, ensuredRole, "rpc_after_profile", true);
   }
 
-  return createResolution(userId, sessionRole, sessionRole ? "session_metadata" : "none", ensureProfile);
+  return createResolution(userId, null, "none", ensureProfile);
 }
 
 export function clearCurrentSessionRoleCache() {
@@ -131,7 +109,7 @@ export async function resolveCurrentSessionRole(
   options: ResolveCurrentSessionRoleOptions = {},
 ): Promise<SessionRoleResolution> {
   const ensureProfile = options.ensureProfile === true;
-  const joinInflight = options.joinInflight !== false;
+  const joinInflight = options.joinInflight !== false && options.forceRefresh !== true;
   const trigger = trimText(options.trigger) || "unknown";
   const user = await readSessionUser(options.user, trigger);
   const userId = trimText(user?.id) || null;
@@ -139,23 +117,6 @@ export async function resolveCurrentSessionRole(
   if (!userId || !user) {
     clearCurrentSessionRoleCache();
     return createResolution(null, null, "none", false);
-  }
-
-  if (!options.forceRefresh && isCachedResolutionUsable(cachedResolution, userId, ensureProfile)) {
-    recordPlatformObservability({
-      screen: SESSION_ROLE_SCREEN,
-      surface: SESSION_ROLE_SURFACE,
-      category: "fetch",
-      event: "resolve_session_role",
-      result: "cache_hit",
-      extra: {
-        trigger,
-        userId,
-        source: cachedResolution?.source ?? "none",
-        profileEnsured: cachedResolution?.profileEnsured ?? false,
-      },
-    });
-    return cachedResolution as SessionRoleResolution;
   }
 
   if (
@@ -249,7 +210,8 @@ export async function warmCurrentSessionProfile(
         source: cachedResolution.source,
       },
     });
-    return cachedResolution;
+    const fresh = await resolveRoleViaRpcPath(user, false);
+    return cacheResolution({ ...fresh, profileEnsured: true });
   }
 
   if (inflightWarmup?.userId === userId) {

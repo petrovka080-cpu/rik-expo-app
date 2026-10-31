@@ -1,4 +1,5 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   anchorGroupRepairPromptDetailsR1,
@@ -42,7 +43,7 @@ CanonicalEstimateCatalogItem {
 }
 
 describe("anchor-group repair canonical family", () => {
-  it("compiles all seven identities through one scope-gated repair graph", async () => {
+  it("compiles all five identities through one scope-gated repair graph", async () => {
     for (const target of ANCHOR_GROUP_REPAIR_TARGETS) {
       const input = anchorGroupRepairAcceptanceInputR1(target.contextKey);
       const compiled = await compileAnchorGroupRepairR1(
@@ -66,18 +67,12 @@ describe("anchor-group repair canonical family", () => {
   });
 
   it("separates concrete-only, hardware-only and combined schedules", async () => {
-    const compileContext = async (contextKey: "large_area" | "small_area" | "standard") => {
-      const target = ANCHOR_GROUP_REPAIR_TARGETS.find(
-        (candidate) => candidate.contextKey === contextKey,
-      )!;
-      return compileAnchorGroupRepairR1(
-        { ...anchorGroupRepairAcceptanceInputR1(contextKey) },
-        { catalogId: target.catalogId },
-      );
-    };
-    const concreteOnly = await compileContext("large_area");
-    const hardwareOnly = await compileContext("small_area");
-    const combined = await compileContext("standard");
+    const compileSchedule = (schedule: "compact" | "extended") =>
+      compileAnchorGroupRepairR1(measuredConcreteProjectInputR533("anchorGroupRepairAcceptanceInputR1", schedule),
+        { catalogId: ANCHOR_GROUP_REPAIR_TARGETS[0].catalogId });
+    const concreteOnly = await compileSchedule("extended");
+    const hardwareOnly = await compileSchedule("compact");
+    const combined = await compileAnchorGroupRepairR1({ ...anchorGroupRepairAcceptanceInputR1("standard") });
     const ids = (compiled: Awaited<ReturnType<typeof compileAnchorGroupRepairR1>>) =>
       compiled.rows.map((row) => row.row_id);
 

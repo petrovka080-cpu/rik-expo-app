@@ -18,20 +18,6 @@ export const AGGRESSIVE_ENVIRONMENT_TILE_FLOOR_DEMOLITION_KRER46_VARIANTS = Obje
     catalogVariant: "STANDARD_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
     canonicalNameRu: "Разборка плиточного покрытия на битумной мастике в агрессивной среде",
   }),
-  large_area: Object.freeze({
-    catalogId:
-      "canonical-work:base:demolition_interior_tile_dismantle_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu:
-      "Разборка плиточного покрытия на битумной мастике в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId:
-      "canonical-work:base:demolition_interior_tile_dismantle_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu:
-      "Разборка плиточного покрытия на битумной мастике в агрессивной среде — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId:
       "canonical-work:base:demolition_interior_tile_dismantle_wet_zone",

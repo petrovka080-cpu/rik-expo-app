@@ -27,12 +27,11 @@ const SEARCH_RELEASE_ID = "aaa7f4aa-c5b3-5f5c-a11f-dcfe5f8e7261";
 const API_RECEIPT = resolve(
   ".release-runtime/r4a13-6/exact-physical-norm-successors/formwork-frami-xlife-pile-cap-distinct-project-e4-api/acceptance.json",
 );
-const TARGET_CONTEXTS = ["high_load", "small_area"] as const;
+const TARGET_CONTEXTS = ["high_load"] as const;
 const MEASURED_AREA_ROW_ID = "information:formwork:measured-contact-area";
 
 const EXPECTED_DEFINITION_IDS: Readonly<Record<(typeof TARGET_CONTEXTS)[number], string>> = Object.freeze({
   high_load: "49de0f29-e838-5e36-832a-ac5b2672d910",
-  small_area: "9d5acb19-9a7f-5146-abf8-45bf45280374",
 });
 
 function invariant(value: unknown, code: string): asserts value {
@@ -608,9 +607,8 @@ async function main(): Promise<void> {
       existingFullPileCapBaseline: "wet_zone",
       selectedDifferentialContexts: [
         { contextKey: "high_load", reason: "maximum confirmed project schedule" },
-        { contextKey: "small_area", reason: "minimum confirmed project schedule" },
       ],
-      backendAcceptedOnlyEquivalentUiContexts: ["standard", "large_area", "repair", "technical_room"],
+      backendAcceptedOnlyEquivalentUiContexts: ["standard", "repair", "technical_room"],
     },
     results,
     diagnostics: {

@@ -1,0 +1,394 @@
+{
+  "contract": "concrete-whole-hole-normal-route/r61",
+  "catalogId": "canonical-work:master:concrete_hole_filling_krer46_017",
+  "workKey": "concrete_hole_filling_krer46_017",
+  "sourceId": "kg_krer46_03_017_whole_hole_filling_r61",
+  "sourceIdentity": "krer46-2015:46-03-017:concrete-hole-fill",
+  "groupId": "master:concrete:hole-filling:krer46-017:r61",
+  "titleRu": "Заделка отверстий в бетоне",
+  "activeMaster": {
+    "path": "C:\\Users\\User\\Downloads\\GOX_BUILD_MASTER_TZ_2_16_2026-10-24.txt",
+    "sha256": "541bc82df10231ca885288a7937283729b08484bd8301a22cd57a7b5c221eb40"
+  },
+  "sourcePack": {
+    "path": "data/estimate-benchmarks/source-packs/concrete-krer46-whole-hole-fill-r61.json",
+    "sha256": "d870e02a8097c32b631defcc81fd3b0569c4fbbd086b4bf684d6ac7319c9b69f"
+  },
+  "currentScope": {
+    "path": "data/estimate-benchmarks/fixtures/current-whole-hole-scope-r61.json",
+    "sha256": "691f9060dc7dcefe9d44cb01ddcb92743965efb7f1f4dc5f654d513118880fce",
+    "definitionReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+    "searchReleaseId": "9b042edf-ca06-50f6-969a-556e6d14547a",
+    "scopeIsNotGlobalAbsence": true
+  },
+  "scopeNote": "One physical repair card, three construction kinds and two own single-opening area bands each. No existing GB repair substitution or foundation-floor assumption.",
+  "nativeCounts": [
+    11,
+    10,
+    12,
+    12,
+    10,
+    10
+  ],
+  "physicalNeedCounts": [
+    29,
+    29,
+    29,
+    29,
+    26,
+    26
+  ],
+  "oracleAt2_5m3": {
+    "46-03-017-01": [
+      [
+        "krer46-hole-r61:01:labour24",
+        "137.9",
+        "man_hour"
+      ],
+      [
+        "krer46-hole-r61:01:winch",
+        "1.1",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:01:truck",
+        "0.6",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:01:water",
+        "0.008",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:01:nails",
+        "7.5",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:01:lime",
+        "2.75",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:01:boards",
+        "0.225",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:01:rebar",
+        "175",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:01:concrete",
+        "2.6",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:01:rod",
+        "23.75",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:01:wire",
+        "1.25",
+        "kg"
+      ]
+    ],
+    "46-03-017-02": [
+      [
+        "krer46-hole-r61:02:labour24",
+        "111.65",
+        "man_hour"
+      ],
+      [
+        "krer46-hole-r61:02:winch",
+        "1.225",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:02:truck",
+        "0.6",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:02:water",
+        "0.008",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:02:lime",
+        "2.75",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:02:boards",
+        "0.225",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:02:rebar",
+        "125",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:02:concrete",
+        "2.6",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:02:rod",
+        "23.75",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:02:wire",
+        "1.25",
+        "kg"
+      ]
+    ],
+    "46-03-017-03": [
+      [
+        "krer46-hole-r61:03:labour24",
+        "188.95",
+        "man_hour"
+      ],
+      [
+        "krer46-hole-r61:03:winch",
+        "0.575",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:03:truck",
+        "1.075",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:03:water",
+        "0.03425",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:03:nails",
+        "14.75",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:03:lime",
+        "12.25",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:03:bars",
+        "0.525",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:03:boards",
+        "0.45",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:03:rebar",
+        "175",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:03:concrete",
+        "2.6",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:03:rod",
+        "23.75",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:03:wire",
+        "1.25",
+        "kg"
+      ]
+    ],
+    "46-03-017-04": [
+      [
+        "krer46-hole-r61:04:labour24",
+        "152.775",
+        "man_hour"
+      ],
+      [
+        "krer46-hole-r61:04:winch",
+        "0.7",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:04:truck",
+        "1.075",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:04:water",
+        "0.03425",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:04:nails",
+        "14.75",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:04:lime",
+        "12.25",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:04:bars",
+        "0.525",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:04:boards",
+        "0.45",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:04:rebar",
+        "150",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:04:concrete",
+        "2.6",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:04:rod",
+        "23.75",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:04:wire",
+        "1.25",
+        "kg"
+      ]
+    ],
+    "46-03-017-05": [
+      [
+        "krer46-hole-r61:05:labour24",
+        "188.05",
+        "man_hour"
+      ],
+      [
+        "krer46-hole-r61:05:winch",
+        "0.525",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:05:truck",
+        "1",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:05:water",
+        "0.03425",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:05:nails",
+        "14.75",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:05:lime",
+        "12.25",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:05:bars",
+        "0.525",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:05:boards",
+        "0.45",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:05:concrete",
+        "2.6",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:05:rod",
+        "23.75",
+        "kg"
+      ]
+    ],
+    "46-03-017-06": [
+      [
+        "krer46-hole-r61:06:labour24",
+        "152",
+        "man_hour"
+      ],
+      [
+        "krer46-hole-r61:06:winch",
+        "0.575",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:06:truck",
+        "1",
+        "machine_hour"
+      ],
+      [
+        "krer46-hole-r61:06:water",
+        "0.03425",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:06:nails",
+        "14.75",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:06:lime",
+        "12.25",
+        "kg"
+      ],
+      [
+        "krer46-hole-r61:06:bars",
+        "0.525",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:06:boards",
+        "0.45",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:06:concrete",
+        "2.6",
+        "m3"
+      ],
+      [
+        "krer46-hole-r61:06:rod",
+        "23.75",
+        "kg"
+      ]
+    ]
+  },
+  "sourceKeyIsDistinctNormScopeNotDuplicateEngine": true,
+  "existingArtifactAndGenericKg46SourcePreserved": true,
+  "liveNormalLockedPreflight": "UNRUN",
+  "fullTechnicalAcceptance": false,
+  "remaining": [
+    "B15 aggregate20mm concrete/formwork/rebar whole cycle is not GB4200 hand patch with sound substrate/no primer.",
+    "Reinforced floor is not a foundation merely because both are horizontal.",
+    "Single-opening face area is not sum of cohort areas or surface repair area.",
+    "Normative wood consumption is not initial formwork inventory or another paid rental owner.",
+    "Aggregate rebar tonne rate is not complete BBS or a procurement specification.",
+    "Winch/truck hours do not determine equipment count, load plan, trips, cable length or a second operator wage.",
+    "Column07 belongs to actual brick filling, not concrete or glass blocks.",
+    "No existing concrete need is closed by this source-only candidate; actual project facts remain unknown."
+  ]
+}

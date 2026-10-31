@@ -1,0 +1,69 @@
+{
+  "contract": "finite-roof-retained-history-registration/r1",
+  "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room",
+  "current": {
+    "id": "2e0c835a-4453-50af-b7f6-6db70c1b9680",
+    "sha256": "e549c0392f848ac9cea184545c4310f54775506b804bad2518292ee40a1072c5",
+    "definitionVersion": 13,
+    "semanticSha256": "c3b4fa3f316bca329128ff3d7b86b1086796b0ef625384dc2da91f7d8c6fa22d",
+    "shape": [
+      152,
+      278,
+      284
+    ]
+  },
+  "parent": {
+    "id": "d9e18a3c-a9e0-52d7-8877-1d6b26a89e44",
+    "sha256": "7cab90a7a79fb2d75f4219d5c76968d599edd4efe00ca1eb791326cd94390d7c",
+    "definitionVersion": 12,
+    "baselineId": "cf78b8e3-046f-5ecf-83c7-45f845b4d407",
+    "capturedParentSha256": "e4c94a47c422369a911507b24d3c5fe156ffa0e3c097cbb39f5f4e2648040770",
+    "semanticSha256": "0f8e9a5f6725a585aaf4f547b8c7a217d2b104c175b02778b4edb5d31f965ca3",
+    "shape": [
+      82,
+      182,
+      188
+    ]
+  },
+  "retainedSlot": {
+    "normId": "FOUR_TECHNOLOGIES_KRER12_03301_00209_02301_00705_WHOLE_REUSE_R1",
+    "contract": "gox-build.master212.roof-four-technology-family/r1",
+    "sourceId": "master212_roof_four_technology_family_r1:canonical-work:base:roofing_interior_flat_roof_install_technical_room",
+    "parentBaselineId": "cf78b8e3-046f-5ecf-83c7-45f845b4d407",
+    "sourceFingerprint": "0e58e99ceb62cc526c842936f7e18fe75f3d42287613b929870d9b418c5d2362",
+    "parentDefinitionId": "d9e18a3c-a9e0-52d7-8877-1d6b26a89e44",
+    "capturedParentSha256": "e4c94a47c422369a911507b24d3c5fe156ffa0e3c097cbb39f5f4e2648040770"
+  },
+  "currentLifecycle": {
+    "contract": "gox-build.master212.roof-four-technology-family/r1",
+    "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+    "sourceFingerprint": "0e58e99ceb62cc526c842936f7e18fe75f3d42287613b929870d9b418c5d2362"
+  },
+  "primarySelection": {
+    "contract": "canonical-primary-measure-selection/v1",
+    "selections": [
+      {
+        "unitId": "m2",
+        "selectorValue": "Сохранённый исходный состав кровли",
+        "primaryMeasureParameterId": "q"
+      },
+      {
+        "unitId": "m2",
+        "selectorValue": "Полимерная мастичная кровля в три слоя толщиной 1,8 мм с проектными узлами",
+        "primaryMeasureParameterId": "m212_roof_covering_area_m2"
+      },
+      {
+        "unitId": "m2",
+        "selectorValue": "Два наплавляемых слоя по готовому минеральному основанию",
+        "primaryMeasureParameterId": "m212_roof_covering_area_m2"
+      }
+    ],
+    "selectorParameterId": "m212_roof_complete_system"
+  },
+  "historyTerminalProofKey": "roofScreed25MigrationV1",
+  "sourceRootSemanticPins": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-22\\files-pasted-by-the-user-c-2\\work\\roof-family-retained-history-semantic-registration-pins-r1.json",
+    "sha256": "ff30c627875c1c6af328c1f7e33f69b357e23c7ab1dda07eb3d1816068904a08"
+  },
+  "scope": "Historical proofs validated on exact parent only. No current stage receipt and no new cross-definition manual quantity/exclusion admission."
+}

@@ -147,7 +147,9 @@ function resourceKey(resource: Batch002DrywallResourceR3): string {
 }
 
 function expectedVariantKeys(definition: Batch002DrywallSuccessorDefinitionR3): readonly string[] {
-  const { operation, variant } = definition;
+  const { operation } = definition;
+  // Retained historical audit branches are intentionally outside the current active variant union.
+  const variant = String(definition.variant);
   if (variant === "standard") return [];
   if (variant === "large_area") return operation === "ALIGN"
     ? ["large_area_reference_markers", "large_area_reference_zones"]

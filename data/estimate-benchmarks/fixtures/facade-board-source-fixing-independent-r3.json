@@ -1,0 +1,93 @@
+{
+  "status": "PREPARED_UNRUN",
+  "independentFromProductRows": true,
+  "examples": [
+    {
+      "caseId": "thermowood7narrowBoards4Supports",
+      "profile": "thermowood-horizontal-tg",
+      "boardWidthsMm": [
+        "117",
+        "117",
+        "117",
+        "117",
+        "117",
+        "117",
+        "117"
+      ],
+      "intersectionsPerBoard": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "expected": {
+        "narrow": "28",
+        "wide": "0",
+        "all": "28",
+        "screws": "28"
+      }
+    },
+    {
+      "caseId": "thermowoodMixed2narrow3wide",
+      "profile": "thermowood-horizontal-tg",
+      "boardWidthsMm": [
+        "117",
+        "117",
+        "165",
+        "165",
+        "165"
+      ],
+      "intersectionsPerBoard": [
+        4,
+        5,
+        3,
+        4,
+        5
+      ],
+      "expected": {
+        "narrow": "9",
+        "wide": "12",
+        "all": "21",
+        "screws": "33"
+      }
+    },
+    {
+      "caseId": "WPC7Boards4Supports",
+      "profile": "wpc-horizontal-wood",
+      "boardWidthsMm": [
+        "184.15",
+        "184.15",
+        "184.15",
+        "184.15",
+        "184.15",
+        "184.15",
+        "184.15"
+      ],
+      "intersectionsPerBoard": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "expected": {
+        "narrow": "0",
+        "wide": "28",
+        "all": "28",
+        "screws": "56"
+      }
+    }
+  ],
+  "negatives": [
+    "Exact140mmThermowood width remains outside parsed source rule.",
+    "WPC cannot inherit single-screw narrow-timber rule.",
+    "Unapproved support/fastener/source or missing captured layout evidence.",
+    "Duplicate board/support intersection IDs.",
+    "No source metre-square fastener rate inferred."
+  ]
+}

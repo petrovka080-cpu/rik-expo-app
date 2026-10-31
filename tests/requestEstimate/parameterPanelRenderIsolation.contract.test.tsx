@@ -1,4 +1,5 @@
 import React from "react";
+import {StyleSheet} from 'react-native';
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import { ConsumerRepairProgressiveEstimatePanel, ParameterDisclosurePanel, canonicalNumericInputRule } from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
@@ -15,6 +16,67 @@ jest.mock("@expo/vector-icons", () => {
   const mockReact = jest.requireActual("react") as typeof import("react");
   return { Ionicons: ({ name }: { name: string }) => mockReact.createElement("MockIonicon", { name }) };
 });
+
+// Literal ordinary-form/application boundary for this existing 54-active-field fixture.
+// Values and normative/profile sources remain owned by the immutable definition.
+const pressureUserFieldIds = [
+  "psp_route_length_m",
+  "psp_pipe_designation",
+  "psp_pipe_outside_diameter_mm",
+  "psp_average_trench_depth_m",
+  "psp_fitting_quantity_piece",
+  "psp_isolation_valve_quantity_piece",
+  "psp_air_valve_quantity_piece",
+  "psp_washout_quantity_piece",
+  "psp_installation_technology",
+  "psp_construction_section_count",
+  "psp_side_clearance_m",
+  "psp_bedding_thickness_m",
+  "psp_surround_cover_above_pipe_m",
+  "psp_excavated_soil_reuse_fraction",
+  "psp_pipe_expected_loss_fraction",
+  "psp_pipe_retained_spare_m",
+  "psp_pipe_available_stock_m",
+  "psp_pipe_supplier_segment_length_m",
+  "psp_bedding_designation",
+  "psp_surround_designation",
+  "psp_imported_backfill_designation",
+  "psp_joint_designation",
+  "psp_fitting_designation",
+  "psp_isolation_valve_designation",
+  "psp_air_valve_designation",
+  "psp_washout_designation",
+  "psp_chamber_designation",
+  "psp_cover_designation",
+  "psp_warning_tape_designation",
+  "psp_soil_truck_capacity_m3",
+  "psp_crossing_casing_mode",
+  "psp_dewatering_mode",
+  "psp_road_restoration_mode"
+] as const;
+const pressureApplicationFieldIds = [
+  "psp_bedding_order_factor",
+  "psp_surround_order_factor",
+  "psp_imported_backfill_order_factor",
+  "psp_warning_tape_length_factor",
+  "psp_chamber_per_appurtenance",
+  "psp_cover_per_chamber",
+  "psp_survey_labor_h_per_m",
+  "psp_earthworks_labor_h_per_m3",
+  "psp_pipe_install_labor_h_per_m",
+  "psp_joint_labor_h_per_piece",
+  "psp_fitting_labor_h_per_piece",
+  "psp_appurtenance_labor_h_per_piece",
+  "psp_chamber_labor_h_per_piece",
+  "psp_qa_labor_h_per_m",
+  "psp_documentation_labor_h_per_section",
+  "psp_excavator_productivity_m3_h",
+  "psp_compactor_productivity_m3_h",
+  "psp_jointing_machine_h_per_piece",
+  "psp_crane_machine_h_per_piece",
+  "psp_test_pump_machine_h_per_100m",
+  "psp_pipe_delivery_m_per_trip"
+] as const;
 
 function pressureSession(): CanonicalParameterSession {
   const catalog: CanonicalEstimateCatalogItem = {
@@ -103,20 +165,27 @@ describe("canonical parameter presentation isolation, not calculation caching", 
     expect(renderer!.root.findAllByProps({ testID: "request-estimate-parameter-apply-success" })).toHaveLength(0);
   });
 
-  it("builds at most the baseline and current cards when mounting the actual 54-input profile", () => {
-    const build = jest.spyOn(cards, "buildCanonicalParameterCards");
-    act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={viewModel()} revision={null} canonicalParameterSession={pressureSession()} latestDiff={null} paramEditorEnabled onApplyParamBatch={jest.fn()} />); });
+  it("keeps the exact user field roster and application-owned technical values while building at most two cards", () => {
+    const session=pressureSession(),sourceValues:Readonly<Record<string,unknown>>=PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT;
+    expect(session.parameters.map(parameter=>parameter.parameterId).sort()).toEqual([...pressureUserFieldIds].sort());
+    expect((session.applicationParameters??[]).map(parameter=>parameter.parameterId).sort()).toEqual([...pressureApplicationFieldIds].sort());
+    for(const parameter of session.applicationParameters??[]){
+      expect(parameter).toMatchObject({inputOwnership:'APPLICATION',consumerInputRole:'APPLICATION_TECHNICAL'});
+      expect(parameter.value).toBe(sourceValues[parameter.parameterId]);
+    }
+    const before=JSON.stringify(session),build=jest.spyOn(cards,"buildCanonicalParameterCards");
+    act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={viewModel()} revision={null} canonicalParameterSession={session} latestDiff={null} paramEditorEnabled onApplyParamBatch={jest.fn()} />); });
     const initiallyVisible = new Set(renderer!.root.findAll(node => typeof node.props.testID === "string" && node.props.testID.startsWith("editable-param-chip-")).map(node => node.props.testID));
     expect(initiallyVisible.size).toBe(6);
     for (const testID of ['request-estimate-filled-parameters-toggle', 'request-estimate-automatic-parameters-toggle']) {
-      const toggle = renderer!.root.findAllByProps({ testID })[0];
-      if (toggle) act(() => toggle.props.onPress());
+      const toggle = renderer!.root.findAllByProps({ testID })[0]; if (toggle) act(() => toggle.props.onPress());
     }
     const visibleKeys = new Set(renderer!.root.findAll(node => typeof node.props.testID === "string" && node.props.testID.startsWith("editable-param-chip-")).map(node => node.props.testID));
-    expect(visibleKeys.size).toBe(54);
+    expect([...visibleKeys].sort()).toEqual(pressureUserFieldIds.map(id=>'editable-param-chip-'+id).sort());
+    for(const id of pressureApplicationFieldIds)expect(renderer!.root.findAllByProps({testID:'editable-param-chip-'+id})).toHaveLength(0);
     expect(field(renderer!).props.value).toBe("100");
-    expect(field(renderer!, "psp_excavator_productivity_m3_h").props.value).toBe("35");
-    expect(build.mock.calls.length).toBeLessThanOrEqual(2);
+    expect(field(renderer!,"psp_bedding_thickness_m").props.value).toBe("0.1");
+    expect(build.mock.calls.length).toBeLessThanOrEqual(2);expect(JSON.stringify(session)).toBe(before);
   });
 
   it("keeps saved manual supplier options out of the short form and preserves them through edit/cancel", () => {
@@ -150,11 +219,11 @@ describe("canonical parameter presentation isolation, not calculation caching", 
     act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={viewModel()} revision={null}
       canonicalParameterSession={session} latestDiff={null} paramEditorEnabled onApplyParamBatch={jest.fn()} />); });
     const chip = renderer!.root.findByProps({ testID: 'editable-param-chip-psp_route_length_m' });
-    expect(chip.props.style).toEqual(expect.arrayContaining([expect.objectContaining({ backgroundColor: '#FFF7ED' })]));
+    expect(StyleSheet.flatten(chip.props.style)).toMatchObject({backgroundColor:'#FFFBEB',borderLeftColor:'#D97706'});
     expect(JSON.stringify(renderer!.toJSON())).toContain('Нужно заполнить');
   });
 
-  it("does not rebuild the retained form for BOQ-only changes, but keeps dirty fields and current source gates", () => {
+  it("keeps dirty object fields across BOQ and internal source-gap changes without exposing technical norms", () => {
     const session = pressureSession();
     const build = jest.spyOn(cards, "buildCanonicalParameterCards");
     const noop = jest.fn();
@@ -172,12 +241,13 @@ describe("canonical parameter presentation isolation, not calculation caching", 
     expect(field(renderer!).props.value).toBe("150.250001");
     const gate = { parameterId: "supplier_norm", title: "Норма изготовителя", sourceRequirement: "Паспорт изготовителя", affectedPositionCount: 2 };
     act(() => renderer!.update(render({ ...first, sourceGates: [gate] })));
-    act(() => renderer!.root.findByProps({ testID: 'request-estimate-source-gates-toggle' }).props.onPress());
     const text = JSON.stringify(renderer!.toJSON());
-    expect(text).toContain("Паспорт изготовителя");
+    expect(text).not.toContain("Паспорт изготовителя");
+    expect(text).not.toContain("Норма изготовителя");
+    expect(renderer!.root.findAllByProps({ testID: 'request-estimate-source-gates-toggle' })).toHaveLength(0);
     expect(field(renderer!).props.value).toBe("150.250001");
     act(() => renderer!.update(render({ ...first, sourceGates: [{ ...gate, title: "Обновлённая норма", sourceRequirement: "Новый паспорт", affectedPositionCount: 3 }] })));
-    expect(JSON.stringify(renderer!.toJSON())).toContain("Новый паспорт");
+    expect(JSON.stringify(renderer!.toJSON())).not.toContain("Новый паспорт");
     act(() => renderer!.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
     expect(field(renderer!).props.value).toBe("150.250001");
     act(() => renderer!.root.findByProps({ testID: "editable-param-batch-apply" }).props.onPress());
@@ -244,15 +314,18 @@ describe("canonical parameter presentation isolation, not calculation caching", 
     const firstRevision = revision(session);
     const props = { viewModel: viewModel(), latestDiff: null, paramEditorEnabled: true, onApplyParamBatch: async () => true };
     act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel {...props} revision={firstRevision} canonicalParameterSession={session} />); });
-    const profileKey = "psp_excavator_productivity_m3_h";
+    const profileKey = "psp_bedding_thickness_m";
     act(() => renderer!.root.findByProps({ testID: 'request-estimate-automatic-parameters-toggle' }).props.onPress());
-    expect(field(renderer!, profileKey).props.value).toBe("35");
+    expect(field(renderer!, profileKey).props.value).toBe("0.1");
     act(() => field(renderer!).props.onChangeText("101"));
     await act(async () => renderer!.root.findByProps({ testID: "editable-param-batch-apply" }).props.onPress());
-    const next = { ...session, revisionId: "new-baseline-child", parameters: session.parameters.map(parameter => parameter.parameterId === "psp_route_length_m" ? { ...parameter, value: 101 } : parameter.parameterId === profileKey ? { ...parameter, value: 40 } : parameter) };
+    const next = { ...session, revisionId: "new-baseline-child", parameters: session.parameters.map(parameter => parameter.parameterId === "psp_route_length_m" ? { ...parameter, value: 101 } : parameter.parameterId === profileKey ? { ...parameter, value: 0.15 } : parameter) };
     act(() => renderer!.update(<ParameterDisclosurePanel {...props} revision={revision(next, firstRevision.revisionId)} canonicalParameterSession={next} />));
-    expect(field(renderer!, profileKey).props.value).toBe("40");
+    expect(field(renderer!, profileKey).props.value).toBe("0.15");
     expect(renderer!.root.findAllByProps({ testID: "editable-param-batch-dirty-count" })).toHaveLength(0);
+    expect(renderer!.root.findAllByProps({testID:'editable-param-chip-psp_excavator_productivity_m3_h'})).toHaveLength(0);
+    expect(next.applicationParameters?.find(parameter=>parameter.parameterId==='psp_excavator_productivity_m3_h')?.value).toBe(35);
+    expect(session.parameters.find(parameter=>parameter.parameterId===profileKey)?.value).toBe(0.1);
   });
 
   it("reuses at most two display formatters without rounding input values or changing numeric gray rules", () => {

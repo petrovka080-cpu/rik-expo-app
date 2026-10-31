@@ -1,6 +1,18 @@
 // @ts-nocheck
 
 import { classifyGeminiUpstreamError } from "./upstreamError.ts";
+import {
+  GeminiRequestGuardError,
+  GEMINI_MAX_TEXT_CHARS,
+  boundGeminiGenerationConfig,
+  readBoundedGeminiPayload,
+  reserveGeminiRequest,
+  validateGeminiModel,
+  verifyGeminiCaller,
+} from "./requestGuard.ts";
+
+const activeUsers = new Set<string>();
+const MAX_WORKER_UPSTREAM_REQUESTS = 4;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -109,6 +121,9 @@ Deno.serve(async (request) => {
     return json(405, toErrorBody(requestId, "method_not_allowed", "Method not allowed."));
   }
 
+  try {
+  const caller = await verifyGeminiCaller(request, Deno.env);
+
   const apiKey = String(Deno.env.get("GEMINI_API_KEY") || "").trim();
   const defaultModel = String(Deno.env.get("GEMINI_MODEL_DEFAULT") || "gemini-2.5-flash").trim();
 
@@ -117,20 +132,21 @@ Deno.serve(async (request) => {
     return json(500, toErrorBody(requestId, "missing_api_key", "Gemini API key is not configured on the server."));
   }
 
-  let payload: GeminiRequest;
-  try {
-    payload = (await request.json()) as GeminiRequest;
-  } catch {
-    return json(400, toErrorBody(requestId, "invalid_json", "Invalid JSON body."));
-  }
+  const payload = await readBoundedGeminiPayload(request) as GeminiRequest;
 
   const model = cleanText(payload.model || defaultModel) || defaultModel;
+  validateGeminiModel(model, defaultModel, Deno.env);
   const systemInstruction = cleanText(payload.systemInstruction);
+  if (systemInstruction.length > 32768 || !Array.isArray(payload.contents) || payload.contents.length > 24 ||
+      payload.contents.some(content => Array.isArray(content?.parts) && content.parts.length > 32)) {
+    return json(400, toErrorBody(requestId, "invalid_request", "The request exceeds the allowed content limit."));
+  }
   const contents = normalizeContents(payload.contents);
-  const generationConfig =
-    payload.generationConfig && typeof payload.generationConfig === "object" && !Array.isArray(payload.generationConfig)
-      ? payload.generationConfig
-      : {};
+  const textChars = contents.reduce((total, content) => total + content.parts.reduce((sum, part) => sum + ("text" in part ? part.text.length : 0), 0), 0);
+  if (textChars > GEMINI_MAX_TEXT_CHARS) {
+    return json(400, toErrorBody(requestId, "invalid_request", "The request exceeds the allowed text limit."));
+  }
+  const generationConfig = boundGeminiGenerationConfig(payload.generationConfig);
 
   logEdge("info", "request_received", {
     requestId,
@@ -150,7 +166,26 @@ Deno.serve(async (request) => {
     return json(400, toErrorBody(requestId, "invalid_request", "contents must contain at least one text or image part."));
   }
 
+  if (request.signal.aborted) {
+    return json(408, toErrorBody(requestId, "request_cancelled", "The request was cancelled."));
+  }
+
+  if (activeUsers.has(caller.userId) || activeUsers.size >= MAX_WORKER_UPSTREAM_REQUESTS) {
+    return json(429, toErrorBody(requestId, "request_limit", "Another request is already running. Try again later."));
+  }
+  // Synchronous reservation before awaiting durable admission prevents same-worker races.
+  activeUsers.add(caller.userId);
+  try {
+  await reserveGeminiRequest(caller);
+  if (request.signal.aborted) {
+    return json(408, toErrorBody(requestId, "request_cancelled", "The request was cancelled."));
+  }
   let upstreamResponse: Response;
+  let upstreamPayload: any;
+  const controller = new AbortController();
+  const cancelUpstream = () => controller.abort();
+  request.signal.addEventListener("abort", cancelUpstream, { once: true });
+  const upstreamTimer = setTimeout(() => controller.abort(), 20000);
   try {
     upstreamResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
@@ -159,6 +194,7 @@ Deno.serve(async (request) => {
         headers: {
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
         body: JSON.stringify({
           system_instruction: {
             parts: [{ text: systemInstruction }],
@@ -168,16 +204,26 @@ Deno.serve(async (request) => {
         }),
       },
     );
+    upstreamPayload = await upstreamResponse.json().catch(error => {
+      if (controller.signal.aborted) throw error;
+      return null;
+    });
   } catch (error) {
     logEdge("error", "transport_error", {
       requestId,
       model,
-      error: error instanceof Error ? error.message : String(error),
+      error: controller.signal.aborted ? "deadline_exceeded" : "provider_transport_failed",
     });
-    return json(502, toErrorBody(requestId, "transport_error", "Gemini upstream request failed."));
+    return request.signal.aborted
+      ? json(408, toErrorBody(requestId, "request_cancelled", "The request was cancelled."))
+      : controller.signal.aborted
+      ? json(504, toErrorBody(requestId, "upstream_timeout", "Gemini did not respond in time."))
+      : json(502, toErrorBody(requestId, "transport_error", "Gemini upstream request failed."));
+  } finally {
+    clearTimeout(upstreamTimer);
+    request.signal.removeEventListener("abort", cancelUpstream);
   }
 
-  const upstreamPayload = await upstreamResponse.json().catch(() => null);
   if (!upstreamResponse.ok) {
     const errorMessage = cleanText(upstreamPayload?.error?.message);
     const errorClassification = classifyGeminiUpstreamError({
@@ -225,4 +271,14 @@ Deno.serve(async (request) => {
   });
 
   return json(200, { requestId, text });
+  } finally {
+    activeUsers.delete(caller.userId);
+  }
+  } catch (error) {
+    if (error instanceof GeminiRequestGuardError) {
+      return json(error.status, toErrorBody(requestId, error.category, error.message));
+    }
+    logEdge("error", "request_failed", { requestId });
+    return json(500, toErrorBody(requestId, "request_failed", "The request could not be completed."));
+  }
 });

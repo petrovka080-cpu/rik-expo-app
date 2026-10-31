@@ -1,0 +1,382 @@
+{
+  "contract": "gox.electrical.socket.composable-surface-two-gang/source-candidate-r1",
+  "catalogId": "canonical-work:base:electrical_interior_socket_install_standard",
+  "workKey": "electrical_interior_socket_install_standard",
+  "titleRu": "Монтаж составной двухместной накладной розетки",
+  "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+  "normId": "COMPOSABLE_PRODUCT_COMPOSITION_CANDIDATE_NOT_LABOUR_OR_FASTENER_NORM",
+  "prefix": "electrical:socket-composable-two-gang-r1",
+  "parameterPrefix": "socket_composable_two_gang_",
+  "methodParameterId": "socket_complete_surface_method",
+  "method": "Составная двухместная накладная розетка 2P+E по принятой ведомости и готовому основанию",
+  "legacyMethod": "Существующий состав; новый комплект и его квалификация не применяются",
+  "completeSingleMethod": "Комплектная накладная розетка 2P+E по принятой ведомости и готовому основанию",
+  "fixingModes": [
+    "Прямое винтовое крепление по принятому основанию",
+    "Крепление с дюбелями по принятому основанию"
+  ],
+  "neededValue": "Требуется по принятому ППР",
+  "notNeededValue": "Не требуется по принятому ППР",
+  "scopeRu": "Один составной горизонтальный двухместный узел на подготовленном доступном основании: отдельный предварительно соединённый механизм и отдельная подходящая накладная коробка. Только документированный совместимый подготовленный обесточенный ввод и принятая программа проверок. Механизм не является комплектной накладной розеткой. Профиль остаётся source-candidate до первичного readback и штатного допуска ROOT.",
+  "sourceHoldRu": "Первичные PDF прочитаны в закрытом ROOT text-only lease: F03973EN/00 подтверждает automatic terminals, 1.5–2.5мм², 1 или2 проводника, зачистку12мм и разные IP при открытой/закрытой крышке. Дополнительный первичный сертификат40059394 от2024-11-22, PDF7 Appendix201 строки62–63, прямо указывает069576L как screwless-механизм2x2P+T; документарное подтверждение типа клемм получено. Фактическое исполнение партии проверяется отдельно. Прямое сопряжение069576L+069672L, фактическая партия/ввод/состояние собранного узла и штатный источник/допуск ROOT ещё не подтверждены; исходные технические пробелы приложения не закрываются ППР, ценой, enum, ручным количеством или trusted input.",
+  "sources": [
+    {
+      "key": "mechanism",
+      "logicalPath": "data/estimate-benchmarks/source-artifacts/socket-composable-two-gang-r1/PLEXO_F03973EN_00_OFFICIAL.pdf",
+      "officialUrl": "https://assets.legrand.com/pim/NP-FT-GT/F03973EN-00.pdf",
+      "sha256": "44157ccf097f6b6ad22d43571a034c621a377bb5a3b748a04afb77b247b4727a",
+      "bytes": 1307624,
+      "locator": "PDF1 lines7/40 exact069576L; PDF2 connection lines9–11 and IP-state lines12–16",
+      "textReadbackStatus": "EXACT_HELD_TEXT_LAYER_READ_NOT_SOURCE_OR_OBJECT_ADMISSION",
+      "pageCount": 2,
+      "pageTextSha256": {
+        "1": "e3c7a4d59fc335b0ea3808115568cd3d5dd7d2e28e5ffe0aea5ecab46f540392",
+        "2": "07e31357a4b60d82d62012a141ec70db19b78b72d6bb33906928f7aad5cfffc0"
+      }
+    },
+    {
+      "key": "box",
+      "logicalPath": "data/estimate-benchmarks/source-artifacts/socket-composable-two-gang-r1/PLEXO_F03421EN_02_OFFICIAL.pdf",
+      "officialUrl": "https://assets.legrand.com/pim/NP-FT-GT/F03421EN-02.pdf",
+      "sha256": "e50db574ebb6415ab0eeb206d2123781f3f2628b09b435c9dc3c318378bc0bce",
+      "bytes": 1905545,
+      "locator": "PDF1 line16 composable mechanism family; lines33–36 two-gang membrane box exact069672L; no direct exact-pair statement in captured passages",
+      "textReadbackStatus": "EXACT_HELD_TEXT_LAYER_READ_NOT_SOURCE_OR_OBJECT_ADMISSION",
+      "pageCount": 2,
+      "pageTextSha256": {
+        "1": "77c4427d64828d5f2ad9bfea1aafd74b7acc82cdc2bcb42c4cd455072f9eda05",
+        "2": "80e9352ec784a42817e3c3c0b8023bae7af4e0cf9bbe919347cbe204b6007700"
+      }
+    },
+    {
+      "key": "mechanism-certified-construction",
+      "logicalPath": "data/estimate-benchmarks/source-artifacts/socket-complete-two-gang-r1/LGGUMCASHD_OFFICIAL.pdf",
+      "officialUrl": "https://assets.legrand.com/pim/Certif/LGGUMCASHD.PDF",
+      "sha256": "c870413fed05a7f74fdcec61522f1e98e3e4bfa6fbd528a50ce2ba4bbb3e5fc5",
+      "bytes": 441566,
+      "locator": "PDF7 Appendix201 lines62–63 exact069576L,2x2P+T16A250V~,Screwless,mechanism only; not an exact069576L+069672L pair statement.",
+      "textReadbackStatus": "ACTUAL_EXACT_PRIMARY_ROW_READ_NOT_PAIR_OBJECT_OR_REGISTRY_ADMISSION",
+      "pageCount": 8,
+      "pageTextSha256": {
+        "7": "73896ff8e1049565057ca4aa04943d9215f232f3522b4aeacbe5436d441a70f5"
+      },
+      "certificateNumber": "40059394",
+      "documentDate": "2024-11-22",
+      "exactMechanismConstruction": {
+        "salesReference": "069576L",
+        "terminalType": "SCREWLESS",
+        "productScope": "MECHANISM_ONLY",
+        "poles": "2 x 2P+T",
+        "ratedCurrentA": 16,
+        "ratedVoltageVAC": 250
+      },
+      "exactPairAdmission": false,
+      "actualLotMatch": false,
+      "assembledIpAdmitted": false,
+      "sourceAuthorityPromoted": false,
+      "labourOrFastenerNormAuthored": false
+    },
+    {
+      "key": "box-manufacturer-mounting-guidance",
+      "logicalPath": "data/estimate-benchmarks/source-artifacts/socket-composable-two-gang-r1/LEGRAND_069672L_PRIMARY_HTML_TEXT_SCOPE_R1.txt",
+      "officialUrl": "https://www.legrand.fr/pro/catalogue/boitier-saillie-etanche-plexo-2-postes-horizontaux-et-verticaux-sans-cloison-avec-4-embouts-a-membrane-gris",
+      "sha256": "cdd9288b2370ebf1e894891c719fcb85b055aaa8989612386fe1f35075e5f56a",
+      "bytes": 1085,
+      "representationKind": "BOUNDED_CLOUD_PRIMARY_HTML_TEXT_WITNESS_NOT_RAW_HTML",
+      "locator": "Official product069672L HTML product-ref line120 and installation-guidance line155; captured excerpt lines4–7.",
+      "textReadbackStatus": "PUBLIC_PRIMARY_TEXT_SCOPE_ONLY_NOT_SOURCE_OR_OBJECT_ADMISSION",
+      "manufacturerFact": {
+        "boxReference": "069672L",
+        "describedFixingPoints": 2,
+        "fixingFeature": "MARKED_OBLONG_HOLES",
+        "scope": "DESCRIBED_MULTIPOST_BOX_TO_ACCEPTED_SUPPORT",
+        "fixingCountAutoDerived": false,
+        "projectFixingScheduleStillRequired": true
+      },
+      "exactPair069576L069672LAdmitted": false,
+      "actualPreparedHolesAdmitted": false,
+      "substrateCapacityAdmitted": false,
+      "universalFastenerOrLabourNormAuthored": false,
+      "sourceAuthorityPromoted": false
+    },
+    {
+      "key": "box-factory-contained-parts",
+      "logicalPath": "data/estimate-benchmarks/source-artifacts/socket-composable-two-gang-r1/LEGRAND_069672L_FACTORY_CONTENTS_PRIMARY_TEXT_R1.txt",
+      "officialUrl": "https://www.legrand.fr/pro/catalogue/boitier-saillie-etanche-plexo-2-postes-horizontaux-et-verticaux-sans-cloison-avec-4-embouts-a-membrane-gris",
+      "sha256": "f0e395caabed9b0c54219819080682abdf3bf1e563a8ce8ae7f22882c830bf82",
+      "bytes": 983,
+      "representationKind": "BOUNDED_CLOUD_PRIMARY_HTML_TEXT_WITNESS_NOT_RAW_HTML",
+      "locator": "Official exact069672L product heading and Ref.118–120; composition152.",
+      "textReadbackStatus": "PRIMARY_FACTORY_CONTENTS_ONLY_NOT_PAIR_LOT_OR_REGISTRY_ADMISSION",
+      "describedFactoryContents": [
+        {
+          "key": "support-plate",
+          "titleRu": "Опорная пластина накладной коробки",
+          "countPerBox": 1
+        },
+        {
+          "key": "frame",
+          "titleRu": "Рамка накладной коробки",
+          "countPerBox": 1
+        },
+        {
+          "key": "membrane-entry",
+          "titleRu": "Мембранный ввод накладной коробки",
+          "countPerBox": 4
+        }
+      ],
+      "containedInOneBoxSupplyOwner": true,
+      "fourMembranesAreNotFourUsedCableEntries": true,
+      "sourceAuthorityPromoted": false,
+      "projectAuthenticated": false,
+      "exactPairAdmission": false
+    }
+  ],
+  "internalCompatibilityCandidate": {
+    "mechanism": "LEGRAND PLEXO069576L",
+    "box": "LEGRAND PLEXO069672L",
+    "mechanismsPerNode": "1",
+    "boxesPerNode": "1",
+    "socketWaysPerNode": 2,
+    "additionalFieldJumperQuantity": null,
+    "terminalType": "automatic",
+    "stripLengthMm": 12,
+    "finalAssemblyIp": null,
+    "exactPairAdmission": false,
+    "labourOrFastenerNorm": null,
+    "terminalCrossSectionMm2": [
+      1.5,
+      2.5
+    ],
+    "conductorsPerTerminal": [
+      1,
+      2
+    ],
+    "sourceIpFlapClosed": "IP55",
+    "sourceIpFlapOpen": "IP44",
+    "actualLotMatch": false
+  },
+  "operations": [
+    {
+      "id": "housing-fix",
+      "titleRu": "Крепление накладной коробки к подготовленному основанию"
+    },
+    {
+      "id": "mechanism-front",
+      "titleRu": "Установка двухместного механизма и лицевой части"
+    },
+    {
+      "id": "connection",
+      "titleRu": "Подключение подготовленного совместимого ввода"
+    },
+    {
+      "id": "qa-close",
+      "titleRu": "Проверки, закрытие и приёмка розеточного узла"
+    },
+    {
+      "id": "delivery",
+      "titleRu": "Внешняя доставка и внутриобъектовое обращение"
+    },
+    {
+      "id": "cleanup",
+      "titleRu": "Уборка зоны и вывоз упаковки и отходов"
+    }
+  ],
+  "materials": [
+    {
+      "key": "mechanism",
+      "titleRu": "Двухместный предварительно соединённый механизм розетки 2P+E 16 А 250 В",
+      "mode": "required",
+      "quantityOrigin": "one-per-node",
+      "operations": [
+        "mechanism-front",
+        "connection",
+        "qa-close"
+      ]
+    },
+    {
+      "key": "box",
+      "titleRu": "Двухместная коробка накладного монтажа розетки с вводными мембранами",
+      "mode": "required",
+      "quantityOrigin": "one-per-node",
+      "operations": [
+        "housing-fix",
+        "mechanism-front"
+      ]
+    },
+    {
+      "key": "screws",
+      "titleRu": "Винты крепления накладной коробки по ведомости",
+      "mode": "required",
+      "quantityOrigin": "project-schedule-total",
+      "operations": [
+        "housing-fix"
+      ]
+    },
+    {
+      "key": "anchors",
+      "titleRu": "Дюбели крепления накладной коробки по ведомости",
+      "mode": "dowels",
+      "quantityOrigin": "project-schedule-total",
+      "operations": [
+        "housing-fix"
+      ]
+    },
+    {
+      "key": "markers",
+      "titleRu": "Маркировочные элементы электрического узла по ППР",
+      "mode": "optional",
+      "quantityOrigin": "project-schedule-total",
+      "operations": [
+        "connection",
+        "qa-close"
+      ]
+    },
+    {
+      "key": "waste-bags",
+      "titleRu": "Мешки сбора упаковки и отходов по ППР",
+      "mode": "optional",
+      "quantityOrigin": "project-schedule-total",
+      "operations": [
+        "cleanup"
+      ]
+    }
+  ],
+  "ownEquipment": [
+    {
+      "key": "driver",
+      "titleRu": "Отвёртка для принятого крепежа и лицевой части",
+      "unitId": "pcs",
+      "operations": [
+        "housing-fix",
+        "mechanism-front",
+        "connection"
+      ]
+    },
+    {
+      "key": "stripper-cutter",
+      "titleRu": "Инструмент подготовки жил принятого кабеля",
+      "unitId": "pcs",
+      "operations": [
+        "connection"
+      ]
+    },
+    {
+      "key": "voltage-indicator",
+      "titleRu": "Двухполюсный указатель напряжения с исправными щупами и проводом",
+      "unitId": "pcs",
+      "operations": [
+        "connection",
+        "qa-close"
+      ]
+    },
+    {
+      "key": "proving-unit",
+      "titleRu": "Устройство функциональной проверки выбранного указателя напряжения",
+      "unitId": "pcs",
+      "operations": [
+        "connection",
+        "qa-close"
+      ]
+    },
+    {
+      "key": "installation-tester",
+      "titleRu": "Прибор проверок электроустановки с принятыми принадлежностями и питанием",
+      "unitId": "pcs",
+      "operations": [
+        "qa-close"
+      ]
+    },
+    {
+      "key": "ppe",
+      "titleRu": "Пригодные средства защиты по принятой программе работ",
+      "unitId": "set",
+      "operations": [
+        "housing-fix",
+        "mechanism-front",
+        "connection",
+        "qa-close"
+      ]
+    },
+    {
+      "key": "isolation",
+      "titleRu": "Средства безопасного отключения и блокировки по принятой схеме",
+      "unitId": "set",
+      "operations": [
+        "connection",
+        "qa-close"
+      ]
+    }
+  ],
+  "excludedRu": [
+    "Нет новых публичных карточек, каталога, калькулятора, сервера или publisher.",
+    "Нельзя удвоить старую комплектную одиночную розетку069730L и заказать поверх неё коробку/механизм.",
+    "Заводская перемычка предварительно соединённого механизма не порождает дополнительный провод/клемму/пайку.",
+    "Количество крепежа — итог фактической ведомости; рисунок изделия не задаёт расход крепежа на узел.",
+    "Рейтинг16А, длина зачистки, габарит или масса изделия не задают труд, производительность или число постов.",
+    "Нет скрытого stock0/reserve0/price0 и нет supplier quantum из заводской упаковки.",
+    "Собственное оснащение показывается по фактической ведомости, не закупается и не оплачивается повторно.",
+    "Единый труд покрывает монтаж, подготовку/подключение ввода, испытания, внутриобъектовое обращение и уборку.",
+    "Отдельные рейсы внешней доставки/вывоза не включают повторно тот же внутриобъектовый труд.",
+    "Новые отверстия, штрабы, прокладка кабеля, высотный доступ, аренда, специальные механизмы и их оператор не покрыты; при необходимости нужен другой принятый scope.",
+    "Профиль не удостоверяет реальные отключение, отсутствие напряжения, PE, испытания, среду, PPR, цену или пригодность партии.",
+    "Старые17 UNKNOWN освещения не закрываются данными этой ветви."
+  ],
+  "sourceAuthorityPromoted": false,
+  "projectAuthenticated": false,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "newPublicCatalogs": 0,
+  "ready": false,
+  "readbackBoundary": {
+    "primaryTextConfirmsTerminalType": true,
+    "regionalHtmlConflictRetained": true,
+    "familyMemberScopeConfirmed": true,
+    "directExactPairStatementFound": false,
+    "exactPairAdmission": false,
+    "actualLotOrObjectAcceptance": false,
+    "closedLeaseReceiptSha256": "69aa35bd6abef2b7c6c28b2db08630b765f4e9549f341659c700ed5cc5ede4a1"
+  },
+  "factoryIncludedBoxParts": [
+    {
+      "key": "support-plate",
+      "titleRu": "Опорная пластина накладной коробки",
+      "countPerBox": 1
+    },
+    {
+      "key": "frame",
+      "titleRu": "Рамка накладной коробки",
+      "countPerBox": 1
+    },
+    {
+      "key": "membrane-entry",
+      "titleRu": "Мембранный ввод накладной коробки",
+      "countPerBox": 4
+    }
+  ],
+  "boxEntryPreparationPrimaryReviewR1": {
+    "sourceKey": "box",
+    "artifactSha256": "e50db574ebb6415ab0eeb206d2123781f3f2628b09b435c9dc3c318378bc0bce",
+    "officialUrl": "https://assets.legrand.com/pim/NP-FT-GT/F03421EN-02.pdf",
+    "pdfPage": 2,
+    "section": "4.3",
+    "scope": "Only the described flexible end-piece installation method; project entry/cable and exact pair remain separately held.",
+    "methodSteps": [
+      "PREOPEN_WITH_SCREWDRIVER",
+      "INSERT_ACCEPTED_CABLE_OR_TUBE",
+      "PULL_BACK_TO_EXPOSE_FLEXIBLE_ZONE_OUTSIDE_END_PIECE"
+    ],
+    "driverUsingOperationId": "electrical:socket-composable-two-gang-r1:connection",
+    "usedEntryCountIsProjectSpecificNotSuppliedMembraneCount": true,
+    "condensateDrain": {
+      "onlyIfRequiredByProject": true,
+      "describedHoleDiameterMm": 6,
+      "sideHoleCrossesOuterPartitionOnly": true,
+      "automaticSelectionOrHoleCountAuthored": false
+    },
+    "driverIsNotForTighteningScrewlessTerminals": true,
+    "exactPairAdmission": false,
+    "projectAuthenticated": false,
+    "sourceAuthorityPromoted": false
+  }
+}

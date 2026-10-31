@@ -1,0 +1,248 @@
+{
+  "contract": "gox.facade.board-source-fixing.r3",
+  "newFULL": 0,
+  "readyQueueEntry": false,
+  "noPublicCardCreated": true,
+  "quantityRule": "Literal screw count per actual approved board/batten intersection; does not design span, base fixing, wind/seismic/fire or total facade provision.",
+  "needs": [
+    {
+      "key": "whole-labour",
+      "titleRu": "Труд полного поста монтажа фасадной доски",
+      "category": "labor",
+      "unitId": "man_hour",
+      "missing": "Own compatible complete receiving/cutting/drilling/fastening/checking/cleanup labour norm; no timber-to-WPC rate transfer."
+    },
+    {
+      "key": "whole-tools",
+      "titleRu": "Комплект раскроя, сверления и завинчивания",
+      "category": "equipment",
+      "unitId": "set",
+      "missing": "Whole source-compatible workstation quantities and dust/power supply; no counts inferred from illustrations."
+    },
+    {
+      "key": "working-parts",
+      "titleRu": "Рабочие части раскроя и сверления",
+      "category": "material",
+      "unitId": "piece",
+      "missing": "Compatible cutting/drilling working parts and actual consumption norm, not one tool per facade by assumption."
+    },
+    {
+      "key": "base-frame-nodes",
+      "titleRu": "Основание, подсистема, мембрана и примыкания",
+      "category": "material",
+      "unitId": null,
+      "missing": "Enclosing whole facade must supply approved structural battens/anchors, membrane/tapes, insect closure, nodes and fire conditions once."
+    },
+    {
+      "key": "lift-access-PPE",
+      "titleRu": "Подача досок, доступ и СИЗ",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "Whole process for actual format/mass/height/route; no generic lift capacity or area stock norm."
+    },
+    {
+      "key": "quality-service",
+      "titleRu": "Контроль геометрии и креплений",
+      "category": "service",
+      "unitId": null,
+      "missing": "Complete measurement and service quantities, not a guessed sampling rate."
+    },
+    {
+      "key": "delivery-clean-waste",
+      "titleRu": "Доставка, защита, очистка и отходы",
+      "category": "service",
+      "unitId": null,
+      "missing": "Whole receipt/storage/protection/cleaning/waste quantities without arbitrary area reserve."
+    }
+  ],
+  "operations": [
+    {
+      "key": "accept-base",
+      "titleRu": "Приёмка основания, схемы и материала"
+    },
+    {
+      "key": "receive-cut",
+      "titleRu": "Приёмка, хранение и раскрой досок"
+    },
+    {
+      "key": "drill",
+      "titleRu": "Подготовка отверстий и торцов"
+    },
+    {
+      "key": "screw",
+      "titleRu": "Крепление фасадной доски"
+    },
+    {
+      "key": "inspect-clean",
+      "titleRu": "Контроль, очистка и отходы"
+    }
+  ],
+  "profiles": [
+    {
+      "key": "thermowood-horizontal-tg",
+      "titleRu": "Крепление горизонтальной термодревесной шпунтованной облицовки к деревянной подсистеме",
+      "prefix": "facade:board-fixing:r3:thermowood-horizontal-tg",
+      "source": {
+        "path": "data/estimate-benchmarks/source-artifacts/facade-board-source-fixing-r3/LUNAWOOD-facade-2022.pdf",
+        "sha256": "b22f49aef753e630cee81a1e850182232b59c1f4ba8aba47bb18ad65255810a0",
+        "pdfPagesRead": [
+          14,
+          25,
+          36,
+          37,
+          38,
+          39,
+          44
+        ],
+        "territory": "Manufacturerforeignmethod;noautomaticKGadmission",
+        "originalCapturedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\LUNAWOOD-facade-2022.pdf"
+      },
+      "method": {
+        "norm": "1screw/intersection for width<140mm;2 for width>140mm;exact140mmnotcoveredbythisboundedsourceparse",
+        "support": "verticalwoodbattensmin42x42mm;source600mmcentresbeforeactualstructuraldesign",
+        "fastener": "atleastAISI304/A2;L>2*boardthicknessandL<boardthickness+supportthickness;selectedvisiblefixing",
+        "endPreparation": "predrillwhenpoint<70mmfromend;diameter0.5–0.8screwdiameter;endgrainprotectionexactcompatibleproductstillunknown",
+        "scope": "Original Thermowood,notgenericuntreatedtimber or anyWPC"
+      },
+      "needs": [
+        {
+          "key": "whole-labour",
+          "titleRu": "Труд полного поста монтажа фасадной доски",
+          "category": "labor",
+          "unitId": "man_hour",
+          "missing": "Own compatible complete receiving/cutting/drilling/fastening/checking/cleanup labour norm; no timber-to-WPC rate transfer."
+        },
+        {
+          "key": "whole-tools",
+          "titleRu": "Комплект раскроя, сверления и завинчивания",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Whole source-compatible workstation quantities and dust/power supply; no counts inferred from illustrations."
+        },
+        {
+          "key": "working-parts",
+          "titleRu": "Рабочие части раскроя и сверления",
+          "category": "material",
+          "unitId": "piece",
+          "missing": "Compatible cutting/drilling working parts and actual consumption norm, not one tool per facade by assumption."
+        },
+        {
+          "key": "base-frame-nodes",
+          "titleRu": "Основание, подсистема, мембрана и примыкания",
+          "category": "material",
+          "unitId": null,
+          "missing": "Enclosing whole facade must supply approved structural battens/anchors, membrane/tapes, insect closure, nodes and fire conditions once."
+        },
+        {
+          "key": "lift-access-PPE",
+          "titleRu": "Подача досок, доступ и СИЗ",
+          "category": "equipment",
+          "unitId": null,
+          "missing": "Whole process for actual format/mass/height/route; no generic lift capacity or area stock norm."
+        },
+        {
+          "key": "quality-service",
+          "titleRu": "Контроль геометрии и креплений",
+          "category": "service",
+          "unitId": null,
+          "missing": "Complete measurement and service quantities, not a guessed sampling rate."
+        },
+        {
+          "key": "delivery-clean-waste",
+          "titleRu": "Доставка, защита, очистка и отходы",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole receipt/storage/protection/cleaning/waste quantities without arbitrary area reserve."
+        },
+        {
+          "key": "cut-end-protection",
+          "titleRu": "Совместимая защита торцов после раскроя",
+          "category": "material",
+          "unitId": null,
+          "missing": "Manufacturer requires selected end-grain protection; exact compatible product/consumption and preparation cycle not yet proved."
+        }
+      ]
+    },
+    {
+      "key": "wpc-horizontal-wood",
+      "titleRu": "Крепление горизонтальной древесно-полимерной облицовки к деревянной подсистеме",
+      "prefix": "facade:board-fixing:r3:wpc-horizontal-wood",
+      "source": {
+        "path": "data/estimate-benchmarks/source-artifacts/facade-board-source-fixing-r3/FIBERON-Wildwood-cladding.pdf",
+        "sha256": "817df8b85a56192caca2838e9fd8738a19fbb944580135b23043a1ad09eb63f6",
+        "pdfPagesRead": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "territory": "Manufacturerforeignmethod;noautomaticKGadmission",
+        "originalCapturedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\FIBERON-Wildwood-cladding.pdf"
+      },
+      "method": {
+        "norm": "2screwsateveryactualboard/furringintersection",
+        "selectedBoard": "3/4x7-1/4in=19.05x184.15mm fromPDF2;metricroundedtable184mmnotadifferentboard",
+        "selectedSupport": "3/4infurring;sourcefastenerlength2-3/4to3in(69.85–76.2mm),actualfullwallfastenerapprovalstillrequired",
+        "fastener": "minimum#9;90degree;minimumedge/enddistance1in25.4mm",
+        "geometry": "horizontalfurringcentresnotmorethan16in406.4mm;endpredrilling;correcttemperature-dependentgaps",
+        "scope": "Original Wildwood openjointmanufacturermethod,notdeckinggeneric orThermowood"
+      },
+      "needs": [
+        {
+          "key": "whole-labour",
+          "titleRu": "Труд полного поста монтажа фасадной доски",
+          "category": "labor",
+          "unitId": "man_hour",
+          "missing": "Own compatible complete receiving/cutting/drilling/fastening/checking/cleanup labour norm; no timber-to-WPC rate transfer."
+        },
+        {
+          "key": "whole-tools",
+          "titleRu": "Комплект раскроя, сверления и завинчивания",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Whole source-compatible workstation quantities and dust/power supply; no counts inferred from illustrations."
+        },
+        {
+          "key": "working-parts",
+          "titleRu": "Рабочие части раскроя и сверления",
+          "category": "material",
+          "unitId": "piece",
+          "missing": "Compatible cutting/drilling working parts and actual consumption norm, not one tool per facade by assumption."
+        },
+        {
+          "key": "base-frame-nodes",
+          "titleRu": "Основание, подсистема, мембрана и примыкания",
+          "category": "material",
+          "unitId": null,
+          "missing": "Enclosing whole facade must supply approved structural battens/anchors, membrane/tapes, insect closure, nodes and fire conditions once."
+        },
+        {
+          "key": "lift-access-PPE",
+          "titleRu": "Подача досок, доступ и СИЗ",
+          "category": "equipment",
+          "unitId": null,
+          "missing": "Whole process for actual format/mass/height/route; no generic lift capacity or area stock norm."
+        },
+        {
+          "key": "quality-service",
+          "titleRu": "Контроль геометрии и креплений",
+          "category": "service",
+          "unitId": null,
+          "missing": "Complete measurement and service quantities, not a guessed sampling rate."
+        },
+        {
+          "key": "delivery-clean-waste",
+          "titleRu": "Доставка, защита, очистка и отходы",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole receipt/storage/protection/cleaning/waste quantities without arbitrary area reserve."
+        }
+      ]
+    }
+  ]
+}

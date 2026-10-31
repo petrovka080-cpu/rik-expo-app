@@ -249,7 +249,7 @@ void runMasterSingleDefinitionSuccessorR1({
   sourcePaths: [
     "scripts/estimate/r4a13/readbackS2731AncillaryMaterialOrdersIndependent.ts",
     "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
-    "src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1.ts",
+    "src/lib/estimate/v4/asphaltInstallKrer27ProfileR1.ts",
     "src/lib/estimate/v4/stripFoundationConcretePlacementPreliminaryProfileR1.ts",
     "data/estimate-benchmarks/source-packs/bridge-asphalt-complete-preliminary-profile-r1.json",
     "src/lib/estimate/v4/bridgeAsphaltCompletePreliminaryProfileR1.ts",

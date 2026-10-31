@@ -6,7 +6,8 @@ import {aggressiveFloorActualThicknessBindingS2769 as old,aggressiveFloorProtect
 import {canonicalDefinitionTitleRu} from '../backendPlatform/canonicalEstimateRevisionWriter';
 import {canonicalApprovedBaselineRuntimeDefaultValue} from '../backendPlatform/canonicalEstimateApprovedBaseline';
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
-const frozen=require('../../../../data/estimate-benchmarks/fixtures/aggressive-floor-four-v4-parents-and-barrier-s27-69.json') as {models:PurchaseGroupRepresentative[];barrier:PurchaseGroupRepresentative};
+const frozenAll=require('../../../../data/estimate-benchmarks/fixtures/aggressive-floor-four-v4-parents-and-barrier-s27-69.json') as {models:PurchaseGroupRepresentative[];barrier:PurchaseGroupRepresentative};
+const frozen={...frozenAll,models:frozenAll.models.filter(model=>pack.targets.some(target=>target.catalogId===model.definition.catalog_id))};
 const facts=()=>({floor_covering_area_m2:35.5,[old.actualThicknessParameterId]:35,[work]:old.workScopeValue,[pack.barrierAreaParameterId]:12});
 test.each(frozen.models)('complete selected composition and correct observed-thickness title: $definition.catalog_id',async parent=>{
  const r=await compile(parent,facts());

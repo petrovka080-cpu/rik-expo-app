@@ -1,3 +1,4 @@
+import {canonicalSavedOperationCompositionEvidenceV1,canonicalOperationCompositionEvidenceFromPassportV1} from './canonicalEstimateSavedOperationAcceptanceV1';
 import {
   CanonicalEstimateRevisionReadContractError,
   canonicalEstimateRevisionDetailFromStorage,
@@ -54,6 +55,27 @@ const rowStorage = (overrides: Record<string, unknown> = {}): Record<string, unk
 });
 
 describe("canonical revision read mapping", () => {
+  it('reads an exact report header despite malformed action metadata, without publishing action authority',()=>{
+    const storage=revisionStorage({definition_version_id:'40000000-0000-4000-8000-000000000009',
+      amendment_contract:{parameterSources:{roofStageRestorationV1:{invalid:true},roofPrimerPrerequisiteV1:{invalid:true}},
+        preliminaryNeeds:[{need_state:'CONDITION_REQUIRED',purchase_supply_blocks:{invalid:true}}]},
+      definition_withdrawal_reason:'Источник отозван'});
+    const before=JSON.stringify(storage);
+    const view=canonicalEstimateRevisionDetailFromStorage(storage,{issuancePurpose:'PRELIMINARY_REVIEW'});
+    expect(view).toMatchObject({revisionId:storage.id,releaseId:storage.release_id,definitionVersionId:storage.definition_version_id,
+      checksumSha256:storage.checksum_sha256,rowCount:storage.row_count,contentWithdrawalReasonRu:'Источник отозван'});
+    expect(view.amendmentContract).toEqual(storage.amendment_contract);
+    expect(view).not.toHaveProperty('contentAdmission');expect(view).not.toHaveProperty('manualPreliminaryReviewEligibilityV1');
+    expect(view).not.toHaveProperty('roofStageRestorationV1');expect(view).not.toHaveProperty('roofPrimerPrerequisiteV1');
+    expect(JSON.stringify(storage)).toBe(before);
+    expect(()=>canonicalEstimateRevisionDetailFromStorage(storage)).toThrow();
+  });
+  it('report header does not invent absent price evidence; ordinary full read remains strict',()=>{
+    const storage=revisionStorage();delete storage.price_snapshot_ids;
+    const report=canonicalEstimateRevisionDetailFromStorage(storage,{issuancePurpose:'PRELIMINARY_REVIEW'});
+    expect(report).not.toHaveProperty('priceSnapshotIds');expect(report.checksumSha256).toBe(storage.checksum_sha256);
+    expect(()=>canonicalEstimateRevisionDetailFromStorage(storage)).toThrow(CanonicalEstimateRevisionReadContractError);
+  });
   it("exposes an external withdrawal without altering the saved numbers or checksum", () => {
     const row = revisionStorage({ definition_withdrawal_reason: "Неверная технология" });
     const before = JSON.stringify(row);
@@ -145,4 +167,27 @@ describe("canonical revision read mapping", () => {
   ] as const)("distinguishes %s price provenance", (kind, price, row) => {
     expect(canonicalEstimateRevisionRowFromStorage(row, price).priceSource?.kind).toBe(kind);
   });
+});
+
+it('exposes optional composition diagnostics without rejecting or rewriting a saved draft',()=>{
+  const row=revisionStorage();const before=JSON.stringify(row);
+  const acceptance={contractVersion:'canonical-operation-resource-acceptance/v1' as const,
+    status:'COMPOSITION_UNVERIFIED' as const,issues:[{code:'RESOURCE_QUANTITY_UNRESOLVED'}],pdfAllowed:true,definitionAdmissionAllowed:false,completeClaimAllowed:false};
+  expect(canonicalEstimateRevisionDetailFromStorage(row,{operationResourceAcceptanceV1:acceptance}).operationResourceAcceptanceV1).toEqual(acceptance);
+  expect(canonicalEstimateRevisionDetailFromStorage(row)).not.toHaveProperty('operationResourceAcceptanceV1');
+  expect(JSON.stringify(row)).toBe(before);
+});
+
+it('retains the pinned evidence through saved JSON and detail mapping without a current-source read',()=>{
+  const row=revisionStorage({definition_version_id:'pinned-definition'});
+  const snapshot=canonicalOperationCompositionEvidenceFromPassportV1({releaseId:String(row.release_id),
+    definitionVersionId:String(row.definition_version_id),passport:{definition_version_id:row.definition_version_id,
+      payload_sha256:'b'.repeat(64),decision:{independentCompletenessMap:{contract:'synthetic-roundtrip',entries:['fixed']}}}})!;
+  const saved={...row,amendment_contract:{parameterSources:{operationCompositionEvidenceV1:snapshot}}};
+  const cold=JSON.parse(JSON.stringify(saved));const before=JSON.stringify(cold);
+  expect(canonicalSavedOperationCompositionEvidenceV1(cold).independentComposition).toEqual(snapshot.independentComposition);
+  expect(canonicalEstimateRevisionDetailFromStorage(cold).checksumSha256).toBe(row.checksum_sha256);
+  expect(canonicalSavedOperationCompositionEvidenceV1({...cold,definition_version_id:'other'}).issue).toBeDefined();
+  expect(canonicalSavedOperationCompositionEvidenceV1({...cold,release_id:'other'}).issue).toBeDefined();
+  expect(JSON.stringify(cold)).toBe(before);
 });

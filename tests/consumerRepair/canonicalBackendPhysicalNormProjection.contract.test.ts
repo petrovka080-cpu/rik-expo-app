@@ -1,3 +1,5 @@
+import { adaptCanonicalRevisionToStructuredEstimate as projectClientRevision } from '../../src/lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection';
+import { attachCanonicalPhysicalNormEvidenceV1, canonicalPhysicalNormRevisionFromStorageV1 } from '../../src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection';
 import { buildStructuredEstimateRequestDraft } from "../../src/lib/estimateStructuredPipeline/structuredEstimateRequestBinding";
 import { adaptCanonicalRevisionToStructuredEstimate } from "../../src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
 import { classifyProfessionalNormSourceAdmission } from "../../src/lib/estimate/professionalNormSourceAdmission";
@@ -38,8 +40,8 @@ function revision(parameters: Record<string, string | number | boolean> = PARAME
     catalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_standard",
     revisionNumber: 1,
     status: "ready",
-    sourceRequestText: "Опалубка RICS NRM 2, измеренная площадь контакта 100 м²",
-    displayTitleRu: "Опалубка по измеренной площади контакта",
+    sourceRequestText: "РћРїР°Р»СѓР±РєР° RICS NRM 2, РёР·РјРµСЂРµРЅРЅР°СЏ РїР»РѕС‰Р°РґСЊ РєРѕРЅС‚Р°РєС‚Р° 100 РјВІ",
+    displayTitleRu: "РћРїР°Р»СѓР±РєР° РїРѕ РёР·РјРµСЂРµРЅРЅРѕР№ РїР»РѕС‰Р°РґРё РєРѕРЅС‚Р°РєС‚Р°",
     primaryMeasureParameterId: "measured_formwork_contact_area_m2",
     primaryMeasureValue: "100",
     primaryMeasureUnitId: "m2",
@@ -58,9 +60,9 @@ function row(): CanonicalEstimateRevisionRowView {
   return {
     rowId: "formwork:rics-nrm2:measured-contact-area:work",
     ordinal: 0,
-    section: "Работы",
+    section: "Р Р°Р±РѕС‚С‹",
     category: "construction_work",
-    titleRu: "Монтаж и демонтаж опалубки по измеренной площади контакта",
+    titleRu: "РњРѕРЅС‚Р°Р¶ Рё РґРµРјРѕРЅС‚Р°Р¶ РѕРїР°Р»СѓР±РєРё РїРѕ РёР·РјРµСЂРµРЅРЅРѕР№ РїР»РѕС‰Р°РґРё РєРѕРЅС‚Р°РєС‚Р°",
     unitId: "m2",
     quantity: "100",
     unitPrice: null,
@@ -100,7 +102,7 @@ const catalog: CanonicalEstimateCatalogItem = {
   namespace: "global",
   domain: "concrete",
   workKey: "formwork_rics_nrm2_measured_contact_area",
-  titleRu: "Опалубка по измеренной площади контакта",
+  titleRu: "РћРїР°Р»СѓР±РєР° РїРѕ РёР·РјРµСЂРµРЅРЅРѕР№ РїР»РѕС‰Р°РґРё РєРѕРЅС‚Р°РєС‚Р°",
   definitionVersion: 4,
   applicability: {},
   professionalMetadata: {},
@@ -154,5 +156,68 @@ describe("canonical backend physical norm projection", () => {
       admitted: false,
       reason: "PHYSICAL_APPLICABILITY_NOT_APPLIED",
     });
+  });
+});
+
+
+describe('backend physical norm evidence transport', () => {
+  test.each([PARAMETERS,{...PARAMETERS,project_measurement_rule_reference:'UNCONFIRMED'}])(
+    'client presentation exactly matches existing server projection including applied and blocked evidence', parameters => {
+      const rev=revision(parameters),original=row(),before=JSON.stringify({rev,original});
+      const stored={id:rev.revisionId,release_id:rev.releaseId,catalog_id:rev.catalogId,
+        checksum_sha256:rev.checksumSha256,input_parameters:rev.parameters,created_at:rev.createdAt};
+      const context=canonicalPhysicalNormRevisionFromStorageV1(stored);
+      const transported=JSON.parse(JSON.stringify(attachCanonicalPhysicalNormEvidenceV1(context,original)));
+      const client=projectClientRevision({catalog,revision:rev,rows:[transported]});
+      expect(client).toEqual(adaptCanonicalRevisionToStructuredEstimate({catalog,revision:rev,rows:[original]}));
+      expect(JSON.stringify({rev,original})).toBe(before);
+      const {physicalNormEvidenceV1,normSourceAdmissionEvidenceV1,...sameRow}=transported;
+      expect(normSourceAdmissionEvidenceV1.revisionId).toBe(rev.revisionId);
+      expect(normSourceAdmissionEvidenceV1.rowSha256).toBe(original.rowSha256);
+      expect(sameRow).toEqual(original);
+      expect(physicalNormEvidenceV1).toMatchObject({revisionId:rev.revisionId,rowSha256:original.rowSha256});
+    });
+  test.each(['revisionId','releaseId','catalogId','revisionChecksumSha256','rowId','rowSha256','owner','contractVersion'])(
+    'rejects stale or substituted %s without recalculating a client norm', key => {
+      const rev=revision(),transported=attachCanonicalPhysicalNormEvidenceV1(rev,row());
+      const forged=JSON.parse(JSON.stringify(transported));forged.physicalNormEvidenceV1[key]='different';
+      expect(()=>projectClientRevision({catalog,revision:rev,rows:[forged]}))
+        .toThrow(expect.objectContaining({code:'CANONICAL_PHYSICAL_NORM_EVIDENCE_IDENTITY_MISMATCH'}));
+    });
+  test('requires backend evidence for a bound historic row instead of silently replaying its norm locally',()=>{
+    expect(()=>projectClientRevision({catalog,revision:revision(),rows:[row()]}))
+      .toThrow(expect.objectContaining({code:'CANONICAL_PHYSICAL_NORM_EVIDENCE_REQUIRED'}));
+  });
+  test('preserves unbound historic rows and ignores forged incoming evidence on the backend',()=>{
+    const rev=revision(),original=row();original.calculationTrace={...original.calculationTrace,resourceGraph:{}};
+    expect(projectClientRevision({catalog,revision:rev,rows:[original]}))
+      .toEqual(adaptCanonicalRevisionToStructuredEstimate({catalog,revision:rev,rows:[original]}));
+    const legitimate=attachCanonicalPhysicalNormEvidenceV1(rev,row());
+    const incoming=JSON.parse(JSON.stringify(legitimate));incoming.physicalNormEvidenceV1.resolution={status:'FAKE_FULL'};
+    expect(attachCanonicalPhysicalNormEvidenceV1(rev,incoming)).toEqual(legitimate);
+  });
+});
+
+
+describe('physical norm evidence rejects malformed transport',()=>{
+  test.each([{caseId:'missing',bad:undefined},{caseId:'empty-string',bad:''},{caseId:'array',bad:[]},{caseId:'number',bad:42},{caseId:'incomplete-applied',bad:{status:'APPLIED'}}])('rejects malformed resolution $caseId',({bad})=>{
+    const rev=revision(),transported=attachCanonicalPhysicalNormEvidenceV1(rev,row());
+    const malformed=JSON.parse(JSON.stringify(transported));malformed.physicalNormEvidenceV1.resolution=bad;
+    expect(()=>projectClientRevision({catalog,revision:rev,rows:[malformed]}))
+      .toThrow(expect.objectContaining({code:'CANONICAL_PHYSICAL_NORM_EVIDENCE_IDENTITY_MISMATCH'}));
+  });
+  test.each(['revisionId','releaseId','catalogId','rowId'])('rejects missing reference and evidence %s',key=>{
+    const rev=revision(),original=row(),transported=attachCanonicalPhysicalNormEvidenceV1(rev,original);
+    const empty=JSON.parse(JSON.stringify({rev,transported}));empty.transported.physicalNormEvidenceV1[key]='';
+    if(key==='rowId')empty.transported.rowId='';else empty.rev[key]='';
+    expect(()=>projectClientRevision({catalog,revision:empty.rev,rows:[empty.transported]}))
+      .toThrow(expect.objectContaining({code:'CANONICAL_PHYSICAL_NORM_EVIDENCE_IDENTITY_MISMATCH'}));
+  });
+  test('accepts explicit null resolution without inventing applicability',()=>{
+    const rev=revision(),unbound=row();unbound.calculationTrace={...unbound.calculationTrace,resourceGraph:{}};
+    const transported=attachCanonicalPhysicalNormEvidenceV1(rev,unbound);
+    expect(transported.physicalNormEvidenceV1?.resolution).toBeNull();
+    expect(projectClientRevision({catalog,revision:rev,rows:[transported]}))
+      .toEqual(adaptCanonicalRevisionToStructuredEstimate({catalog,revision:rev,rows:[unbound]}));
   });
 });

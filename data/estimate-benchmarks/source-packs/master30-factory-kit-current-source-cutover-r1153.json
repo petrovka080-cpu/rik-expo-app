@@ -1,0 +1,3514 @@
+{
+  "contract": "master30-factory-kit-fresh-current-source-cutover/r1153",
+  "status": "SOURCE_REVIEW_CANDIDATE_ROOT_INTAKE_AND_TWELVE_GUARDED_CASES_REQUIRED",
+  "author": "PACKAGE_SOURCE_AUTHOR_FOR_ROOT_REVIEW",
+  "recordedUtc": "2026-10-30T17:01:53.5841625Z",
+  "rootThreadId": "01a18bb8-bd73-7e13-812b-637d3a45a60b",
+  "scope": "Fresh current implementation/dependency binding for the existing two complete factory material kits and five retained Master30 consumers. No original old-byte equivalence, new norm, current DB/source-registry authority or FULL claim.",
+  "approvalBasis": "ROOT explicitly authorized this new Master30 current-source cutover after exact18-pin diagnosis; this author receipt is not a runtime/DB/commit approval.",
+  "oldByteEquivalenceProven": false,
+  "oldSemanticEquivalenceProven": false,
+  "priorSourcePinHistory": [
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "previousExpectedSha256": "56ffadc92ec669df51ab0f94a5bfc1d8f25a12b9eb9121f4c6323ea30a40cfc0",
+      "currentSha256": "13bfa791adb984860e92c668cfeafd290a34057f26038b44e065fa521e8a83d4",
+      "historicalStatus": "HOLD_ORIGINAL_BYTE_AND_SEMANTIC_PARITY_UNPROVEN",
+      "freshCurrentScope": "EXPLICIT_ROOT_APPROVED_MASTER30_CURRENT_SOURCE_CUTOVER_ONLY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts",
+      "previousExpectedSha256": "1078cf8b1fb9841c40ae22ad16a1e6b737a71d9c1ff8d8d75e70c754c93a15aa",
+      "currentSha256": "1a374addf2d7b3c451c0c3672b94fdf1d115c84fc72491c69881970cf1fb145b",
+      "historicalStatus": "HOLD_ORIGINAL_BYTE_AND_SEMANTIC_PARITY_UNPROVEN",
+      "freshCurrentScope": "EXPLICIT_ROOT_APPROVED_MASTER30_CURRENT_SOURCE_CUTOVER_ONLY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts",
+      "previousExpectedSha256": "49c4e729df611a646bcf9c732a816d63a9847151350a2fb65672af470897bc7b",
+      "currentSha256": "ea3b6b327964ce0f6527327cadd717e6e66ffcc551009fc89462545e3bf8bf24",
+      "historicalStatus": "HOLD_ORIGINAL_BYTE_AND_SEMANTIC_PARITY_UNPROVEN",
+      "freshCurrentScope": "EXPLICIT_ROOT_APPROVED_MASTER30_CURRENT_SOURCE_CUTOVER_ONLY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts",
+      "previousExpectedSha256": "544d561544bf476be60a6de7a9fba207e2c7fb258b44d09458fefd76e9844bfc",
+      "currentSha256": "613520160a7ab8fa4cbd8113567827af7e90dd85989615061284ac2a5e563cab",
+      "historicalStatus": "HOLD_ORIGINAL_BYTE_AND_SEMANTIC_PARITY_UNPROVEN",
+      "freshCurrentScope": "EXPLICIT_ROOT_APPROVED_MASTER30_CURRENT_SOURCE_CUTOVER_ONLY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter.ts",
+      "previousExpectedSha256": "1b98fe2db8f98581ec06d6c41d02a009b4ce0c039c7b425d20f522dc17e4750c",
+      "currentSha256": "82c2be65f040d79d65ff26fe7ee2ec9874d74a9dd48f9f92865d5215304a007e",
+      "historicalStatus": "HOLD_ORIGINAL_BYTE_AND_SEMANTIC_PARITY_UNPROVEN",
+      "freshCurrentScope": "EXPLICIT_ROOT_APPROVED_MASTER30_CURRENT_SOURCE_CUTOVER_ONLY"
+    },
+    {
+      "path": "src/features/consumerRepair/requestEstimateViewModel.ts",
+      "previousExpectedSha256": "0ad69ec5d277f18be894c2e4511e429afdebf6dcb6fab47f01ce9db1037c25a0",
+      "currentSha256": "34c6355d212d99da3e52f05eede526e1b1a8b6e4ba1d78cd75d8d2a69e25cef7",
+      "historicalStatus": "HOLD_ORIGINAL_BYTE_AND_SEMANTIC_PARITY_UNPROVEN",
+      "freshCurrentScope": "EXPLICIT_ROOT_APPROVED_MASTER30_CURRENT_SOURCE_CUTOVER_ONLY"
+    },
+    {
+      "path": "src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection.ts",
+      "previousExpectedSha256": "94f653040bb58d569403161e742903e62abdcaca118fd4bb025fe37db6145532",
+      "currentSha256": "2c2790f2dd5e624e4b8b4775b4be684fe131d6f13692c8d66a2f4ada02946685",
+      "historicalStatus": "HOLD_ORIGINAL_BYTE_AND_SEMANTIC_PARITY_UNPROVEN",
+      "freshCurrentScope": "EXPLICIT_ROOT_APPROVED_MASTER30_CURRENT_SOURCE_CUTOVER_ONLY"
+    }
+  ],
+  "knownOwnerDefinitionBaseline": {
+    "path": "data/estimate-benchmarks/source-packs/shared-foundation-owner-current-cutover-r1153.json",
+    "sha256": "f07aa46fa94b541ddce733c1a9a037107b2b6a3289fbeb69aba4f9b73f084cf1",
+    "use": "CURRENT_SHARED_OWNER_DEFINITION_DEFAULT_BASELINE_ONLY_NOT_MASTER30_DOMAIN_OR_OLD56FF_EQUIVALENCE"
+  },
+  "currentSourceClosure": {
+    "contract": "MASTER30_CURRENT_LITERAL_SOURCE_AND_FIXED_INPUT_CLOSURE",
+    "roots": [
+      "src/lib/estimate/v4/master30ElectricalPlumbingFactoryKitsR1.ts",
+      "scripts/estimate/r4a13/prepareMaster30ElectricalPlumbingFactoryKitsR1.ts",
+      "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "src/lib/estimate/v4/automaticConstructionDefinitionR1.ts",
+      "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts",
+      "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection.ts",
+      "src/features/consumerRepair/requestEstimateViewModel.ts",
+      "src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection.ts"
+    ],
+    "pins": [
+      {
+        "path": "src/lib/estimate/v4/master30ElectricalPlumbingFactoryKitsR1.ts",
+        "sha256": "3a080af2427dc0328a986a0b7691f8adf9f1e44b7bfbe759a72dc51fc7b81c71"
+      },
+      {
+        "path": "src/lib/ai/constructionInterpreter/resolveConstructionObject.ts",
+        "sha256": "9f4c211740eecadabefc70c6fe6d78aaf9a6f891e3ece89ffdcbb60b9b8d5eb5"
+      },
+      {
+        "path": "src/lib/ai/constructionInterpreter/resolveConstructionOperation.ts",
+        "sha256": "6c3b4b3d67477b8646401a1d1e52b755e247881a6e29138fdfe8c4dc8c105e72"
+      },
+      {
+        "path": "src/lib/ai/constructionInterpreter/validateConstructionWorkPlan.ts",
+        "sha256": "8a3b5049721543b04090f4cd5aaeb501c317a93ec196003063d3dfdf82440c00"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/buildEstimatorReasoningPlan.ts",
+        "sha256": "98c6f70265b301d183365839cf56e7e908f4d0a56a52f222e9a2918a40aa6c86"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/buildRegulatedSafeEstimatePlan.ts",
+        "sha256": "a34f9bfe7474ae50558e61d4b52a734dbc7f012c5f6dba6428aecc8661784dac"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/constructionDomainLexicon.ts",
+        "sha256": "b7027b9e4835fa7e2fde06f4836813aca716875afa1ef55ad1594b21d89fb14a"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/detectRegulatedConstructionWork.ts",
+        "sha256": "79ba016af5545d1bfac6a4058790fbfa6de10c3cce79af4e01767a2491658579"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/estimatorKernelTypes.ts",
+        "sha256": "08069628b872709d2ed782d8dee04b1d05c7fb81c4e70ae9871c4d03eab9ed0d"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/isParsableConstructionWork.ts",
+        "sha256": "853360b8895530c28350a06434a12c757c698302d4109dfb916be7f6f8f32ad7"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/regulatedWorkTypes.ts",
+        "sha256": "f9b136181ff48fbdfc9de0d014f34246dd2bcbd7aba844c5a504c111914d7838"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/resolveEstimatorOutcome.ts",
+        "sha256": "91da4da15ed7c67828c908fbcbba7de988090f461b5f59ea9e03a2c914453196"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/validateEstimatorReasoningPlan.ts",
+        "sha256": "1ce2f7e096f20a79828e0821a82f2186834c189f3a86f737efd63db34dc9e9ab"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/validateRegulatedSafeEstimate.ts",
+        "sha256": "6d7a41ea373b53deaeae33c4219aa6fbd03f86f0cb989c3ec32a3629c2219d92"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateSeedData.ts",
+        "sha256": "42e51ddb697ed637e0dd6b4829bcbf2c179a0c2b4b437c9e2ed3ac9203d22891"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/templates/coreTemplateReconciliation.ts",
+        "sha256": "f6a329fca0b5a9f2088d459db75b676a136ff01dbb1a0df6646213f551957a64"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalLocaleResolver.ts",
+        "sha256": "f5b00c00db92e747085733fdb96083b7657b838150b1af2b803ac6a4f72e4e19"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalTaxRules.ts",
+        "sha256": "8679aeeb69d7807a4474f7901fe6296df916c5aea6b911d74a6ac65fb6adfb49"
+      },
+      {
+        "path": "src/lib/ai/builtInAi1000/builtInAi1000ConstructionCases.ts",
+        "sha256": "8d2d2b355a0ba1a15458f3f8275ff2562c68ef185dd552337def09b6118c08db"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalConstructionWorkTypeCatalog150.ts",
+        "sha256": "cd47d32f3ccf413bbc67409081614386527d13fd7091ab37006a934d72e2ef86"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/workTypeDisambiguation.ts",
+        "sha256": "8d4b6dff21adead5ea2adb351c2d1630aefecfef792c0cdf296a1b915510bf26"
+      },
+      {
+        "path": "src/lib/estimate/canonicalUnits.ts",
+        "sha256": "c40555aa6012e7272b0f2b20c81ddd32495501c5b7e29c8018edbe5ddf12ed08"
+      },
+      {
+        "path": "src/lib/ai/constructionInterpreter/resolveConstructionMethod.ts",
+        "sha256": "4f50c9680b33ba52ccb95b4d9560cff9c5c055826d9ab2455407b7a0477aafee"
+      },
+      {
+        "path": "src/lib/ai/constructionInterpreter/resolveConstructionDomain.ts",
+        "sha256": "74f836e0d565ac640b371884ef43ff8c1e83eef533168609057445320d107a54"
+      },
+      {
+        "path": "src/lib/ai/constructionInterpreter/resolveConstructionComplexity.ts",
+        "sha256": "5f005afb1c0c56be748c52f51c51154abf90928fa8e525f93a3119117c8c8473"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/validateNoUnitInheritanceBug.ts",
+        "sha256": "0e44c1ebb6334b7ed4b92a15961d7fbd64ef82a2b2a787a3f429c29ee67740de"
+      },
+      {
+        "path": "data/estimate-templates/estimate-10000-readiness-manifest.json",
+        "sha256": "3b05c88fdb1165c5f9bc59a857078250a0ee9040c00181c5fa5a72a70145eecf"
+      },
+      {
+        "path": "src/lib/estimate/catalogArtifactDataContract.ts",
+        "sha256": "fcce85eb7424967a515eaf5d7430afbcfe2a03cf913f22fbaf0583103f003534"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesWave1/canonicalParameterSchemas.ts",
+        "sha256": "149ea6027e6f275068b53a72d43503acad0a7ca5fbcfff5d37d99de607144469"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesWave1/domainPackage.ts",
+        "sha256": "ec0842a2eb72c920ed374314502e0a704deadd9c5d4dfe73bba70bf6477e12cf"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesWave1/inventory.ts",
+        "sha256": "43ccb81be9bb8241b1234b247b4e387e4108c10fa114c6c1e183f94b554534d4"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesWave1/productionBinding.ts",
+        "sha256": "7c9076f17a5c5b042d6c03c212b0b96a62ccb3099b0e51d031c699618710dea9"
+      },
+      {
+        "path": "src/lib/ai/performance/index.ts",
+        "sha256": "3a14eb3d7c76fadbd512f650cbfe02a36e955b399493ad8013f403c674172b25"
+      },
+      {
+        "path": "src/lib/pdf/embeddedPdfFont.ts",
+        "sha256": "5c7062367bfe7523fffc89356724494ea97fca21835c5fab870ce5a1789a8ac1"
+      },
+      {
+        "path": "src/lib/pdf/estimateSignatureBlocks.ts",
+        "sha256": "27c821a24924a96a0bcee7fb5dc566ad2e9dd22fcef789478bb3c60a0df2b458"
+      },
+      {
+        "path": "src/lib/pdf/pdfTextEncoding.ts",
+        "sha256": "4eece625ab56fccc66310c4e969530674a45bc9f3d43f1861a24a586a80254b7"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalWorkSmartSearch.ts",
+        "sha256": "973c6a1ba0781618bf33c0b0fc6970dbfb19210ce78b9d59af9dc69a7897d5ac"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/apartmentRenovationApproximationFormula.ts",
+        "sha256": "2e36d555947f01865b626f4094a64aefbbf1a37363b2c5ffa4bcf4466424c4e6"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/gableRoofAreaFormula.ts",
+        "sha256": "0bd9873311ec578c1e02477e4132e4913fbd176ca9b538d6b5a2b3a048ce6d34"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/hvacCoolingLoadFormula.ts",
+        "sha256": "eac7a5ea97076268ec02d1951fe7a39c50bbef81b14c4148b0561b8fccd0c420"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/linoleumAreaFormula.ts",
+        "sha256": "dd0f88bae443f1a40be00c700dbcc719a1aba745142e80ea283ec41322323292"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/metalCanopyQuantityFormula.ts",
+        "sha256": "4538f8587baca6c9bde05f1dc078c936be69fa0d401c6c2c4bfb80b093c614bd"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/pavingStoneAreaFormula.ts",
+        "sha256": "2d9c0b970d035b8d467c27dc5ac8da9044e94725da66d54b9479b5492de68cb1"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/resolveConstructionQuantityFormula.ts",
+        "sha256": "b67d40e6939734df7148854668c1d136fd1014e4cd96340b3c3aaf22d32996b9"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/resolveFormulaFromWorkPlan.ts",
+        "sha256": "e2503ff7a65c176632671578894240dbac7ed90c9c2bc66af23b4328dfa3bfe1"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/roofWaterproofingAreaFormula.ts",
+        "sha256": "0de757ff3466b44eb0263af0fb02383e310db87e985d471ce764e4d9a2825a4d"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/validateFormulaInputs.ts",
+        "sha256": "9717177dbb095afac4b4fe74c5bf8c82691affd029317f8cda328b324a3255c8"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/validateFormulaOutputUnits.ts",
+        "sha256": "efec688559e3f134dd2d063f87cb918ddfd1d292b19944be7873b9b3b936c1f1"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/constructionFormulaRegistry.ts",
+        "sha256": "77771918f54e8549fcefe7a0a99f2a2b070e11f8d78829e3aac38520fcd0019c"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/unfinishedAiEstimateCases.ts",
+        "sha256": "598bcc653f81f488f55c9354b41b57deea451717f2480ca40d0098cca722ff1a"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateExpandedTemplateRowReconciliation.ts",
+        "sha256": "31c8cb7f56621f815faf8a04f5891f7741fa22afa7e6c7389b05520a91ce47e0"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/dataOps/index.ts",
+        "sha256": "7647185f0d2f195f2a31c1af83deaf38383a5c10df477eb11c3007ffc2eb8659"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/catalogBinding/globalEstimateCatalogBindingTypes.ts",
+        "sha256": "bbf99deb9daad75155e24c5ad59f993629ffb6c6247b68c98666e052a7fafe73"
+      },
+      {
+        "path": "src/lib/lifecycle/timerRegistry.ts",
+        "sha256": "879e431c7c326625c568c5eb575c0ebcb51b98001b256d56640431e1c708c4f5"
+      },
+      {
+        "path": "src/lib/api/rpcRateLimitPolicy.ts",
+        "sha256": "324a4d33c833131a4c5f0c6aa5f939d7be37988ca31dc8217454c0443bbc650b"
+      },
+      {
+        "path": "src/lib/requestCancellation.ts",
+        "sha256": "cbc8a4ffc83c970aea79b0066c99316747e9e34e584d3591122be4b61c019f4a"
+      },
+      {
+        "path": "src/lib/estimate/publicRussianLexiconR555.ts",
+        "sha256": "01c31721329cf3c7e5e41878f1e6a9119e447c8f47261d8dd4a439fa946a3d32"
+      },
+      {
+        "path": "src/lib/estimate/r4A6PumpStationProfessional.ts",
+        "sha256": "4577fe7e1ee4926153c7d73d5794b8fe1e97937e1d08742308bbafaca75d3d73"
+      },
+      {
+        "path": "src/lib/ai/expandedComplexWorks/s2b/domainCalculators.ts",
+        "sha256": "e6343bb5fc81155697bab009e63c154fbc219b9fc63242d1abe9aa61da0706ce"
+      },
+      {
+        "path": "src/lib/ai/expandedComplexWorks/s2b/registry.ts",
+        "sha256": "bf1c85b3882618df81fce3a39dbcc713e5c3f0924e3c8376d50c1b5e1d1b2b30"
+      },
+      {
+        "path": "src/lib/ai/expandedComplexWorks/s2b/types.ts",
+        "sha256": "44c4ed6025ce24c9eee2ac5ad77f305bcfec78f9cf902e8eebd3b2849019b45e"
+      },
+      {
+        "path": "src/lib/estimate/getParameterSchemaForTemplate.ts",
+        "sha256": "954b49061b7be95cb9187c73b0d4748747521ae9d6ea384b7faeecce149066ae"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionAsyncStorageRecordCodec.ts",
+        "sha256": "eedf6fd95ee18d76a6c12c9d42f4b66707c10fd7f481bf144541c0c83008bb00"
+      },
+      {
+        "path": "src/lib/ai/inlineWorkPromptContract.ts",
+        "sha256": "ed13e68927cba7dbfee6db3c3de6da921e17245de8268e73cfad75121a8891e9"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/professionalEstimateSnapshot.ts",
+        "sha256": "561dfe1cbe47840c24909555f7254b1e51d18ecc8db6a561acfc93905fc2c12b"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/professionalEstimateTypes.ts",
+        "sha256": "6a84d82999bba033f13f42b6db09e0e702ce8559f506b5c71012d5e4d84dc461"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/workSpecificTemplateCatalog.ts",
+        "sha256": "a0ca994153d6ef493225db918a578e07fa76b0d78972d8a3d2714803bd0977e3"
+      },
+      {
+        "path": "data/estimate-catalog/expanded-complex/template-coverage.json",
+        "sha256": "add859b44b9de80e79b574ac7029282524c9e10f098b062236e0e3c736dbd0c1"
+      },
+      {
+        "path": "data/estimate-catalog/expanded-complex/templates.json",
+        "sha256": "ee471a8f69bb2848c903c55472e0a0d32082787177ffe0756a0dedfc036ae108"
+      },
+      {
+        "path": "src/lib/estimate/v4/reinforcedConcreteStripFoundationR1.ts",
+        "sha256": "12d67b5d9a78104f75ada16c7d9818715a619a07b49b2b52d6b959c139435b0b"
+      },
+      {
+        "path": "src/lib/estimate/v4/multiDomainReferencePassportsV4.ts",
+        "sha256": "0e4dbd02a6bd4034122272befd672a7028d6eb4398afaefd12624d0dbd85ef3d"
+      },
+      {
+        "path": "src/lib/estimate/v4/roadworks/roadworksWaveA.ts",
+        "sha256": "91f4b2a5f1352baef4a15b4014446d35aa6d33e6b05373fcc1024440af03edff"
+      },
+      {
+        "path": "src/lib/estimate/v4/roadworks/roadworksWaveAAdmissionR6.ts",
+        "sha256": "b6cf0555898eb5de6ee835c7c3dfc372c3db5f8487c1d68a8359bf0ad5d84236"
+      },
+      {
+        "path": "src/lib/estimate/v4/roadworks/roadworksWaveASemanticTruth.ts",
+        "sha256": "bad9da89af1d4bacf506ffa6356ce3dbf3e0297496988d1f2ab8cf1de707406f"
+      },
+      {
+        "path": "src/lib/ai/matchWorkTemplateFromPrompt.ts",
+        "sha256": "a399e405057ab83e74aba78e09ac991c25f4b87ef5b3f4fdf1e2d14331619861"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/waterproofingCeresitCl51ProfessionalV1.ts",
+        "sha256": "f52b0b061939ff1911fb5663af05bbccfb31d8df024d1cbe71b55f352452e929"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionDurableStore.unavailable.ts",
+        "sha256": "8283261cc537338b1dbf4e1c5f6675a9e74b0473e57ac8f92aa7ad6611c983e0"
+      },
+      {
+        "path": "src/lib/ai/externalKnowledge/aiAnswerFirstPolicy.ts",
+        "sha256": "d78dc606baaf4685eab332814a54efaaacd814a200a29fb6f8fbe25b5640a09f"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/estimateBoqDepthPolicy.ts",
+        "sha256": "70e70c5f059c0c5bff856a64bce0d75f0aaaccc291e1c2c1f8fda1b95a26abba"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/estimateFormulaQualityEngine.ts",
+        "sha256": "25042fc3cefe690565a145b6b3ebb18f1bba51ba9e94cc8e1a6aa45c60db90ad"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/estimateFormulaQualityValidator.ts",
+        "sha256": "614d8995d382bffe858c622edab3d4923dbb4a44bca1ddc5f8c89669592eaaeb"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/estimatePerformanceCostPolicy.ts",
+        "sha256": "0c3cda3dde3055a6900cdb928cc29292fc6c92328d29671dc64955246edb0373"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/estimateUnitSemanticValidator.ts",
+        "sha256": "627d556629f14b8d187d42c17c12e7929244f5adec511a3fd728c0f6b733a58a"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/evaluateEstimatePerformanceCost.ts",
+        "sha256": "aab280c6c0f411f54172d897d0c71c8724b416746b3a91c3526168844c22255c"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/index.ts",
+        "sha256": "3f947bd88501bfd17e8f2678ab605a3a38561c40ddcac81e83c87bd46aee46f9"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/formatRequestEstimateSummary.ts",
+        "sha256": "f683d53b0ad6b0fbd56703bb83f3fe816dac93db849e31215590c1048ff4e3cd"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateAnswerFormatter.ts",
+        "sha256": "583b6acbab82731426b909ce20752abcd727c158ea61010b88a65851e0cfd36b"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateClient.ts",
+        "sha256": "587b32422d7fa840ee0b53fa509d6b91dab321a1049c3d32f264ab3306e46c67"
+      },
+      {
+        "path": "src/lib/ai/externalKnowledge/referencePriceBook/index.ts",
+        "sha256": "40ace63d40a03bc0fa10e19aa83752ccdfd5be73fbe6ab187e52308811122711"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateDataIntegrityGuard.ts",
+        "sha256": "7e3ca29df028bda638265f4f8057d7767448c5754750368092f3fac9e7ba01ec"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateGuard.ts",
+        "sha256": "4068435c8b096b3176de1788bc8dedf8e418b6af2ce5884336d4364bf26e52b0"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateProductionSafety.ts",
+        "sha256": "470e2c9e366e5d2ea8959224926b3d0a5fd89967d8b9044704cd4be211bf654e"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateSnapshotService.ts",
+        "sha256": "cf0a726f59fd6ae8fc8d2d875b3ef444ac1a2dd7ef3c97972367f544cdbd27b6"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateToolSchema.ts",
+        "sha256": "0430bf24d899eb7e4e2f7195dcf9f498a798d1790198681451f54ef4285365a3"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalPhotoEstimateParser.ts",
+        "sha256": "9a43f88ea391d5e2ea24e83952d21659edd0a5c1654384e247ed5f310e7feb53"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/ratebook/coreRatebookReconciliation.ts",
+        "sha256": "2b8e0bb6d72697a0c24cf918c9b238aebf88f5f9b3997dedbefd7d2def34b4b6"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/sourceGovernance/index.ts",
+        "sha256": "a62bdc6237388bb79556b7b2d1fe9f2cb1f955f3cfb6f1e76e214861f60d05d8"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/validateAiEstimateCoreResult.ts",
+        "sha256": "8d257f1b2230a1c3e5be5bb507c11bfbd702310ac30ae6d8beb9558183df1b20"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/validateEstimateBoqDepth.ts",
+        "sha256": "7d77d66ed046832d48ba11beb6441a70c40f97a074fae315665d727cf2238052"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/validateGlobalEstimateResult.ts",
+        "sha256": "2119d2f9e723cd23ac04dc3183b05fcd0b3c1f69684104fc534eba9dec668549"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateDataOpsAdmin.ts",
+        "sha256": "5bb00a995a5d550c2aa8a390f988fab282f487d4d12a80134b04c4b37b065492"
+      },
+      {
+        "path": "src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4.ts",
+        "sha256": "bc0875b80319d16ab4269befa908e2a2864fe31a7d3f984015ea0855a7bb21cc"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/technologyProfiles.ts",
+        "sha256": "e35d2fd168a99f7546bd294a7648edd8cfca2056d5ed450af41877d12aeee8f1"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallDomainCompletionSuccessorR56.ts",
+        "sha256": "9b77f181e0408d0365a80779c8ed99ddb831a13dbace6d12344481338e049ab4"
+      },
+      {
+        "path": "src/lib/ai/constructionInterpreter/constructionSemanticTypes.ts",
+        "sha256": "0d6d25d01702003222eac5db105864bece5a28c61736bb67e037491c3ac07757"
+      },
+      {
+        "path": "src/lib/ai/estimatorKernel/index.ts",
+        "sha256": "6800b115147e14d6c7789c05be3408d2cdcea8ecca3294ef94d3eb7d126fd0b2"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/dataOps/globalPriceSourceFreshnessService.ts",
+        "sha256": "558e6052cc0121d16e217be47fa2e1f622df5cd0412f920d45b1f8edbd789d3b"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateTemplateService.ts",
+        "sha256": "e6d309c7cada1531baabceff72a7e451a2e09fc2011648e8c2c25155cd9bf636"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalLocalizationCore.ts",
+        "sha256": "0d93917a399c81555d82f2b2f71db78ffaaf5d86b52d576cd1fc90dce18f13d6"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalRateBookService.ts",
+        "sha256": "d93efab4f8e391ff8dc2b8ba856eeb2185ada2edffa53650499a15fd4802fb8a"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalTaxEngine.ts",
+        "sha256": "f5eeb03a5e84f96d2deb54493867515f924bb776eb78a0855b4450c268bea629"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalTaxRuleService.ts",
+        "sha256": "c65df5c4184176de685870079cb9029367e2e90f78b8277da739b202586cc37c"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalUnitConversionEngine.ts",
+        "sha256": "aedddbc8620a4d127d2ecb8669f7719bb4a7dac7ac5d56e7ee68a07f49ba02b8"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalUnitNormalizer.ts",
+        "sha256": "eb2ecef267351a4b8a0f7ae0de1b3a2793dc175ee970877dbae2708b3f6d17d4"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalWorkTypeResolver.ts",
+        "sha256": "cd94bd9138302ad5dadf9b373dbef9f5efbb9b03ae85c0eb6c288d189082b465"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/stripFoundationDimensions.ts",
+        "sha256": "1c1cdca6e45632f2d5821219a8fb3b4c6e47c6d4b88c9389db626c8bec7b4411"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileBoqFromConstructionWorkPlan.ts",
+        "sha256": "605dca241ae7c79ae90d4afa1dddc62504fa3409e14323f5e9c0053b19c53583"
+      },
+      {
+        "path": "src/lib/estimate/professionalWorkPassportRegistry.ts",
+        "sha256": "0c0ad535f52380ba91366cfda4599801ae769cd9f3ce0ea488835aa7c89439d1"
+      },
+      {
+        "path": "src/lib/estimate/workPassportContract.ts",
+        "sha256": "82012aa269632c0498ccff778c597525f64686ed258333114c96ebd439021ac0"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateHistoricalExpandedProjection.ts",
+        "sha256": "52ffa3c09a565d77e5ceeb96f1500b7ae31c040db0af961928c2fec986cb3619"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/index.ts",
+        "sha256": "e9d86adb31de73c3b7e7e7f44b2f2c26da11cfc29d335d67faceca790b5b9bd0"
+      },
+      {
+        "path": "src/lib/ai/estimateEngine/constructionWorkTypeResolver.ts",
+        "sha256": "9383d56087fd42eac68ef4d6ee2af90fddea366be443912720e8bed4fc86745b"
+      },
+      {
+        "path": "src/lib/ai/estimateEngine/estimateAnswerFirstGuard.ts",
+        "sha256": "d2305e7ca7ea25ab6e3846df04da5b7472b4a86d3bd3f1d0ac2d4a59c4330988"
+      },
+      {
+        "path": "src/lib/ai/estimateEngine/estimateIntentResolver.ts",
+        "sha256": "6572249ee65c6997372c90b5d4a1ac2bafa89be54e076ffae85ffcb612a34b9a"
+      },
+      {
+        "path": "src/lib/ai/estimateEngine/estimatePriceResolver.ts",
+        "sha256": "573a3660f5b5e80200cc69f7c91ce634559d813ad0fd3039b47443738cd196d6"
+      },
+      {
+        "path": "src/lib/ai/constructionInterpreter/buildConstructionWorkPlan.ts",
+        "sha256": "415ec622cd6c95a5407356b13a02fc23fb577502c672d8c069aec04f3986eced"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/validateConstructionUnitSemantics.ts",
+        "sha256": "778809ce892577ee194928daeb8de27dd47af8fd8762ba895d983834083fdbf4"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/index.ts",
+        "sha256": "fd677f3b4b36d0e294a079e056c78251c9d9be530158df406df9ec3e09c59d65"
+      },
+      {
+        "path": "src/lib/estimatePdf/validateNoPdfMojibake.ts",
+        "sha256": "fa82d8a3bb025f555b85a67260148e6b807f60f8d89db0e21b445a3c4594aa5b"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/index.ts",
+        "sha256": "6c23db7fac94be4a09f5ef01e04e3c4c49dabfd7e50fb80184863e138a816de5"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/electricalComplete/domainPackage.ts",
+        "sha256": "131f68616bce10b40ee3c4d278872b986f7d49666ac77692808e3477e376b5fc"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/electricalComplete/inventory.ts",
+        "sha256": "e826d8602c8c07a495a44f7d2ac859a3d3fc57d569535a9f864ced1a84ed2141"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/electricalComplete/parameterProfileV2.ts",
+        "sha256": "f43eacf3077a70731c3159ca28350f67695e5d7a0ff7bcd4840da4fbc30c50d4"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/heatingVentilationComplete/domainPackage.ts",
+        "sha256": "54862657400ca42080d8501f73e3fab027bd226f1db3c4d4f3c795072346b883"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/heatingVentilationComplete/inventory.ts",
+        "sha256": "7e5e4b7b4e8e05836685aa8e00ac4317b24a9fb2e1941264e366b17b7e8f6b28"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/domainPackage.ts",
+        "sha256": "60a32ede2aa6f4ccb2e9292795211537b43fe702d92bd792f3fee78680acde47"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/ct126-dry-wall-s27-54.json",
+        "sha256": "ba508d46b8e3e5146d541e929d6d5ef85a4228caf745e770af15caa39111edca"
+      },
+      {
+        "path": "src/lib/ai/estimateTemplate10000/productionFormulaDsl.ts",
+        "sha256": "0e2e479392213dc64f044bb2269d33869c119eafc65b1ae2b14925a3cf047602"
+      },
+      {
+        "path": "src/lib/ai/estimateTemplate10000/productionProjectTemplateGroups.ts",
+        "sha256": "0872b7d6154afdc70399fa3831954ffc308f3070afa38e85aac97d3fdc3ad813"
+      },
+      {
+        "path": "src/lib/ai/estimateEngine/estimateProofMatrix.ts",
+        "sha256": "fb28e4e54add4482973dd20f910bd76fa0f3b9500809d9929ecfd052d060d89f"
+      },
+      {
+        "path": "src/lib/estimate/estimate10000ReadinessManifest.ts",
+        "sha256": "93471dbbfab687cd7bbd7c72438b45cb403c9a66b37a151b9c61280fab5c42da"
+      },
+      {
+        "path": "src/lib/estimatePdf/aiEstimatePdfJobGuard.ts",
+        "sha256": "bddf004ccc171899da2143e89e85835e041b31a3665eb11cf0ea0bc8dd45b8e3"
+      },
+      {
+        "path": "src/lib/estimatePdf/aiEstimatePdfRateLimit.ts",
+        "sha256": "3a180b71362a1e529868775257f4aab7a71a570ef7d71c1c66882c8fcb803383"
+      },
+      {
+        "path": "src/lib/estimatePdf/buildEstimatePdfViewModel.ts",
+        "sha256": "735574d2bf5099b61da9c8f74b5acecbf242c46ece0030e388ae8c97299dc620"
+      },
+      {
+        "path": "src/lib/estimatePdf/createEstimatePdf.ts",
+        "sha256": "cca5d279aa8ab6d8870764ab73a718f077b8b747cd4d937870efb859e796efb9"
+      },
+      {
+        "path": "src/lib/estimatePdf/estimatePdfEncodingPolicy.ts",
+        "sha256": "ea7c62713d620a7f4640f6b78dd187466a456e521f10418a9a4b9d75fd61e811"
+      },
+      {
+        "path": "src/lib/estimatePdf/estimatePdfTypes.ts",
+        "sha256": "3a4474031581d04c4822c02c059a344641f9acd28c3a1d91b65b388ae49ff7a1"
+      },
+      {
+        "path": "src/lib/estimatePdf/extractEstimatePdfTextForProof.ts",
+        "sha256": "775587e123dc1740ef3b06e81554d77895414a28561d7ce99b24b8c081067962"
+      },
+      {
+        "path": "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+        "sha256": "e05e91903598889ebd27b9e5ec05c2edaaa4b6cb44adcc4afba1557305a7014e"
+      },
+      {
+        "path": "src/lib/estimatePdf/validateAiEstimatePdfLoadPolicy.ts",
+        "sha256": "2a9b4567612ef0c77d865fcde25fe9ceb8fcaffad21a49c020f54d346d5d528e"
+      },
+      {
+        "path": "src/lib/estimatePdf/validateEstimatePdf.ts",
+        "sha256": "a2c609995e650b0224f17c14cb9b99b055eb429219fe63a96567c973aa3cb0fa"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesWave1/index.ts",
+        "sha256": "8ff2eb5b4696dbca42df3eae66576de51ec6bac917932723e9ea04d0e41eea48"
+      },
+      {
+        "path": "src/lib/ai/estimateEngine/estimateQuantityCalculator.ts",
+        "sha256": "1ab9759101234bf9105883e108276d8a9934ebc2695c4e864f4e83608d3b6fcb"
+      },
+      {
+        "path": "src/lib/ai/estimateEngine/estimateTableComposer.ts",
+        "sha256": "16d2fd91b1169fad5f4c18a037c1bf8521600fc96908fadc1c914a251abf430c"
+      },
+      {
+        "path": "src/lib/ai/estimateEngine/estimateTypes.ts",
+        "sha256": "2fde6486fba041b5d4789f40b72e6cde4092cef57f8373e407e28e2a3ce20887"
+      },
+      {
+        "path": "src/lib/ai/extractWorkParamsFromInlinePrompt.ts",
+        "sha256": "ee24f6afa1967cd61b2ddccdf45c221b3f77a5e83493ca1ca60c80b224a655d7"
+      },
+      {
+        "path": "src/lib/ai/parseInlineWorkEstimatePrompt.ts",
+        "sha256": "486de4879074f70785f0c248c463fac8c3a5d3f04c148856262f26cf89261da0"
+      },
+      {
+        "path": "src/lib/estimate/buildProfessionalBoqDraft.ts",
+        "sha256": "325e512618dc38998d788fbc7f0bb01d068eaa3f3242d1bf4ac682def118ad45"
+      },
+      {
+        "path": "src/lib/estimate/buildProfessionalWorkPassport.ts",
+        "sha256": "b4f56e34fafd97739a5ccc0d7b574b8c2e344f66a2a32973e46264b89fa35d54"
+      },
+      {
+        "path": "src/lib/estimate/formula/evaluateAiEstimateQuantityFormula.ts",
+        "sha256": "9c06eb7880f006f51fcffcfe28c7ad568fc8098db58013d5c24c1ae93030ac76"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltRelatedExactRoutingV4.ts",
+        "sha256": "b3b976c65f9e6de32d43e9d6b93bc8d9416a4cdb432f4c113d2e86a698539480"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1.ts",
+        "sha256": "d8f13c87c94c40e3bd6e2bf7d1ebe1abd310dcbe4207ff1178888b408df373db"
+      },
+      {
+        "path": "src/lib/estimate/v4/multiDomainReferenceNlpV4.ts",
+        "sha256": "22f080f035cb2e4a31153f4cf6e3965e6e4f67d314130a76ba6e52d643312766"
+      },
+      {
+        "path": "src/lib/estimate/v4/multiDomainReferenceProductionBindingV4.ts",
+        "sha256": "78a15dc6a1851d33cf655013df7841d30cab16c846ed3d566a0e16252a2f8311"
+      },
+      {
+        "path": "src/lib/estimate/v4/roadworks/roadworksWaveAProductionBinding.ts",
+        "sha256": "fd468ae9a660ccbf51f4a11ec1a1881d09cccab3ff0d88ad0eb3306158036d25"
+      },
+      {
+        "path": "src/lib/ai/expandedComplexWorks/index.ts",
+        "sha256": "00857b8eb30270a5cf9bc0ba8b2f60c377f2f875f0c42da714cc028549a87407"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltRelatedBaselineAssumptionsV4.ts",
+        "sha256": "b0db2462e644e378743388cfaf52b0aac752b8139428da44ad2f4e90f4dbbc97"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/compileAsphaltRelatedThroughCoreV4.ts",
+        "sha256": "8782e1e9677314513af0635b1a58a6219ea18c3e6788bc0615fff1871a96eaba"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/globalCatalogInventoryV1.ts",
+        "sha256": "e19bc9505c0ddc1751b2baae0f874b4b043ca32c11aba192d3869b47e5364d71"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/professionalEstimateDomainReferenceV1.ts",
+        "sha256": "d26ebbe72478c542cb09bfd1c1fe158c78f58dff9895abe887ab6d65203a7c72"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/electricalComplete/maximumResourceScopeV2.ts",
+        "sha256": "d579e0c0e7d8785cce7f5735521a288e0876f9fc11bec8794d351cc20852a749"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/heatingVentilationComplete/technologyProfiles.ts",
+        "sha256": "6e8dc9eea3baf2c3c4ddf36e2b47a1d02b069d9819e99c5121e3ed398fd18fb6"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/baseboardGerflorInstallProfessionalV1.ts",
+        "sha256": "052d00a630c985654928f419688adf15ff2e535f8b647a928ceadc79459b2c8c"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/baseboardGlueProfessionalV1.ts",
+        "sha256": "bafa6e117e56f8efc5aad9870e20807d00a3e3a342928f08a94606081b1e1581"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallArchitecturalElementsProfessionalV4.ts",
+        "sha256": "bb6624b9f87608c371cddd2af3c2487411ac1bc1a6201e0c8cc198a5b18cfd80"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallCeilingBulkheadProfessionalV3.ts",
+        "sha256": "182d1ba552cb7f068c9db659cc36c3b11626a5e056f53cdec244f846a80bfa5a"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallDomainCompletionProfessionalV7.ts",
+        "sha256": "21e50fdea997ce2cf3e62cb8141c9af7f66d0718d62f993477a9b6c0593befa2"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltRelatedProfessionalPassportsV4.ts",
+        "sha256": "9c62739062dc4c2b4fbac08e2e152f8cb8b7f42a4c509fa2e2f333f92fcb6984"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/paintCeresitCt54Ct17ProfessionalV1.ts",
+        "sha256": "845962204c78e96230a8626cdc4bf32eddc5cd60009e16db115ae511df1b1c5b"
+      },
+      {
+        "path": "src/features/estimates/calculator/families/capitalRenovationCalculator.ts",
+        "sha256": "cc25ab2eea88c37615f49595933652b2054f9df024a5ce0e41eb6f1e40aee711"
+      },
+      {
+        "path": "src/lib/ai/sourceSanitizer/aiSourceSanitizer.ts",
+        "sha256": "31560ee53896fad1b53a06317112e3c1e3b1ea7532063b6c4a0a681e7e7e85c5"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionDurableSerialization.ts",
+        "sha256": "fbe23934590fed3ffc3502b58e8e95821c89c0f4399971c08a1ebe4e2246f812"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionDurableStore.contract.ts",
+        "sha256": "c38c7da82869d5e0fcc4c9efa172ac849337caa113c687b8ee3a2e97c9955995"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionDurableStore.factory.ts",
+        "sha256": "105db5045634d5aa4302228aeabccfae029ab3764699aafd83255520d408cbca"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionDurableMigration.ts",
+        "sha256": "1fc54b0f6fb6ed444f371288bb8dfed96d5e9029838f3050b759d634c4b08a53"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionDurableStore.asyncStorage.ts",
+        "sha256": "dffe51ce65370a88bef13664ca3aee4948d80f919dff9222e3925323a150d76c"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionDurableStore.indexedDb.ts",
+        "sha256": "aefc098d976c8bc30b9184436f4449720e53d05bac1c8f67a06a625d8e1eed68"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionDurableStore.memory.ts",
+        "sha256": "99e5aed9843398161a14eb92b7deea75e26f9da56884451d7774b537124012d0"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionDurableStore.sqlite.ts",
+        "sha256": "0e0057b56e0db6766373770f93fd1e49a04a504d58ed626ab47b7db8b4ce28a8"
+      },
+      {
+        "path": "src/features/estimates/calculator/families/capitalRenovationGeometry.ts",
+        "sha256": "2503e4e667639d9712515a4e693c920fddb9a42623133d61e924fcb40b9a87d9"
+      },
+      {
+        "path": "src/lib/estimateStructuredPipeline/structuredEstimateCatalogBinding.ts",
+        "sha256": "614aa54d2707b5c69d547bfb5adaea2cc9b8a0d9b8318bc24e706b766bf1fd09"
+      },
+      {
+        "path": "src/lib/estimate/materialCompletenessContract.ts",
+        "sha256": "fc58938e10cac4eb5f4c685c189633372f86c35f7e77f3bb2cacd567d57bc45f"
+      },
+      {
+        "path": "src/lib/estimateStructuredPipeline/structuredEstimateHistoryBinding.ts",
+        "sha256": "6f5794fb39104f802f2da5c4d5addf86ea6df9a62a2c27e2a934b20349b18f96"
+      },
+      {
+        "path": "src/lib/estimateStructuredPipeline/structuredEstimateRequestBinding.ts",
+        "sha256": "9eefb88cfb36e11584c8355f5aa001d1dabef24dfdc7655ab3c435bb73a0290a"
+      },
+      {
+        "path": "src/lib/api/rpcRateLimitedClient.ts",
+        "sha256": "6fef7b4aca31fff630354a5641fa4d0e66514e6fa243de89ad48053c83e9d654"
+      },
+      {
+        "path": "src/lib/api/supabaseRpcAdapter.ts",
+        "sha256": "a0b75bbddabc32dbdbab737a43dd37898d24c168657b8cde52b54af73ff22afd"
+      },
+      {
+        "path": "src/lib/auth/webAuthStorage.ts",
+        "sha256": "84dad8e8259fb7ae5947fc35f5402d29a1fc55d4e7b1a818d53a331209d7f8cd"
+      },
+      {
+        "path": "src/lib/env/clientSupabaseEnv.ts",
+        "sha256": "be3a052e0d0d9e4af02a4ae284ee52ade374f3da4e2ba429e9c3990e389808a3"
+      },
+      {
+        "path": "src/lib/observability/platformObservability.ts",
+        "sha256": "7e3b481d592f47a290a3a3823da1330ce2a206f85ed952b221f2f66d0cc345f8"
+      },
+      {
+        "path": "src/lib/requestTimeoutPolicy.ts",
+        "sha256": "d3873173b52c05841b4ff8229cea19858640c9cf0410c6913285a3383f13154c"
+      },
+      {
+        "path": "src/lib/supabaseClientAvailability.ts",
+        "sha256": "f50331ddc09551756436e16fca209155bc8a86454410adc6b2bbdf0ea17949d6"
+      },
+      {
+        "path": "src/lib/ai/domainDataGateway/aiDomainNumericFacts.ts",
+        "sha256": "935285640bc9227164b8f8109cdfb0d8d039ac1a3f35c08c068f23283168be64"
+      },
+      {
+        "path": "src/lib/ai/domainDataGateway/aiDomainQueryTypes.ts",
+        "sha256": "ca6dda9d56d71c20aca76bab3e501efbe340c1779d708276f25476a53f54c532"
+      },
+      {
+        "path": "src/lib/estimateStructuredPipeline/structuredEstimatePdfBinding.ts",
+        "sha256": "2339df2797c1934cfb8e7bec4206cabc39ce84619bf5daf611144325935a17e2"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallArchitecturalElementsContractV4.ts",
+        "sha256": "6280aa801cdce7b6c8b0985c0ab925841d06d7dcbe53409fa65335d1683fc6e6"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallArchitecturalElementsMaximumScopeV5.ts",
+        "sha256": "00fd8824e3dc15502926ce85bcf966af814f42a1b4651430c974f207b37538ac"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallFlatCeilingEngineeringSourcePackR56.ts",
+        "sha256": "97d28401c9d4201618984028b000123e8fcadea4d5ed3af28db1a3bb6c99e5c1"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/servicesKgAuthorSupervisionProductionBindingV1.ts",
+        "sha256": "1318892fc620cdbd6d62e382dbd02b2e03f922bab66780dc03ecdf198c261221"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/sewerageWavinOsmaC3766BkProductionBindingV1.ts",
+        "sha256": "95cf879f44580e20b14328f649225283c5141160740b2d106dd9a2f9b540f246"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/wasteRemovalEpaProductionBindingV1.ts",
+        "sha256": "9534cc6a47768fec3cc7b9dd60578d86cf87b3ed7ee193ceb21ca268bdae4177"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/windowsDoorsSoudafoamProductionBindingV1.ts",
+        "sha256": "1b0a50f267830b14ea9d9fd7fea30c67c78f58b13a73ae08e6fd3170c000bf65"
+      },
+      {
+        "path": "src/lib/ai/estimateRouting/index.ts",
+        "sha256": "333b88af5cd64e2aa055de3d84a5a4fcf29d0f014c2efca8312e6085a339645a"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionInterpreter/index.ts",
+        "sha256": "231ac876a1e5417314cbc8efde4058f2987ccff8004f6d76f87e016146c091fd"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestEstimateApplicationService.ts",
+        "sha256": "7015b3d62c631a1bc9e88e4696b7f177f0cfc118b69b0c1b14085be81468eab4"
+      },
+      {
+        "path": "src/lib/ai/estimateCompiler/professionalEstimateRouteCapabilities.ts",
+        "sha256": "690e5093f21499de44cbae920ce82847b9d6dade1ebc13a61be1a56e700b605c"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/index.ts",
+        "sha256": "b20947e5be65a9178404cb2512ad69fa720a7705f6faea1fccafdf0112998c34"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionEstimateEngine.ts",
+        "sha256": "5e31406aa8b0564c9be3699305836affc365ad528c30d262e442becf1132cd0b"
+      },
+      {
+        "path": "src/shared/scale/bffContracts.ts",
+        "sha256": "9fa4074e39f1be7e6387c8e60d46a65438dc9d2383d089763561fea01c465ad3"
+      },
+      {
+        "path": "src/shared/scale/bffMutationPorts.ts",
+        "sha256": "92cd947146d0d7f634fa02a83accdaa283198b96d11a91cb2c83b4bc4ce5bec6"
+      },
+      {
+        "path": "src/shared/scale/bffSafety.ts",
+        "sha256": "97adc8ee12b2197f193346824ec51d3f505c7d4ac98de40faf7b1e414f1ddd47"
+      },
+      {
+        "path": "src/shared/scale/deadLetter.ts",
+        "sha256": "54268382c93b3d94dff73a11d62461fb97919be5291651b1bd1ab1deeec514e7"
+      },
+      {
+        "path": "src/shared/scale/idempotency.ts",
+        "sha256": "c956e3568a1627799766844fceabf036d0e40e2e853cddd5e0ae63436c272885"
+      },
+      {
+        "path": "src/shared/scale/idempotencyPolicies.ts",
+        "sha256": "b5fad7485f8de277ef1b15a72831ac1d34e6dd62cd6f5d9d9224ff2413f8cde1"
+      },
+      {
+        "path": "src/shared/scale/rateLimits.ts",
+        "sha256": "f6108d66761b491ca109625a8679cbfbd19801350a6f1fb6aaac3f47d35be067"
+      },
+      {
+        "path": "src/shared/scale/retryPolicy.ts",
+        "sha256": "e9cadc00c572188d19476c66b608729628b01b95dfe6a7581e01d223c69fe9ce"
+      },
+      {
+        "path": "src/shared/scale/bffReadPorts.ts",
+        "sha256": "b40940e8056444763801bc185a1780135be51b34891cea6653dededf5e12c0d9"
+      },
+      {
+        "path": "src/shared/scale/cachePolicies.ts",
+        "sha256": "8cd7202692be8600efe4600eb9c4d08dfba5a5b935630421ee03cbdf819f1913"
+      },
+      {
+        "path": "src/shared/scale/cacheReadModels.ts",
+        "sha256": "1bf5adf01a73f67dbf5def7a38a679074c2c449670f5832529d35c0cc105f4c3"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/roofingSarnafilAt18ProductionBindingV1.ts",
+        "sha256": "fa3beb83dfdcf646eb43c36c4c5d744fe5e4332369955c46556b36e6abe6415d"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/reinforcementBarScheduleProductionBindingV1.ts",
+        "sha256": "dc403e541800e5acf973a13d59eeffc9acb55c0ab5ecec32cb682d7ce5daf833"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/metalworkJotunHardtopXpProductionBindingV1.ts",
+        "sha256": "c694366a14855bf1b17bd3dfadcaf69d2cfa57a960c5bc8ce2388a804b825345"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/masonryBiaTn10ProductionBindingV1.ts",
+        "sha256": "24028991d911aa55075f3ab4ae3fbe961f0c21d07c4922ccf14eaeb1a440e553"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/builtInAiToolPolicyEngine.ts",
+        "sha256": "260d531e08c53d9c5f32b12dc5f42c3a887dbe17734768211324fdaee520a7a3"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/builtInAiToolRegistry.ts",
+        "sha256": "91cd7f5d672ee10fc7172fe641109523d8cfb090f6907a61aa241a2f909c1625"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/builtInAiTypes.ts",
+        "sha256": "640cbd6f6f78dfccdbd851f7cf2c0779ec3169518d1796e757aa0ce9942a6f9b"
+      },
+      {
+        "path": "src/shared/scale/bffMutationHandlers.ts",
+        "sha256": "2cb188c2f8697e5dfea9e1908e15e38b4a5e14cef599d04f06bc7930844e2891"
+      },
+      {
+        "path": "src/shared/scale/bffReadHandlers.ts",
+        "sha256": "01d5b41e4b5eb5679d01fabe11b9199638748c216a0069b7155ddd59391734d9"
+      },
+      {
+        "path": "src/shared/scale/jobPolicies.ts",
+        "sha256": "c7fcc93eafeba4c0fd7fc2e6b76d4115073593246c40b85dece9d7d2b3790a34"
+      },
+      {
+        "path": "src/shared/scale/scaleObservabilityEvents.ts",
+        "sha256": "ebf3b6f9aca4792c7299d74cd17716842b76bea248938722db262853abc6af8f"
+      },
+      {
+        "path": "src/lib/ai/marketPricebook/regionalPricebookResolver.ts",
+        "sha256": "49db052d60ceba4c50d80e55904da2d9ca46d03eb6da4125bf23a622ba06cdbb"
+      },
+      {
+        "path": "data/estimate-catalog/work-items/work-catalog-10000.json",
+        "sha256": "fd97672a7ae99576eba3410d42b30ba3a76e5983b7889b261f14577d2e6a4456"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/carpentrySikagardWoodPreserverProductionBindingV1.ts",
+        "sha256": "47f93e283c856f0b6760cf126b562620250b27bc3b46be4b55b1b320cfe70e53"
+      },
+      {
+        "path": "src/shared/scale/cacheInvalidation.ts",
+        "sha256": "b637225344f3fc46a51eee62e6b216197da67240673589f7c32edeaa3ca10ce2"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/cleaningTennantT350ProductionBindingV1.ts",
+        "sha256": "f96a745e03e74f318bce272532aacf7fff7e9d55a7114ad266825764dcff2325"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/demolitionKrer46ProductionBindingV1.ts",
+        "sha256": "dc09427ecac68d32c82e456914fa1011575f710835939a249088b1e54210a97d"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/documentationKgDesignPriceProductionBindingV1.ts",
+        "sha256": "ce1799637a08f425db60ae2d3ca8b2a25ad1bdcab94657dcb787dcce44904332"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/earthworksFhwaFp24ProductionBindingV1.ts",
+        "sha256": "6333a4e3af2b7d7c6e755334d8705e1634fa8f242a77850bf732bf8a22630fab"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/equipmentRentUnitedRentalsProductionBindingV1.ts",
+        "sha256": "d0dae7871c30728562082f51ea9d4136108aaf3819c701b01612e1f9cde628b8"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/facadeRockwoolFixrockProductionBindingV1.ts",
+        "sha256": "609bdb40df8194031bca273b9f292919ada0c5d3329a9bdd65eb2a63b7314ea4"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/fireSafetySiemensFdb221ProductionBindingV1.ts",
+        "sha256": "9e32622f7bacb3b4ca0cbe6ce528e85af50f6293325702867e95cb7a53868d7e"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1.ts",
+        "sha256": "bdc8253838d6c8952784cc9fd15cec86acf3d7c4b46f5b0bd0e5d13646e541c3"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/insulationRockwoolComfortboard80ProductionBindingV1.ts",
+        "sha256": "085d891bdd1457503c17f73f3b0f931c5475416cf5dc3f60477d9c38d5c48e37"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/landscapingRainBirdXfdProductionBindingV1.ts",
+        "sha256": "07e85897066dd944b172bb5a6af2571ccaeb994dc1c98b2d14ff1d6cf7f80bb2"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/lowVoltageLegrand049272ProductionBindingV1.ts",
+        "sha256": "63f58f9becc5efa5e9b8daaed31b66db5bc70892cb2ed4d9f9ce2e9cb2c1215e"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/deliveryFordTransitProductionBindingV1.ts",
+        "sha256": "1d04bc1b9324e21a0b0046736fbc7405c4f53888004e9ac0b507ac2bff6cddaf"
+      },
+      {
+        "path": "src/lib/ai/marketPricebook/marketPricebookTypes.ts",
+        "sha256": "09380747470f99b637bb253c5579583d9ba9fa88cda00e242a48e7a9037f8ece"
+      },
+      {
+        "path": "src/lib/ai/marketPricebook/materialMasterCatalog.ts",
+        "sha256": "a4927c5376cfe17a8cf6eb68ab10e88bacc35367c54cf8883252ee5495de5ac3"
+      },
+      {
+        "path": "src/lib/ai/marketPricebook/priceConfidencePolicy.ts",
+        "sha256": "673397540f2cfa8338b68a4993b23917e995497a756da97c0aa43427c1f2166a"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/globalLocalCountryPolicies.ts",
+        "sha256": "3a8074cab9a2b814057b68f1cd5b7edcb45b38076cf029ae29248d59d2edfc2d"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/normalizeLocationPrompt.ts",
+        "sha256": "479b92b855a7294faa219a65e593bf00ceb130c0813e032d3e651b2d113ce399"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/resolveCountryRegionCity.ts",
+        "sha256": "cd62a3c8df1d023f6375149c6ab1f5d8401f88ddf1b9ca6ab6898ce40b908804"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/resolveCurrencyPolicy.ts",
+        "sha256": "cca66dbed6d7f0b44568480c625d082ef75d936afff1588b4d586ff972480ba5"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/resolveMeasurementUnitPolicy.ts",
+        "sha256": "62539b5b57d508dce976f945ed53f286875ec587bf0f0dc6025b6d5a21554ec3"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/resolveTaxPolicy.ts",
+        "sha256": "a034d8a73f745d80f709f3a72e2cb9e15594727601415b3d725e9b127964f3f7"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/resolveUserLocaleFallback.ts",
+        "sha256": "140569ebeb563bf0be387f875421ddd7dabcace4cc89703c918ea3357c46138e"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/taxPolicyTypes.ts",
+        "sha256": "4bbc18e8be1c29a5820534b46647c8e51b74b54237456a1ffd6097e9cbb18a08"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/validateCurrencyAndUnitPolicy.ts",
+        "sha256": "4eaa5579ba265ea7fea8b1dd0aa03e1e8b76d1235a9893f2e654e697a4a42f82"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/validateGlobalLocalContext.ts",
+        "sha256": "9ca071c1ffee489ce486c9189b22845ad9e35813a34d4d088c7177a82e216986"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/globalLocalContextTypes.ts",
+        "sha256": "0ec606e0eee5d5f14bd53f1ad90a4b346f68294789ae76e4f074a093ab4e3a75"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/validateTaxPolicy.ts",
+        "sha256": "0ad130ae6957ab6d9179e799d040980410832639ab54134c8451e8a5a5cbb9a1"
+      },
+      {
+        "path": "src/lib/ai/localEstimatePolicy/localEstimatePolicyTypes.ts",
+        "sha256": "9efa2e935f6fdaeb1a371cd38099056a25de8178936487bf6e6a806922ce7e3b"
+      },
+      {
+        "path": "src/lib/ai/localEstimatePolicy/resolveCurrencyPolicy.ts",
+        "sha256": "b0cf8a63c45aa326b4bab1826b5b31b16ff8ed15b62c4fba6acc45ce6554e948"
+      },
+      {
+        "path": "src/lib/ai/localEstimatePolicy/resolveEstimateCountryCity.ts",
+        "sha256": "23ca4956c3271e46e0bf7b20b977425366fe1af925a4c392261e8418ab4f5d72"
+      },
+      {
+        "path": "src/lib/ai/localEstimatePolicy/resolveRateSourcePolicy.ts",
+        "sha256": "d05f5e55ab900e85598d18f2fa858ef01ba253366e63163654f3004d3595c0a0"
+      },
+      {
+        "path": "src/lib/ai/localEstimatePolicy/resolveTaxPolicy.ts",
+        "sha256": "a445ffab86eb47f0608387e917c9addee7d679f06fbff9e6693e88be770c2270"
+      },
+      {
+        "path": "src/lib/ai/localEstimatePolicy/validateLocalEstimatePolicy.ts",
+        "sha256": "06b2cdc67e76145938372a20c484b98c04a107a710954ae6e401acffe08440c6"
+      },
+      {
+        "path": "package.json",
+        "sha256": "90229fbbbfb7373be55eef141bb167faa4737f3a2b59c7104a559d2955003e78"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "f8990847d69ff7c5c6eda3f5832ab941c2a32207030b32bf17a5aad3b8eda11c"
+      },
+      {
+        "path": "tsconfig.json",
+        "sha256": "459177a2e1212cc9b406526527bb0dae2b447b4e0144d735bb6c6ebf01be639b"
+      },
+      {
+        "path": "src/lib/estimate/v4/master30ElectricalPlumbingFactoryKitsR1.test.ts",
+        "sha256": "28ef53c082c8455713e8eb9d43f84321d75e9a4aea6ac125e7677281ce86965c"
+      },
+      {
+        "path": "src/lib/ai/localEstimatePolicy/index.ts",
+        "sha256": "468c469fdafc5ddf6b200a3521b72f12d4dd8115cdaf28a3db50bd951364ea8e"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/builtInAiRuntimeTrace.ts",
+        "sha256": "ff5f4c8a00421cd588bebc1d7b70b07e42d3e06e7c34cbf5b3ce1d6c6c94714b"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/currencyPolicyTypes.ts",
+        "sha256": "029c02dee0344a35c7033e64aa6ca499ea259b023120c791c51c3a6bc51b1bc2"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/buildTaxWarning.ts",
+        "sha256": "09886a2d453e60bee380a9509dddad33ad173508cf8e2e7291a32ef350592b9f"
+      },
+      {
+        "path": "src/lib/ai/marketPricebook/priceFreshnessPolicy.ts",
+        "sha256": "4f9ce3c9d9875c49e78262f371e940e0db3059bd179a1a2857c362c749a5f175"
+      },
+      {
+        "path": "src/lib/ai/marketPricebook/priceSourceRegistry.ts",
+        "sha256": "c447d1ef3240092490f879e168d685185f9173e6afaa9b761a6f45a4ae676f9b"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/clientRuntimeV1.ts",
+        "sha256": "4dac5c4a83ac1c8dbe98f4a8ba914c68fc783f928c0c7620a12b532fc6ad36f7"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/formworkRicsNrm2PromptParametersV1.ts",
+        "sha256": "b5dfc112784e8dfcbef55fcd4d811a7a1ddfea325b1939f2af9c12d7a123a214"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/masonryBiaTn10PromptParametersV1.ts",
+        "sha256": "5dd510f66accda19e4f18abf04bdc5c53a2dead53eb9bee341a82a0c9ac5066a"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/reinforcementBarSchedulePromptParametersV1.ts",
+        "sha256": "cd45d3dc12265768409fe2fdaf9bfb57f78a31b4d34a00d2e6b2170931be64b5"
+      },
+      {
+        "path": "src/lib/ai/estimateRouting/estimateIntentClassifier.ts",
+        "sha256": "c55d0897613654f02032120a55d9c97f52a695c879ac513d1f9d93af08dc29fd"
+      },
+      {
+        "path": "src/lib/ai/estimateRouting/estimateIntentPriorityGuard.ts",
+        "sha256": "0fc8210508302d43e1385988dce219bb87b12528dfcd3e3b57a070f751714dca"
+      },
+      {
+        "path": "src/lib/ai/estimateRouting/estimatePromptExtractor.ts",
+        "sha256": "8781e2c48de2ff7eedc9bdb0dc4ac6a6a045b484946d515c0b7f559cb3ee1dfa"
+      },
+      {
+        "path": "src/lib/ai/estimateRouting/estimateRoutingTypes.ts",
+        "sha256": "598dc195627750c20706797ee6b3b3f18fe161918f52f63f847ecf3b07d763da"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/classifyLocalContextCompleteness.ts",
+        "sha256": "8081b59b325fe08e6f332c587134cb588fb63bc074686e42c721948332154c7a"
+      },
+      {
+        "path": "src/lib/ai/estimateRouting/universalEstimateIntentRouter.ts",
+        "sha256": "180c6de207cb0e86af8637146f073af5939be6405c9e9d763e652c8a24418a68"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionInterpreter/detectConstructionIntent.ts",
+        "sha256": "6746ef4c2c21a50b87c19e94664f6d9d336614a8de90682fcb66c584f78c98af"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionInterpreter/disambiguateConstructionWork.ts",
+        "sha256": "b8657c40f16dc12653fdd66104bc0de9b5fab500445dee4c9a371db66b08d5eb"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionInterpreter/normalizeConstructionPrompt.ts",
+        "sha256": "f58c493ece4857f9b3ad29f29ce1d9162579c385801d7c1bd2a0e8293f2eae8b"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionInterpreter/resolveConstructionDomain.ts",
+        "sha256": "327c7ea50a17fd755254a24598c863e97358ba262e90e6fd9e3c92ca34b22ee2"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionInterpreter/resolveConstructionMethod.ts",
+        "sha256": "4dff949bb60eae42cfe2e1337ea2caaf01ef86dce5ae4852e7772593da098ea5"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionInterpreter/resolveConstructionObject.ts",
+        "sha256": "719fe3190085eac38081250d824f90b076e2136f992c9127731fed56a42e89f5"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionInterpreter/resolveConstructionOperation.ts",
+        "sha256": "d91f0c8bf9296bc8b8d2402daef00b05b57a3ffbccf741a2ca6b3d344822399a"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionInterpreter/resolveConstructionUnitVolume.ts",
+        "sha256": "80fdc3ee5229240ed36f45abb4a328804abd848e5e2bdd2ccfd855c5ad0f7635"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
+        "sha256": "fba06c7bc0e711db0262c462e59461b3f1bad4441615c33de8adc5c6e2391a79"
+      },
+      {
+        "path": "src/lib/ai/globalLocalContext/buildLocalContextWarning.ts",
+        "sha256": "5add483ec5d41e4d4c2fb321d9d75d33abd40b047bf5f035e19d4aec56d0619b"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionInterpreter/classifyConstructionWorkOutcome.ts",
+        "sha256": "20af3b154eecee9591d11f25ceca1d75023c6d0445f5fb2cbcadf2d519d8ebff"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/builtInAiIntentRouter.ts",
+        "sha256": "d1c1864a7ca5b023a19443843f4d679a7d302e11e14f7545e5b742badc6ddb73"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/builtInAiIngress.ts",
+        "sha256": "302cb020920a67233b7d4d1e0b19c8de2489183b6b46cc00229a1938bf49e83c"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/builtInAiGuards.ts",
+        "sha256": "356c56d586214a1cfed41ebfafaa13bdf37e9794b51d1102d5f5547e22b81ee6"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/globalExternalSourceTypes.ts",
+        "sha256": "5cf215cb78a749f66c93c5af204251d115741ef7764870158be7f06677af17db"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/globalSourceBackedEstimateGuard.ts",
+        "sha256": "c929fcceef8bc27c4b64fd7d7539bb6f96cb40faa8f0d233252ccf940fa9c861"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/globalSourceBackedRatePublisher.ts",
+        "sha256": "f38e169e13d0dfdc9c21915398c33ba07fbff5f4755761a0d07a34d87a38746d"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/sourceGovernance/catalogConfidencePolicy.ts",
+        "sha256": "575b8e0873d661b691a34d92eda68f0a083aae2d53c838574b7f18c5e5873b49"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/sourceGovernance/formatSourceWarnings.ts",
+        "sha256": "9e861a0bae88a1c3fc8a60bb049e4a61e3d23b9e7495d8df8f7bc10745469a45"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/index.ts",
+        "sha256": "2cd01cd9ab8ce6aeab5f602741827d1fee55bfc8a238d2b7f299346f80b02296"
+      },
+      {
+        "path": "src/lib/ai/externalKnowledge/referencePriceBook/referencePriceBook.ts",
+        "sha256": "6952bd42ee8c43116f40c68ad848fa88cc61444d25984eeec364304436b2103f"
+      },
+      {
+        "path": "src/lib/ai/externalKnowledge/referencePriceBook/referencePriceResolver.ts",
+        "sha256": "6f3061a5732c54f7a949be8c630e5a297927b51a56f976a782ad26b10d828ee7"
+      },
+      {
+        "path": "src/lib/ai/externalKnowledge/referencePriceBook/referencePriceTypes.ts",
+        "sha256": "49f3a276a7aaab718e536da3602e0c8a45c2a1bbde9d9a572113c3aace79f0c1"
+      },
+      {
+        "path": "src/lib/lifecycle/disposable.ts",
+        "sha256": "7c36f4b8759bba721b703771603f81aab4a7d172bdd0a74b356257dfa1c52de0"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/globalExternalSourceRegistry.ts",
+        "sha256": "1261508fb7a6f48cf8b5bf7698edeb7aa502cda7a16bdbc959ef8a543cccec93"
+      },
+      {
+        "path": "src/shared/scale/rateLimitPolicies.ts",
+        "sha256": "eed777d62ff1da68b51c6947704c0618db142e1f97e1ae212b137c7da4c1bd45"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/professionalCurrencyPolicy.ts",
+        "sha256": "f9c845bbf960d57a5ca4fb01c9ac4f4faad9afd31a058e423be0868b095fbf67"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/professionalEstimatePresentationPolicy.ts",
+        "sha256": "ddbdba00346370ebbe54fe06888048bf3f5fee709650e52eda3f591f53115eb9"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/professionalPricebookBinder.ts",
+        "sha256": "0d41bd07c6dee745fdc09ecb1679f5858217e44602ac25a85d64b310bf852f75"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/professionalQuantityFormulaEngine.ts",
+        "sha256": "0dc83d7e0bd88fd0e364a8fc5dd1b9eb7fc03773d0a7b81c15e6c8b2a270d3a5"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/workTemplateResolver.ts",
+        "sha256": "c20a791c0b3e47c1added1be076e199701cd09eb9e077d555326c48cc616890a"
+      },
+      {
+        "path": "src/lib/ai/workOntology/constructionWorkOntologyCatalog.ts",
+        "sha256": "dc01969474467d7bdabb91b6fd4020fddd58edfdf5be16f96ab4f08aa8f285fd"
+      },
+      {
+        "path": "src/lib/ai/workOntology/constructionWorkOntologyTypes.ts",
+        "sha256": "91cddb0b3188154c65271d59e294cd45d20c17a3865fc7e6185e580d60403729"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/materialRecipeRows.ts",
+        "sha256": "e4072d43557f16dfd76867b787d19a98e02f430e266caa6bc7de754d7c6c4c10"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/workGroupTemplateCatalog.ts",
+        "sha256": "e11b6eeffb71e2b2924b89b9425d00e3bdd2a3a104374484fc7c3e8ecdd1ef7b"
+      },
+      {
+        "path": "src/lib/ai/professionalEstimateTemplates/workParameterSchema.ts",
+        "sha256": "4db1caa45af3b0e6f5d8bd4ced50abaa9cdded2e5d8c1e113cb14fc66ad2a942"
+      },
+      {
+        "path": "src/lib/estimate/familyParameterSchemas/index.ts",
+        "sha256": "fd5fc032732827c1e96f64c41b149f2b4be56b1c5c2798a63fb6f4a715e3b4a3"
+      },
+      {
+        "path": "src/lib/estimate/v4/multiDomainAsphaltDepthDefinitionsV4.ts",
+        "sha256": "f1d1c62057f08d5f660844af79f6b4feec449fa8184474d16c394ce0fa1fc8d6"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/globalExternalSourceRefreshQueue.ts",
+        "sha256": "dbfdc98629a286d87105cdb894f2d0d99f95bb927e5d3572c94b348d50a16a71"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/globalExternalSourceFetchService.ts",
+        "sha256": "d78979f8ac62ade306fe69ecc82207e022fc36525400984a8b44f785ebefecfd"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallFlatCeilingExpectedScopeV6.ts",
+        "sha256": "5a63f5fbff3a184a011b3b8671d62acff284201ebe9d26950ac70ad5391e2d8a"
+      },
+      {
+        "path": "src/lib/ai/performance/aiEstimatePerformanceBudget.ts",
+        "sha256": "5e87b750d6f6e7e8003ab410be341496f2250d22c0ed59d93eeb2b36bd85dcc5"
+      },
+      {
+        "path": "src/lib/ai/performance/aiEstimatePerformanceTypes.ts",
+        "sha256": "775ea5e311939ca3d712f246e375f2dad25af5bbd336f5e50a1150758a3990d0"
+      },
+      {
+        "path": "src/lib/ai/performance/collectAiEstimateLatencyMetrics.ts",
+        "sha256": "cbc3ec12162de10e346db9a8770370da5cd38184f595d54f3c7961fdded863ae"
+      },
+      {
+        "path": "src/lib/ai/performance/measureAiEstimateStep.ts",
+        "sha256": "e3c4ec53e69e1feab006b95151518e7b9ddde4c33803a5061dfd21a024513228"
+      },
+      {
+        "path": "src/lib/ai/performance/validateAiEstimatePerformanceBudget.ts",
+        "sha256": "88e2568c15a40c3329e397fd79ccc3dbc72840f260e09e0bed0f1c1cdd202a20"
+      },
+      {
+        "path": "src/lib/pdf/embeddedInterRegularFont.ts",
+        "sha256": "fe6823dd1842d91daa4784d3024e636681771a04bdc8a2f38a685cf3e881b859"
+      },
+      {
+        "path": "src/lib/ai/constructionFormulas/constructionFormulaShared.ts",
+        "sha256": "ceb450334dfbeee07b3ed366a4721018f33e546bcde419867f6ae2a7b2a1b8c4"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/index.ts",
+        "sha256": "9f64212ad25fd94de224b88c610bf7ba7e8d7106d649eb0bf16ca8a04c188885"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionOntology/index.ts",
+        "sha256": "ff0cc8cd36bc22f06841ee216bfde639d3f9de0f3006052e21fd2a6fc16b4fc9"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/globalExternalSourceQualityService.ts",
+        "sha256": "f110e355ae21c483af9c4f4fde58687535b96d7152c7827dfdc8113066b61a39"
+      },
+      {
+        "path": "src/lib/ai/constructionInterpreter/index.ts",
+        "sha256": "f908d241dbf6f1e29c7e634fd6f82dc2cbabe90529eb986ddf4147953189d257"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileDynamicProfessionalBoq.ts",
+        "sha256": "b0339f8346619fc24c1946b4dd74c224b7cb1c3c49970bd281a34bc640d2299f"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/roofingWorkTypeResolver.ts",
+        "sha256": "7adee4e080e7eb58ccf7ab82f55553887ead7ad7766b70cca63cf9eb3cb425e4"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/waterproofingWorkTypeResolver.ts",
+        "sha256": "f19f36ca83362ea5d085473544a7b3d7000ba382baf66ac9f8862ecd333e9a03"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateConditionProfilesV1.ts",
+        "sha256": "ae0057c9b01aede2046211ef59a1ed29be0487e9845292a0ba6374395da3db43"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/dataOps/globalEstimateFormulaValidator.ts",
+        "sha256": "972b9e337ae9e3ffcdfb4af08dcf401a645fe89284dade6f3027dc1ecb0ce260"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/dataOps/globalEstimateImportService.ts",
+        "sha256": "fe954f92310d63e4803feb6c998f36449975bd0e56ac3fa79364fe66acc6b008"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/dataOps/globalEstimateSourceRefreshQueue.ts",
+        "sha256": "162f1459a32f59725696fa4c4aaa828d81ba7647f4d7cd43c2f29bd1d4e61480"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/globalExternalPriceObservationExtractor.ts",
+        "sha256": "067329095f7a549118ed1063242ebbf7d43a101ceb34a8e6c1a0944ab60ffe05"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/globalExternalRateCandidateService.ts",
+        "sha256": "91b567e4459c96c9d28739763ab661f780f0c488ab523020c207cbf38e78b089"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/externalSources/globalExternalSourceConnector.ts",
+        "sha256": "dd2d204e867aac1a1a62c7f32c5483f003e577b7fc948f2d1be76bea1885d070"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/index.ts",
+        "sha256": "36d3d80e8078fa59811f82f76a9eb3340b35f0538369ef009d86759ca774fe3b"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/compileAsphaltRelatedProfessionalEstimateV4.ts",
+        "sha256": "7947fabb6b4555c11215f16a2c1d996c69fc0c476158acbdaa3f495caf51bc94"
+      },
+      {
+        "path": "src/lib/estimate/v4/multiDomainMaterialResourceDefinitionsV4.ts",
+        "sha256": "852e02875127d0aceb26f024d0551926ff65d4a91fbaec0cfac4d132df74fbf3"
+      },
+      {
+        "path": "src/lib/estimate/v4/multiDomainReferenceTypesV4.ts",
+        "sha256": "8ac1d2591b435dd786666be397b28a410cf73560410a8e87ed14fdf2a2bd6595"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/buildBoqMaterialRows.ts",
+        "sha256": "ffe914fc3bd1b693d577975eac69f3b764035a7ead31abbf071e978895de8f94"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/buildSafeUnknownConstructionTriage.ts",
+        "sha256": "a5d844badd5972491afd66df6dc1fe4a480aa0e9fea3899599af23f308e97fc2"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileBoqGroupsFromPrimitives.ts",
+        "sha256": "41f766f46a69f401c7803a7600cb944b7ac0dfee884804ef629253a0441d730a"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileClarifyingQuestionsFromPrimitives.ts",
+        "sha256": "a90243c3c597e83d6e9d3efb06889259811f73f932d6b897c1d7213d7e184aac"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileEquipmentRowsFromPrimitives.ts",
+        "sha256": "6b0698bbbd0d701186e3ee8a89570c226a0615c86485d4fb727ec5abb511a1fe"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileExclusionsFromPrimitives.ts",
+        "sha256": "4b6f6fe68e80805d2276cc88ccd2e13d6b09b1ea911c721777096383af6b46fe"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileLaborRowsFromPrimitives.ts",
+        "sha256": "7361790b51f9a7f21d72c1d0fcae64b01ba89b498d0605e4ca55dd4cd6f885b3"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileLogisticsRowsFromPrimitives.ts",
+        "sha256": "e3f67100a11f4235aa1f3e761f013baa8394de52c031a89504876d43745e4fc8"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileMaterialRowsFromPrimitives.ts",
+        "sha256": "d76148f4850178c1a54a4c6fe1506e82b220b677573a5bf9ea0e298931cafed2"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileParametricBoqRecipe.ts",
+        "sha256": "a03b98ff0e8335558f7cce8f63e2058a18744c79f247e684c01432580e4b5c60"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/buildBoqLogisticsRows.ts",
+        "sha256": "49fd658351885fd356b0b1fa3d224fd583ffcfedcca3603673c37dd59d84a08b"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/compileProfessionalBoqFromPrimitives.ts",
+        "sha256": "c6088f786480b47b8786905446c81da86b3278307183aea9a1798a05fb95df09"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/professionalBoqTypes.ts",
+        "sha256": "4b3966db9a661513e36cf3b917ca43fe9781ffd28166805f47e12a9a2d33299c"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/validateBoqDepth.ts",
+        "sha256": "62ee2f00e57312833bf173d5d08a8814d5bf327db5bff8e45b2f07d9e9bf0583"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/validateNoGenericFallbackForKnownWork.ts",
+        "sha256": "6a20883b768052bf485563f2b6d3317b6469a446453ac69a52e7bba1a99f459e"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/validateNoGenericRows.ts",
+        "sha256": "f5611338fee01e9942674a4eda45ec91d56c8622601653fee2e7e75a5a228d6b"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/validateParametricBoqRecipe.ts",
+        "sha256": "48cb1d7c6beae949585e445fda69fec83154bb0a68e971d180355d80c85b4e41"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/validateWorkSpecificRows.ts",
+        "sha256": "50dec7e12779cb7789d233db0f1d1da73fd2d635ba96a93ad88253c91992aa18"
+      },
+      {
+        "path": "src/lib/estimate/ownedDomain/applyOwnedDomainPhysicalNormConsumersV1.ts",
+        "sha256": "13b675b1ba0456ff0ea8de8f8fd9c0f9838931f8398a655ebbfcad33c25262bc"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/builtInAiActionBuilder.ts",
+        "sha256": "99b2642af1aff890d7bf52af6eed2214365d5dc7eb7e4c5ea8387441f1c6dd2d"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/builtInAiAnswerComposer.ts",
+        "sha256": "7277bf44d638b05eccabbe75108a017b8771d4f501238ecf8a159d6d1ffccc48"
+      },
+      {
+        "path": "src/lib/ai/builtInAi/builtInAiContextResolver.ts",
+        "sha256": "8ed1c9168aeb5e965f39e3e8cae55d07d414baefa16f49f1dd2a1f91a979d96e"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/parametricBoqRecipeTypes.ts",
+        "sha256": "60d533810217b892b48f4e048418d682ad7f0662d1a95cb94213be1ceba1b988"
+      },
+      {
+        "path": "src/lib/estimate/v4/multiDomainProfessionalCorpusV4.ts",
+        "sha256": "47c448c3a5b23a093ff7523ab106c0f520a0a54135c07bc087c3feace15dfedc"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/buildBoqLaborRows.ts",
+        "sha256": "97b805dbac4c67756cbe1fd42fd4c07dcfd6abc17aa25b0583af053e18d274ea"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/buildBoqEquipmentRows.ts",
+        "sha256": "b1f88dd19e777629c8fffa1ed948298b52e19862d7a44acc00892f314368d6a7"
+      },
+      {
+        "path": "src/lib/estimate/workCatalog10000Artifact.ts",
+        "sha256": "6181faf2a472605da3bbed821349ee4d608a1d0d305723cccde2003cc313e337"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/constructionDomainPrimitives.ts",
+        "sha256": "6b9f697c20c3f0e05a89450bce2e6272d2ba3f8b3c331ec3ed3100271f63a2cc"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/constructionMaterialSystemPrimitives.ts",
+        "sha256": "84bb6ec18e30db9ced827343a7e65c9f2b5974ac9606862e0a7b4111e4dfa15d"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/constructionMethodPrimitives.ts",
+        "sha256": "7b50ed569316debe8951cadccc9ac63e6350b359b82998f834ab268fe2904147"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/constructionObjectPrimitives.ts",
+        "sha256": "7a6fb1237f2171de413b5aba15d4cae0dd4f9e5d056cd1e7b80fd18cf9ce2700"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/constructionOperationPrimitives.ts",
+        "sha256": "03301cce921969819ed56d1502a79ced4959b4f9a2b6770746ef77ef10d51c7c"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/constructionPrimitiveTypes.ts",
+        "sha256": "6187d4e9b97b56b0b46ea69b998943c7b38a65fb7d26b9ef67bc12db1a8737f0"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/validateConstructionPrimitiveGraph.ts",
+        "sha256": "e9cf4f1e37ae2f7d8630cf53e718da1f0202776e1c540c69d436c1d9f6d87622"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionOntology/constructionDomainMap.ts",
+        "sha256": "523f441a6438f347097b5427cadaf25f3306d49c251535923239f9a7cb228b23"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionOntology/constructionMaterialSystemMap.ts",
+        "sha256": "d4b8c256178a706437c63ca0cdadd8392b7de234fc2706a76575b429cacf08be"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/buildBoqExclusions.ts",
+        "sha256": "b8398fd4e80af5e5d8b2b2ceb0ec48430e6d18d92122b2ce8d7f5859291b4013"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionOntology/constructionMethodMap.ts",
+        "sha256": "c9ac52e180895367f64170acc54ae6c63c84162ee41dc9ea560fc040165e518b"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionOntology/constructionOperationMap.ts",
+        "sha256": "84e032e9f95ee4c906c536bcbd7160d132b438c3d8748adff774a21e83fbe294"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionOntology/constructionRiskRules.ts",
+        "sha256": "e2c3f663d0e05783c9385de08c757d088c47f30b054a1c916898b63faa6445c9"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionOntology/constructionUnitRules.ts",
+        "sha256": "89180663bf4b9193196140188eeefe64a24de874f8baf62e7eaec300355c6514"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionOntology/validateWorldConstructionOntology.ts",
+        "sha256": "960bee0ad3d25235eae8dde7e2ea0add835e59153898cbff89b6c977e06aa9b3"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionOntology/worldConstructionTypes.ts",
+        "sha256": "150fb7b00f475e13924d1f5c3dbba4dbafd34da57080229d6f988f97b67b764b"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/buildInfrastructureBoqDepthPolicy.ts",
+        "sha256": "024003344abbfa75ca08ed85028441de4ea1e35f617d080fd1c5ec15a22b8436"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/expandInfrastructureBoqRows.ts",
+        "sha256": "546fdf44a0227b6729574d356da1c8666a32816b99bb5bd7ae691284cfd0744a"
+      },
+      {
+        "path": "src/lib/ai/constructionPrimitives/validateInfrastructureBoqDepth.ts",
+        "sha256": "a0d8cc98895268047bb8b193ed3c595b31305154c4a85430a15a25d2b2697a78"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/buildAmbiguousConstructionDisambiguation.ts",
+        "sha256": "eb0271f4cff03be8a3fbd77644c06a04dae64e026f425bda4abe8e32ae7355d8"
+      },
+      {
+        "path": "src/lib/ai/professionalBoq/buildBoqClarifyingQuestions.ts",
+        "sha256": "32494f4514738643e8c51de58a466f69c699f32d24bd606978baa49a4230f1e3"
+      },
+      {
+        "path": "src/lib/ai/worldConstructionOntology/constructionObjectMap.ts",
+        "sha256": "5ec9f1fece980fb230b8222b5666304f7715679e7c494ce4d7b9ae298157b37b"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/master30-electrical-plumbing-independent-expected-r1.json",
+        "sha256": "b7a7f9dda8c3c0505c45cb8b500e870325645775ab26594afd1f299f0e0e99b3"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateHistoricalIngress.ts",
+        "sha256": "2db29fb7d5d8c27f706d1c8123341357a8c9f1bd3e88d71974ee264a87a6f0c7"
+      },
+      {
+        "path": "src/lib/estimate/v4/professionalEstimatePassportV4.ts",
+        "sha256": "30d27d402efcf77b94ff7e7525ae1ef4ebf800ba6b786fa4bd9eba01033d2a52"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofScreedMigrationV1.ts",
+        "sha256": "34b6570508757740caabaac16ba55e2ea2b2099547b7228024be277c267f2188"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofValleyMigrationV1.ts",
+        "sha256": "a150a05395d7a62d9c160dcc656860b066f1596d1c343fe7a7cdb14cf8a23c2c"
+      },
+      {
+        "path": "src/lib/estimate/professionalNormSourceAdmissionContract.ts",
+        "sha256": "a26791435590c5a706ca268b38a215da09b079dca440a77d042350aefd71fc61"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts",
+        "sha256": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalFusionDerivedQuantityClearAdmissionS2758.ts",
+        "sha256": "821cbd7a512b37bc99e4dc4cf22a86c612bc408bf40313d458ce0fd3d4e26104"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalImmutableCalculationContinuityV1.ts",
+        "sha256": "107dfb72b2a3ba99ec3e6473a5af05f67ac41e2d556b86953879b7692130af5d"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings.ts",
+        "sha256": "31cb2252caa2e20c19887ac8031f1f503e6307b86d6fd1463ad564528659dc88"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPublicResourceAlternativesV1.ts",
+        "sha256": "ed5da8cbe6d58095be01861a4f9dd027ef7e3fb9790109d0ced15cd4b5e9026c"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalSelectedMaterialDeliveryContractR1.ts",
+        "sha256": "97daaad21aa9e285333665ff1356e5cb53bfd3c4c1c61765a15bd7f0bfd7e6f0"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/estimateAdmissionR3.ts",
+        "sha256": "4f197b8f3bde877c4bc02883dd4f3985068d0d3f1154ff3a236edea7e2857293"
+      },
+      {
+        "path": "src/lib/catalog/catalogItemTypes.ts",
+        "sha256": "660949bd65b6fe4c52e75fe219aa8672b0ca5d2733996a79b22b042078205611"
+      },
+      {
+        "path": "src/lib/logger.ts",
+        "sha256": "9057f18f3546b4c66704736df329c03d1daa884be7ffbc2967d9bde99cb7b34f"
+      },
+      {
+        "path": "src/lib/ai/editableEstimate/index.ts",
+        "sha256": "984b1e7b90312049cd7b44a022d3f3d0fa5c0f881844a8eef3eb5154acd8e4a2"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/index.ts",
+        "sha256": "8cf63cf2d2d53492077ff9d65d7c743601bcb81eae3fa8aa9e21df40da60ca35"
+      },
+      {
+        "path": "src/lib/estimate/canonicalParameters/canonicalParameterCore.ts",
+        "sha256": "ef2d4b4a60bd07c6dace22395208249cc10f7c5703de5d8a72b8c55178d527af"
+      },
+      {
+        "path": "src/lib/estimate/draftSession/estimateDraftSession.ts",
+        "sha256": "b627a5ef81009472e919f3cfe638bb5d68570f772f80842bab400f7b1ae4c2c3"
+      },
+      {
+        "path": "src/lib/estimate/v4/electrical/electricalProfessionalBoqV1.ts",
+        "sha256": "34317610f41cdb3587297046960c028e0a4287037b4536c05cb9434c24fb02e7"
+      },
+      {
+        "path": "src/lib/projectExecution/projectExecutionTypes.ts",
+        "sha256": "130368e652a4b4f2539dec890b3db1bc39991a35cb1891afb0ccd8ac74004aff"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.ts",
+        "sha256": "383e00817dd21b967e731ab2fe8916dd0de2debc08ce1c31adf8aea69603cf67"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/aggressive-floor-actual-thickness-four-s27-69.json",
+        "sha256": "45d3fc2c583cba5e81b6cfb0f5ebfc56513e4a929b58c38e44a0be0abf5d6b10"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/concrete-floor-base-demolition-s27-54.json",
+        "sha256": "367a3b1e0c4e9c60bacba5403f5e09c5567c56df730f4b512a7023d7dd8f1a57"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofScreed25MigrationV1.ts",
+        "sha256": "a222688920323d603d94469eb1f2e0fd5c14a23f28598f8473d718ac031650f9"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofPreparationMigrationV1.ts",
+        "sha256": "b0217deae36dc9632123c6b381374e3e1e5eb73cee32b86355dc0aca4089b21e"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofMetalTrimMigrationV1.ts",
+        "sha256": "e737ee169c9b7d196b9d527df0de52374048ee89e198a2298c872f8f125c69ad"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofLowerLayersMigrationV1.ts",
+        "sha256": "bc4dbe0a3662d58da8c527d9f99a9b77520b3672c1ab9f8eeae9a7ff4152877e"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json",
+        "sha256": "c74a1df4ebdea8590c0faaf62e767cad4f6ea726c369ad15375234eb58359e14"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPublicSelectedSpecificationV1.ts",
+        "sha256": "a4003d21680e0ea82d7bfac1a3a60ed0748f4a5e1a2dde47263524a3b072a30b"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1.ts",
+        "sha256": "45993f0bdf09272720cb4686427f8490c3d5d663e3cedf1c92cf876dc4592ac6"
+      },
+      {
+        "path": "src/lib/estimate/v4/professionalProjectAssemblyV4.ts",
+        "sha256": "7bde9a7453d30e7a5c3dd8dad1c4125366b7c5d8f42efe1c425c011f1cc11e60"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/assertNoGenericKnownWorkRows.ts",
+        "sha256": "332d4e0c8783911d1073c387c54ba17a9b641375f53a846b5295a84753203435"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/assertUiRowsMatchGlobalEstimate.ts",
+        "sha256": "65a419f05ee30e733768b28017bd8f33d8aa74a4b61d3623c95abdacdb992b08"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/buildEstimatePresentationViewModel.ts",
+        "sha256": "a789a54a40dcbdbac687e653c91b574f76e78dde70194910eafade516f69f22a"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/buildProfessionalEstimateTableViewModel.ts",
+        "sha256": "80e5815cb30834b37add2234e080c442a5db71ba09bc200e7f9693c4c075154b"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/buildSharedAiEstimateViewModel.ts",
+        "sha256": "f7701a9edc28acf192f48eb07a53c8e2baba7cebc30ce57dd0fa32d7ab54a298"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/estimatePresentationFormatting.ts",
+        "sha256": "2353db05a411846880a33c5506297d6cbfe4110117f5f6b960afc922744cdffb"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json",
+        "sha256": "dcd44c10b370d0762ebbdab622d13a57dcd5b66dd2c4a8d664bab797617d6274"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/estimatePresentationTypes.ts",
+        "sha256": "3ebb60a3fd5bf6d1d8d202b439c3db0cb9d1ab4841059bafb6fea0b4a3767e43"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/validateNoMojibakeInEstimateViewModel.ts",
+        "sha256": "83bf643e760cf6a96fe93dbc5ae05619efa4c1bb3249aefb4a7af83f302c5a29"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/validateProfessionalEstimateTableViewModel.ts",
+        "sha256": "9f13cbc9b15b27add07b320f4d413851961d847e63a42b594d1a105929885c22"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/validateSharedAiEstimateViewModel.ts",
+        "sha256": "3ee73b3382ab20037a121a7aa20bc002feb6b2dc1b19e0f1bdfe225901aebd74"
+      },
+      {
+        "path": "src/features/estimates/pricing/priceResolutionEngine.ts",
+        "sha256": "0b1ff7e76c2ec4d4481adc919494e8d77a80917a36308e7b0c90e35ee29fb550"
+      },
+      {
+        "path": "src/lib/ai/estimatePdf/estimatePdfGlobalResultAdapter.ts",
+        "sha256": "31f709c08fcb65a15d0bce0abac71cde6542b796b61142f67c499189efd566d6"
+      },
+      {
+        "path": "src/lib/ai/estimatePdf/estimatePdfGuard.ts",
+        "sha256": "40b9990451f68705bc640bd25d77b39336315f2e0d8c2bf7747b9d0805d40868"
+      },
+      {
+        "path": "src/lib/estimateStructuredPipeline/buildEstimatePresentationViewModel.ts",
+        "sha256": "779133a5871660bed4b2931336177705569b1b4e5bbeba95d5c1b958f4c7ea65"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteV1.ts",
+        "sha256": "2057396cb3168ff3c145c6a212d690059eb199eaf9b24c8b0fcf04417d7bac9f"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts",
+        "sha256": "52fc5cea77cc55b13f878d10d2ca11b80ccd6309bb691b40cf217490a8789bae"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1.ts",
+        "sha256": "cf691ba38bcc0a9809cec1bb2e9ce1c5667e6439918a7fc085bb0c9539fa02db"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/validateEstimatePresentationViewModel.ts",
+        "sha256": "b02c3c44007155910bf25c708cc0d9e438d9767720c71b4f8bb0063e5fbb5062"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPublicEstimateInputWordingRu.ts",
+        "sha256": "d083dab58274d98404d95407cd25bedb688d140b843ed5397ac45dbb315dc6c1"
+      },
+      {
+        "path": "src/lib/estimate/professionalMaterialQuantityContract.ts",
+        "sha256": "658bc3c49b74e7a67908eab5c512ed37dc4edd1b4e59aebfe92a3b3ec26b0235"
+      },
+      {
+        "path": "src/lib/estimate/rawInputFactExtraction.ts",
+        "sha256": "3e268d9ea1fd0f1795e63ce7a3cc47e75d7aa73c9bd3aa1e7b4978b669ebc1af"
+      },
+      {
+        "path": "src/lib/estimate/professionalNormSourceStaticAdmission.ts",
+        "sha256": "06ddc84d7c4127c80dd56c55964ee8d1be8c18224b8b980632906a839306122f"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/constructionNormativeRegistryV1.ts",
+        "sha256": "57453b0e0fe9490996c666f21418fea2cafe621d0c95e9c350c7be3999ec330a"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration.ts",
+        "sha256": "c0c8f44f8c33d93c93340d811d65e26fbf469918a0fd530ea8cc4daffaf5de35"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/roof-screed25-five-bindings-s27-69.json",
+        "sha256": "e316ed811b72a9af0ba6afc29e1a7b7dfa7795b0fbe8f085aa60d84c848397cf"
+      },
+      {
+        "path": "data/estimate-norms/professional/air_conditioning.json",
+        "sha256": "0d46633f8c43b271b5003cc6f5e326882539251e7279ffe135d8167cc065ad3e"
+      },
+      {
+        "path": "data/estimate-norms/professional/baseboards.json",
+        "sha256": "e983d39a1c70e207f2adda3769a7a3bb2510c6266993fc9757d99be450e170a0"
+      },
+      {
+        "path": "data/estimate-norms/professional/ceilings.json",
+        "sha256": "89cbbef0b9f464d5949775cd7b6ecfae4e7b119e93a0696d3bab6ee22911852e"
+      },
+      {
+        "path": "data/estimate-norms/professional/concrete.json",
+        "sha256": "820c2e7ec6b86da251611ad46e31db9add989940dcfe4c480acc2f930e1e9d8b"
+      },
+      {
+        "path": "data/estimate-norms/professional/drywall.json",
+        "sha256": "ce42a804e9dcaec50e9afcc5aea986e0c828c4333269e34ca3ecdb39fdae67e7"
+      },
+      {
+        "path": "data/estimate-norms/professional/electrical.json",
+        "sha256": "359faadef4c58270f658f8f0b5c3e188c2ec576620b213aec91c59162db362cb"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts",
+        "sha256": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1"
+      },
+      {
+        "path": "data/estimate-norms/professional/flooring.json",
+        "sha256": "bdb0df8ce0db7978330fe156bb918ac3e263fe10ed21950e72c85faae049055c"
+      },
+      {
+        "path": "data/estimate-norms/professional/paint.json",
+        "sha256": "e9822689b5bf2aed12c904cdbe61f3c748ed16345e58abf24445a5ced7ade9be"
+      },
+      {
+        "path": "data/estimate-norms/professional/plaster.json",
+        "sha256": "629c5ea6ec10fb3cbc30f46060d15681aa7e22ee2a90412a0754a211b899cee0"
+      },
+      {
+        "path": "data/estimate-norms/professional/plumbing.json",
+        "sha256": "36fcbd3f218c2b8fdb902e29523e04710a1f66e23b2b4435bd4ac1b51b7dfec9"
+      },
+      {
+        "path": "data/estimate-norms/professional/putty.json",
+        "sha256": "fd76759a97edc303b6fe0267b7512ad08a9b7065079764fdf4c2d49c1d44f05f"
+      },
+      {
+        "path": "data/estimate-norms/professional/roadworks.json",
+        "sha256": "2e811ebd878d8c64dcc13259dccf025e8a088d3909a365dfae2588813ea0e5d8"
+      },
+      {
+        "path": "data/estimate-norms/professional/screed.json",
+        "sha256": "d2c6b94a019093e99c820c7f2437e70ec31d6e3b915d6fd9ccff43567e6e738c"
+      },
+      {
+        "path": "data/estimate-norms/professional/tile.json",
+        "sha256": "d255b79b57315168487930991826328aa08b819b0385bf876943ab2f56e96960"
+      },
+      {
+        "path": "data/estimate-norms/professional/ventilation.json",
+        "sha256": "9c6bc86038d91c7b3678e9675c36ae8fbada90a90b121e8280e55d7fa44ff5cc"
+      },
+      {
+        "path": "data/estimate-norms/professional/waterproofing.json",
+        "sha256": "957d89bfae73cdd206ab4775edf8a9981437f9ca9e9dad37a758821d12fe05c2"
+      },
+      {
+        "path": "src/lib/estimate/contracts/krer2706020AsphaltProfileIdentityV1.ts",
+        "sha256": "2e516bbdc6044992be5a65eeb25036ddb853c79a7dd0b7a08e5ac2d855600609"
+      },
+      {
+        "path": "data/estimate-norms/professional/heating.json",
+        "sha256": "a0ab4141fdc8895a52af4243be0fcb69a1cefb398f6a909bd1ddd3159d804506"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/public-calculation-detail-roles-r1.json",
+        "sha256": "df1d4c31d64225b66c90ac9e2bbb6fc481137efa5a5710b000f848ee2c77beec"
+      },
+      {
+        "path": "src/lib/estimate/v4/ct126SixDryWallReuseS2769.ts",
+        "sha256": "aed8c611b5691dfe285ff1fee623d545d1caab91b3ce1935b3626faef8e85d69"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/ct126-four-prepared-wall-branches-r2.json",
+        "sha256": "fb816585c76faab7c5ef18e6169019d17f7d84d830ec25d456f27d25a0e5c9d8"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/index.ts",
+        "sha256": "18db7e7a2690dbf581f70001145638cdc5d07eed197edc68aace746aa0bc4d78"
+      },
+      {
+        "path": "src/lib/format.ts",
+        "sha256": "c5e7b14aeaa7a78c02a895ed6aca05b9af6d802dcb4a028db1a6075905e45c21"
+      },
+      {
+        "path": "src/lib/estimate/drywallCeilingPreparationPolicy.ts",
+        "sha256": "df6897ec707f6ab022a671f574c054f7e7c12d1596b11d0feccb5ba4d4b6be14"
+      },
+      {
+        "path": "src/lib/estimate/elevatedWorkAccessPolicy.ts",
+        "sha256": "ead09f3ac2cc5bc1cb8f759dd15eb70a54091befde52a1d764fb099284271205"
+      },
+      {
+        "path": "src/lib/estimate/professionalAssumptionEngine.ts",
+        "sha256": "001b4b3be7c57215e1b6fca636d4d7828bd9b7086b0beedfe73c8235ef423fe2"
+      },
+      {
+        "path": "src/lib/estimate/professionalBoqContract.ts",
+        "sha256": "8320b966c2d201537988b90ef4701251f0da43059bb107d467bb38c398067ae6"
+      },
+      {
+        "path": "src/lib/estimate/professionalBoqRiskPolicy.ts",
+        "sha256": "df5e503aed45247401dd2ae26acf7b9e2486d547a3c836bbe2b618b468809df9"
+      },
+      {
+        "path": "data/estimate-governance/pilot-mode-policy.json",
+        "sha256": "0a17021859c543a581550307449436acebe65f5b3dda2aad9957c775ed3fc673"
+      },
+      {
+        "path": "src/features/estimates/runtime/estimateFeatureFlags.ts",
+        "sha256": "4653643e6d52fe5419e22c6af8015ed2227c83485e0d6d6154658c5073fddd9f"
+      },
+      {
+        "path": "src/lib/consumerRequests/index.ts",
+        "sha256": "bfd1e166ab3ae80e5780d2432468a072906e1345b30bc672fd6a217317a7b106"
+      },
+      {
+        "path": "src/lib/estimate/v4/ct126PreparedWallBranchesR2.ts",
+        "sha256": "c80ebb9b26081122f2d6e53cf681fa86449b0b79e5cdde55b181a8c42adecfd8"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerCanonicalParameterCollection.ts",
+        "sha256": "15b23d741177cfe232029a10f64bd1f1751c3cad31abfd24afbfa4624c3a0034"
+      },
+      {
+        "path": "src/lib/estimate/canonicalParameters/canonicalParameterCalculationRelevance.ts",
+        "sha256": "946fa05dda4329cc2b183d6bf59aa2270ce91d3c213d2f3215782480ebd197ce"
+      },
+      {
+        "path": "src/features/consumerRepair/consumerRepairBackendOwnership.ts",
+        "sha256": "b2e06cb186e2196fea3ab2b9f7ee496a25cdef520abe3d88046a961cdc6bcd35"
+      },
+      {
+        "path": "src/lib/estimate/professionalNormPackBasisQuestionsRu.ts",
+        "sha256": "d154ec4b941135a2e2baba67061c88142f7a336ada2ab6fa311099689a65f70f"
+      },
+      {
+        "path": "src/lib/estimate/professionalNormSourceClientAdmission.ts",
+        "sha256": "9b2cc87ffea648f6fddab4596836ebf730816696e63fa67170546fba53d6dfc2"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateDefinitionCompositionScopeV1.ts",
+        "sha256": "309b1bf92a0853c44ca131ca5947ad522aaa3164ee9a80ad8b5345750ec55298"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/current-finishing-reviewed-operation-maps-r414.json",
+        "sha256": "262d91458d3c79a98072121a2dd8dfe7991c2510beb4680667c63fe10e03a4d6"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/prepared-cartridge-reviewed-operation-maps-r388.json",
+        "sha256": "62f7f017f0a228b5e99bc4215c9bd89ded91b6f1843f576038c4df3f31f9f741"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/monolithic-repeat-retained-continuation-registration-r1.json",
+        "sha256": "cebaa54f0b435e8c69f6f5ede499d0f02568df4577fc6e6104e98283fcacb890"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/ct126-current-four-v4-parents-r2.json",
+        "sha256": "0216cf3aa07d3bb192ff93bc2816170d423cc7c48004a5668d6bf05c57377b68"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/ct126-six-wall-v3-parents-s27-69.json",
+        "sha256": "e36f143cc50f625abb7e3db26b9ebb881e293fb8328fcdb201a67253ef1ef119"
+      },
+      {
+        "path": "src/lib/estimate/canonicalParameters/index.ts",
+        "sha256": "cbdf7fa5cb49bfbeb84d00aaa05bae9fe832c7742373f6bb03af220f0a1a30f5"
+      },
+      {
+        "path": "src/lib/estimate/contracts/nrmcaReadyMixProfileIdentityV1.ts",
+        "sha256": "8e771810d4e7410333312ef2166b8924240d2c45f05fccbf7a1ea1c5856a5f15"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/parameterConstraints.ts",
+        "sha256": "066fbb4f3f52d86eff3c40767bacb46c1964ce2e512dcd5db84aedecf26c22b8"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
+        "sha256": "7658d2b1487e752c76bd3b7b0804fb226f54a094e7f22742bb09c2b3f3e1f6e0"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/numericParameterRelations.ts",
+        "sha256": "588acad69721ebdbc9e97022f03b59bad96bff816d645dd3ff0e4ec452c0e21d"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts",
+        "sha256": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalSourceProfileSelectionV1.ts",
+        "sha256": "c56212787e7fda20417ca48915c2b32c7a64672916dee5d15aacb0990908432c"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/legacy-operation-display-five-saved-v1.json",
+        "sha256": "2df2cc233281fe5223e132a6f2fd47b79bac75dce102a2c44f155ddf6614dc3e"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts",
+        "sha256": "f40e1f5cf38d85485e1d4bf43b78874d3d8e6ad577740560b5b55021f83a5f6e"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts",
+        "sha256": "f1cdce7321ad1981770485d3ff08b04155606edd034d5dcb0dc133f3833267b9"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalScopeRequirementV1.ts",
+        "sha256": "be2d681dfee2f1c36ff36c44e2859816c000f522277c6a139697fba24b52379c"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts",
+        "sha256": "f1efc4146454cb63583e00195eeeaf4f6d4df962a059fda66bba549e7b304492"
+      },
+      {
+        "path": "src/lib/ai/estimatePresentation/index.ts",
+        "sha256": "7665eec43aaa49b682e16530d29c17284fa142e51ad343f80f6a385e951a41ec"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/globalEstimateTypes.ts",
+        "sha256": "96505ae4dfbb838c5fedb29315955b1d5107b202707a91b32001162e0a1e3400"
+      },
+      {
+        "path": "src/lib/estimateStructuredPipeline/buildStructuredEstimatePayload.ts",
+        "sha256": "9d6c667efab6d4a4998db09971af59fdf6105b7d4d7b3dc83b46687990d2eb2e"
+      },
+      {
+        "path": "src/lib/estimateStructuredPipeline/structuredEstimateForemanBinding.ts",
+        "sha256": "9e2dc0d6e95047558f238f685db95f8c1be0a3b1bff467293d1c7fb4efd300f0"
+      },
+      {
+        "path": "src/lib/estimateStructuredPipeline/structuredEstimateTypes.ts",
+        "sha256": "681b506ad053ef60b7b3d8a1ec07b710685e2c7954f4ac7faa0432abd5627499"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts",
+        "sha256": "cac2b06547720c704b21d15d87df00b1393966f5fd07c5a13884d7d10f045b81"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts",
+        "sha256": "96f6ae3422394dc523a1637e1573f2b08e3c3182350dbbd6155bce9e6773809e"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalNormativeTraceV1.ts",
+        "sha256": "c98e5b12299aea589ea777add3ea457a84e92fb72f450ee5ba136fdd443601f3"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalNormSourceAdmissionEvidenceV1.ts",
+        "sha256": "eb34e7024894a31a45f3462837f13338632334d2faa15e65a5caf971d5c32345"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts",
+        "sha256": "884ee8811e016c9d726c514d83b8ca6024163fb493cb83f105ba8a35c0007537"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1.ts",
+        "sha256": "c8abe10b60679371d137c5a790592474f3bf317ae75d390be26f7c3ef32f4448"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/contracts.ts",
+        "sha256": "567b0af43a4df39358c56e88b5483391ee2adf216eb8a5a780fafad6e880de4f"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/formatEstimateMoney.ts",
+        "sha256": "32c19c57001b91be325ef63b26ed4db0e00d6529eb657444346686104df4e971"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/inclusionGraph.ts",
+        "sha256": "f6bcf6d8fcb5b30e2c7fe489b6b5b9aaed97366f35f9e6e0f818e51b23796c02"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts",
+        "sha256": "1a563f44d0987d3cbd30efea1659d2a9ba066b1fdea77780f76163e53dedbcfa"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalFormulaOutputBounds.ts",
+        "sha256": "f315772261d499ae96b63fe4d6cca6cb84e87a4f10fbb0cd00bc0e37e3c76842"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+        "sha256": "1f7df384d98d4c1fb55a06a62913730d6bc079e0f6c0987f3b3a0e3e358d4f29"
+      },
+      {
+        "path": "scripts/estimate/r4a13/prepareMaster30ElectricalPlumbingFactoryKitsR1.ts",
+        "sha256": "f9220e7ddd50661c73e8054563790736a9f669a3e24e31ca3ef2df8f3a562956"
+      },
+      {
+        "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+        "sha256": "13bfa791adb984860e92c668cfeafd290a34057f26038b44e065fa521e8a83d4"
+      },
+      {
+        "path": "src/lib/estimate/v4/automaticConstructionDefinitionR1.ts",
+        "sha256": "a54a791fee01b49f4cefe5f8f16b78583b409fd174d70dd25954b82218ced9ee"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts",
+        "sha256": "1a374addf2d7b3c451c0c3672b94fdf1d115c84fc72491c69881970cf1fb145b"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts",
+        "sha256": "ea3b6b327964ce0f6527327cadd717e6e66ffcc551009fc89462545e3bf8bf24"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts",
+        "sha256": "613520160a7ab8fa4cbd8113567827af7e90dd85989615061284ac2a5e563cab"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter.ts",
+        "sha256": "82c2be65f040d79d65ff26fe7ee2ec9874d74a9dd48f9f92865d5215304a007e"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection.ts",
+        "sha256": "5889ba9e5c3a53c2f0609bb1c116c52b95018a50292a37dc61f954dd22b56b23"
+      },
+      {
+        "path": "src/features/consumerRepair/requestEstimateViewModel.ts",
+        "sha256": "34c6355d212d99da3e52f05eede526e1b1a8b6e4ba1d78cd75d8d2a69e25cef7"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection.ts",
+        "sha256": "2c2790f2dd5e624e4b8b4775b4be684fe131d6f13692c8d66a2f4ada02946685"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/formatEstimateUnitLabel.ts",
+        "sha256": "f39a74cc762528d16493f7258d3df875c13a8d566cd7f140ac5c7eea3aecf4ee"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/master30-electrical-plumbing-five-current-r1.json",
+        "sha256": "03379cc4892a8536d1852efdb3195de59305ecfbdbc6875e104984c7154f006c"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/led-grid-panel-dvo6560-6562-s27-54.json",
+        "sha256": "9eddf902349ec924e578ece8a0de260ab85e031941b4136ede84e41f1b773891"
+      },
+      {
+        "path": "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
+        "sha256": "c5b01155590a05b91c727dee9d3c5da9f0419fbb4fa61776eb5669876b73c223"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts",
+        "sha256": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/formulaGraph.ts",
+        "sha256": "60ee28eaf8374f736f22c9f1ea7cd8827ef8fc98719c531cdb948ebe1c1fb17c"
+      },
+      {
+        "path": "src/lib/estimate/estimateDeterministicHash.ts",
+        "sha256": "5a53bea2ea6e1cc5f3f22c95e4463c89a3d97a74c95856dde9d2670b3e5c096f"
+      },
+      {
+        "path": "src/lib/estimate/v4/basinMixerReadySiteMinimumInputR3.ts",
+        "sha256": "90066e9f320b302194c7c290d40628673d7cf3769545d82115aae8a624b35676"
+      },
+      {
+        "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+        "sha256": "021602e3309f07ab67db0dbd369b731535319509380b5297077a9fb3244d1bb7"
+      },
+      {
+        "path": "src/lib/estimate/v4/ledGridPanelDvo6560S2754.ts",
+        "sha256": "48d9294d8637282ce49892ff92e55a300ff23a9c9c36c63c90de6c554025b0c5"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
+        "sha256": "4e7e4e0a5a03d6b34453ed8e5e3ab5a2a3509f6d8a22766c6db14d18fa152031"
+      },
+      {
+        "path": "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
+        "sha256": "f927dd316a4425e08329963b73ed2ed246df83fed85914a35ae792c7520eb938"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/basin-mixer-grohe33265002-kit-r1.json",
+        "sha256": "ab1039b29496f33e7c8205b6b5112bba4a47e2365525bcd91d7210d77f4be5db"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/formatEstimateUserTextRu.ts",
+        "sha256": "c8feafb741d539179ce9b00decb0d18e6f0c7dab8b9d03b14d1d3d17a3e8f712"
+      },
+      {
+        "path": "src/lib/catalog/catalogItemPickerTypes.ts",
+        "sha256": "5ea51177dd316b5d8bd715029c7d646efa0dc884ec1cee6d7095bd5f41ad17f3"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerCanonicalParameterRequirements.ts",
+        "sha256": "105fdfca262ab0958a7dcf3a333ea8b64a10b8fcb892975c6cdeb2254441bf59"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterExactVentilatedApprovedSparseBaselineR62.ts",
+        "sha256": "936cdac80470ba4215586433315b41bd6546870e4c0b7d2b4b7c1e2d5b43dca0"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterMonolithicRepairGeometryVisibilityOnlyR60.ts",
+        "sha256": "1a94baac83cbe49dd856a54558b471db1c4945e1b5198279b500fa0cbbc26a33"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterOperationCompositionOnlyR1.ts",
+        "sha256": "a66f347c87596bd5e2ff78cead1cddaa69a10de0cb04abe830685cdc718c05b2"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterRetainedForwardLineageR1.ts",
+        "sha256": "2a09afabe26f214bbd52c598a137d7e50d0a4638ac00d924e3fe1babb80ac6f4"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts",
+        "sha256": "d472800e1e71753ab0909e5334ef5da27ae02532d84457f9c931dfff00d6e579"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterSingleDefinitionAppendGuardsR1.ts",
+        "sha256": "9d9d7600e89c5b6bfbd278b7f02cee36f40ca12487c6e6d0ca33d132d32f5f4a"
+      },
+      {
+        "path": "scripts/estimate/r4a13/monolithicRepeatedRetainedContinuationR1.ts",
+        "sha256": "b4da165a3fcba3d3e227db7191296bb0b5fd48b8290728d79ac83a9c188eb2db"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalCt126SixDryWallMigrationS2769.ts",
+        "sha256": "94787a6f56e653fe8ab8411943dce48d92c4b4ca45343be5c751e36eed95a61a"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalMasterSingleDefinitionSourceOriginR1.ts",
+        "sha256": "b22e7815cd3cd4f720dd0b3e70ff0739ee8505ce99a66a93dd72e312e4ba7e69"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.ts",
+        "sha256": "cf73e5767efe06a52a5b54ebbb83124d939fd24237cdf8d811c15ac707cc9931"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalDefinitionPublicationStableValueR1.ts",
+        "sha256": "f86d0c6e9f41f9b416fda818e1349a53783c40339fe10f46b6a2c9becdf5ef4a"
+      },
+      {
+        "path": "src/lib/estimate/professionalUnitRegistry.ts",
+        "sha256": "9b96b27d96b4261c5c4919e79fae56f05ed1f9a38d6c45996eee19fdcfaeae94"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterReviewedNormPackRegistryReuseR1.ts",
+        "sha256": "634ed19917767433c4f7cbc2f8d9eeddc6b10f883391e67be23e4949670b3576"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts",
+        "sha256": "8cf5fe6385481c3c9db87e5026f211ded1acd6daa6db30d2418406ed49ba0847"
+      },
+      {
+        "path": "scripts/estimate/r4a13/projectSourcePackageBindingR1.ts",
+        "sha256": "5d94c0531fd94374538acc1da163a785f4020555554646d2ffcf3cddb8d0fb63"
+      },
+      {
+        "path": "scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts",
+        "sha256": "83ea7468adce2e240879984f82dbaa4623d874f55fc17937eadae41e7bc1f44e"
+      },
+      {
+        "path": "src/lib/estimate/professionalNormSourceAdmission.ts",
+        "sha256": "6b6c3d3d11530c53362d80d16531ec6d5e125b22c24677ee9476252d1cb6c547"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalCommercialCostCoverageV1.ts",
+        "sha256": "6a9ccfdf1df0304e25e1bfcf9017c558063905e668f68db4a7f6a40215080df3"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts",
+        "sha256": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts",
+        "sha256": "40486f1c7f0e4f58e98efcba5960d71ca6b32f38c24752966a43a128b5bb30e5"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateResourceInclusionV1.ts",
+        "sha256": "30d13a6d880d9457ee25f7ca12281be6311f49371f1e8fbe9bc36f99545f804f"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalFormulaSourceBinding.ts",
+        "sha256": "0795cb8805cbd645af7365e168ffc3f38eb9f03e5c41db132709bc37ee74bd98"
+      },
+      {
+        "path": "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts",
+        "sha256": "c40cd5746bf94c66e95ca2e807cd31c0d1ae3ab15921a074bf407bfaa1808812"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1.ts",
+        "sha256": "805ffa0ef640b42697d8a868710dfcd1f1bb0ab84636008c1ee4a764cfda0d90"
+      },
+      {
+        "path": "src/lib/estimate/v4/basinMixerGrohe33265002KitR1.ts",
+        "sha256": "2c397abba07757f4ecf7b8f846aad82b13bc2cc543131c4fb6cab92c5abfc0ad"
+      },
+      {
+        "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+        "sha256": "75ab2298c0c3212a47ceadc4d9f03dfedf22ea608c144a746f57981141d5331c"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerEstimateHydrationTrace.ts",
+        "sha256": "704790565a50a2ef719bfaa8a914088a28d0fc1991b7ac3e2d432cec8665ebea"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerEstimateReadiness.ts",
+        "sha256": "a2f830e9d0f394a7659f7356bc28703917d7d31413d84f18a1d038352e0c6616"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerMachineHourPriceCoverage.ts",
+        "sha256": "cb12a38bfba30718f0f470d4a1c2a6bd511d6bf98ac48eee07825e8b06d91b4f"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestTypes.ts",
+        "sha256": "8fa1d8f2f4f4ea2437e2ff603c6393894b8b15e03738f6c369a323b65f4fc499"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts",
+        "sha256": "3548d19697a501bd96949c85a78aed9f2115fc0bbbac942184c96d3532272e16"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/russianTechnologyTitleR542.ts",
+        "sha256": "c8044ed74b1d6e721e626f45d0597040679dbc3dea485a3ea9c494269fa5aa6a"
+      },
+      {
+        "path": "src/lib/estimate/estimateDraftRevisionContract.ts",
+        "sha256": "b5676feefdfd24dbe75a7f7a411ca4ffbc7c81f78c2bf4a7cde268946252c880"
+      },
+      {
+        "path": "src/lib/estimate/professionalBoqAssumptions.ts",
+        "sha256": "0c98f125c5c5643f63f5c1a556cd5cf33cf75ed37444235af2d942e180ca4aac"
+      },
+      {
+        "path": "src/lib/estimate/publicBoqNaming.ts",
+        "sha256": "e4be4c2383cb1b364bbfe82ab1e6e172851ee86f1e50456481cceab24d98f860"
+      },
+      {
+        "path": "src/lib/estimate/resolvedEstimateIdentityChecksum.ts",
+        "sha256": "255f89abd5d314d36ff0f2ae9e4cbf75ec4cd45369e4b421c6f58afe1095f67d"
+      },
+      {
+        "path": "scripts/estimate/r4a13/s2733FormworkMaterialPurchaseScope.ts",
+        "sha256": "22592e9a4f6c542da0fbc4681e1a481acdba8351791edda98bbefe71a18c7f1d"
+      },
+      {
+        "path": "src/lib/estimatePresentation/formatEstimateQuantityRu.ts",
+        "sha256": "213e12bbe2da09e084134af9159fdc6b87f112132ed4fae41afa532baf897447"
+      },
+      {
+        "path": "src/features/estimates/calculator/families/capitalRenovationPresentation.ts",
+        "sha256": "5842613c6dc0f7be897f8d2f876877fa812751e9564e66f8c0783541adb3ca4e"
+      },
+      {
+        "path": "src/features/estimates/governance/productionTrust.ts",
+        "sha256": "57eccc92db9bb30aa66e81b013b3adf35cfe9ee2a3629b1b828ff7cfb80857a6"
+      },
+      {
+        "path": "src/features/estimates/runtime/estimatePilotMode.ts",
+        "sha256": "d24a33a3256fcba90faefdcb12f274292ff2b909ee450e75df5ea843e9e27c9c"
+      },
+      {
+        "path": "src/features/consumerRepair/canonicalExactPurchaseEditingV1.ts",
+        "sha256": "be2422009cab9bcbc477e6f84ab32f144bc801ca5773d809301683d113e5ae25"
+      },
+      {
+        "path": "src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness.ts",
+        "sha256": "a862444e2a7938270a9ecf7b4f4f1a4c372960c215cacab8902f402b977b7bdf"
+      },
+      {
+        "path": "src/features/consumerRepair/consumerRepairQuantityEditTrace.ts",
+        "sha256": "15a6b90c36cf2704d9ad0e1afd736446168baa14757deea25520f12718323d8e"
+      },
+      {
+        "path": "src/features/consumerRepair/consumerRepairRowMetadata.ts",
+        "sha256": "c1bc6bfae092fc3ff6fe8abc61df6e1770964308068ba0b556528a12dc19aad5"
+      },
+      {
+        "path": "src/lib/estimate/aiEstimateRuParameterDictionary.ts",
+        "sha256": "812f1dd0e02a0ea246a9c2f80bfc07b7e89e5d659ac5b08df42ecded9ffe96ac"
+      },
+      {
+        "path": "src/lib/estimate/compareEstimateDraftRevisions.ts",
+        "sha256": "b69176a061c408d8ee29e260ff5bff0396db46866db1462a499a64a1d419b0ee"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerEstimateNormSourceReadiness.ts",
+        "sha256": "58546b4d1f4a81681e53e18b9b46378442c843cb1d5cc61138f4d66f0b6e08ca"
+      },
+      {
+        "path": "src/lib/estimateStructuredPipeline/professionalEstimateRowDisplay.ts",
+        "sha256": "3f44e353dea2b683e2ddf6bed5376223804fdce98fb5d02cdb3052d575ad7ab4"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/carpentrySikagardWoodPreserverPhysicalNormV1.ts",
+        "sha256": "943e38f70b75b0ffbf2d157ebda0da10c6f746bfed69c5c31a2cd9bce7efea9e"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/cleaningTennantT350PhysicalNormV1.ts",
+        "sha256": "7f0f6190d11d45ccf9106d6c9baf15bf1d99aa2b785828badba934aa07cbea2e"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/deliveryFordTransitPhysicalNormV1.ts",
+        "sha256": "cdb3ddca809ad26b0da9df298cfeff18c62564cf5fd9e83e2628e7e8e1ffcaee"
+      },
+      {
+        "path": "src/lib/ai/estimatePdf/estimatePdfActionService.ts",
+        "sha256": "a8317b57c485fb8fcf36807b79c8867b04d1bdf27c5642dce12e3e585c82528c"
+      },
+      {
+        "path": "src/lib/ai/estimatePdf/estimatePdfModelMapper.ts",
+        "sha256": "d43d46987612a04a3761e713f2ec07c7a8111fe18bd392463bc8cb3c76d28bdf"
+      },
+      {
+        "path": "src/lib/ai/estimatePdf/estimatePdfSourceResolver.ts",
+        "sha256": "83969cc3c02f469cce4bbc43efac9ce87c89b2668231eae9d83ea06590edb106"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalMaterialQuantityProjection.ts",
+        "sha256": "9dd1023f89476dacfc5c9ce9f79750a81cc9282eca0e4adce9a10bb96e8763cb"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance.ts",
+        "sha256": "656bab027f94dc9f4c80f843151e0283cd575a27f080f026ee00ea9b98fb2c2c"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/roof-hanging-gutters-companion-s27-67.json",
+        "sha256": "df2395c99939eef37fa1b2ab06daa2218a10a6d1d76fb45b441ae200a9d994f7"
+      },
+      {
+        "path": "src/lib/estimate/v4/flatRoofScopeS2765.ts",
+        "sha256": "adba5875ce97e078502092290d7bd4a8affe721e2a1f4b41140bb39856a68d4f"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/roof-lower-layers-companion-s27-67.json",
+        "sha256": "c47f946fdc32fb472fce2f19c4029cbad5dbdbfce26ab8edf906574b84bf00fe"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofForecastConditionV1.ts",
+        "sha256": "ca68eed94765e57eeee9b8ebd71e6f6b2367100088cef89bbd9fb94a298dc342"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/roof-metal-trim-companion-s27-67.json",
+        "sha256": "db04a5ddcbedac81777de9dd92e6441d90285de2018ef9f65585eac85d03b65d"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/roof-screed15-companion-s27-67.json",
+        "sha256": "fcb0c32832740cd6f65f935f66ef8d4686c788ae718aecee605d5bb47836982b"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/roof-screed25-companion-s27-67.json",
+        "sha256": "0b47584415dc14b5ff5a95b02f9436dce5d86d256d803d2a91ddce8033e53209"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/roof-cement-screed15-five-s27-63.json",
+        "sha256": "88e8033439140f19f6bf2d1705293dc9c011d4a3db496bcde701baf9a177b02e"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/roof-valley-torch-two-companion-s27-67.json",
+        "sha256": "f11fc820468853e0fc8d6d3d4547f77134a772fcf08bc6c6c9006cfa84d03604"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalFusionResourceSourceIntegrityS2758.ts",
+        "sha256": "04b89717ccbe6baf389ad01f548821c55ccd32f4aca2e02b84971743ce5af014"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalDerivedQuantityClearParentPricesV1.ts",
+        "sha256": "14a37c02e2a65efdcfdd9bd71a8c636a1e851efd6453db06aaf8a332860239ad"
+      },
+      {
+        "path": "src/lib/estimate/v4/engineeringUnitRegistryV4.ts",
+        "sha256": "41312aab1d1e6f03974f8ac773fe2c1680b147c9b09f413d9cc159ef8df25c6d"
+      },
+      {
+        "path": "src/lib/estimate/v4/questionComposerV4.ts",
+        "sha256": "3ae4687a84182c89cfda038999328e8040a60b6de305c9c8f09958dcbfaa998c"
+      },
+      {
+        "path": "src/lib/estimate/workProfiles/estimateWorkProfileRegistry.ts",
+        "sha256": "23998b681adefbead03bfd049056626b26399446ec396380c5bb484724d0b124"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltRelatedResourceParameterIdsV4.ts",
+        "sha256": "6d69134d4662d21f335c4853901733691eacec6564c0512822ad5e63cb326145"
+      },
+      {
+        "path": "src/lib/estimate/v4/validateProfessionalEstimateV4.ts",
+        "sha256": "16706551d1db837090c0bd8acf197f32fa94d5a9c67af846e5b150d512ce93cd"
+      },
+      {
+        "path": "data/estimate-norms/professional/windows_doors.json",
+        "sha256": "c71ee7312f4771771439b73631f97de2cbb22b5a7a47b4f4a7b9dec2081bf5f7"
+      },
+      {
+        "path": "data/estimate-norms/professional/waste_removal.json",
+        "sha256": "7bc569f06791d51c9a35b2c6b0d136ecfa99f6773b5352dc8f996623d96b7376"
+      },
+      {
+        "path": "data/estimate-norms/professional/sewerage.json",
+        "sha256": "4e54a66fa3b9cc15b993f1b15a6179426a2d5b5c76f6f7ed1179d56e84b6e2b2"
+      },
+      {
+        "path": "data/estimate-norms/professional/services.json",
+        "sha256": "b821fb2a8b357d9e7795ba684e1cfebeab255cbe583872bc561d6e69ba70b198"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/wallPuttyCeresitCt127Krer15ProfessionalV1.ts",
+        "sha256": "fbd31616cce1236d1af4ff88b0008a4c5576ce186630a31932f048841f2483c2"
+      },
+      {
+        "path": "data/estimate-norms/professional/carpentry.json",
+        "sha256": "218397f9b2b23094f9ee12eda4119031a6fa39ba3a5ae90a6082deea409c91d6"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityTypesV1.ts",
+        "sha256": "4c31e120a78d6b29d6379635ff94eb66ce61fed814f4e3cf8ddaae7f3c6670a1"
+      },
+      {
+        "path": "data/estimate-norms/professional/cleaning.json",
+        "sha256": "bac0df19c511aabc204635f7515290b696a94267742ccd6711934510afb0c1ac"
+      },
+      {
+        "path": "data/estimate-norms/professional/delivery.json",
+        "sha256": "69af456c5ccd5fd1b70b525a1abf6865e37c2dc0d93fe169360b6d48437daf1f"
+      },
+      {
+        "path": "data/estimate-norms/professional/demolition.json",
+        "sha256": "8f58719568f3d78b91215ad3e5673ca866aacdfe6db01573adfa39a9a38144d5"
+      },
+      {
+        "path": "data/estimate-norms/professional/documentation.json",
+        "sha256": "fc230b90e1c375410110f170801c8b20fdb98612927b463fe1d7802ded996afb"
+      },
+      {
+        "path": "data/estimate-norms/professional/earthworks.json",
+        "sha256": "c398df2d6d284c3cd3eeaae3e72c42171d64bd9fe45613d96ac6b3b01b00a7f0"
+      },
+      {
+        "path": "data/estimate-norms/professional/equipment_rent.json",
+        "sha256": "d2c4ba8b41c3dc1603a966d9da6cd35661cb750a6ca171839ebda8623e1cf133"
+      },
+      {
+        "path": "data/estimate-norms/professional/facade.json",
+        "sha256": "f9869e26b12e9c11e0b3efcdecbbe48023e0c4dbebcd7e28c5732b8162a0ab1b"
+      },
+      {
+        "path": "src/lib/estimate/v4/categoryUnitContractV4.ts",
+        "sha256": "c151358c12882b606427c25a01dad8dfcf66e1c395b0b278167669e49a275e62"
+      },
+      {
+        "path": "data/estimate-norms/professional/fire_safety.json",
+        "sha256": "39e9620dc82cfb6ab98a5f86a816a0698836bc81cf5d8ba523c9dc11b402f37c"
+      },
+      {
+        "path": "src/lib/estimate/contracts/ricsNrm2FormworkProfileIdentityV1.ts",
+        "sha256": "c0d4935e8564f40e8d97a77bc00b65b837644cfa0bff812275066ae296fb1e34"
+      },
+      {
+        "path": "data/estimate-norms/professional/insulation.json",
+        "sha256": "f065067cbb1a2ee6c7846f91de06eafbc013524ffbaf721681675a8569bcd251"
+      },
+      {
+        "path": "data/estimate-norms/professional/landscaping.json",
+        "sha256": "218be8ec3e9f5358381667064432a1394ae61cdb9d311c65aedd40b20cdb2c16"
+      },
+      {
+        "path": "data/estimate-norms/professional/low_voltage.json",
+        "sha256": "e50817c163bf248753c2e42418c64453d18643f0093ed37ea14e3cd4efc8cb39"
+      },
+      {
+        "path": "data/estimate-norms/professional/masonry.json",
+        "sha256": "719fb6aaef220d986eefd6a0104253f08257a17e669923fbce9edca9ae7b52c1"
+      },
+      {
+        "path": "src/lib/estimate/contracts/masonryBiaTn10IdentityV1.ts",
+        "sha256": "5978dedcd272cecd0713fb3d2c09a48d33553bf23684aa16e99a1ca42807c5ed"
+      },
+      {
+        "path": "data/estimate-norms/professional/metalwork.json",
+        "sha256": "20e79ceb1377fec0e86159e4763eb5c55aa23ae098cdda993dee4a568b8f5e16"
+      },
+      {
+        "path": "data/estimate-norms/professional/reinforcement.json",
+        "sha256": "ae22a9ef73c518b292fa8bf1ac4eb448837d30d7e87a3eec5e383891aecef286"
+      },
+      {
+        "path": "src/lib/estimate/contracts/reinforcementBarScheduleProfileIdentityV1.ts",
+        "sha256": "885f461cfc3abf21a399a0b208800e2b9fb62806acdb7b558d8784d85fd5be6e"
+      },
+      {
+        "path": "data/estimate-norms/professional/roofing.json",
+        "sha256": "96006036a8a02674903beb456aeb7b127e7e9ddd20e9dc475687a07cae41b144"
+      },
+      {
+        "path": "data/estimate-norms/professional/formwork.json",
+        "sha256": "b4d950ef2d0170b505fe58ef4a2c21192c9ac2114fc2c919ea8b4d100a6af686"
+      },
+      {
+        "path": "src/lib/estimate/v4/formulaDimensionValidatorV4.ts",
+        "sha256": "267f626cc85005a6e6445dd1d73ab7753006c0ac5c8ea1b31b1d608606195d60"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltM1NormativeBindingsV1.ts",
+        "sha256": "2980852324be9aba90317a0f50fe4d2cf7029064344d35e6ad11758759033770"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestRepository.ts",
+        "sha256": "6969329e92c05b31837540a318708b67a61268f4b1c6875750dfddc8fed5f050"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/inventory.ts",
+        "sha256": "bcebf563d0651782d41d7abf0722e04fcf4be4ab37dae5b7cfef9a12e9aac807"
+      },
+      {
+        "path": "src/lib/estimatePdf/index.ts",
+        "sha256": "be307a74b60dc5c0fb5a53ddea65edbcbf4f851a9baf467a3f05fb357ac7b48e"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateHistoricalGlobalProjection.ts",
+        "sha256": "106fc59ab53c7de7f9591807915ea1283a91b1cb32863aa5ee7522d390f032a1"
+      },
+      {
+        "path": "src/lib/ai/estimateEngine/index.ts",
+        "sha256": "817ca534a823fed0ea74f3e69a396a9ffd8076a6f9ee450f89ea592dcd4151aa"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/flat-roof-scope-s27-65.json",
+        "sha256": "6da79a052b0e9c7d84173062a885bb4b09af49897f9e9f376d4c3e267cbed651"
+      },
+      {
+        "path": "src/lib/platform/compactConsumerRepairDurableState.ts",
+        "sha256": "5cec3e44fe41cf79443dd3f5352a20c613e2b82fdc9d44457788e3f07b25be2f"
+      },
+      {
+        "path": "src/lib/platform/consumerRepairDurableSavePolicy.ts",
+        "sha256": "6e9061e3bcc0563a3ab2d3fe1e53b47937be7b9fd0a8523d104b6b94ff2191ba"
+      },
+      {
+        "path": "src/lib/platform/consumerRepairTransactionalDurableBridge.ts",
+        "sha256": "a4522d05e42dc0dbb533a81611001ce4c299354423c0c39a6cf8e3b52df7aa71"
+      },
+      {
+        "path": "src/lib/platform/estimateRevisionDurableStore.ts",
+        "sha256": "6e0cd6541dede1673365014aa7d22b8eb6173929703bc39ad7f94f2bd0557829"
+      },
+      {
+        "path": "src/features/estimates/calculator/families/capitalRenovationRecipes.ts",
+        "sha256": "c483817229d79ba0b9f7918a29a2914f2f3bd96498f28a825aee845b52642e8a"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/professionalEstimateDomainFactoryV1.ts",
+        "sha256": "dfd18c4f3f5016ddce24128de6b2fa673c14a12b7e04fb015c83f74a58ca1192"
+      },
+      {
+        "path": "src/lib/estimateStructuredPipeline/index.ts",
+        "sha256": "839c6a0696b0a3d5445afeba7e770eb3b55876ebbfce1a1392cd29fd5e097144"
+      },
+      {
+        "path": "src/lib/supabaseClient.ts",
+        "sha256": "a91e95b6d89f51749c405e967d76fee92fa3a3ea7875e1f5521bd465c944f257"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/sourceGovernance/catalogAvailabilityPolicy.ts",
+        "sha256": "777d83a088b9c9a10ad401e41fa1baf6ea92721a94499867de5c7661bfc62795"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/sourceGovernance/rateSourceEvidenceTypes.ts",
+        "sha256": "43622730157d94967f0b9a7b774dbb76b79ab10f3c918143112f990e32b8c55f"
+      },
+      {
+        "path": "src/lib/ai/domainDataGateway/aiDomainContextBundle.ts",
+        "sha256": "33103ef29db353136906705b39abcb20398b085b11b211f78e527f3a6ab0365e"
+      },
+      {
+        "path": "src/lib/ai/sourceSanitizer/index.ts",
+        "sha256": "4e3480a3decdac78b48b67e52866fc90d2fee5a7e07fe4b2dc5dae5bae6fa846"
+      },
+      {
+        "path": "src/lib/projectExecution/buildProjectExecutionDraftFromEstimate.ts",
+        "sha256": "35e9faeaa8344eaa2cb8a23b311fa582a91691844da888c2646018897900401e"
+      },
+      {
+        "path": "src/lib/projectExecution/buildProjectExecutionDraftFromRevision.ts",
+        "sha256": "37fce1d6ac43b3d8ee0e0ee911ab189b8d4d379e61ba0d761a4656bf5214e478"
+      },
+      {
+        "path": "src/lib/estimate/ledger/AiEstimateLedgerStore.ts",
+        "sha256": "90adba0dc3f91c7589288963c9a6a654508c69518bc850c1f3e4b2496f5e91de"
+      },
+      {
+        "path": "src/lib/estimate/ledger/AiEstimateLedgerTypes.ts",
+        "sha256": "8c59e02c14521d5756931879155903805738053975eaad172a2b1ad171a9099b"
+      },
+      {
+        "path": "src/lib/estimate/ledger/adapters/InMemoryAiEstimateLedgerStore.ts",
+        "sha256": "e8e71b8be4ee6426a5cc498591968f8350a9e3369d922110fbc46d7c8a6761c1"
+      },
+      {
+        "path": "src/features/estimates/telemetry/estimateTelemetryTypes.ts",
+        "sha256": "7627c5efac21e67b2158d0e52d7ceab613fe1c0cfa022065023fc53574ffb01f"
+      },
+      {
+        "path": "src/lib/ai/estimateTemplate10000/productionProfessionalNormPackRegistry.ts",
+        "sha256": "9beea25d22035f90b46a4fb0c513d12983226aaf49d9f34a04d6cbef91fbce48"
+      },
+      {
+        "path": "src/lib/ai/estimateTemplate10000/productionNormKnowledgeBaseCore.ts",
+        "sha256": "a4e207fb69ac967b45944a28a00a31b71bc302b2b473ca79b0a0a2b8804b8282"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/ct126-prepared-series-s27-54.json",
+        "sha256": "46e8608ea504afed98bd8b470454b08a948067abc627f739515eef0e56a4bf49"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestEditableEstimateSnapshot.ts",
+        "sha256": "b532a8b3a32a4ff86862d9cfcc19982b3f3664722fbfc06ae0fa356126ee0926"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestPdfService.ts",
+        "sha256": "c7f6bfa7c45e2d903a33a78e0b97e31d1df33dfe5ac223d52ac6343dad4cb67c"
+      },
+      {
+        "path": "src/features/estimates/telemetry/estimateTelemetryRecorder.ts",
+        "sha256": "3617c7ad7969be36c997c5bf9e54295df7603aabaecaaadb0227231fda379517"
+      },
+      {
+        "path": "src/lib/database.types.ts",
+        "sha256": "51277114ef3a13996d43d9002d282c9471a2c577ae8ade87f9147df934cfbae7"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestMarketplace.transport.ts",
+        "sha256": "dc95517e85410b4ffe15cfcd4de3b05508ddf40a9948bf98c53ea907795dbf2c"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestValidationService.ts",
+        "sha256": "e16b714d939d4f2e6beae3d857c555b291c5516dc2e6e24aeecba1a551b79375"
+      },
+      {
+        "path": "src/lib/ai/globalEstimate/sourceGovernance/validateRateSourceEvidence.ts",
+        "sha256": "0cff5eb0fe8fab2c1c27889c22e2700209daea5c506b78906731e278dc51352b"
+      },
+      {
+        "path": "src/lib/security/securityPrivacyHardening.ts",
+        "sha256": "7707682450ef973250e3ff719ac4e96b25cc3b005c122d01464a642a3049b159"
+      },
+      {
+        "path": "src/lib/estimate/validateUserParamPatch.ts",
+        "sha256": "d28c4333c56820c36cc5c7236b5d71a143a0430beeef3e9910d35f0679e15cc4"
+      },
+      {
+        "path": "src/lib/projectExecution/index.ts",
+        "sha256": "8e79f6c592fd4a8812d316f74e19433b7b706bb7b1a01aaf479f32cabf10d8df"
+      },
+      {
+        "path": "src/lib/ai/estimateTemplate10000/productionExpandedWorkCatalog10000.ts",
+        "sha256": "9deab93f90e44778f2c058a1ec3538cffa84c56472b06fa4f90cfb373302d474"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestDraftService.ts",
+        "sha256": "4dc91027c260eb7e37bb2c15d0a8e5084de4a1dbde975860cd06a6a3df15eab2"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestItemService.ts",
+        "sha256": "e0a512b5eb37132e7bf750c8cc1a0ba64dc89dea3cc793f7d987dc3f1e948e22"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestLedgerBridge.ts",
+        "sha256": "4b74e254a219abab0e99ba4ef4864f675279c1a4e332e99dfa40684e0eb5e8e6"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4.ts",
+        "sha256": "0993e1365292771b0ce84a73a5a027d04b2808ed6b3c2aa4346e93952dcdad3f"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltRelatedProductionBindingV4.ts",
+        "sha256": "8cb1280b14bab4fcd48b488c17cad6863adba50ec88036a56d3fe4fc8874e311"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/electricalComplete/canonicalParameterSchemas.ts",
+        "sha256": "6242dbbc5621d6c15c0e6b8d6b0dba23c5b8615c61776280bb66ab09e5c44b1c"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/heatingVentilationComplete/canonicalParameterSchemas.ts",
+        "sha256": "5dabb0e0af286a4d932a99ab46634022c679c443f3a0495a08ad5fedbcc3caa1"
+      },
+      {
+        "path": "src/lib/estimate/v4/domains/interiorFinishesComplete/canonicalParameterSchemas.ts",
+        "sha256": "414328ba8ab91a6af044993aa6620149beafccbb9fe16ac0cd4d53b479bed5e2"
+      },
+      {
+        "path": "src/lib/estimate/v4/electrical/electricalCanonicalV1.ts",
+        "sha256": "e017ca6c0a2978e3876cc80510dda72426f8054e8fd896e3681e15ed121ed1ef"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/ct126-post-primer-candidates-s27-54.json",
+        "sha256": "8187e782c39df9bd9a1cdc762a90a8d816e875d18fd4cee050e5404a3b950a0d"
+      },
+      {
+        "path": "src/lib/estimate/v4/ct126DryWallS2754.ts",
+        "sha256": "14f290a79f4ab34e9b781fbbf6901d424679d0844b097af2d6e6ee429ec9dea6"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration.ts",
+        "sha256": "ec71226d0a707aa05dc098022feb08e96eeb4888a8bfdb69c8668731c10d3d26"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/ct126-six-wall-bindings-s27-69.json",
+        "sha256": "6e49d1502eae01bc57e72b552ef8018722ed8c585a59657369ae642ec13b18fa"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/ct126-ready-wall-v2-s27-69.json",
+        "sha256": "42d5c7cf690abc1ff66230aa60c745ebfdd4b6b94e0ef07a18220c81f2ff3e52"
+      },
+      {
+        "path": "src/lib/estimate/v4/ct126PreparedSeriesS2754.ts",
+        "sha256": "4dd1b19728104ab03b6e81c381b015c4891010af6c8c5132a6738cdbf8eb1850"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofPlannedPreparationV1.ts",
+        "sha256": "272667ee1afe1443219da8a1e8415ea5f60eed52b66ca01329098f02bd023a38"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofScreed25CompanionV1.ts",
+        "sha256": "f6a143cc7949923155d5d9e4d585b4871e20eff2e5c5c3371cc02ce7df02a0bb"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofScreed25SuccessorV1.ts",
+        "sha256": "1a31c77cd8bc49dd939d4dc514da94787f95a5469054f11b8e5700c53d2e778c"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofScreedCompanionV1.ts",
+        "sha256": "e78ab3d00aac69cd22286e2f66667292fe33ae58ec629b89122c8c4d75c6ab35"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofScreedDirectBaseV1.ts",
+        "sha256": "f7669907803043644bc7819575d6843257ac6cc7aa2c01d4ee547b379beaf3be"
+      },
+      {
+        "path": "src/lib/estimate/v4/sourcePinnedRoofNormOwnerR1.ts",
+        "sha256": "c60644a5e069ba133f66289a17b0398bf9efdbe16e448922046cbb67ccf43261"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofValleyCompanionV1.ts",
+        "sha256": "3b3cf78e3934a7865c8b1240f42620ed1afc82b36c457f15c320ec99023463a8"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalDerivedQuantityClearEvidenceV1.ts",
+        "sha256": "e9146c00bde3f6e9d6f1a69fcc6f8a3036d3630124fadbce074c9a93f175b88f"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalFusionUnroutedClearPriceEvidenceS2758.ts",
+        "sha256": "7d3ca35b2151d611a0367729907b88f7b565d2871c6b28e64cda593029d16914"
+      },
+      {
+        "path": "src/lib/security/redaction.ts",
+        "sha256": "218dbef48d73da0a52890befe6e8b7a3b7bd5e93ed6356f5039dd695e6051457"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofMetalTrimCompanionV1.ts",
+        "sha256": "ba607771801f5dd003bc851c6c80b4ca5fa2c3af4fbec7b0559de12808842016"
+      },
+      {
+        "path": "src/lib/ai/editableEstimate/applyEditableEstimateOverride.ts",
+        "sha256": "7759f53b40f78d6bdedade283c5c73eb2df72fb3a7471d45cbed6898e408318b"
+      },
+      {
+        "path": "src/lib/ai/editableEstimate/editableEstimateAuditTrail.ts",
+        "sha256": "27df993430498ac89303f5d469af59860bb15478d63b620fc475a60709250711"
+      },
+      {
+        "path": "src/lib/ai/editableEstimate/editableEstimateSnapshot.ts",
+        "sha256": "dc9af2b847f083cc8531274e30d9a140ff428e080d54e6b44b93da488b8c5557"
+      },
+      {
+        "path": "src/lib/ai/editableEstimate/editableEstimateSnapshotHash.ts",
+        "sha256": "5ff2f9c0cc53d4e0dab01162a2f4714b9fe2ca46f8b7c16034531a4230a51c6d"
+      },
+      {
+        "path": "src/lib/ai/editableEstimate/editableEstimateTypes.ts",
+        "sha256": "b90ddf0665eed091784f42a18ad24e4254b0e3713a248df569a2f1db26d51f0c"
+      },
+      {
+        "path": "src/lib/ai/editableEstimate/manualPricePolicy.ts",
+        "sha256": "40208d8b5a35dd1d794b48587cbf3b942125524b54f5b2e73e9fef16978393be"
+      },
+      {
+        "path": "src/lib/ai/editableEstimate/recalculateEditableEstimateTotals.ts",
+        "sha256": "eb82baa492191439bbf0479c396885dffad161d17ff23af20955ddb4e3a58e59"
+      },
+      {
+        "path": "src/lib/ai/editableEstimate/validateEditableEstimateSnapshot.ts",
+        "sha256": "c40fe8b994c4fe9fb0e6a7ec8e9446c86a4d8e72f6796ac3b96dc4524bc4ed28"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionApprovalFreeze.ts",
+        "sha256": "d1b94720fc1c1bfbed9022ed8b7b63855c6853479c4a2380e83ea4a514e1f068"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionAuditTrail.ts",
+        "sha256": "ccf4d9f5432ed1f4c52341d6dc077b7affce0a57db333b9564bcd393ca95e8e7"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionCalculationStateBinding.ts",
+        "sha256": "52b3ee2facdc05c40251cbb0fb04fb4f9abd37a54ef1a79496f347b2725b8707"
+      },
+      {
+        "path": "src/lib/ai/editableEstimate/applyEditableEstimateUnitPriceBatchOverride.ts",
+        "sha256": "196d63f8bc870e7a6e74fb74c16f1bddc834c48fc6524a16a98a227f3f2c6c3c"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionConcurrency.ts",
+        "sha256": "950f1ba7acdc184ddf3001820671b0cc4ba5b1a3d886fda4d83bcb837bd1a21a"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofLowerLayersCompanionV1.ts",
+        "sha256": "fa0f696cf2942f912bd0397cf4486340f5d14f5f14e569d0c8d7d853168fce37"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
+        "sha256": "245087684cd5d872f1db4e883bcd9b0c9bab13e9bfaa370b2adeaa0b81861298"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/demolitionKrer46PhysicalNormV1.ts",
+        "sha256": "9662c44ea981775e0bb1895a4eefb878061e40afa27ec1abf699334641caf53b"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/documentationKgDesignPricePhysicalNormV1.ts",
+        "sha256": "c7ac9e7412aca105bcaee640321cd5aeaf957d80df38f726da2bc9d3f9b52387"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/earthworksFhwaFp24PhysicalNormV1.ts",
+        "sha256": "d2eff9429883b76c63f9fccd948e018dba6b4f20bfef0f8f27c362dac54fa318"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/equipmentRentUnitedRentalsPhysicalNormV1.ts",
+        "sha256": "ccba0ee7567613a13d74687b088fe91e498c3d688f12b14e2bed6670547b090e"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/facadeRockwoolFixrockPhysicalNormV1.ts",
+        "sha256": "765264e85ea4e1436e36e8aecbe43f1464e4a229e429e11a4a762c5bd3434062"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/fireSafetySiemensFdb221PhysicalNormV1.ts",
+        "sha256": "c0054c567e7a17b69f176c0489b3e26493a44ad2632197c74aca6ec76fbc6b53"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/formworkRicsNrm2PhysicalNormV1.ts",
+        "sha256": "2ae3c285625ccb3c506b570bc1ccd8601959b39ede34bb63cd8d19ae841d7ed5"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/insulationRockwoolComfortboard80PhysicalNormV1.ts",
+        "sha256": "9c2a900fdac5aef25994c0950d2f25113d3029beecf4870f9af725601b9007b9"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/landscapingRainBirdXfdPhysicalNormV1.ts",
+        "sha256": "735772b62b51f18b2d9ad6f6e55483b98ade5e144e63c854c6a2cacf81260ecb"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/lowVoltageLegrand049272PhysicalNormV1.ts",
+        "sha256": "67ab0d425c74c67a5bc3c6dc74f5110fcd73b13e7b50b3753c5cecda490df2f9"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalRoofHangingGuttersCompanionV1.ts",
+        "sha256": "1e0483a59908f10f637e2b407d3b293037a2c6954c8b77f88ef658009a910ac5"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/masonryBiaTn10PhysicalNormV1.ts",
+        "sha256": "49061c85b64df0d217622fe9dee3a7fa3e660f7bc30cd9add45e3501221a7030"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/reinforcementBarSchedulePhysicalNormV1.ts",
+        "sha256": "b0741995268082dc96b7ab0a5da31e502ea777e317af189d7f453cf1f028d40c"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/roofingSarnafilAt18PhysicalNormV1.ts",
+        "sha256": "da1614c1f67e34ec66f5c278f83ba824021bbaf99a8cfd5d59f3bb3bc2bdc14c"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/servicesKgAuthorSupervisionPhysicalNormV1.ts",
+        "sha256": "7d778bbf18681a5211799ae024415f2179a4f104cf2b947fd04756724d299dfb"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/sewerageWavinOsmaC3766BkPhysicalNormV1.ts",
+        "sha256": "8f7794b1230b3526ae43cb660ffef55cf96fc7bff2f3c475af7230e1750fd34c"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/wasteRemovalEpaPhysicalNormV1.ts",
+        "sha256": "6ef11b93fca920a57a6f7e424008dd7ee0039c1ec3b97c68dbdbb853743ccfe4"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/windowsDoorsSoudafoamPhysicalNormV1.ts",
+        "sha256": "49966dc249664f8619f9a0229ccfb422282afcc88f2691d5a86ff1246f8a82f3"
+      },
+      {
+        "path": "src/lib/estimate/v4/professionalEstimateV4Contract.ts",
+        "sha256": "15712aad04d2901667431a9700ed4067c316c309e5cfbfad327aad9c445f1525"
+      },
+      {
+        "path": "src/lib/estimatePresentation/visibleEstimateLabelPolicy.ts",
+        "sha256": "371e8d99bd07942e4e095b5beaa471d53007497129a1dac0e10e179cde5f44a7"
+      },
+      {
+        "path": "src/lib/ai/estimatePdf/index.ts",
+        "sha256": "bdc53590385068a96d128fd88b2b429faadce631e6132645713aed952640105a"
+      },
+      {
+        "path": "src/lib/ai/estimatePdf/estimatePdfTypes.ts",
+        "sha256": "b938061d5b6e8bc01cf15136174d91d561c4d366d964674e53794d26db8e047c"
+      },
+      {
+        "path": "src/lib/estimate/v4/domainFactory/metalworkJotunHardtopXpPhysicalNormV1.ts",
+        "sha256": "e6ed989c858c2fc177f0d4a2ebba3356d0d185fd4adb9f53f07f02845f94c9d6"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltRelatedSemanticContractV4.ts",
+        "sha256": "e31ab40cae6395d0646c443afe162a18f221c713fa6631aaf846544112d5337f"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionDiff.ts",
+        "sha256": "92cfd5e255c3dd5a0e832834a63f5c0aaef7abdc6e2fc9602873ce997609a565"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionHistoryBinding.ts",
+        "sha256": "5d22de4ead5bd165dc9e25a7859c475e57aa5f14cbefc0615679374b06a3b539"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/roadCompositeOwnershipV4.ts",
+        "sha256": "56943c80df7be1016130e4dd2f440f91f27cdf0c1e3182897d0b8e89916334a3"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/roadScopeTruthV4.ts",
+        "sha256": "a5d1257df0d356e8f238bb69ad07429edad94c35aae9e0dab0dd083a705891c6"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/validateAsphaltRuntimeTruthV4.ts",
+        "sha256": "fb3c30971e7f0143df74bc898b7808ded210d4535e0e98a2376a0bc9de27d8c6"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/validateAsphaltWorkAssemblyCoverageV4.ts",
+        "sha256": "1e48565281cc5ec13bd008cd0d89727b1f7a6c03e6cb05140039a653b4a317a2"
+      },
+      {
+        "path": "src/lib/estimate/missingInputPolicy.ts",
+        "sha256": "c0bfb08300721cf2ca12631a7f27d516db5247d6f89f3153a143ad63fad4a1ab"
+      },
+      {
+        "path": "src/features/procurement/consumerRepairProcurementHandoff.ts",
+        "sha256": "c842e08661eb86b7c5e8656656f454019b9345f1bd9b49032239d7ef5aea4757"
+      },
+      {
+        "path": "data/estimate-governance/production-trust-dashboard.json",
+        "sha256": "efee8b5bbec0373439c0605d7130b244df0623fbabe1e2ba12686a07768e5fa9"
+      },
+      {
+        "path": "src/lib/consumerRequests/approvedHistoryScaleMatrix.ts",
+        "sha256": "3a850170657a0ebe7209bc557c7cdcf4cff2e71cb8243ffd36bd462869fd4b5e"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestAccessPolicy.ts",
+        "sha256": "6f8d6cbaaa06e1e183a959578227af22834c837d29c9c165690ca44b6d23b6ba"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestAuditTrail.ts",
+        "sha256": "b79613f00db36e1592e95b586987412c70a882885534c4e375193469debe0763"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/extractAsphaltUserFactsV4.ts",
+        "sha256": "4fb05319abc6094eb69da422c25e65a39779b336b3bc6d30f81a60153e30ef9d"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestDraftStateMachine.ts",
+        "sha256": "58e5ab4a4bec95f353393e696e217cceb568fe45695764ca1d63e9b70f8e5982"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestLegacyEstimateGuard.ts",
+        "sha256": "7ea313d5c51d62ea87139c9aba5f163be89ec62fb4cfc8a45aff42fb24bb7e91"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestLegacyPdfMigrationReader.ts",
+        "sha256": "13f28541bc5c46ea6a68b1686944fd0b93d70b072396305d313a6a4dd2bb45c0"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestMarketplaceService.ts",
+        "sha256": "31357b026aeb922a222ca09bf6ab91ac3e855b67a7f1aac7e93fe4d681723a33"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestPayloadParity.ts",
+        "sha256": "8cbfabc74c1b86eace0ebc84ec2af2e7f882b39640934793e542eca5a05bf22b"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestPdfStorage.ts",
+        "sha256": "4d59a3d8519d37c33712b6ce0d827c8166acffa6db0977325cebd7da474f4961"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestService.ts",
+        "sha256": "43c8146daf1b64d5ce44caf7f2ac5a60e10aa7b3feb8b0d2bdd2dbdb6ab43f62"
+      },
+      {
+        "path": "src/lib/estimate/canonicalParameters/canonicalParameterSchemaRegistry.ts",
+        "sha256": "bd65d2edac3be509feadd35b5ccc8fbacf13918c19ff6d6648bb640e81286581"
+      },
+      {
+        "path": "src/lib/estimate/canonicalParameters/projectEstimateDraftRevisionToCanonicalSession.ts",
+        "sha256": "baec54b1f2f814692adfa9ad2ce0de658ffbe4ce4e289bfd96692f30e028d831"
+      },
+      {
+        "path": "src/lib/estimate/canonicalParameters/registeredCanonicalParameterSchemas.ts",
+        "sha256": "0d061b35dba2d16b6b071a21e0e6524ff95214b5dd459f49a7b538d9d4b87247"
+      },
+      {
+        "path": "src/lib/estimate/v4/ct126PostPrimerCandidatesS2754.ts",
+        "sha256": "b3d7ae2629297e765ee3464ab0527e0eca2f005949793278b1a3d7b77d4aa67e"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerRequestHistoryLineage.ts",
+        "sha256": "0551476b5cbff24a97fc507f33caa9be02afafe11629178bec435b715cf62d64"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionEvents.ts",
+        "sha256": "1e4b7870cc5771a05484e1b9c82e19e7c8db0feb2bb42d572a3dbaa2bec7a61b"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/compileEstimateFromResolvedRoadIntentV4.ts",
+        "sha256": "bd29ff97368aa1a096d6eb5bcc61a78b477b153cb4ba9e2c9d273040c46598b2"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/auditFullRoadInfrastructurePhase1DV4.ts",
+        "sha256": "3070f0754a0a703cd50986125a61db06d1ba02fc07e5fdcd12ab6ab8ef9e2e94"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionIntegrityGuard.ts",
+        "sha256": "0cf91c3306484bab3b1cf817100417392485f1cc3de95c11c55cc3ebd3be5b2b"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionPdfBinding.ts",
+        "sha256": "71085fae7247371ac134178226e6c950e0003480b156edaf9ffe98ecf77c5438"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionRequestBinding.ts",
+        "sha256": "75852b92d7b5de35a30c66d6190e09fbc3a1d0be41c7d1d10eda5ee0e42e65a8"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionRestore.ts",
+        "sha256": "7fe0ce5412e61bb66a9c7a4a389a9c668a433b53d2673f947351f47b34c5db7a"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionStore.ts",
+        "sha256": "49858eb2ee88d62c560517e9e5051dcffb682765ed3964dc4fca81c4186519e2"
+      },
+      {
+        "path": "src/lib/ai/estimateRevisions/estimateRevisionTypes.ts",
+        "sha256": "be43cef4154d42c938b6d91cd96d6c2469d835cd9f98205108e3c9b0495e4f69"
+      },
+      {
+        "path": "src/lib/estimate/canonicalParameters/canonicalParameterSessionConditionValuesV1.ts",
+        "sha256": "cb1751170aa9574493f518827758744a3f00c7c854526fded35b47c29dbb1701"
+      },
+      {
+        "path": "src/lib/text/encoding.ts",
+        "sha256": "2988f3da86f0031f2a261a50852b59758ef8a05a01f6a83e21c2a0a3db53874e"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltAssociatedWorkAssembliesV4.ts",
+        "sha256": "da85d10af22f3c20287cdbd43fdcb4310d94ab63e10aa1857dcc5d38cde48f05"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltClarificationExperienceV4.ts",
+        "sha256": "3405e66f5e56a0638507fabefc0de6988e6d72295f3ab58528ab5daef8c3bcb5"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/compileAsphaltProfessionalEstimateV4.ts",
+        "sha256": "72a1c1af6b1903dd2886174e8ebb1232fd7ad1e049b8ce4668b62d2c38151b91"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltFullRoadExpandedBoqV4.ts",
+        "sha256": "d4abb6d2c7e569443619a30a6c116547f8f67de12908738d3660ca34f4e8db75"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltPreliminaryAssemblyPolicyV4.ts",
+        "sha256": "e4a9eb38f708f5f3946a1e91b6e34969726842c4e5a4ed64e970b2be017516b6"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltProfessionalPassportV4.ts",
+        "sha256": "6d217624965f12ec42190f94f4b6af4c609c3b5e2be321ee03b58608f130e77a"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltProfessionalPresentationV4.ts",
+        "sha256": "354cdb37cbb690233f45491f5d7973b4c2e2a689b1d824e44c7291a3bda7368b"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltReferenceV1.ts",
+        "sha256": "3fbb90ac613938f5fb63cfa3e8a28970815a1caa9c3a3bd53f97cd1e61f7ef99"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltRelatedAdmissionR6.ts",
+        "sha256": "3027b8fea33ddcb7831a9894e56bafcd56a4b3d584d1750be9433400930162dc"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltRemovalResourceAssembliesV4.ts",
+        "sha256": "de0ea3bd34675b913a7ce6e593c02baeb563f2d6843673d70edcc2fedc706d0c"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltScopeManifestV4.ts",
+        "sha256": "6bd4fa1f023dd74c1ed4d59664b7b8b1adc43e4a0822ae69c59dfdebc1c73c34"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltV4Constants.ts",
+        "sha256": "283cf8cd5144e0ef0379d3a63dd11d7a6443051898b991da89fbc93419c29df0"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltWorkSpecificParameterSchemaV4.ts",
+        "sha256": "124a9fcefb357e616603c286eca68cfa5c85f243a781f8a9cead752f2f82a398"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/auditAsphaltProfessionalEstimateV4.ts",
+        "sha256": "5800ee98d1bb6964151a1e0b6ce77447795529ed3e33dd3ee8720809858f69a6"
+      },
+      {
+        "path": "src/lib/estimate/v4/asphalt/asphaltFullRoadInfrastructureAssemblyV4.ts",
+        "sha256": "d6ad059ba6c6200e98c7e7728f21a11f13d3dc3fbd8cc9a6c62b979dce1d264d"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/shared-foundation-owner-current-cutover-r1153.json",
+        "sha256": "f07aa46fa94b541ddce733c1a9a037107b2b6a3289fbeb69aba4f9b73f084cf1"
+      }
+    ],
+    "sourceCount": 825,
+    "edgeCount": 2566,
+    "allTypeOnlyEdgesIncludedConservatively": true,
+    "unresolvedLiteralEdges": [],
+    "nonliteralImportOrRequireCandidates": [],
+    "selfCycleExclusions": [
+      {
+        "path": "data/estimate-benchmarks/source-packs/master30-electrical-plumbing-complete-factory-kits-r1.json",
+        "reason": "Recipe afterpack is separately ROOT-intake pinned; cannot contain its own raw SHA or a receipt→afterpack hash cycle"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/master30-factory-kit-current-source-cutover-r1153.json",
+        "reason": "New canonical scoped receipt separately pinned in recipe sourcePins; cannot contain its own SHA"
+      }
+    ],
+    "sourceOnlyNotNativeRuntimeProof": true,
+    "guardBinding": "Every current canonical closure pin is flattened into active recipe sourcePins; the recipe also pins this scoped receipt. No private Work log or inventory file is an executable guard input."
+  },
+  "immutablePrimaryAndCapturedFacts": [
+    {
+      "path": "data/estimate-benchmarks/fixtures/master30-electrical-plumbing-five-current-r1.json",
+      "sha256": "03379cc4892a8536d1852efdb3195de59305ecfbdbc6875e104984c7154f006c",
+      "role": "EXACT_FIVE_PARENT_CAPTURE"
+    },
+    {
+      "path": "work/stream-c-plumbing-mixer/GROHE-2229613.pdf",
+      "sha256": "601da351cbf1a4423b3af76bfa5e92e70bad2c339564ed72e2bae6dfda7df9bd",
+      "role": "EXACT_MANUFACTURER_PRIMARY_BYTES"
+    },
+    {
+      "path": "work/stream-c-plumbing-mixer/GROHE-33265002-primary.html",
+      "sha256": "6d91a01bc61cb378ed390ae6e943f2f1a79496c8bb941b49b1b3e9c8798cf1c3",
+      "role": "EXACT_MANUFACTURER_PRIMARY_BYTES"
+    },
+    {
+      "path": ".release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf",
+      "sha256": "cbe47a51d5727edf98648ff110070bd8a31798f4e93f423a3b3f57fba5e41fca",
+      "role": "EXACT_MANUFACTURER_PRIMARY_BYTES"
+    },
+    {
+      "path": "C:/Users/User/Downloads/GOX_BUILD_TZ_Single_Platform_Core_Sol61_2026-10-19(2).txt",
+      "sha256": "4fd2e79388521707cec6c9a75101061f81eb7a72beb4e16a1e39b991fab63f68",
+      "role": "UNCHANGED_HISTORICAL_MASTER19_10"
+    }
+  ],
+  "actualEvidence": {
+    "source": "ROOT_GOVERNED_PRE_CUTOVER_ACTUAL_RESULTS",
+    "artifactRole": "PRIVATE_LOG_DESCRIPTIVE_EVIDENCE_NOT_REQUIRED_EXECUTABLE_GUARD_INPUT",
+    "sha256": "c3d887ec0ae9fa61b8f8353c2109c693c8bd0bcfbe990983377e685e5352e377",
+    "suite": "src/lib/estimate/v4/master30ElectricalPlumbingFactoryKitsR1.test.ts",
+    "passedCases": 43,
+    "failedCases": 12,
+    "passedCaseNames": [
+      "two complete factory material kits, five retained consumers, no wet IP40, new FULL or invented typed closure",
+      "exact parent identity and complete63 legacy function dispositions canonical-work:base:electrical_interior_lighting_install_high_load",
+      "whole factory composition, public adapter names and independent unknown onsite resources canonical-work:base:electrical_interior_lighting_install_high_load",
+      "application norms cannot be supplied by client; q cannot become new geometry canonical-work:base:electrical_interior_lighting_install_high_load",
+      "exact parent identity and complete63 legacy function dispositions canonical-work:base:electrical_interior_lighting_install_technical_room",
+      "whole factory composition, public adapter names and independent unknown onsite resources canonical-work:base:electrical_interior_lighting_install_technical_room",
+      "application norms cannot be supplied by client; q cannot become new geometry canonical-work:base:electrical_interior_lighting_install_technical_room",
+      "exact parent identity and complete63 legacy function dispositions canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "whole factory composition, public adapter names and independent unknown onsite resources canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "application norms cannot be supplied by client; q cannot become new geometry canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "exact parent identity and complete63 legacy function dispositions canonical-work:base:plumbing_interior_mixer_install_technical_room",
+      "whole factory composition, public adapter names and independent unknown onsite resources canonical-work:base:plumbing_interior_mixer_install_technical_room",
+      "application norms cannot be supplied by client; q cannot become new geometry canonical-work:base:plumbing_interior_mixer_install_technical_room",
+      "exact parent identity and complete63 legacy function dispositions canonical-work:base:plumbing_interior_mixer_install_wet_zone",
+      "whole factory composition, public adapter names and independent unknown onsite resources canonical-work:base:plumbing_interior_mixer_install_wet_zone",
+      "application norms cannot be supplied by client; q cannot become new geometry canonical-work:base:plumbing_interior_mixer_install_wet_zone",
+      "independent runtime normal-plumbing_interior_mixer_install_high_load",
+      "independent runtime normal-plumbing_interior_mixer_install_technical_room",
+      "independent runtime normal-plumbing_interior_mixer_install_wet_zone",
+      "independent runtime small-plumbing",
+      "independent runtime boundary-zero-plumbing",
+      "independent runtime boundary-max-plumbing",
+      "independent runtime fraction-negative-plumbing",
+      "independent runtime negative-count-plumbing",
+      "independent runtime over-boundary-negative-plumbing",
+      "independent runtime incompatible-technology-plumbing",
+      "independent runtime normal-electrical_interior_lighting_install_high_load",
+      "independent runtime normal-electrical_interior_lighting_install_technical_room",
+      "independent runtime small-electrical",
+      "independent runtime boundary-zero-electrical",
+      "independent runtime boundary-max-electrical",
+      "independent runtime fraction-negative-electrical",
+      "independent runtime negative-count-electrical",
+      "independent runtime over-boundary-negative-electrical",
+      "independent runtime incompatible-technology-electrical",
+      "independent runtime legacy-exact-electrical_interior_lighting_install_high_load",
+      "independent runtime legacy-exact-electrical_interior_lighting_install_technical_room",
+      "independent runtime legacy-exact-plumbing_interior_mixer_install_high_load",
+      "independent runtime legacy-exact-plumbing_interior_mixer_install_technical_room",
+      "independent runtime legacy-exact-plumbing_interior_mixer_install_wet_zone",
+      "independent map rejects unit/category/operation substitution; full kit never means bracket, siphon or connector norms",
+      "independent map rejects a removed material installation link plumbing",
+      "independent map rejects a removed material installation link electrical"
+    ],
+    "guardedCaseNamesRequiredAfterIntake": [
+      "actual client asks only count and chosen technology and preserves finite legacy identity canonical-work:base:electrical_interior_lighting_install_high_load",
+      "actual client asks only count and chosen technology and preserves finite legacy identity canonical-work:base:electrical_interior_lighting_install_technical_room",
+      "actual client asks only count and chosen technology and preserves finite legacy identity canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "actual client asks only count and chosen technology and preserves finite legacy identity canonical-work:base:plumbing_interior_mixer_install_technical_room",
+      "actual client asks only count and chosen technology and preserves finite legacy identity canonical-work:base:plumbing_interior_mixer_install_wet_zone",
+      "actual Master resource preparation and retained clone plan canonical-work:base:electrical_interior_lighting_install_high_load",
+      "actual Master resource preparation and retained clone plan canonical-work:base:electrical_interior_lighting_install_technical_room",
+      "actual Master resource preparation and retained clone plan canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "actual Master resource preparation and retained clone plan canonical-work:base:plumbing_interior_mixer_install_technical_room",
+      "actual Master resource preparation and retained clone plan canonical-work:base:plumbing_interior_mixer_install_wet_zone",
+      "source-proved material repeats through actual operation sections, foreman adapter and request VM plumbing",
+      "source-proved material repeats through actual operation sections, foreman adapter and request VM electrical"
+    ],
+    "overallPass": false,
+    "interpretation": "Existing43 current-model/runtime/map cases pass; the12 client/clone/publisher-preparation/foreman/VM cases stopped at the first stale Owner source pin and are REQUIRED after this reviewed metadata intake."
+  },
+  "postIntakeRequired": [
+    "ROOT exact raw/index equality for all sourcePins, new receipt and original protected artifacts",
+    "Full actual existing Master30 suite55cases; zero skipped/missing cases and exact observed path",
+    "All12 formerly source-pin-blocked assertions including five client, five retained clone/preparation and two foreman/VM cases must execute",
+    "Preserve normal registered-source exact-preimage collision guard; no forced source writer, source ID change or assumed DB authority",
+    "Keep all existing unknown onsite norms, source/object/safety/supply and one-payment/procurement constraints"
+  ],
+  "afterPackShaNotEmbedded": "Consuming afterpack hash is ROOT-intake bound outside this receipt to avoid a receipt→recipe→receipt hash cycle",
+  "historicalMasterAndModelsChanged": false,
+  "normalGuardCodeChanged": false,
+  "nativeDatabaseVerified": false,
+  "currentRegistryAuthority": "UNREAD",
+  "publicationOrProductionReady": false,
+  "fullTechnicalAcceptance": false,
+  "newFullTechnologies": 0,
+  "fake_green_claimed": false
+}

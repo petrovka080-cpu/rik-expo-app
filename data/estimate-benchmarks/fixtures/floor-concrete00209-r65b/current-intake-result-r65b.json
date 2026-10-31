@@ -1,0 +1,693 @@
+{
+  "status": "PASS_READ_ONLY_CURRENT_CONCRETE_UNDERLAYER_INTAKE_R65B",
+  "databaseWrites": false,
+  "completeReadSet": true,
+  "error": null,
+  "session": {
+    "db": "rik_r4_runtime_b5_v2",
+    "host": "127.0.0.1",
+    "port": 55432,
+    "readOnly": "on",
+    "snapshot": "538059:538059:",
+    "isolation": "repeatable read"
+  },
+  "counts": {
+    "searchDocuments": 10462,
+    "activeCompileJobs": 0,
+    "authoredDefinitions": 1,
+    "cumulativeMembership": 10471
+  },
+  "collisionCounts": {
+    "groups": 0,
+    "search": 0,
+    "ordinal": 0,
+    "identities": 0,
+    "membership": 0,
+    "sourceKeys": 0,
+    "definitions": 0,
+    "exactLocators": 0
+  },
+  "rows": [
+    {
+      "key": "base",
+      "kind": "base",
+      "payload": {
+        "counts": {
+          "searchDocuments": 10462,
+          "activeCompileJobs": 0,
+          "authoredDefinitions": 1,
+          "cumulativeMembership": 10471
+        },
+        "parent": {
+          "id": "f36fa786-6634-518c-853d-b9ae54ab3ccf",
+          "status": "prepared",
+          "sealed_at": "2026-10-19T09:49:34.325647+00:00",
+          "source_tree": "2ace8684ea59bf6a68da635fc86ba2deea560da7",
+          "activated_at": null,
+          "source_commit": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+          "source_manifest_sha256": "cf24a57dfc451098ca35d3348f610f7336faa335565568242e63e8e5c675a712"
+        },
+        "session": {
+          "db": "rik_r4_runtime_b5_v2",
+          "host": "127.0.0.1",
+          "port": 55432,
+          "readOnly": "on",
+          "snapshot": "538059:538059:",
+          "isolation": "repeatable read"
+        },
+        "proposed": {
+          "norm_id": "11-01-002-09",
+          "group_id": "wg:master:floor_concrete_underlayer_krer11_01_002_09",
+          "work_key": "floor_concrete_underlayer_krer11_01_002_09",
+          "catalog_id": "canonical-work:master:floor_concrete_underlayer_krer11_01_002_09",
+          "source_key": "kg_krer11_01_002_09_floor_concrete_underlayer_r1",
+          "locator_key": "krer11-01-002-09-floor-concrete-underlayer-exact",
+          "artifact_sha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223",
+          "source_identity": "master-work:floor_concrete_underlayer_krer11_01_002_09"
+        },
+        "parentSearch": {
+          "id": "304b7f3f-1618-5e0e-91ea-da062e4f287e",
+          "status": "draft",
+          "sealed_at": null,
+          "source_tree": "2ace8684ea59bf6a68da635fc86ba2deea560da7",
+          "activated_at": null,
+          "source_commit": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+          "snapshot_sha256": "04bebb7451eb1bd436de6f83d43d1853ac2f0b6060470b1772723c6b2ff7852d",
+          "definition_release_id": "f36fa786-6634-518c-853d-b9ae54ab3ccf"
+        },
+        "collisionCounts": {
+          "groups": 0,
+          "search": 0,
+          "ordinal": 0,
+          "identities": 0,
+          "membership": 0,
+          "sourceKeys": 0,
+          "definitions": 0,
+          "exactLocators": 0
+        }
+      }
+    },
+    {
+      "key": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_repair",
+      "kind": "comparison",
+      "payload": {
+        "group_id": "wg:base:concrete_foundation_interior_slab_foundation_pour",
+        "unchanged": true,
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_repair",
+        "primary_uom": "м²",
+        "canonical_name_ru": "устройство плитного фундамента полного цикла с локальным ремонтом основания",
+        "definition_sha256": "15fde096a8cc526dca4222094f1e81e50cef5f46e0481b44dd89e9712d32c4d0",
+        "actual_definition_id": "d033727c-2f2e-5ebb-8c11-798998d9630c",
+        "actual_definition_hash": "15fde096a8cc526dca4222094f1e81e50cef5f46e0481b44dd89e9712d32c4d0",
+        "expected_definition_id": "d033727c-2f2e-5ebb-8c11-798998d9630c",
+        "expected_definition_hash": "15fde096a8cc526dca4222094f1e81e50cef5f46e0481b44dd89e9712d32c4d0"
+      }
+    },
+    {
+      "key": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "kind": "comparison",
+      "payload": {
+        "group_id": "wg:base:concrete_foundation_interior_slab_foundation_pour",
+        "unchanged": true,
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+        "primary_uom": "м²",
+        "canonical_name_ru": "устройство монолитного плитного фундамента полного цикла",
+        "definition_sha256": "73ce830d2c3315af7396e568091a89ac6ca4789763ae48b9a95ad872f4492e74",
+        "actual_definition_id": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+        "actual_definition_hash": "73ce830d2c3315af7396e568091a89ac6ca4789763ae48b9a95ad872f4492e74",
+        "expected_definition_id": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+        "expected_definition_hash": "73ce830d2c3315af7396e568091a89ac6ca4789763ae48b9a95ad872f4492e74"
+      }
+    },
+    {
+      "key": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+      "kind": "comparison",
+      "payload": {
+        "group_id": "wg:base:concrete_foundation_interior_stairs_concrete_form",
+        "unchanged": true,
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+        "primary_uom": "м3",
+        "canonical_name_ru": "полное устройство монолитной бетонной лестницы",
+        "definition_sha256": "b18ea15db745635ba790c752bd2c770da5a7681e7d491d637812d0d1a89bc92a",
+        "actual_definition_id": "e8b40373-c52e-5f47-a45b-f9b6f2d5e82e",
+        "actual_definition_hash": "b18ea15db745635ba790c752bd2c770da5a7681e7d491d637812d0d1a89bc92a",
+        "expected_definition_id": "e8b40373-c52e-5f47-a45b-f9b6f2d5e82e",
+        "expected_definition_hash": "b18ea15db745635ba790c752bd2c770da5a7681e7d491d637812d0d1a89bc92a"
+      }
+    },
+    {
+      "key": "canonical-work:expanded:bridge_asphalt",
+      "kind": "comparison",
+      "payload": {
+        "group_id": "wg:expanded:bridge_asphalt",
+        "unchanged": true,
+        "catalog_id": "canonical-work:expanded:bridge_asphalt",
+        "primary_uom": "м²",
+        "canonical_name_ru": "устройство полной системы асфальтобетонного покрытия мостового полотна",
+        "definition_sha256": "b144e2172de67ce86bb7ac2b1b8382ad344ed75de0ba7584dd5a9f352aab6d81",
+        "actual_definition_id": "28fd1bbb-7582-5009-87bb-b153318b9a54",
+        "actual_definition_hash": "b144e2172de67ce86bb7ac2b1b8382ad344ed75de0ba7584dd5a9f352aab6d81",
+        "expected_definition_id": "28fd1bbb-7582-5009-87bb-b153318b9a54",
+        "expected_definition_hash": "b144e2172de67ce86bb7ac2b1b8382ad344ed75de0ba7584dd5a9f352aab6d81"
+      }
+    },
+    {
+      "key": "canonical-work:expanded:foundation_pile_field",
+      "kind": "comparison",
+      "payload": {
+        "group_id": "wg:expanded:foundation_pile_field",
+        "unchanged": true,
+        "catalog_id": "canonical-work:expanded:foundation_pile_field",
+        "primary_uom": "piece",
+        "canonical_name_ru": "Устройство буронабивной железобетонной сваи",
+        "definition_sha256": "67ce8a5e4987bb959c4fc716f6e89db029fcabbf81dca336888972aaeb44f657",
+        "actual_definition_id": "8c6ac868-557f-5856-8894-632ece8e8502",
+        "actual_definition_hash": "67ce8a5e4987bb959c4fc716f6e89db029fcabbf81dca336888972aaeb44f657",
+        "expected_definition_id": "8c6ac868-557f-5856-8894-632ece8e8502",
+        "expected_definition_hash": "67ce8a5e4987bb959c4fc716f6e89db029fcabbf81dca336888972aaeb44f657"
+      }
+    },
+    {
+      "key": "canonical-work:master:ceramic_tile_up_to_10cm_cm11_ct17_indoor_cement_floor_standard",
+      "kind": "comparison",
+      "payload": {
+        "group_id": "wg:base:tile_stone_interior_ceramic_tile_lay",
+        "unchanged": true,
+        "catalog_id": "canonical-work:master:ceramic_tile_up_to_10cm_cm11_ct17_indoor_cement_floor_standard",
+        "primary_uom": "m2",
+        "canonical_name_ru": "Керамическая плитка до 10 см на CM11 PLUS, зуб 4 мм, по впитывающей цементной стяжке внутри помещения",
+        "definition_sha256": "fd6c93b988309ac68a2001fa27656a8a910727d8e7aae24488fa599d48a9ea38",
+        "actual_definition_id": "9aa2b934-057b-512c-98ef-dd177a145b59",
+        "actual_definition_hash": "fd6c93b988309ac68a2001fa27656a8a910727d8e7aae24488fa599d48a9ea38",
+        "expected_definition_id": "9aa2b934-057b-512c-98ef-dd177a145b59",
+        "expected_definition_hash": "fd6c93b988309ac68a2001fa27656a8a910727d8e7aae24488fa599d48a9ea38"
+      }
+    },
+    {
+      "key": "canonical-work:master:cn69_global_25kg_manual_dry_indoor_cement_floor_2_10mm_standard",
+      "kind": "comparison",
+      "payload": {
+        "group_id": "floor_leveling_cn69_global_s2754",
+        "unchanged": true,
+        "catalog_id": "canonical-work:master:cn69_global_25kg_manual_dry_indoor_cement_floor_2_10mm_standard",
+        "primary_uom": "m2",
+        "canonical_name_ru": "Выравнивание сухого внутреннего пола Ceresit CN69 global 25 кг, слой 2–10 мм, с CT17",
+        "definition_sha256": "a762cffc9e6d57b27e21bf6d163c68b58dfaf048a60c8753007a9fa86bd8c9ca",
+        "actual_definition_id": "fdfc25b2-28f4-5ff3-83c2-f5037e9e190c",
+        "actual_definition_hash": "a762cffc9e6d57b27e21bf6d163c68b58dfaf048a60c8753007a9fa86bd8c9ca",
+        "expected_definition_id": "fdfc25b2-28f4-5ff3-83c2-f5037e9e190c",
+        "expected_definition_hash": "a762cffc9e6d57b27e21bf6d163c68b58dfaf048a60c8753007a9fa86bd8c9ca"
+      }
+    },
+    {
+      "key": "canonical-work:master:egger_naturesense_aqua_el2240_592958_silenzio_duo_dry_unheated_room_standard",
+      "kind": "comparison",
+      "payload": {
+        "group_id": "egger_el2240_floating_laminate_s2754",
+        "unchanged": true,
+        "catalog_id": "canonical-work:master:egger_naturesense_aqua_el2240_592958_silenzio_duo_dry_unheated_room_standard",
+        "primary_uom": "m2",
+        "canonical_name_ru": "Плавающая укладка EGGER NatureSense Aqua EL2240, 592958, с Silenzio Duo в сухой комнате",
+        "definition_sha256": "19e09677cfd621db6154e216caca6f063b029edf6679a739f619a85eb8852ae4",
+        "actual_definition_id": "e9606e89-f95a-5ed1-a290-1ca1e3b81970",
+        "actual_definition_hash": "19e09677cfd621db6154e216caca6f063b029edf6679a739f619a85eb8852ae4",
+        "expected_definition_id": "e9606e89-f95a-5ed1-a290-1ca1e3b81970",
+        "expected_definition_hash": "19e09677cfd621db6154e216caca6f063b029edf6679a739f619a85eb8852ae4"
+      }
+    },
+    {
+      "key": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_repair",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "плитный фундамент 150 м2 с локальным ремонтом основания",
+          "бетонирование плитного фундамента с локальным ремонтом основания",
+          "фундаментная плита с ремонтом основания полный цикл",
+          "полная смета плиты с ремонтом основания"
+        ],
+        "group_id": "wg:base:concrete_foundation_interior_slab_foundation_pour",
+        "title_ru": "бетонирование плитного фундамента с локальным ремонтом основания",
+        "work_key": "concrete_foundation_interior_slab_foundation_pour_repair",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_repair",
+        "retired_at": null,
+        "primary_uom": "м²",
+        "short_scope_ru": "Завершённый монолитный железобетонный плитный фундамент с подготовленным и локально отремонтированным основанием, изоляцией, опалубкой, армированием, бетонированием, уходом, контролем и сдачей. Для основной доставки бетона и вывоза грунта требуется выбрать по одной подтверждённой схеме отдельной оплаты.",
+        "definition_hash": "15fde096a8cc526dca4222094f1e81e50cef5f46e0481b44dd89e9712d32c4d0",
+        "source_identity": "base-work:concrete_foundation_interior_slab_foundation_pour_repair",
+        "canonical_name_ru": "устройство плитного фундамента полного цикла с локальным ремонтом основания",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Завершённый монолитный железобетонный плитный фундамент с подготовленным и локально отремонтированным основанием, изоляцией, опалубкой, армированием, бетонированием, уходом, контролем и сдачей.",
+        "definition_version_id": "d033727c-2f2e-5ebb-8c11-798998d9630c",
+        "normative_classifiers": [
+          "concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+        ]
+      }
+    },
+    {
+      "key": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "плитный фундамент 500 м2 под ключ",
+          "монолитная фундаментная плита полный цикл",
+          "фундаментная плита с основанием гидроизоляцией и армированием",
+          "полная смета плитного фундамента",
+          "бетонирование плиты фундамента со всеми подготовительными работами"
+        ],
+        "group_id": "wg:base:concrete_foundation_interior_slab_foundation_pour",
+        "title_ru": "бетонирование плитного фундамента в стандартной зоне",
+        "work_key": "concrete_foundation_interior_slab_foundation_pour_standard",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+        "retired_at": null,
+        "primary_uom": "м²",
+        "short_scope_ru": "Завершённый монолитный железобетонный плитный фундамент с основанием, дренажом, подготовкой, гидроизоляцией, утеплением, опалубкой, армированием, бетонированием, уходом, контролем и сдачей. Для основной доставки бетона и вывоза грунта требуется выбрать по одной подтверждённой схеме отдельной оплаты.",
+        "definition_hash": "73ce830d2c3315af7396e568091a89ac6ca4789763ae48b9a95ad872f4492e74",
+        "source_identity": "base-work:concrete_foundation_interior_slab_foundation_pour_standard",
+        "canonical_name_ru": "устройство монолитного плитного фундамента полного цикла",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Завершённый монолитный железобетонный плитный фундамент с основанием, дренажом, подготовкой, гидроизоляцией, утеплением, опалубкой, армированием, бетонированием, уходом, контролем и сдачей.",
+        "definition_version_id": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+        "normative_classifiers": [
+          "concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+        ]
+      }
+    },
+    {
+      "key": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "монолитная лестница под ключ",
+          "полная смета железобетонной лестницы",
+          "опалубка армирование бетонирование лестницы"
+        ],
+        "group_id": "wg:base:concrete_foundation_interior_stairs_concrete_form",
+        "title_ru": "устройство бетонной лестницы в стандартной зоне",
+        "work_key": "concrete_foundation_interior_stairs_concrete_form_standard",
+        "catalog_id": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+        "retired_at": null,
+        "primary_uom": "м3",
+        "short_scope_ru": "Полная технологическая сборка: опалубка, арматура, бетон, укладка, виброуплотнение, первичная отделка и уход.",
+        "definition_hash": "b18ea15db745635ba790c752bd2c770da5a7681e7d491d637812d0d1a89bc92a",
+        "source_identity": "base-work:concrete_foundation_interior_stairs_concrete_form_standard",
+        "canonical_name_ru": "полное устройство монолитной бетонной лестницы",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Монолитная железобетонная лестница стандартного контекста с опалубкой, армированием, укладкой, отдельным виброуплотнением, первичной отделкой и уходом.",
+        "definition_version_id": "e8b40373-c52e-5f47-a45b-f9b6f2d5e82e",
+        "normative_classifiers": [
+          "stairs_complete_installation_project_composition_v1"
+        ]
+      }
+    },
+    {
+      "key": "canonical-work:base:demolition_interior_flooring_dismantle_large_area",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "разборка асфальтового покрытия пола большой площади",
+          "демонтаж асфальтобетонного покрытия пола большой площади",
+          "КРЕР 46-04-010-01 большой площади",
+          "large-area asphalt floor covering demolition"
+        ],
+        "group_id": "wg:base:demolition_interior_flooring_dismantle",
+        "title_ru": "разборка напольного покрытия на большой площади",
+        "work_key": "demolition_interior_flooring_dismantle_large_area",
+        "catalog_id": "canonical-work:base:demolition_interior_flooring_dismantle_large_area",
+        "retired_at": null,
+        "primary_uom": "m2",
+        "short_scope_ru": "Разборка подтверждённого покрытия пола из асфальта или асфальтобетона большой площади по площади: труд 23,78 чел.-ч, компрессор 4,71 маш.-ч и пневматические молотки 9,42 маш.-ч на 100 м² без коэффициента классификации.",
+        "definition_hash": "bb0dcfb33754ca3fecaf24034114ab7383c5bfd0a3000c6387ed315c582785b9",
+        "source_identity": "base-work:demolition_interior_flooring_dismantle_large_area",
+        "canonical_name_ru": "Разборка асфальтового или асфальтобетонного покрытия пола — большая площадь",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона большой площади разобрана по КРЕР 46-04-010-01",
+        "definition_version_id": "36afc0ec-82f2-543a-8f59-83406d5cb2b3",
+        "normative_classifiers": []
+      }
+    },
+    {
+      "key": "canonical-work:base:demolition_interior_flooring_dismantle_small_area",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "разборка асфальтового покрытия пола малой площади",
+          "демонтаж асфальтобетонного покрытия пола малой площади",
+          "КРЕР 46-04-010-01 малой площади",
+          "small-area asphalt floor covering demolition"
+        ],
+        "group_id": "wg:base:demolition_interior_flooring_dismantle",
+        "title_ru": "разборка напольного покрытия на малой площади",
+        "work_key": "demolition_interior_flooring_dismantle_small_area",
+        "catalog_id": "canonical-work:base:demolition_interior_flooring_dismantle_small_area",
+        "retired_at": null,
+        "primary_uom": "m2",
+        "short_scope_ru": "Разборка подтверждённого покрытия пола из асфальта или асфальтобетона малой площади по площади: труд 23,78 чел.-ч, компрессор 4,71 маш.-ч и пневматические молотки 9,42 маш.-ч на 100 м² без коэффициента классификации.",
+        "definition_hash": "dff59e6aa7372f2b48efaf6030c800d6e5adce5bb764d9fd2daf8ed377218341",
+        "source_identity": "base-work:demolition_interior_flooring_dismantle_small_area",
+        "canonical_name_ru": "Разборка асфальтового или асфальтобетонного покрытия пола — малая площадь",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона малой площади разобрана по КРЕР 46-04-010-01",
+        "definition_version_id": "45e53c05-01e0-5a0b-8bcf-93d5af6d4fb3",
+        "normative_classifiers": []
+      }
+    },
+    {
+      "key": "canonical-work:base:demolition_interior_flooring_dismantle_standard",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "разборка асфальтового покрытия пола",
+          "демонтаж асфальтобетонного покрытия пола",
+          "снятие асфальта внутри здания компрессором и отбойными молотками",
+          "КРЕР 46-04-010-01",
+          "asphalt floor covering demolition"
+        ],
+        "group_id": "wg:base:demolition_interior_flooring_dismantle",
+        "title_ru": "разборка напольного покрытия в стандартной зоне",
+        "work_key": "demolition_interior_flooring_dismantle_standard",
+        "catalog_id": "canonical-work:base:demolition_interior_flooring_dismantle_standard",
+        "retired_at": null,
+        "primary_uom": "m2",
+        "short_scope_ru": "Разборка подтверждённого покрытия пола из асфальта или асфальтобетона по площади: труд 23,78 чел.-ч, компрессор 4,71 маш.-ч и пневматические молотки 9,42 маш.-ч на 100 м².",
+        "definition_hash": "80c7360073fbbed8e57852a22a0e4ad44df1e59a08bcb725e953929dafef4f4d",
+        "source_identity": "base-work:demolition_interior_flooring_dismantle_standard",
+        "canonical_name_ru": "Разборка асфальтового или асфальтобетонного покрытия пола",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона разобрана по КРЕР 46-04-010-01",
+        "definition_version_id": "ce43ff8e-736e-5d39-883a-9ca34abcb282",
+        "normative_classifiers": []
+      }
+    },
+    {
+      "key": "canonical-work:base:demolition_interior_flooring_dismantle_wet_zone",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "разборка асфальтового покрытия пола влажной зоны",
+          "демонтаж асфальтобетонного покрытия пола влажной зоны",
+          "КРЕР 46-04-010-01 влажной зоны",
+          "wet-zone asphalt floor covering demolition"
+        ],
+        "group_id": "wg:base:demolition_interior_flooring_dismantle",
+        "title_ru": "разборка напольного покрытия во влажной зоне",
+        "work_key": "demolition_interior_flooring_dismantle_wet_zone",
+        "catalog_id": "canonical-work:base:demolition_interior_flooring_dismantle_wet_zone",
+        "retired_at": null,
+        "primary_uom": "m2",
+        "short_scope_ru": "Разборка подтверждённого покрытия пола из асфальта или асфальтобетона влажной зоны по площади: труд 23,78 чел.-ч, компрессор 4,71 маш.-ч и пневматические молотки 9,42 маш.-ч на 100 м² без коэффициента классификации.",
+        "definition_hash": "13418cfd671d10be092de8dbba1dfe50bcb2eb74f15938c1f97c9717da152bf4",
+        "source_identity": "base-work:demolition_interior_flooring_dismantle_wet_zone",
+        "canonical_name_ru": "Разборка асфальтового или асфальтобетонного покрытия пола — влажная зона",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона влажной зоны разобрана по КРЕР 46-04-010-01",
+        "definition_version_id": "aba9e769-4e63-5ed2-8782-fe8edcf3164f",
+        "normative_classifiers": []
+      }
+    },
+    {
+      "key": "canonical-work:expanded:bridge_asphalt",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "асфальтобетонное покрытие моста",
+          "асфальтирование моста",
+          "покрытие моста 150 на 32 метра",
+          "гидроизоляция стяжка и асфальт на мосту",
+          "полная смета мостового покрытия",
+          "bridge deck asphalt pavement system"
+        ],
+        "group_id": "wg:expanded:bridge_asphalt",
+        "title_ru": "Мосты, тоннели и инженерные сооружения: устройство асфальтобетонного покрытия моста",
+        "work_key": "bridge_asphalt",
+        "catalog_id": "canonical-work:expanded:bridge_asphalt",
+        "retired_at": null,
+        "primary_uom": "м²",
+        "short_scope_ru": "Полная система мостового покрытия: подготовка плиты, праймер, гидроизоляция, армированная защитная стяжка, два слоя асфальта, швы, доставка, механизмы, контроль и документы.",
+        "definition_hash": "b144e2172de67ce86bb7ac2b1b8382ad344ed75de0ba7584dd5a9f352aab6d81",
+        "source_identity": "expanded-template:bridge_asphalt_preliminary_boq_expanded_complex_v1",
+        "canonical_name_ru": "устройство полной системы асфальтобетонного покрытия мостового полотна",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "На мостовом полотне 150 × 32 м выполнена полная система подготовки, гидроизоляции, армированной защитной стяжки, двух слоёв асфальтобетона, сопряжений, контроля и исполнительной документации",
+        "definition_version_id": "28fd1bbb-7582-5009-87bb-b153318b9a54",
+        "normative_classifiers": []
+      }
+    },
+    {
+      "key": "canonical-work:expanded:foundation_pile_field",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "буронабивная ж/б свая",
+          "буронабивная железобетонная свая",
+          "устройство буронабивных свай",
+          "bored reinforced concrete pile"
+        ],
+        "group_id": "wg:expanded:foundation_pile_field",
+        "title_ru": "Здания и жилые комплексы: устройство свайного поля фундамента",
+        "work_key": "foundation_pile_field",
+        "catalog_id": "canonical-work:expanded:foundation_pile_field",
+        "retired_at": null,
+        "primary_uom": "piece",
+        "short_scope_ru": "Бурение скважины, монтаж арматурного каркаса и бетонирование буронабивной сваи; условные обсадка, бентонит и муфты — только по проекту.",
+        "definition_hash": "67ce8a5e4987bb959c4fc716f6e89db029fcabbf81dca336888972aaeb44f657",
+        "source_identity": "expanded-template:foundation_pile_field_preliminary_boq_expanded_complex_v1",
+        "canonical_name_ru": "Устройство буронабивной железобетонной сваи",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Буронабивная железобетонная свая по явно заданным геометрии и проектной комплектации",
+        "definition_version_id": "8c6ac868-557f-5856-8894-632ece8e8502",
+        "normative_classifiers": []
+      }
+    },
+    {
+      "key": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_large_area",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "демонтаж цементного или бетонного пола с поправкой толщины — большая площадь",
+          "разборка цементного или бетонного покрытия пола в агрессивной среде — большая площадь",
+          "КРЕР 46-04-011-12 с поправкой 46-04-011-13 — большая площадь",
+          "large_area aggressive-environment cement concrete floor thickness-adjusted demolition"
+        ],
+        "group_id": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+        "title_ru": "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — большая площадь",
+        "work_key": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_large_area",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_large_area",
+        "retired_at": null,
+        "primary_uom": "m2",
+        "short_scope_ru": "Разборка подтверждённого цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (большая площадь): база 25 мм по КРЕР 46-04-011-12, целые шаги по 5 мм — по 46-04-011-13.",
+        "definition_hash": "cf17ff60b8acedb5384287324636da34d0856ed3cc159fadb2d35355a9da319a",
+        "source_identity": "master-work:demolition_aggressive_environment_cement_or_concrete_floor_25mm_large_area",
+        "canonical_name_ru": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — большая площадь",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (большая площадь) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+        "definition_version_id": "82488f19-b409-5935-8e95-4d58274b3ca3",
+        "normative_classifiers": [
+          "КРЕР 46-04-011-12"
+        ]
+      }
+    },
+    {
+      "key": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_small_area",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "демонтаж цементного или бетонного пола с поправкой толщины — малая площадь",
+          "разборка цементного или бетонного покрытия пола в агрессивной среде — малая площадь",
+          "КРЕР 46-04-011-12 с поправкой 46-04-011-13 — малая площадь",
+          "small_area aggressive-environment cement concrete floor thickness-adjusted demolition"
+        ],
+        "group_id": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+        "title_ru": "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — малая площадь",
+        "work_key": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_small_area",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_small_area",
+        "retired_at": null,
+        "primary_uom": "m2",
+        "short_scope_ru": "Разборка подтверждённого цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (малая площадь): база 25 мм по КРЕР 46-04-011-12, целые шаги по 5 мм — по 46-04-011-13.",
+        "definition_hash": "897286789f02b5bbe39488ea36cd6f6b60de2d4162e8cf9c1011f28bfd3fb3b5",
+        "source_identity": "master-work:demolition_aggressive_environment_cement_or_concrete_floor_25mm_small_area",
+        "canonical_name_ru": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — малая площадь",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (малая площадь) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+        "definition_version_id": "968fdcde-155f-574f-83bc-80522181cf95",
+        "normative_classifiers": [
+          "КРЕР 46-04-011-12"
+        ]
+      }
+    },
+    {
+      "key": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_standard",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "демонтаж цементного или бетонного пола с поправкой толщины — стандартный вариант",
+          "разборка цементного или бетонного покрытия пола в агрессивной среде — стандартный вариант",
+          "КРЕР 46-04-011-12 с поправкой 46-04-011-13 — стандартный вариант",
+          "standard aggressive-environment cement concrete floor thickness-adjusted demolition"
+        ],
+        "group_id": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+        "title_ru": "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде",
+        "work_key": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_standard",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_standard",
+        "retired_at": null,
+        "primary_uom": "m2",
+        "short_scope_ru": "Разборка подтверждённого цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (стандартный вариант): база 25 мм по КРЕР 46-04-011-12, целые шаги по 5 мм — по 46-04-011-13.",
+        "definition_hash": "f0522cbc032ddd28b256382baa36ec10e8b8e22bd875fda154ff5804c6917b7e",
+        "source_identity": "master-work:demolition_aggressive_environment_cement_or_concrete_floor_25mm_standard",
+        "canonical_name_ru": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (стандартный вариант) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+        "definition_version_id": "151ec095-b6e1-5096-83bb-d38021b0eb24",
+        "normative_classifiers": [
+          "КРЕР 46-04-011-12"
+        ]
+      }
+    },
+    {
+      "key": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_wet_zone",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "демонтаж цементного или бетонного пола с поправкой толщины — влажная зона",
+          "разборка цементного или бетонного покрытия пола в агрессивной среде — влажная зона",
+          "КРЕР 46-04-011-12 с поправкой 46-04-011-13 — влажная зона",
+          "wet_zone aggressive-environment cement concrete floor thickness-adjusted demolition"
+        ],
+        "group_id": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+        "title_ru": "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — влажная зона",
+        "work_key": "aggressive_environment_cement_or_concrete_floor_25mm_demolition_krer_46_04_011_12_wet_zone",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_wet_zone",
+        "retired_at": null,
+        "primary_uom": "m2",
+        "short_scope_ru": "Разборка подтверждённого цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (влажная зона): база 25 мм по КРЕР 46-04-011-12, целые шаги по 5 мм — по 46-04-011-13.",
+        "definition_hash": "599072deac71c7f2531ac37f8f91b8a2e382499bbd2e1b9fba071ef7ad464952",
+        "source_identity": "master-work:demolition_aggressive_environment_cement_or_concrete_floor_25mm_wet_zone",
+        "canonical_name_ru": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — влажная зона",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (влажная зона) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+        "definition_version_id": "60855796-aa03-5483-8e66-81fc22b12758",
+        "normative_classifiers": [
+          "КРЕР 46-04-011-12"
+        ]
+      }
+    },
+    {
+      "key": "canonical-work:master:demolition_concrete_floor_base_brick_rubble_460400902_standard",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "Бетонное основание под полом на кирпичном щебне по46-04-009-02",
+          "Демонтаж бетонного основания на кирпичном щебне"
+        ],
+        "group_id": "demolition_concrete_floor_bases_krer4604009_s2754",
+        "title_ru": "Разборка бетонного основания под полом на кирпичном щебне",
+        "work_key": "demolition_concrete_floor_base_brick_rubble_460400902_standard",
+        "catalog_id": "canonical-work:master:demolition_concrete_floor_base_brick_rubble_460400902_standard",
+        "retired_at": null,
+        "primary_uom": "m3",
+        "short_scope_ru": "Только соответствующее бетонное основание под полом, в отдельных местах ручными пневматическими механизмами. Объём1м³ по обследованию/проекту. Это не отдельная сыпучая подушка, не любая цементно-песчаная стяжка, не железобетонная плита и не разборка другим способом. Уборка, сортировка и штабелирование пригодных материалов, спуск через окно в лотках и горизонтальное перемещение суммарно до130м, включая до50м от объекта, включены. Затаривание, иной спуск и внешний вывоз отдельно по фактической применимости. Защитные ограждения прилегающих частей по п.1.20 и обеспыливание по п.1.27 не включены: проектное решение и отдельная норма пока открыты.",
+        "definition_hash": "b6d7f5702360de6e093f5be7f31996575c3c334075cb9dd4aa8178363d825295",
+        "source_identity": "krer46-2015:concrete-floor-base:46-04-009-02",
+        "canonical_name_ru": "Разборка бетонного основания под полом на кирпичном щебне",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Разобрано точное бетонное основание; нормативные труд/механизмы/включённое обращение учтены; проектное завершение ограничено.",
+        "definition_version_id": "e49e50ac-2d63-5035-8e4c-3e283b2810b8",
+        "normative_classifiers": [
+          "46-04-009-02"
+        ]
+      }
+    },
+    {
+      "key": "canonical-work:master:demolition_concrete_floor_base_gravel_460400901_standard",
+      "kind": "header",
+      "payload": {
+        "aliases": [
+          "Бетонное основание под полом на гравии по46-04-009-01",
+          "Демонтаж бетонного основания на гравии"
+        ],
+        "group_id": "demolition_concrete_floor_bases_krer4604009_s2754",
+        "title_ru": "Разборка бетонного основания под полом на гравии",
+        "work_key": "demolition_concrete_floor_base_gravel_460400901_standard",
+        "catalog_id": "canonical-work:master:demolition_concrete_floor_base_gravel_460400901_standard",
+        "retired_at": null,
+        "primary_uom": "m3",
+        "short_scope_ru": "Только соответствующее бетонное основание под полом, в отдельных местах ручными пневматическими механизмами. Объём1м³ по обследованию/проекту. Это не отдельная сыпучая подушка, не любая цементно-песчаная стяжка, не железобетонная плита и не разборка другим способом. Уборка, сортировка и штабелирование пригодных материалов, спуск через окно в лотках и горизонтальное перемещение суммарно до130м, включая до50м от объекта, включены. Затаривание, иной спуск и внешний вывоз отдельно по фактической применимости. Защитные ограждения прилегающих частей по п.1.20 и обеспыливание по п.1.27 не включены: проектное решение и отдельная норма пока открыты.",
+        "definition_hash": "d120eb253f188cc816f0978a4598c8283cd1b5c554d71819f87773d61dd2dda1",
+        "source_identity": "krer46-2015:concrete-floor-base:46-04-009-01",
+        "canonical_name_ru": "Разборка бетонного основания под полом на гравии",
+        "publication_state": "ADMITTED_BACKEND",
+        "physical_result_ru": "Разобрано точное бетонное основание; нормативные труд/механизмы/включённое обращение учтены; проектное завершение ограничено.",
+        "definition_version_id": "f3c46dcc-1a0c-5ac3-8aeb-ab0e1b529e5d",
+        "normative_classifiers": [
+          "46-04-009-01"
+        ]
+      }
+    },
+    {
+      "key": "973178d5-7102-52e1-9831-85bc1a1640cf",
+      "kind": "locatorDiagnostic",
+      "payload": {
+        "id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "raw": "{\"id\": \"973178d5-7102-52e1-9831-85bc1a1640cf\", \"locator\": {\"kind\": \"EXACT_OFFICIAL_FLOOR_SAND_UNDERLAYER_SOURCE\", \"column\": \"11-01-002-01\", \"sourceRows\": [{\"id\": \"worker\", \"rate\": \"2.3\", \"unitId\": \"man_hour\", \"titleRu\": \"Рабочие-строители среднего разряда 2,5\", \"resourceCode\": \"000-1002-5\", \"costTreatment\": \"OWN_COST\"}, {\"id\": \"operators\", \"rate\": \"0.30\", \"unitId\": \"man_hour\", \"titleRu\": \"Затраты труда машинистов — справочно в составе ставок автопогрузчика и компрессора\", \"resourceCode\": null, \"costTreatment\": \"INFORMATIONAL_SCOPE\"}, {\"id\": \"forklift5t\", \"rate\": \"0.08\", \"unitId\": \"machine_hour\", \"titleRu\": \"Автопогрузчики 5 т\", \"operator\": \"OPERATOR\", \"resourceCode\": \"03-0020\"}, {\"id\": \"compressor\", \"rate\": \"0.22\", \"unitId\": \"machine_hour\", \"titleRu\": \"Компрессоры передвижные с двигателем внутреннего сгорания, давлением до 686 кПа (7 ат), 5 м³/мин\", \"operator\": \"OPERATOR\", \"resourceCode\": \"05-0005\"}, {\"id\": \"pneumaticRammer\", \"rate\": \"0.44\", \"unitId\": \"machine_hour\", \"titleRu\": \"Трамбовки пневматические при работе от стационарного компрессора\", \"operator\": \"NO_ADDITIONAL_OPERATOR_NORM\", \"resourceCode\": \"33-0741\"}, {\"id\": \"sand\", \"rate\": \"1.2\", \"unitId\": \"m3\", \"titleRu\": \"Песок природный для строительных работ средний\", \"resourceCode\": \"01-6208-0005\", \"costTreatment\": \"OWN_COST\"}, {\"id\": \"water\", \"rate\": \"0.15\", \"unitId\": \"m3\", \"titleRu\": \"Вода\", \"resourceCode\": \"01-0601-0001\", \"costTreatment\": \"OWN_COST\"}], \"quantityScope\": \"PARTIAL\", \"sourceArtifact\": \".release-runtime/r568/s27-69/cn69-krer11-labor-candidate/KRER-11-official.pdf\", \"physicalPrintedPages\": [6, 7, 8], \"sourceArtifactSha256\": \"e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223\", \"fullTechnicalAcceptance\": false, \"acceptedNewCompleteTypes\": 0, \"sourceNormativeBindingRowIds\": [\"floor-underlayer:sand:krer11-01-002-01:worker\", \"floor-underlayer:sand:krer11-01-002-01:operators\", \"floor-underlayer:sand:krer11-01-002-01:equipment:forklift5t\", \"floor-underlayer:sand:krer11-01-002-01:equipment:compressor\", \"floor-underlayer:sand:krer11-01-002-01:equipment:pneumaticRammer\", \"floor-underlayer:sand:krer11-01-002-01:material:sand\", \"floor-underlayer:sand:krer11-01-002-01:material:sand:consumed\", \"floor-underlayer:sand:krer11-01-002-01:material:water\", \"floor-underlayer:sand:krer11-01-002-01:material:water:consumed\", \"floor-underlayer:sand:krer11-01-002-01:included:base-planning\", \"floor-underlayer:sand:krer11-01-002-01:included:place-level-compact\"], \"independentScopeAbsenceProofSha256\": \"8f050e2fec2b9383c3b34942349a047a669adde95a87d5ee54df2283a45facfe\"}, \"source_id\": \"f4919986-4635-5d70-a963-42ca0bf8d9fd\", \"locator_key\": \"KRER11-01-002-01-P7-8-SAND-UNDERLAYER-M3\", \"excerpt_sha256\": \"88decdc457fc21f68d8d8ec353de871992a171431af0ea80e2575b4e325b3f08\"}",
+        "norm_ids": [
+          null,
+          null,
+          null
+        ],
+        "source_id": "f4919986-4635-5d70-a963-42ca0bf8d9fd",
+        "locator_key": "KRER11-01-002-01-P7-8-SAND-UNDERLAYER-M3"
+      }
+    },
+    {
+      "key": "c14f6a1f-54e0-571e-b5e6-699b49c65098",
+      "kind": "locatorDiagnostic",
+      "payload": {
+        "id": "c14f6a1f-54e0-571e-b5e6-699b49c65098",
+        "raw": "{\"id\": \"c14f6a1f-54e0-571e-b5e6-699b49c65098\", \"locator\": {\"fullCycle\": [{\"phase\": 1, \"nameRu\": \"Обмер, проект и состояние основания\", \"covered\": \"§2.2 даёт правило площади, не готовые размеры объекта.\", \"gapTask\": \"Проектировщик/прораб предоставляет чертёж и акт готовности; при дефекте определяет отдельный ремонт и его применимую норму. Не назначать ремонт из площади.\", \"paidOwner\": \"Измеренный объём основной операции; обследование отдельно только при доказанном задании/оплате.\", \"requiredFacts\": [\"Чистая площадь по чертежу/обмеру с нишами/дверными проёмами и занятыми выступающими конструкциями\", \"Согласованная спецификация пола и принятая готовность основания\"]}, {\"phase\": 2, \"nameRu\": \"Подготовка под исходную технологию\", \"covered\": \"Подготовка основания уже входит в состав колонок01–03 и119.78ч/100м².\", \"gapTask\": \"Технолог фиксирует конкретный способ/инструмент подготовки и границу с крупным ремонтом; дополнительный материал допускается только с собственным источником и отсутствием пересечения оплаты.\", \"paidOwner\": \"whole-labor, без второй строки труда подготовки.\", \"requiredFacts\": [\"Соответствие требуемой подготовки проекту и исходному scope\"]}, {\"phase\": 3, \"nameRu\": \"Материалы и поставка\", \"covered\": \"Четыре исходных материала: вода3.85м³, плитка102м², опилки3.06м³, готовыйМ1501.30м³ на100м².\", \"gapTask\": \"Снабженец подтверждает реальные изделия, единицы заказа, наличие и коммерческие цены. Контрольные значения не становятся defaults.\", \"paidOwner\": \"По одному order owner для каждого из4 материалов; consumed строки справочные.\", \"requiredFacts\": [\"Точная керамика и марка готового раствора по проекту\", \"Пригодное наличие, сохраняемый резерв, реальные единицы/кратность поставщика\"]}, {\"phase\": 4, \"nameRu\": \"Перемещение и механизация\", \"covered\": \"Три исходных механизма: погрузчик0.36, подъёмник2.30, бортовой автомобиль0.28маш-ч/100м².\", \"gapTask\": \"Механик/снабженец получает совместимую полную ставку по точному коду/единице и operator scope. Дополнительный маршрут/разгрузка не подставляются поверх включённого перемещения.\", \"paidOwner\": \"По одному активному own/hired quote owner для каждого механизма; машинисты2.66ч информационно.\", \"requiredFacts\": [\"Реальное обеспечение own/hired, пригодность и полная граница каждой ставки\"]}, {\"phase\": 5, \"nameRu\": \"Настилка, прослойка и цементные швы\", \"covered\": \"Подбор/сортировка плиток, настилка, прослойка и заделка швов цементным раствором включены; один цельный труд119.78.\", \"gapTask\": \"ППР/производитель принятой плитки и растворного состава подтверждают совместимый метод, толщину слоя, условия и допуски; часы из времени твердения не выводятся.\", \"paidOwner\": \"whole-labor + единственный ready-mortar-m150 order owner; не второй клей/затирка.\", \"requiredFacts\": [\"Точное изделие и цементная технология; не CM11 и не CE40\"]}, {\"phase\": 6, \"nameRu\": \"Плинтусы, сопряжения и деформационные узлы\", \"covered\": \"§1.8 прямо исключает устройство плинтусов из норм покрытий. Норма не задаёт геометрию деформационных швов.\", \"gapTask\": \"Проектировщик даёт ведомость узлов; сметчик подбирает точную отдельную норму плинтуса/узла из официальногоКРЕР11 либо конкретный manufacturer method с геометрией и оплатой. Не назначать CS25/плинтус по площади.\", \"paidOwner\": \"Не создан до определения самостоятельного scope; основная цементная заделка межплиточных швов уже оплачена.\", \"requiredFacts\": [\"Применимость и реальные погонные метры/высота плинтуса\", \"Проектные узлы дверей/порогов/деформационных примыканий и размеры швов\"]}, {\"phase\": 7, \"nameRu\": \"Уход, очистка и промывка\", \"covered\": \"Уход и очистка/промывка включены; исходные вода и опилки относятся к целой операции без искусственного распределения.\", \"gapTask\": \"Технолог/прораб даёт ППР защиты и подтверждает, нужна ли дополнительная ограда/укрытие вне нормы. Из срока ухода не получать человеко-часы.\", \"paidOwner\": \"whole-labor и исходные4 материала; повторная уборка/промывка не оплачиваются.\", \"requiredFacts\": [\"Принятые условия твердения и метод защиты/очистки\"]}, {\"phase\": 8, \"nameRu\": \"Инструменты, СИЗ, контроль, дополнительные услуги\", \"covered\": \"Исходная колонка не нормирует отдельную покупку ручной оснастки, СИЗ и внешний вывоз/дополнительные услуги.\", \"gapTask\": \"Исполнитель предоставляет табель/сметное задание; технадзор — план контроля; логист — измеренную дополнительную услугу с отдельной границей относительно трёх машин и включённой очистки. В случае неясности reconciliation, не автоисключение старого owner.\", \"paidOwner\": \"Не создавать по одному item только из названия; сначала exact scope/inclusion и фактическое количество.\", \"requiredFacts\": [\"Табель существующего инструмента/СИЗ и включение в оплату\", \"Утверждённые контрольные требования и отдельные внешние услуги, если нужны\"]}], \"sourcePack\": {\"gaps\": [{\"id\": \"skirting\", \"nameRu\": \"Применимые плинтусы по отдельной ведомости и норме\", \"ownerRu\": \"Проектировщик/сметчик\", \"category\": \"work\", \"reasonRu\": \"§1.8 исключает устройство плинтусов. Нужны применимость, длина/высота, исполнение и точная отдельная норма, без вывода периметра из площади.\", \"nextTaskRu\": \"Получить проектную ведомость применимых плинтусов с длиной, высотой, материалом и отдельной официальной нормой.\", \"acceptanceRu\": \"Есть применимость, обмер, единица, источник количества и отдельная граница оплаты; §1.8 сохраняется.\"}, {\"id\": \"deformation-junctions\", \"nameRu\": \"Применимые деформационные сопряжения, пороги и узлы\", \"ownerRu\": \"Проектировщик/технолог\", \"category\": \"work\", \"reasonRu\": \"Нужны проектные узлы и измеренная геометрия/изделия. Обычная цементная заделка межплиточных швов уже включена, второй CE40/силикон не назначены.\", \"nextTaskRu\": \"Получить проектные узлы деформационных швов, порогов и сопряжений с измеренной геометрией и конкретными изделиями.\", \"acceptanceRu\": \"Отдельный scope не повторяет цементную заделку межплиточных швов; есть источник единицы и количества.\"}, {\"id\": \"hand-tools-ppe\", \"nameRu\": \"Оснастка, ручной инструмент и СИЗ вне подтверждённого включённого обеспечения\", \"ownerRu\": \"Исполнитель\", \"category\": \"equipment\", \"reasonRu\": \"Норма не задаёт покупку новых инструментов/СИЗ. Табель, фактическое обеспечение и отдельная оплата должны быть подтверждены.\", \"nextTaskRu\": \"Получить табель имеющегося/повторно используемого инструмента и СИЗ, ППР и коммерческую границу отдельно оплачиваемого обеспечения.\", \"acceptanceRu\": \"Покупка и объём подтверждены фактическим обеспечением и включениями цены, а не одной площадью пола.\"}, {\"id\": \"extra-protection-control\", \"nameRu\": \"Дополнительные ресурсы защиты вне исходного ухода, если требуются\", \"ownerRu\": \"Технолог/прораб\", \"category\": \"service\", \"reasonRu\": \"Уход и исходные вода/опилки уже учтены. Дополнительный scope определяется ППР, а не сроком твердения или ручным0/1.\", \"nextTaskRu\": \"Получить ППР и ведомость дополнительной защиты вне исходного ухода, воды и опилок, с применимостью и объёмом.\", \"acceptanceRu\": \"Дополнительная оплачиваемая защита не дублирует исходный уход; календарный срок не заменяет трудовую норму.\"}, {\"id\": \"acceptance-testing\", \"nameRu\": \"Применимый отдельный контроль и испытания по плану приёмки\", \"ownerRu\": \"Технадзор/прораб\", \"category\": \"service\", \"reasonRu\": \"Нужны проектные контрольные требования и граница отдельной услуги. Из119.78ч не выделяется вымышленная доля контроля.\", \"nextTaskRu\": \"Получить утверждённый план приёмки/испытаний и договорную границу самостоятельной контрольной услуги.\", \"acceptanceRu\": \"Есть применимость, измеримая единица и объём/источник; из119.78ч не выделена произвольная доля.\"}, {\"id\": \"additional-logistics-waste\", \"nameRu\": \"Дополнительный внешний маршрут, тара и отходы вне включённого перемещения и очистки\", \"ownerRu\": \"Логист/исполнитель\", \"category\": \"service\", \"reasonRu\": \"Источник уже содержит три машины и очистку/промывку. Нужны фактические услуги/количества и exact scope без повторной оплаты. Неясная агрегатная граница требует reconciliation.\", \"nextTaskRu\": \"Получить маршрут/акты/задание, измеренный объём внешней услуги, тары/отходов и сверку оплаты с тремя исходными машинами и очисткой.\", \"acceptanceRu\": \"Exact scope исключает повторную оплату; неоднозначная агрегатная услуга остаётся на согласовании, без автоматического исключения владельца.\"}], \"normId\": \"KRER11-01-027-03\", \"prefix\": \"ceramic-floor:cement-mortar:krer11-01-027-03\", \"source\": {\"path\": \".release-runtime/r568/s27-69/cn69-krer11-labor-candidate/KRER-11-official.pdf\", \"sha256\": \"e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223\", \"edition\": \"КРЕР11-2015, Полы; введён01.01.2016\", \"locatorRu\": \"PDF/печатные33–34: состав норм01–03, измеритель100м² и точная колонка03; PDF35 завершает таблицу03. PDF6§1.8 исключает плинтусы, §2.2 задаёт площадь.\", \"officialUrl\": \"https://www.gosstroy.gov.kg/ru/state_program/download-pdf/no11poly_compressed-73969083537959524.32310342.pdf\", \"officialPage\": \"https://www.gosstroy.gov.kg/ru/kyzmat/427/show\"}, \"status\": \"ROOT_CLASSIFIED_SOURCE_SPECIFIC_PARTIAL_CANDIDATE_NOT_RUN_NOT_ADOPTED\", \"scopeRu\": \"Одна точная операцияКРЕР11-01-027-03: покрытие пола из гладких неглазурованных одноцветных керамических плиток с красителем квадратной/прямоугольной формы на готовом цементном кладочном раствореМ150. Подготовка, подбор/сортировка, прослойка, цементная заделка швов, уход, очистка/промывка учтены цельным составом. Плинтусы исключены§1.8. Площадь по§2.2.\", \"titleRu\": \"Пол из гладкой неглазурованной одноцветной керамической плитки на готовом цементном растворе М150\", \"contract\": \"gox-build.ceramic-floor-cement-mortar-krer11-027-03.r1\", \"machines\": [{\"id\": \"forklift5t\", \"nameRu\": \"Автопогрузчики5т\", \"operator\": \"OPERATOR\", \"ownValue\": \"OWN_SOURCE_OPERATION\", \"hiredValue\": \"HIRED_SOURCE_OPERATION\", \"parameterId\": \"forklift5t_fulfillment\", \"ratePer100M2\": \"0.36\", \"resourceCode\": \"03-0020\"}, {\"id\": \"hoist500kg45m\", \"nameRu\": \"Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м\", \"operator\": \"OPERATOR\", \"ownValue\": \"OWN_SOURCE_OPERATION\", \"hiredValue\": \"HIRED_SOURCE_OPERATION\", \"parameterId\": \"hoist500kg45m_fulfillment\", \"ratePer100M2\": \"2.30\", \"resourceCode\": \"03-0327\"}, {\"id\": \"truck5t\", \"nameRu\": \"Автомобили бортовые грузоподъёмностью до5т\", \"operator\": \"DRIVER\", \"ownValue\": \"OWN_SOURCE_OPERATION\", \"hiredValue\": \"HIRED_SOURCE_OPERATION\", \"parameterId\": \"truck5t_fulfillment\", \"ratePer100M2\": \"0.28\", \"resourceCode\": \"40-0001\"}], \"sourceId\": \"kg_krer11_01_027_03_ceramic_floor_cement_mortar_r1\", \"catalogId\": \"canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03\", \"materials\": [{\"id\": \"water\", \"nameRu\": \"Вода для всей исходной операции без выдуманного распределения по этапам\", \"unitId\": \"m3\", \"sourceCode\": \"01-0601-0001\", \"ratePer100M2\": \"3.85\", \"identityGuideRu\": \"Нужны реальные спецификация/единица/пригодность; только точная исходная позиция Вода для всей исходной операции без выдуманного распределения по этапам. Норма не устанавливает артикул поставщика.\", \"parameterPrefix\": \"water\", \"specificationId\": \"water_specification_reference\"}, {\"id\": \"ceramic-tile\", \"nameRu\": \"Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные\", \"unitId\": \"m2\", \"sourceCode\": \"01-3207-0011\", \"ratePer100M2\": \"102\", \"identityGuideRu\": \"Нужны реальные спецификация/единица/пригодность; только точная исходная позиция Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные. Норма не устанавливает артикул поставщика.\", \"parameterPrefix\": \"ceramic_tile\", \"specificationId\": \"ceramic_tile_specification_reference\"}, {\"id\": \"sawdust\", \"nameRu\": \"Опилки древесные\", \"unitId\": \"m3\", \"sourceCode\": \"01-7222-0001\", \"ratePer100M2\": \"3.06\", \"identityGuideRu\": \"Нужны реальные спецификация/единица/пригодность; только точная исходная позиция Опилки древесные. Норма не устанавливает артикул поставщика.\", \"parameterPrefix\": \"sawdust\", \"specificationId\": \"sawdust_specification_reference\"}, {\"id\": \"ready-mortar-m150\", \"nameRu\": \"Раствор готовый кладочный цементный, марка150\", \"unitId\": \"m3\", \"sourceCode\": \"03-0406-0005\", \"ratePer100M2\": \"1.30\", \"identityGuideRu\": \"Нужны реальные спецификация/единица/пригодность; только точная исходная позиция Раствор готовый кладочный цементный, марка150. Норма не устанавливает артикул поставщика.\", \"parameterPrefix\": \"ready_mortar_m150\", \"specificationId\": \"ready_mortar_m150_specification_reference\"}], \"resources\": [{\"id\": \"whole-labor\", \"unitId\": \"man_hour\", \"payment\": \"ONE_WHOLE_LABOUR_OWNER_NO_STAGE_SPLIT\", \"titleRu\": \"Рабочие-строители среднего разряда3,2 — вся исходная операция\", \"ratePer100M2\": \"119.78\", \"resourceCode\": \"000-1003-2\"}, {\"id\": \"operator-information\", \"unitId\": \"man_hour\", \"payment\": \"INFORMATIONAL_ONLY_NO_ADDITIONAL_WAGE\", \"titleRu\": \"Затраты труда машинистов — исходное справочное значение\", \"ratePer100M2\": \"2.66\", \"resourceCode\": null}, {\"id\": \"forklift5t\", \"unitId\": \"machine_hour\", \"payment\": \"ONE_SELECTED_OWN_OR_HIRED_FULL_SOURCE_OPERATION_QUOTE\", \"titleRu\": \"Автопогрузчики5т\", \"ratePer100M2\": \"0.36\", \"resourceCode\": \"03-0020\"}, {\"id\": \"hoist500kg45m\", \"unitId\": \"machine_hour\", \"payment\": \"ONE_SELECTED_OWN_OR_HIRED_FULL_SOURCE_OPERATION_QUOTE\", \"titleRu\": \"Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м\", \"ratePer100M2\": \"2.30\", \"resourceCode\": \"03-0327\"}, {\"id\": \"truck5t\", \"unitId\": \"machine_hour\", \"payment\": \"ONE_SELECTED_OWN_OR_HIRED_FULL_SOURCE_OPERATION_QUOTE_NOT_TRIP\", \"titleRu\": \"Автомобили бортовые грузоподъёмностью до5т\", \"ratePer100M2\": \"0.28\", \"resourceCode\": \"40-0001\"}, {\"id\": \"water\", \"unitId\": \"m3\", \"payment\": \"ONE_MATERIAL_PURCHASE_OWNER\", \"titleRu\": \"Вода для всей исходной операции без выдуманного распределения по этапам\", \"ratePer100M2\": \"3.85\", \"resourceCode\": \"01-0601-0001\"}, {\"id\": \"ceramic-tile\", \"unitId\": \"m2\", \"payment\": \"ONE_MATERIAL_PURCHASE_OWNER\", \"titleRu\": \"Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные\", \"ratePer100M2\": \"102\", \"resourceCode\": \"01-3207-0011\"}, {\"id\": \"sawdust\", \"unitId\": \"m3\", \"payment\": \"ONE_MATERIAL_PURCHASE_OWNER\", \"titleRu\": \"Опилки древесные\", \"ratePer100M2\": \"3.06\", \"resourceCode\": \"01-7222-0001\"}, {\"id\": \"ready-mortar-m150\", \"unitId\": \"m3\", \"payment\": \"ONE_MATERIAL_PURCHASE_OWNER_COVERS_SOURCE_BEDDING_AND_JOINT_SCOPE_NOT_SECOND_GROUT\", \"titleRu\": \"Раствор готовый кладочный цементный, марка150\", \"ratePer100M2\": \"1.30\", \"resourceCode\": \"03-0406-0005\"}], \"excludedRu\": [\"Other table columns01/02/04/05/06, other colour/glaze/format scopes not proven by this column\", \"CM11/CT17/CE40 quantities or whole labour combined with119.78\", \"Porcelain600×600 or arbitrary modern tile products treated as equivalent\", \"ReadyM150 mortar replaced by dry glue450kg from05/06 or by a new second cement grout owner\", \"Automatic skirting/deformation joint/perimeter length from floor area\", \"Separate charging of preparation, tile sorting, cement joint filling, curing or washing already inside whole labour\", \"Historical2015 som prices used as current prices\", \"Automatic additional delivery/unload/cleanup payment without exact scope reconciliation\"], \"operations\": [{\"id\": \"included-base-preparation\", \"nameRu\": \"Подготовка основания, включённая в цельную исходную операцию\"}, {\"id\": \"included-tiles-bedding-joints\", \"nameRu\": \"Подбор/сортировка плитки, настилка, прослойка и цементная заделка швов\"}, {\"id\": \"included-curing\", \"nameRu\": \"Уход за покрытием, включённый в исходную операцию\"}, {\"id\": \"included-cleaning-washing\", \"nameRu\": \"Очистка и промывка покрытия, включённые в исходную операцию\"}], \"scopeFacts\": [{\"id\": \"ceramic_floor_profile\", \"value\": \"FLOOR_SMOOTH_UNGLAZED_SINGLE_COLOUR_WITH_COLOURANT_SQUARE_OR_RECTANGULAR\", \"titleRu\": \"Подтверждённое исполнение керамического пола\"}, {\"id\": \"cement_mortar_system\", \"value\": \"READY_CEMENT_MASONRY_MORTAR_M150_COLUMN03_NOT_ADHESIVE\", \"titleRu\": \"Фактическая технология прослойки и цементных швов\"}, {\"id\": \"base_scope_confirmed\", \"value\": \"APPROVED_BASE_FOR_SOURCE_PREPARATION_NO_UNPRICED_REPAIR_OR_NEW_LAYER\", \"titleRu\": \"Готовность основания для исходного состава подготовки\"}, {\"id\": \"net_area_rule\", \"value\": \"KRER11_2_2_INTERNAL_FINISHED_FACES_WITH_NICHES_AND_DOOR_OPENINGS_EXCLUDING_OCCUPIED_PROJECTIONS\", \"titleRu\": \"Правило чистой площади покрытия\"}], \"primaryUnitId\": \"m2\", \"paymentAdmission\": {\"reason\": \"Six exact catalog/row operated-machine owners must pass the existing helper and explicit coverage checks. This WORK candidate has not run tests or publication.\", \"catalogId\": \"canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03\", \"exactMachineOwnerMapRequired\": true, \"actualCanonicalGatePerformedByAuthor\": false, \"exactMachineOwnerMapApprovedForRootMerge\": true, \"publisherOrRuntimeAdoptionRequiresRootChecks\": true}, \"proposedIdentity\": {\"groupId\": \"wg:master:ceramic_floor_cement_mortar_m150\", \"titleRu\": \"Пол из гладкой неглазурованной одноцветной керамической плитки на готовом цементном растворе М150\", \"workKey\": \"ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03\", \"domainId\": \"tile_stone\", \"sourceId\": \"kg_krer11_01_027_03_ceramic_floor_cement_mortar_r1\", \"systemId\": \"tile_stone\", \"catalogId\": \"canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03\", \"groupMode\": \"create\", \"persisted\": false, \"groupNameRu\": \"Керамические полы на готовом цементном растворе М150\", \"primaryUnitId\": \"m2\", \"sourceIdentityId\": \"master-work:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03\", \"membershipOrdinal\": 0, \"primaryParameterId\": \"net_ceramic_floor_area_m2\", \"rootDecisionSha256\": \"f59b3d474f0a70ab877e7a7c6e5777f7c5b1bca5ac22b6f5dfd53f90dc091814\"}, \"fullTechnicalAcceptance\": false, \"newAcceptedCompleteTypes\": 0, \"primaryMeasureParameterId\": \"net_ceramic_floor_area_m2\", \"requiredProjectReferences\": [\"approved_floor_specification_reference\", \"approved_base_acceptance_reference\", \"approved_tile_mortar_method_reference\"]}, \"sourceIntakes\": [{\"id\": \"base-readiness-and-major-repair\", \"owner\": \"Проектировщик/прораб\", \"source\": \"Чертёж/акт; применимая отдельная официальная норма при дефекте\", \"missingFact\": \"Обследование и готовность основания, точная дополнительная операция при несовпадении исходной подготовки\", \"paymentFence\": \"Не дублировать подготовку внутри119.78.\"}, {\"id\": \"project-system-method\", \"owner\": \"Технолог/проектировщик\", \"source\": \"Утверждённая спецификация/ППР и точный manufacturer method выбранных изделий\", \"missingFact\": \"Совместимость выбранной керамики и готовогоМ150, толщина/условия/приёмка\", \"paymentFence\": \"Не переносить CM11/CE40/другую колонку и не выдумывать часы.\"}, {\"id\": \"skirting-and-junctions\", \"owner\": \"Проектировщик/сметчик\", \"source\": \"Ведомость узлов + отдельная нормаКРЕР11/производитель\", \"missingFact\": \"Применимость, реальные длины/высоты и геометрия узлов, точная отдельная норма/изделие\", \"paymentFence\": \"§1.8 исключает плинтусы; цементные межплиточные швы уже внутри основного труда/раствора.\"}, {\"id\": \"tools-ppe-inclusion\", \"owner\": \"Исполнитель\", \"source\": \"ППР/табель и граница коммерческой цены\", \"missingFact\": \"Существующее обеспечение, повторное использование, количества только реально отдельно оплачиваемой оснастки/СИЗ\", \"paymentFence\": \"Не покупать автоматически инструменты или дважды платить за включённое обеспечение.\"}, {\"id\": \"acceptance-and-extra-protection\", \"owner\": \"Технадзор/прораб\", \"source\": \"Проект/ППР/план контроля\", \"missingFact\": \"Контрольные требования и необходимость дополнительных ресурсов защиты вне исходного ухода\", \"paymentFence\": \"Уход и промывка уже включены; календарное время не является трудовой нормой.\"}, {\"id\": \"additional-logistics-waste\", \"owner\": \"Логист/исполнитель\", \"source\": \"Маршрут/акты/задание и exact оплачиваемый scope\", \"missingFact\": \"Измеренный внешний маршрут, тара/отходы и услуга вне исходного перемещения и очистки\", \"paymentFence\": \"Три source machine-hour owners остаются; trip/cleanup не добавлять при возможном пересечении.\"}], \"actualReadSha256\": [\"b8c54af382b67a1871e3c7835fcd22b5034bd116f6d6a7b6ea3c04a986345a4f\", \"6e6f16a6ff89b31cfa028d6c87d148dfd671d9cf2270643934f3a0c702234812\", \"bf15a38b85c9c2eae2c2f233d58fd6de37d09ca15bec551a6db35118c00180c6\"], \"classificationSha256\": \"f59b3d474f0a70ab877e7a7c6e5777f7c5b1bca5ac22b6f5dfd53f90dc091814\", \"explicitParentBridge\": {\"readback\": {\"path\": \".release-runtime/r568/next-wave/ceramic02703/current-guards/parent-water-v1/readback-r1.json\", \"sha256\": \"ed3fdcc66324d19779f68ebed6fd28740d47bd57451cb71d3bab6a4fe9c23dc4\"}, \"publication\": {\"path\": \".release-runtime/r568/next-wave/ceramic02703/current-guards/parent-water-v1/apply-r1.json\", \"sha256\": \"053e72597a8ff64da8732034aa1e0cab54fc0ab18d9a87eb9790c9b860fe3949\"}, \"rootContext\": {\"path\": \".release-runtime/r568/next-wave/ceramic02703/current-guards/parent-water-v1/context-r1.json\", \"sha256\": \"aac247871db5d092e513e266be47884be9d5c6685ee1c5d18459a38f13008496\"}, \"expectedSource\": {\"head\": \"2e491e35520e9c06d0c278007e60599f0fcef7d9\", \"tree\": \"8adc3bfc20342e447fadde77932e2ff5f02a64c0\"}, \"expectedSuccessor\": {\"searchReleaseId\": \"65a33d9e-33a1-5b80-bc97-191572ac459a\", \"definitionReleaseId\": \"5d758593-9d96-5114-ac5a-739f31e43ebe\"}}, \"historicalReaderContext\": {\"sourceHead\": \"d5bdb3e7722a020b0e4f81770847a7fcd6b01a12\", \"searchReleaseId\": \"0c4a0ed7-a579-57ae-9104-4e088dd09963\", \"definitionReleaseId\": \"aca4fa71-60c2-57db-83c8-5c8be93175a7\", \"recordedReleaseSourceCommit\": \"9bab72d75ed0b0aff9323d8cab5644563fbfa6b6\"}, \"classificationProposalSha256\": \"2222f83406d71259fe3efda03b9b7ee210d4f34400d007b7672dbe2931c28b39\", \"independentlyDeclaredBindingRows\": [\"ceramic-floor:cement-mortar:krer11-01-027-03:whole-labor\", \"ceramic-floor:cement-mortar:krer11-01-027-03:operator-information\", \"ceramic-floor:cement-mortar:krer11-01-027-03:forklift5t-consumed\", \"ceramic-floor:cement-mortar:krer11-01-027-03:hoist500kg45m-consumed\", \"ceramic-floor:cement-mortar:krer11-01-027-03:truck5t-consumed\", \"ceramic-floor:cement-mortar:krer11-01-027-03:water-consumed\", \"ceramic-floor:cement-mortar:krer11-01-027-03:ceramic-tile-consumed\", \"ceramic-floor:cement-mortar:krer11-01-027-03:sawdust-consumed\", \"ceramic-floor:cement-mortar:krer11-01-027-03:ready-mortar-m150-consumed\", \"ceramic-floor:cement-mortar:krer11-01-027-03:included-base-preparation\", \"ceramic-floor:cement-mortar:krer11-01-027-03:included-tiles-bedding-joints\", \"ceramic-floor:cement-mortar:krer11-01-027-03:included-curing\", \"ceramic-floor:cement-mortar:krer11-01-027-03:included-cleaning-washing\", \"ceramic-floor:cement-mortar:krer11-01-027-03:forklift5t-own\", \"ceramic-floor:cement-mortar:krer11-01-027-03:forklift5t-hired\", \"ceramic-floor:cement-mortar:krer11-01-027-03:hoist500kg45m-own\", \"ceramic-floor:cement-mortar:krer11-01-027-03:hoist500kg45m-hired\", \"ceramic-floor:cement-mortar:krer11-01-027-03:truck5t-own\", \"ceramic-floor:cement-mortar:krer11-01-027-03:truck5t-hired\"]}, \"source_id\": \"eee09801-00fe-5885-bdb5-a702b11fa938\", \"locator_key\": \"krer11-01-027-03-ceramic-floor-m150-r1\", \"excerpt_sha256\": \"41379dd674d3aec425bd77cced0e1fe867edb014e52f64e4eaa6789f8f3287ce\"}",
+        "norm_ids": [
+          null,
+          null,
+          null
+        ],
+        "source_id": "eee09801-00fe-5885-bdb5-a702b11fa938",
+        "locator_key": "krer11-01-027-03-ceramic-floor-m150-r1"
+      }
+    },
+    {
+      "key": "eee09801-00fe-5885-bdb5-a702b11fa938",
+      "kind": "sourceDiagnostic",
+      "payload": {
+        "id": "eee09801-00fe-5885-bdb5-a702b11fa938",
+        "raw": "{\"id\": \"eee09801-00fe-5885-bdb5-a702b11fa938\", \"metadata\": {\"contract\": \"gox-build.ceramic-floor-cement-mortar-krer11-027-03.r1\", \"sourceKind\": \"OFFICIAL_NORM_EXACT_SINGLE_COLUMN_WITH_EXPLICIT_PARTIAL_COMPLETION\", \"useRestriction\": \"Одна точная операцияКРЕР11-01-027-03: покрытие пола из гладких неглазурованных одноцветных керамических плиток с красителем квадратной/прямоугольной формы на готовом цементном кладочном раствореМ150. Подготовка, подбор/сортировка, прослойка, цементная заделка швов, уход, очистка/промывка учтены цельным составом. Плинтусы исключены§1.8. Площадь по§2.2.; Other table columns01/02/04/05/06, other colour/glaze/format scopes not proven by this column; CM11/CT17/CE40 quantities or whole labour combined with119.78; Porcelain600×600 or arbitrary modern tile products treated as equivalent; ReadyM150 mortar replaced by dry glue450kg from05/06 or by a new second cement grout owner; Automatic skirting/deformation joint/perimeter length from floor area; Separate charging of preparation, tile sorting, cement joint filling, curing or washing already inside whole labour; Historical2015 som prices used as current prices; Automatic additional delivery/unload/cleanup payment without exact scope reconciliation\", \"activationAllowed\": false, \"universalConsumptionClaimed\": false, \"universalProductivityClaimed\": false}, \"title_ru\": \"Пол из гладкой неглазурованной одноцветной керамической плитки на готовом цементном растворе М150\", \"authority\": \"Министерство строительства Кыргызской Республики, КРЕР11-2015 Полы\", \"created_at\": \"2026-10-18T14:46:05.728246Z\", \"source_key\": \"kg_krer11_01_027_03_ceramic_floor_cement_mortar_r1\", \"effective_to\": null, \"official_url\": \"https://www.gosstroy.gov.kg/ru/state_program/download-pdf/no11poly_compressed-73969083537959524.32310342.pdf\", \"effective_from\": \"2016-01-01\", \"artifact_sha256\": \"e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223\"}",
+        "source_key": "kg_krer11_01_027_03_ceramic_floor_cement_mortar_r1"
+      }
+    },
+    {
+      "key": "f4919986-4635-5d70-a963-42ca0bf8d9fd",
+      "kind": "sourceDiagnostic",
+      "payload": {
+        "id": "f4919986-4635-5d70-a963-42ca0bf8d9fd",
+        "raw": "{\"id\": \"f4919986-4635-5d70-a963-42ca0bf8d9fd\", \"metadata\": {\"contract\": \"rik-expo-app.floor-sand-underlayer-krer11-002-01.r1\", \"sourceKind\": \"OFFICIAL_NORM_EXACT_SINGLE_COLUMN\", \"useRestriction\": \"Проектом выбран именно песчаный подстилающий слой под полы по КРЕР11-01-002-01; средний природный строительный песок; исходная технологическая и организационная схема с автопогрузчиком5т, компрессором05-0005 и пневматическими трамбовками33-0741 применима участку и доступна Основание подготовлено и принято к устройству песчаного слоя; включённая в исходную норму планировка выполняется один раз; разработка, растительный грунт и отдельное укрепление не объявлены выполненными этой нормой Объём слоя подтверждён проектом или обмером по КРЕР11 §2.1: объёмы под печами, колоннами, выступающими фундаментами и подобными элементами исключены; площадь и толщина из объёма не выведены\", \"activationAllowed\": false, \"universalConsumptionClaimed\": false, \"universalProductivityClaimed\": false}, \"title_ru\": \"КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы\", \"authority\": \"Министерство строительства Кыргызской Республики\", \"created_at\": \"2026-10-18T11:43:14.460846Z\", \"source_key\": \"kg_krer11_01_002_01_floor_sand_underlayer_r1\", \"effective_to\": null, \"official_url\": \"https://www.gosstroy.gov.kg/ru/state_program/download-pdf/no11poly_compressed-73969083537959524.32310342.pdf\", \"effective_from\": null, \"artifact_sha256\": \"e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223\"}",
+        "source_key": "kg_krer11_01_002_01_floor_sand_underlayer_r1"
+      }
+    }
+  ],
+  "wireBounds": {
+    "rowCount": 28,
+    "maxRowBytes": 33430,
+    "maxWireRowBytes": 33519,
+    "wireBytes": 84014
+  },
+  "previousComparisons": 8,
+  "allPreviousComparisonsUnchanged": true,
+  "proposedCatalogId": "canonical-work:master:floor_concrete_underlayer_krer11_01_002_09",
+  "intakeSql": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/floor-underlayer-current-read-r65b/current-floor-underlayer-intake-headers-r65b.sql",
+    "sha256": "ca5f3628082a919b924d787c7a22646007a8e9be927d8130079161b54ec8fb26",
+    "bytes": 10681
+  },
+  "rawDiagnosticIsNotScopedRegistryCapture": true,
+  "publicationAdmitted": false,
+  "newCompleteEstimateCount": 0,
+  "allTransactionsRolledBack": true,
+  "allConnectionsClosed": true
+}

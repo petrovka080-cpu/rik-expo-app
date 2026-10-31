@@ -1,5 +1,5 @@
 import { canonicalPurchaseItemSupplyWarningV1, canonicalExactPurchaseEditingV1 } from "./canonicalExactPurchaseEditingV1";
-import { canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
+import { canonicalLegacyResourceKindV1, canonicalLegacyResourceNameV1, type CanonicalLegacyOperationDisplayContextV1, canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import {consumerMachineHourPriceNeedsConfirmation} from '../../lib/consumerRequests/consumerMachineHourPriceCoverage';
 import { consumerCanonicalApplicationScopeRequirementNotice, consumerCanonicalMissingRequirements, consumerCanonicalParameterTitle, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
@@ -34,10 +34,10 @@ import {
   isConsumerEstimatePayableItem,
 } from "../../lib/consumerRequests/consumerEstimateReadiness";
 import { consumerRepairCanonicalEstimateBlocksApproval } from "./consumerRepairCanonicalEstimateReadiness";
-import { consumerRepairRowIsNonPayable, registerConsumerRepairRowVerifiedPresentation, consumerRepairRowPublicResourcePresentation, consumerRepairRowCalculatedQuantity } from "./consumerRepairRowMetadata";
+import { consumerRepairRowIsNonPayable, registerConsumerRepairRowVerifiedPresentation, consumerRepairRowPublicResourcePresentation, consumerRepairRowCalculatedQuantity, consumerRepairRowIsTechnicalDetail,consumerRepairRowProcessNote,consumerRepairHiddenResourceAlternativeIds } from "./consumerRepairRowMetadata";
 import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
-import { canonicalPublicResourceDisplayPresentationV1 as canonicalPublicResourcePresentationV1, canonicalPublicResourcePresentationV1 as canonicalSourceResourcePresentationV1, canonicalPublicResourcePresentationMatchesV1, type CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
-import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRowNameRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import { canonicalPublicResourceDisplayPresentationV1 as canonicalPublicResourcePresentationV1, canonicalPublicResourcePresentationV1 as canonicalSourceResourcePresentationV1, canonicalPublicResourcePresentationMatchesV1, canonicalPublicResourceRowKindV1, type CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
+import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRowNameRu, canonicalPublicEstimateOperationReferenceRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import type { EstimateDraftRevision, EstimateDraftRevisionState, EstimateDraftRevisionDiff } from '../../lib/estimate/estimateDraftRevisionContract';
 import { localizeKnownTechnologyVariantSuffixRu } from "../../lib/estimate/backendPlatform/russianTechnologyTitleR542";
 import { measureConsumerRepairQuantityRenderWork } from "./consumerRepairQuantityEditTrace";
@@ -74,7 +74,7 @@ export type RequestEstimateSectionViewModel = {
   title: string;
   items: ConsumerRepairRequestItem[];
   operation?: CanonicalEstimateOperationReference | null;
-  sharedResources?: { rowId: string; titleRu: string; ownerOperationTitleRu: string }[];
+  sharedResources?: { rowId: string; titleRu: string; ownerOperationTitleRu: string; quantityLabel?: string }[];
   scopeRequirements?: CanonicalScopeRequirementGroupV1[];
   physicallyExcluded?: boolean;
 };
@@ -476,9 +476,14 @@ function canonicalTitleQuantityMatches(item: ConsumerRepairRequestItem, savedQua
   savedFormulaQuantity: number | null): boolean {
   if (item.quantity === savedQuantity) return true;
   const source = item.sourceParameters;
-  return item.quantityEditedByConsumer === true && source?.manualQuantityOverride === true
-    && Object.prototype.hasOwnProperty.call(source, 'calculatedQuantityBeforeOverride')
-    && source.calculatedQuantityBeforeOverride === savedFormulaQuantity;
+  if (!source || !Object.prototype.hasOwnProperty.call(source, 'calculatedQuantityBeforeOverride')
+    || source.calculatedQuantityBeforeOverride !== savedFormulaQuantity) return false;
+  if (item.quantityEditedByConsumer === true && source.manualQuantityOverride === true) return true;
+  // Clearing a saved override restores its original formula result, including
+  // null for an unresolved source quantity. Keep its name while the user types
+  // a replacement; this grants no authority to the pending quantity or price.
+  return item.quantityEditedByConsumer === false && source.manualQuantityOverride === false
+    && item.quantity === savedFormulaQuantity;
 }
 
 function admissionVerifiedCanonicalTitleItems(
@@ -573,6 +578,7 @@ function admissionVerifiedCanonicalTitleItems(
 }
 
 /** Each comparison side uses only its own saved row and naming evidence.
+ * Hide only verified, unpriced calculation details in this display clone.
  * Quantities, prices and the immutable comparison stay unchanged. */
 export function requestEstimatePublicRevisionDiff(
   state: EstimateDraftRevisionState | null | undefined,
@@ -593,8 +599,8 @@ export function requestEstimatePublicRevisionDiff(
   };
   const before = owner(state.revisions.find(revision => revision.revisionId === diff.fromRevisionId));
   const after = owner(state.revisions.find(revision => revision.revisionId === diff.toRevisionId));
-  const title = (context: ReturnType<typeof owner>, rowId: string, sourceTitleRu: string): string => {
-    if (!context) return sourceTitleRu;
+  const evidence = (context: ReturnType<typeof owner>, rowId: string, sourceTitleRu: string) => {
+    if (!context) return null;
     const {revision,releaseId,catalogId} = context;
     const knownCandidate = context.knownRows.get(rowId), needCandidate = context.needs.get(rowId);
     const known = knownCandidate?.titleRu === sourceTitleRu ? knownCandidate : null;
@@ -605,39 +611,70 @@ export function requestEstimatePublicRevisionDiff(
       && source.canonicalBackendRevisionId === revision.revisionId
       && source.canonicalBackendReleaseId === releaseId
       && source.canonicalBackendCatalogId === catalogId
+      && (source.canonicalBackendRowId===rowId||source.rowCode===rowId)
       && CANONICAL_ROW_SHA_RE.test(String(source.rowSha256 ?? ''));
     const needOwner = need && admission?.contractVersion === 'canonical-preliminary-row-admission/v1'
       && CANONICAL_ROW_SHA_RE.test(admission.needSha256);
-    if (!knownOwner && !needOwner) return sourceTitleRu;
+    if (!knownOwner && !needOwner) return null;
     const manual = knownOwner ? source!.canonicalManualTitleOverride === true : admission!.manualTitleOverride;
-    if (manual) return sourceTitleRu;
     const descriptor = knownOwner ? source!.canonicalPublicResourcePresentationV1 : admission!.publicResourcePresentation;
-    const presentation = canonicalPublicResourcePresentationV1({ rowId, titleRu:sourceTitleRu, descriptor });
-    if (descriptor != null && !presentation) return sourceTitleRu;
-    return canonicalPublicEstimateRowNameRu({rowId,sourceTitleRu,titleRu:presentation?.nameRu ?? sourceTitleRu});
+    let graph:Record<string,unknown>|undefined;
+    if(knownOwner && typeof known!.calculationTrace==='string' && known!.calculationTrace.length<=1048576){
+      try{const trace=JSON.parse(known!.calculationTrace);if(trace?.resourceGraph&&typeof trace.resourceGraph==='object'
+        &&!Array.isArray(trace.resourceGraph))graph=trace.resourceGraph;}catch{/* Missing structural evidence keeps the row visible. */}
+    }
+    const presentation = canonicalPublicResourcePresentationV1({ rowId, titleRu:sourceTitleRu, descriptor,graph,manualTitleOverride:manual,compactPreliminaryNeed:!knownOwner,
+      parameters:Object.fromEntries(Object.entries(revision.params).map(([id,param])=>[id,param.value])) });
+    if (!manual && descriptor != null && !presentation) return null;
+    const manualQuantity=knownOwner?source!.canonicalManualQuantityOverride===true:admission!.manualQuantityOverride;
+    const kind=canonicalPublicResourceRowKindV1({rowId,titleRu:sourceTitleRu,descriptor:presentation,
+      manualTitleOverride:manual,costTreatment:knownOwner?source!.canonicalCostTreatment:admission!.costTreatment,
+      includedInEstimate:Boolean(knownOwner&&source!.includedInEstimate===true),
+      includedInProcurement:Boolean(knownOwner&&source!.includedInProcurement===true),
+      unitPrice:knownOwner?known!.unitPrice:need!.unitPrice,
+      category:knownOwner?known!.category??known!.rowType:admission!.category??undefined,graph});
+    return {titleRu:manual?sourceTitleRu:canonicalPublicEstimateRowNameRu({rowId,sourceTitleRu,titleRu:presentation?.nameRu ?? sourceTitleRu}),
+      calculationDetail:!manual&&!manualQuantity&&kind==='CALCULATION_DETAIL'};
   };
-  const changedRows = diff.changedRows.map(row => ({
-    ...row, titleRu:title(after && row.afterState === 'ABSENT'
-      && !after.knownRows.has(row.rowId) && !after.needs.has(row.rowId) ? before : after,row.rowId,row.titleRu),
-    ...(row.beforeTitleRu == null ? {} : { beforeTitleRu:title(before,row.rowId,row.beforeTitleRu) }),
-  }));
-  return { ...diff, changedRows };
+  const absent=(context:ReturnType<typeof owner>,rowId:string,state:string|undefined)=>context!=null&&state==='ABSENT'
+    &&!context.knownRows.has(rowId)&&!context.needs.has(rowId);
+  const changedRows = diff.changedRows.flatMap(row => {
+    const previous=evidence(before,row.rowId,row.beforeTitleRu??row.titleRu);
+    const current=evidence(after,row.rowId,row.titleRu);
+    const hasPrice=row.beforeUnitPrice!=null||row.afterUnitPrice!=null;
+    if(!hasPrice&&(previous?.calculationDetail||absent(before,row.rowId,row.beforeState))
+      &&(current?.calculationDetail||absent(after,row.rowId,row.afterState)))return [];
+    return [{...row,titleRu:current?.titleRu??(absent(after,row.rowId,row.afterState)?previous?.titleRu:undefined)??row.titleRu,
+      ...(row.beforeTitleRu==null?{}:{beforeTitleRu:previous?.titleRu??row.beforeTitleRu})}];
+  });
+  return { ...diff, changedRows,changedRowsCount:changedRows.length };
 }
 
-function publicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified = false): string {
-  const titleRu = sourcePublicItemTitle(item, canonicalTitleVerified);
+function publicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified = false,parameters?:Readonly<Record<string,unknown>>): string {
+  const titleRu = sourcePublicItemTitle(item, canonicalTitleVerified,parameters);
   if (!canonicalTitleVerified) return titleRu;
   return canonicalPublicEstimateRowNameRu({ rowId: String(item.sourceParameters?.canonicalBackendRowId
     ?? item.sourceParameters?.rowCode ?? ''), titleRu, sourceTitleRu: item.titleRu,
     manualTitleOverride: item.sourceParameters?.canonicalManualTitleOverride === true });
 }
 
-function sourcePublicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified = false): string {
+function selectedSpecificationGraph(item:ConsumerRepairRequestItem):unknown{
+  if(typeof item.calculationTrace!=='string'||item.calculationTrace.length>1048576)return undefined;
+  try{return (JSON.parse(item.calculationTrace) as {resourceGraph?:unknown})?.resourceGraph;}catch{return undefined;}
+}
+
+function publicRevisionParameters(bundle?:ConsumerRepairDraftBundle|null):Readonly<Record<string,unknown>>|undefined{
+  const state=bundle?.estimateDraftRevisionState,revision=state?.revisions.find(r=>r.revisionId===state.currentRevisionId);
+  return revision?Object.fromEntries(Object.entries(revision.params).map(([id,param])=>[id,param.value])):undefined;
+}
+
+function sourcePublicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified = false,parameters?:Readonly<Record<string,unknown>>): string {
   if (canonicalTitleVerified) {
     const descriptor = item.sourceParameters?.canonicalPublicResourcePresentationV1;
     const manualTitleOverride = item.sourceParameters?.canonicalManualTitleOverride === true;
     const presentation = canonicalPublicResourcePresentationV1({ rowId: String(item.sourceParameters?.canonicalBackendRowId
-      ?? item.sourceParameters?.rowCode ?? ''), titleRu: item.titleRu, descriptor, manualTitleOverride });
+      ?? item.sourceParameters?.rowCode ?? ''), titleRu: item.titleRu, descriptor, manualTitleOverride,
+      graph:selectedSpecificationGraph(item),parameters,compactPreliminaryNeed:item.sourceParameters?.canonicalPreliminaryNeed===true });
     if (presentation) return presentation.nameRu;
     if (descriptor != null || manualTitleOverride) return item.titleRu;
     // Keep the immutable canonical title in the bundle, while applying the
@@ -689,7 +726,7 @@ export function requestEstimatePublicItemTitle(
   bundle?: ConsumerRepairDraftBundle | null,
 ): string {
   const verified = bundle ? admissionVerifiedCanonicalTitleItems(bundle).has(item) : false;
-  return publicItemTitle(item, verified);
+  return publicItemTitle(item, verified,publicRevisionParameters(bundle));
 }
 
 function isGenericHelperItem(item: ConsumerRepairRequestItem): boolean {
@@ -1142,17 +1179,17 @@ function cleanSummary(bundle: ConsumerRepairDraftBundle): string {
 
 function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVisibleLine {
   const unitLabel = displayUnitLabelForItem(item);
-  const priceText = item.unitPrice == null
-    ? "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430"
+  const priceText = item.unitPrice == null || !Number.isFinite(item.unitPrice)
+    ? null
     : `${formatEstimateMoney(item.unitPrice, item.currency)} / ${unitLabel}`;
-  const totalText = item.totalPrice == null ? "\u0438\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c" : formatEstimateMoney(item.totalPrice, item.currency);
+  const totalText = item.totalPrice == null || !Number.isFinite(item.totalPrice) ? null : formatEstimateMoney(item.totalPrice, item.currency);
   const selectedProduct = item.selectedProductBinding
     ? `${"\u0412\u044b\u0431\u0440\u0430\u043d \u0442\u043e\u0432\u0430\u0440"}: ${item.selectedProductBinding.visibleName}${item.selectedProductBinding.packageLabel ? `, ${item.selectedProductBinding.packageLabel}` : ""}`
     : null;
   const parts = [
       item.titleRu,
       selectedProduct,
-      item.quantity == null ? "количество нужно уточнить" : `${formatQuantityDisplayNumber(item.quantity)} ${unitLabel}`,
+      item.quantity == null ? `Не рассчитано ${unitLabel}`.trim() : `${formatQuantityDisplayNumber(item.quantity)} ${unitLabel}`,
       priceText,
       totalText,
     ].filter((part): part is string => Boolean(part && part.trim()));
@@ -1298,7 +1335,21 @@ export function buildRequestEstimateViewModel(
   const viewBundle = visibleEstimateItems.length === bundle.items.length
     ? bundle
     : { ...bundle, items: visibleEstimateItems };
-  const canonicalTitleItems = measure("PUBLIC_TITLE_ADMISSION", () => admissionVerifiedCanonicalTitleItems(viewBundle));
+  // Authenticate the complete saved composition. Scope controls are filtered
+  // only for display; removing them first breaks the saved row-count identity
+  // and silently discards the public presentation of every remaining resource.
+  const canonicalTitleItems = measure("PUBLIC_TITLE_ADMISSION", () => admissionVerifiedCanonicalTitleItems(bundle));
+  const legacySavedRevision=bundle.estimateDraftRevisionState?.revisions.find(
+    revision=>revision.revisionId===bundle.estimateDraftRevisionState?.currentRevisionId);
+  const legacyDisplayContext:CanonicalLegacyOperationDisplayContextV1|undefined=
+    legacySavedRevision?.resolvedIdentity && canonicalTitleItems.size===bundle.items.length ? {
+      revisionId:legacySavedRevision.revisionId,
+      releaseId:String(legacySavedRevision.resolvedIdentity.canonicalModelVersion??''),
+      checksumSha256:String(legacySavedRevision.applicableBoqSignature??''),
+      savedResources:bundle.items.map(item=>({rowId:item.id,sourceRowId:String(item.sourceParameters?.rowCode??''),
+        operation:item.sourceParameters?.canonicalOperationComposition})),
+    }:undefined;
+  const canonicalPublicParameters=publicRevisionParameters(viewBundle);
   const durableSummary = bundle.durableHistorySummary ?? null;
   const rawItemCount = viewBundle.items.length || durableSummary?.rowCount || 0;
   const preliminaryNeedCount = viewBundle.items.filter(
@@ -1342,54 +1393,78 @@ export function buildRequestEstimateViewModel(
   );
   const hasSmartEstimateV2 = viewBundle.items.some((item) => item.sourceParameters?.smartEstimateProjectionV2 != null);
   const smartStageIds = [...new Set(viewBundle.items.map(itemSection).filter((id) => id.startsWith("professional_")))];
-  const sectionIds: RequestEstimateSectionViewModel["id"][] = hasSmartEstimateV2
+  const preferredSectionIds: RequestEstimateSectionViewModel["id"][] = hasSmartEstimateV2
     ? smartStageIds
     : hasCapitalRenovationCalculator
     ? CAPITAL_RENOVATION_SECTION_IDS
     : ["materials", "labor", "equipment", "logistics", "other"];
+  // Canonical operations need no smart-stage marker. Keep preferred ordering,
+  // then materialize every actual section, including unassigned UNKNOWN rows
+  // beside professional stages. Admission still uses the complete saved bundle.
+  const sectionIds = [...new Set([...preferredSectionIds, ...viewBundle.items.map(itemSection)])];
+  const hiddenResourceAlternatives=consumerRepairHiddenResourceAlternativeIds(viewBundle.items);
+  const publicCompositionItems=viewBundle.items.filter(item=>!hiddenResourceAlternatives.has(item.id));
   const baseSections: RequestEstimateSectionViewModel[] = measure("PUBLIC_ROW_SECTIONS", () => sectionIds
     .map((id) => ({
       id,
       title: sectionTitle(id),
-      items: viewBundle.items
+      items: publicCompositionItems
         .filter((item) => itemSection(item) === id)
         .sort((a, b) => itemSortRank(a) - itemSortRank(b))
         .map((item) => {
-          const titleRu = publicItemTitle(item, canonicalTitleItems.has(item));
+          const legacyName=canonicalLegacyResourceNameV1(String(item.sourceParameters?.rowCode??''),legacyDisplayContext,item.sourceParameters?.canonicalManualTitleOverride===true);
+          const titleRu = legacyName ?? publicItemTitle(item, canonicalTitleItems.has(item),canonicalPublicParameters);
           // Admission and public naming still run against the current bundle.
           // Preserve unchanged row props so editing one quantity does not
           // defeat the row's React.memo and rerender every neighbouring input.
           const presentation = canonicalTitleItems.has(item) ? canonicalPublicResourcePresentationV1({ rowId: String(item.sourceParameters?.canonicalBackendRowId
             ?? item.sourceParameters?.rowCode ?? ''), titleRu: item.titleRu,
             descriptor: item.sourceParameters?.canonicalPublicResourcePresentationV1,
-            manualTitleOverride: item.sourceParameters?.canonicalManualTitleOverride === true }) : null;
-          return itemWithPublicTitle(item, titleRu, presentation);
+            manualTitleOverride: item.sourceParameters?.canonicalManualTitleOverride === true,
+            graph:selectedSpecificationGraph(item),parameters:canonicalPublicParameters,compactPreliminaryNeed:item.sourceParameters?.canonicalPreliminaryNeed===true }) : null;
+          const legacyKind=canonicalLegacyResourceKindV1(String(item.sourceParameters?.rowCode??''),legacyDisplayContext);
+          const displayPresentation=legacyKind||legacyName?{...(presentation??{
+            contractVersion:'canonical-public-resource-presentation/v1' as const,sourceTitleRu:item.titleRu,nameRu:titleRu,
+            brandAndModelRu:null,specificationRu:null,detailsRu:[]}),...(legacyKind?{resourceKind:legacyKind}:{}),...(legacyName?{nameRu:legacyName}:{})}:presentation;
+          return itemWithPublicTitle(item, titleRu, displayPresentation);
         }),
     }))
-    .filter((section) => section.items.length > 0)
-    .map(section => {
-      const operation = canonicalEstimateOperationReference(section.items[0]?.sourceParameters?.canonicalOperationComposition);
-      return operation == null ? section : { ...section, title: canonicalPublicEstimateWorkTitleRu(operation.operationTitleRu), operation };
-    }));
+    .filter((section) => section.items.length > 0));
   const rowPresentationIds = new Map(viewBundle.items.map(item => [String(item.sourceParameters?.rowCode ?? ''), item.id]));
-  const operationSections = canonicalEstimateResourceOperationSections(viewBundle.items.map(item => ({
-    rowId: item.id, operation: item.sourceParameters?.canonicalOperationComposition,
+  const operationSections = canonicalEstimateResourceOperationSections(publicCompositionItems.map(item => ({
+    rowId: item.id, sourceRowId:String(item.sourceParameters?.rowCode??''), operation: item.sourceParameters?.canonicalOperationComposition,
     sourceOperation: item.sourceParameters?.canonicalSourceOperationComposition,
     excludedOperationKeys: (item.sourceParameters?.canonicalCompositionSelectionDecisionV1 as {excludedOperationKeys?: string[]} | undefined)?.excludedOperationKeys,
-    titleRu: publicItemTitle(item, canonicalTitleItems.has(item)),
+    titleRu: publicItemTitle(item, canonicalTitleItems.has(item),canonicalPublicParameters),
   })), scopeDecisions.map(decision => ({...decision,
-    coveringRowIds: decision.coveringRowIds.map(id => rowPresentationIds.get(id) ?? id)})));
+    coveringRowIds: decision.coveringRowIds.map(id => rowPresentationIds.get(id) ?? id)})),
+    bundle.items.filter(item=>scopeRows.has(String(item.sourceParameters?.rowCode??''))).map(item=>({
+      rowId:String(item.sourceParameters?.rowCode??''),operation:item.sourceParameters?.canonicalOperationComposition,
+    })),legacyDisplayContext);
   const publicItemsById = new Map(baseSections.flatMap(section => section.items).map(item => [item.id, item]));
   const sections: RequestEstimateSectionViewModel[] = operationSections.some(section => section.operation != null)
     ? operationSections.flatMap(section => section.operation == null
-      ? baseSections.filter(base => base.operation == null)
+      // A category can mix declared stages and still-unassigned resources.
+      // Select this exact section's IDs; the first row never owns its neighbours.
+      ? baseSections.map(base => ({ ...base, items: base.items.filter(item => section.resourceIds.includes(item.id)) }))
+        .filter(base => base.items.length > 0)
       : [{ id: `professional_${encodeURIComponent(`${section.operation.groupId}/${section.operation.operationId}`)}` as const,
-        title: canonicalPublicEstimateWorkTitleRu(section.operation.operationTitleRu), operation: { ...section.operation,
-          groupTitleRu: canonicalPublicEstimateWorkTitleRu(section.operation.groupTitleRu),
-          operationTitleRu: canonicalPublicEstimateWorkTitleRu(section.operation.operationTitleRu) },
+        title: canonicalPublicEstimateWorkTitleRu(section.operation.operationTitleRu), operation: canonicalPublicEstimateOperationReferenceRu(section.operation),
         items: section.resourceIds.flatMap(id => publicItemsById.has(id) ? [publicItemsById.get(id)!] : []),
-        sharedResources: section.sharedResources.map(shared => ({ ...shared,
-          ownerOperationTitleRu: canonicalPublicEstimateWorkTitleRu(shared.ownerOperationTitleRu) })),
+        sharedResources: section.sharedResources.filter(shared=>{
+          if(hiddenResourceAlternatives.has(shared.rowId))return false;
+          const item=publicItemsById.get(shared.rowId);
+          return !item||(!consumerRepairRowIsTechnicalDetail(item)&&!consumerRepairRowProcessNote(item));
+        }).flatMap(shared => {
+          const item = publicItemsById.get(shared.rowId);
+          if (!item) return [];
+          const exact = canonicalExactPurchaseEditingV1(item);
+          const quantity = exact ? exact.quantityText : item.quantity;
+          const quantityLabel = quantity == null ? 'Не рассчитано'
+            : [formatEstimateQuantityRu(quantity), formatEstimateUnitLabel(item.unit)].filter(Boolean).join(' ');
+          return [{ ...shared, titleRu: item.titleRu, quantityLabel,
+            ownerOperationTitleRu: canonicalPublicEstimateWorkTitleRu(shared.ownerOperationTitleRu) }];
+        }),
         scopeRequirements: section.scopeRequirements,
         physicallyExcluded: section.physicallyExcluded,
       }]) : baseSections;
@@ -1427,12 +1502,12 @@ export function buildRequestEstimateViewModel(
     ?? null;
 
   return {
-    workProcessGroups: canonicalEstimateWorkProcess(viewBundle.items.map(item => ({
-      rowId: item.id, operation: item.sourceParameters?.canonicalOperationComposition,
+    workProcessGroups: canonicalEstimateWorkProcess(publicCompositionItems.map(item => ({
+      rowId: item.id, sourceRowId:String(item.sourceParameters?.rowCode??''), operation: item.sourceParameters?.canonicalOperationComposition,
       titleRu: sanitizeRequestEstimatePublicText(localizeKnownTechnologyVariantSuffixRu(item.titleRu)), category: item.category ?? item.itemType,
       costTreatment: typeof item.sourceParameters?.canonicalCostTreatment === 'string'
         ? item.sourceParameters.canonicalCostTreatment : undefined,
-    })), publicRequestEstimateTitle(bundle.structuredEstimatePayload?.workTitle || bundle.draft.selectedWorkTitleRu || bundle.draft.title)),
+    })), publicRequestEstimateTitle(bundle.structuredEstimatePayload?.workTitle || bundle.draft.selectedWorkTitleRu || bundle.draft.title),legacyDisplayContext),
     title: publicRequestEstimateTitle(
       bundle.structuredEstimatePayload?.workTitle
         || bundle.draft.selectedWorkTitleRu

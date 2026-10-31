@@ -1,0 +1,2221 @@
+{
+  "contract": "gox-build.master212.concrete-foundation-successor/r1",
+  "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+  "masterPath": "C:/Users/User/Downloads/GOX_BUILD_MASTER_TZ_2_12_2026-10-22.txt",
+  "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+  "snapshotPath": "data/estimate-benchmarks/fixtures/master212-concrete-two-current-r1.json",
+  "snapshotSha256": "8c842f25eb8202f8eaed911a2b567bfce9eecceedfd6a3b79c7e5620193bad90",
+  "parentFileSha256": "dea62dc90318a7aa386ae305af3ddd299ba993014130b10f3b616c7efcf4fde3",
+  "selectorId": "m212_foundation_cycle_profile",
+  "legacyChoiceRu": "Сохранённый исходный состав фундамента",
+  "newChoiceRu": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+      "kind": "strip_foundation",
+      "definitionId": "cb970826-ff8b-5919-8434-72f505c9f176",
+      "definitionVersion": 13,
+      "definitionSha256": "0a52933301b600e6c0b6bfa9ae820bd871ef4318d3977f794aef9fa68a0cc2ed",
+      "expectedParentShape": [
+        287,
+        82,
+        82
+      ],
+      "legacyPrimary": "plan_dimension_concrete_volume_m3",
+      "legacyUnit": "m3"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "kind": "slab_foundation",
+      "definitionId": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+      "definitionVersion": 10,
+      "definitionSha256": "73ce830d2c3315af7396e568091a89ac6ca4789763ae48b9a95ad872f4492e74",
+      "expectedParentShape": [
+        83,
+        127,
+        109
+      ],
+      "legacyPrimary": "slab_area_m2",
+      "legacyUnit": "m2"
+    }
+  ],
+  "scopeRu": "Полный исходный конечный фундамент сохраняется. Новая ветвь переиспользует целиком подтверждённые подработы бетонирования, армирования, системной опалубки и закладных; подготовка col01 — отдельная подработка со своим объёмом. Неизвестные проектные факты и нормы полного цикла остаются видимыми.",
+  "sourcePins": [
+    {
+      "path": "src/lib/estimate/v4/stripFoundationConcretePlacementR1.ts",
+      "sha256": "d2c95d7595cb8f47d368c95c65a8ee31594ad8fdfa9eb0fee14b30772f03b841",
+      "use": "REUSE_ENTIRE_ACCEPTED_COMPONENT_NOT_ITS_ACCEPTANCE_FIXTURE"
+    },
+    {
+      "path": "src/lib/estimate/v4/slabFoundationConcretePlacementR1.ts",
+      "sha256": "6df43d0d44de4967e44db3ba081944a06c5839a9b4a35cddeca9d52f4f9cd544",
+      "use": "REUSE_ENTIRE_ACCEPTED_COMPONENT_NOT_ITS_ACCEPTANCE_FIXTURE"
+    },
+    {
+      "path": "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "sha256": "6a58c6e98a9bad2a75f55fbda57813942378e75683b1bbe42056cfef64a44350",
+      "use": "REUSE_ENTIRE_ACCEPTED_COMPONENT_NOT_ITS_ACCEPTANCE_FIXTURE"
+    },
+    {
+      "path": "src/lib/estimate/v4/slabFoundationReinforcementR1.ts",
+      "sha256": "b1f351260bea64b1638b9033343a38cfde329348e498444e16062600ba8a9457",
+      "use": "REUSE_ENTIRE_ACCEPTED_COMPONENT_NOT_ITS_ACCEPTANCE_FIXTURE"
+    },
+    {
+      "path": "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "sha256": "be648c85d153ad6871a17235fa907ea7f5cad27a85f0731daef7fb3768090379",
+      "use": "REUSE_ENTIRE_ACCEPTED_COMPONENT_NOT_ITS_ACCEPTANCE_FIXTURE"
+    },
+    {
+      "path": "src/lib/estimate/v4/concreteSlabEmbeddedItemsR1.ts",
+      "sha256": "0d032448a6d11f5fbfa9e9b5d66e3c223248d2ce712764d1166fd1cb23cc7160",
+      "use": "REUSE_ENTIRE_ACCEPTED_COMPONENT_NOT_ITS_ACCEPTANCE_FIXTURE"
+    },
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "sha256": "13bfa791adb984860e92c668cfeafd290a34057f26038b44e065fa521e8a83d4",
+      "use": "REUSE_ENTIRE_ACCEPTED_COMPONENT_NOT_ITS_ACCEPTANCE_FIXTURE"
+    },
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionDefinitionR1.ts",
+      "sha256": "a54a791fee01b49f4cefe5f8f16b78583b409fd174d70dd25954b82218ced9ee",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/v4/domainFactory/clientRuntimeV1.ts",
+      "sha256": "4dac5c4a83ac1c8dbe98f4a8ba914c68fc783f928c0c7620a12b532fc6ad36f7",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/v4/domainFactory/reinforcementBarSchedulePhysicalNormV1.ts",
+      "sha256": "b0741995268082dc96b7ab0a5da31e502ea777e317af189d7f453cf1f028d40c",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/v4/domainFactory/formworkRicsNrm2PhysicalNormV1.ts",
+      "sha256": "2ae3c285625ccb3c506b570bc1ccd8601959b39ede34bb63cd8d19ae841d7ed5",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1.ts",
+      "sha256": "45993f0bdf09272720cb4686427f8490c3d5d663e3cedf1c92cf876dc4592ac6",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/v4/domainFactory/constructionNormativeRegistryV1.ts",
+      "sha256": "57453b0e0fe9490996c666f21418fea2cafe621d0c95e9c350c7be3999ec330a",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/contracts/reinforcementProductionPromptParametersR1.ts",
+      "sha256": "b8bdeeee2eb3e8ad75f45ca2afc843f83dfe132e70361d76bf15665cfb615bd4",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/contracts/formworkFramiXlifeIdentityR1.ts",
+      "sha256": "0c6c5b21b735800b36fa8413f1f9d7eff233e1ad870ff7ab567a440749f5dc60",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/contracts/reinforcementBarScheduleProfileIdentityV1.ts",
+      "sha256": "885f461cfc3abf21a399a0b208800e2b9fb62806acdb7b558d8784d85fd5be6e",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/contracts/ricsNrm2FormworkProfileIdentityV1.ts",
+      "sha256": "c0d4935e8564f40e8d97a77bc00b65b837644cfa0bff812275066ae296fb1e34",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/formulaGraph.ts",
+      "sha256": "60ee28eaf8374f736f22c9f1ea7cd8827ef8fc98719c531cdb948ebe1c1fb17c",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalFormulaOutputBounds.ts",
+      "sha256": "f315772261d499ae96b63fe4d6cca6cb84e87a4f10fbb0cd00bc0e37e3c76842",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/numericParameterRelations.ts",
+      "sha256": "588acad69721ebdbc9e97022f03b59bad96bff816d645dd3ff0e4ec452c0e21d",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/inclusionGraph.ts",
+      "sha256": "f6bcf6d8fcb5b30e2c7fe489b6b5b9aaed97366f35f9e6e0f818e51b23796c02",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+      "sha256": "1f7df384d98d4c1fb55a06a62913730d6bc079e0f6c0987f3b3a0e3e358d4f29",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/parameterConstraints.ts",
+      "sha256": "066fbb4f3f52d86eff3c40767bacb46c1964ce2e512dcd5db84aedecf26c22b8",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "data/estimate-norms/professional/reinforcement.json",
+      "sha256": "ae22a9ef73c518b292fa8bf1ac4eb448837d30d7e87a3eec5e383891aecef286",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "data/estimate-norms/professional/formwork.json",
+      "sha256": "b4d950ef2d0170b505fe58ef4a2c21192c9ac2114fc2c919ea8b4d100a6af686",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "package.json",
+      "sha256": "90229fbbbfb7373be55eef141bb167faa4737f3a2b59c7104a559d2955003e78",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "f8990847d69ff7c5c6eda3f5832ab941c2a32207030b32bf17a5aad3b8eda11c",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/v4/master212ConcreteFoundationSuccessorR1.ts",
+      "sha256": "2f4b5b5b227969f6bcc7ad3af51322bb8b87e4ad2254604ab042db67a92ffccf",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "data/estimate-benchmarks/fixtures/master212-concrete-two-current-r1.json",
+      "sha256": "8c842f25eb8202f8eaed911a2b567bfce9eecceedfd6a3b79c7e5620193bad90",
+      "use": "FRESH_CURRENT_IMPLEMENTATION_DEPENDENCY"
+    },
+    {
+      "path": "src/lib/estimate/estimateDeterministicHash.ts",
+      "sha256": "5a53bea2ea6e1cc5f3f22c95e4463c89a3d97a74c95856dde9d2670b3e5c096f",
+      "use": "ACTUAL_SHARED_DETERMINISTIC_HASH_BODY"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/shared-foundation-owner-current-cutover-r1153.json",
+      "sha256": "f07aa46fa94b541ddce733c1a9a037107b2b6a3289fbeb69aba4f9b73f084cf1",
+      "use": "ROOT_FRESH_CURRENT_SOURCE_TEST_RECEIPT_RECIPE_GATES_PENDING"
+    }
+  ],
+  "newFULL": 0,
+  "newPublicCards": 0,
+  "retainedScopeNeeds": [
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "operationTitleRu": "Выемка грунта и вывоз",
+      "key": "excavation-soil-cut",
+      "titleRu": "Разработка грунта",
+      "category": "work",
+      "unitId": "m3",
+      "matrixCategory": "labor",
+      "needId": "master212:slab_foundation:scope-need:excavation-soil-cut",
+      "parameterId": "m212_slab_foundation_scope_need_excavation_soil_cut",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Выемка грунта и вывоз",
+      "reasonRu": "Сохранённая граница полного результата: Выемка грунта и вывоз. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод выемка грунта и вывоз, затем получить первичную норму и объектную ведомость для разработка грунта."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "operationTitleRu": "Выемка грунта и вывоз",
+      "key": "excavation-excavator",
+      "titleRu": "Экскаватор с машинистом",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "matrixCategory": "machines_and_operators",
+      "needId": "master212:slab_foundation:scope-need:excavation-excavator",
+      "parameterId": "m212_slab_foundation_scope_need_excavation_excavator",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Выемка грунта и вывоз",
+      "reasonRu": "Сохранённая граница полного результата: Выемка грунта и вывоз. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод выемка грунта и вывоз, затем получить первичную норму и объектную ведомость для экскаватор с машинистом."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "operationTitleRu": "Выемка грунта и вывоз",
+      "key": "excavation-loader",
+      "titleRu": "Погрузчик с машинистом",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "matrixCategory": "machines_and_operators",
+      "needId": "master212:slab_foundation:scope-need:excavation-loader",
+      "parameterId": "m212_slab_foundation_scope_need_excavation_loader",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Выемка грунта и вывоз",
+      "reasonRu": "Сохранённая граница полного результата: Выемка грунта и вывоз. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод выемка грунта и вывоз, затем получить первичную норму и объектную ведомость для погрузчик с машинистом."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "operationTitleRu": "Выемка грунта и вывоз",
+      "key": "excavation-soil-haul",
+      "titleRu": "Перевозка вынутого грунта",
+      "category": "delivery",
+      "unitId": "trip",
+      "matrixCategory": "delivery_feed",
+      "needId": "master212:slab_foundation:scope-need:excavation-soil-haul",
+      "parameterId": "m212_slab_foundation_scope_need_excavation_soil_haul",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Выемка грунта и вывоз",
+      "reasonRu": "Сохранённая граница полного результата: Выемка грунта и вывоз. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод выемка грунта и вывоз, затем получить первичную норму и объектную ведомость для перевозка вынутого грунта."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "operationTitleRu": "Укладка разделительного геотекстиля",
+      "key": "geotextile-fabric",
+      "titleRu": "Разделительный геотекстиль",
+      "category": "material",
+      "unitId": "m2",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:geotextile-fabric",
+      "parameterId": "m212_slab_foundation_scope_need_geotextile_fabric",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Укладка разделительного геотекстиля",
+      "reasonRu": "Сохранённая граница полного результата: Укладка разделительного геотекстиля. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод укладка разделительного геотекстиля, затем получить первичную норму и объектную ведомость для разделительный геотекстиль."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "operationTitleRu": "Укладка разделительного геотекстиля",
+      "key": "geotextile-pins",
+      "titleRu": "Крепления геотекстиля",
+      "category": "material",
+      "unitId": "piece",
+      "matrixCategory": "fasteners",
+      "needId": "master212:slab_foundation:scope-need:geotextile-pins",
+      "parameterId": "m212_slab_foundation_scope_need_geotextile_pins",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Укладка разделительного геотекстиля",
+      "reasonRu": "Сохранённая граница полного результата: Укладка разделительного геотекстиля. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод укладка разделительного геотекстиля, затем получить первичную норму и объектную ведомость для крепления геотекстиля."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "operationTitleRu": "Укладка разделительного геотекстиля",
+      "key": "geotextile-labor",
+      "titleRu": "Укладка геотекстиля",
+      "category": "work",
+      "unitId": "man_hour",
+      "matrixCategory": "labor",
+      "needId": "master212:slab_foundation:scope-need:geotextile-labor",
+      "parameterId": "m212_slab_foundation_scope_need_geotextile_labor",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Укладка разделительного геотекстиля",
+      "reasonRu": "Сохранённая граница полного результата: Укладка разделительного геотекстиля. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод укладка разделительного геотекстиля, затем получить первичную норму и объектную ведомость для укладка геотекстиля."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "operationTitleRu": "Устройство дренажа",
+      "key": "drainage-pipe",
+      "titleRu": "Дренажная труба",
+      "category": "material",
+      "unitId": "m",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:drainage-pipe",
+      "parameterId": "m212_slab_foundation_scope_need_drainage_pipe",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство дренажа",
+      "reasonRu": "Сохранённая граница полного результата: Устройство дренажа. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство дренажа, затем получить первичную норму и объектную ведомость для дренажная труба."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "operationTitleRu": "Устройство дренажа",
+      "key": "drainage-couplings",
+      "titleRu": "Муфты и фитинги дренажа",
+      "category": "material",
+      "unitId": "piece",
+      "matrixCategory": "fasteners",
+      "needId": "master212:slab_foundation:scope-need:drainage-couplings",
+      "parameterId": "m212_slab_foundation_scope_need_drainage_couplings",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство дренажа",
+      "reasonRu": "Сохранённая граница полного результата: Устройство дренажа. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство дренажа, затем получить первичную норму и объектную ведомость для муфты и фитинги дренажа."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "operationTitleRu": "Устройство дренажа",
+      "key": "drainage-stone",
+      "titleRu": "Дренажный заполнитель",
+      "category": "material",
+      "unitId": "m3",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:drainage-stone",
+      "parameterId": "m212_slab_foundation_scope_need_drainage_stone",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство дренажа",
+      "reasonRu": "Сохранённая граница полного результата: Устройство дренажа. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство дренажа, затем получить первичную норму и объектную ведомость для дренажный заполнитель."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "operationTitleRu": "Устройство дренажа",
+      "key": "drainage-chambers",
+      "titleRu": "Смотровые колодцы дренажа",
+      "category": "material",
+      "unitId": "piece",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:drainage-chambers",
+      "parameterId": "m212_slab_foundation_scope_need_drainage_chambers",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство дренажа",
+      "reasonRu": "Сохранённая граница полного результата: Устройство дренажа. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство дренажа, затем получить первичную норму и объектную ведомость для смотровые колодцы дренажа."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "operationTitleRu": "Устройство дренажа",
+      "key": "drainage-labor",
+      "titleRu": "Монтаж дренажа",
+      "category": "work",
+      "unitId": "man_hour",
+      "matrixCategory": "labor",
+      "needId": "master212:slab_foundation:scope-need:drainage-labor",
+      "parameterId": "m212_slab_foundation_scope_need_drainage_labor",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство дренажа",
+      "reasonRu": "Сохранённая граница полного результата: Устройство дренажа. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство дренажа, затем получить первичную норму и объектную ведомость для монтаж дренажа."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "operationTitleRu": "Устройство дренажа",
+      "key": "drainage-tools",
+      "titleRu": "Инструмент монтажа дренажа",
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "needId": "master212:slab_foundation:scope-need:drainage-tools",
+      "parameterId": "m212_slab_foundation_scope_need_drainage_tools",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство дренажа",
+      "reasonRu": "Сохранённая граница полного результата: Устройство дренажа. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство дренажа, затем получить первичную норму и объектную ведомость для инструмент монтажа дренажа."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "operationTitleRu": "Устройство песчано-щебёночного основания",
+      "key": "base-sand",
+      "titleRu": "Песок основания",
+      "category": "material",
+      "unitId": "m3",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:base-sand",
+      "parameterId": "m212_slab_foundation_scope_need_base_sand",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство песчано-щебёночного основания",
+      "reasonRu": "Сохранённая граница полного результата: Устройство песчано-щебёночного основания. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство песчано-щебёночного основания, затем получить первичную норму и объектную ведомость для песок основания."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "operationTitleRu": "Устройство песчано-щебёночного основания",
+      "key": "base-stone",
+      "titleRu": "Щебень основания",
+      "category": "material",
+      "unitId": "m3",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:base-stone",
+      "parameterId": "m212_slab_foundation_scope_need_base_stone",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство песчано-щебёночного основания",
+      "reasonRu": "Сохранённая граница полного результата: Устройство песчано-щебёночного основания. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство песчано-щебёночного основания, затем получить первичную норму и объектную ведомость для щебень основания."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "operationTitleRu": "Устройство песчано-щебёночного основания",
+      "key": "base-wedging",
+      "titleRu": "Расклинивающий заполнитель",
+      "category": "material",
+      "unitId": "m3",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:base-wedging",
+      "parameterId": "m212_slab_foundation_scope_need_base_wedging",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство песчано-щебёночного основания",
+      "reasonRu": "Сохранённая граница полного результата: Устройство песчано-щебёночного основания. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство песчано-щебёночного основания, затем получить первичную норму и объектную ведомость для расклинивающий заполнитель."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "operationTitleRu": "Устройство песчано-щебёночного основания",
+      "key": "base-water",
+      "titleRu": "Технологическая вода основания",
+      "category": "material",
+      "unitId": "l",
+      "matrixCategory": "consumables",
+      "needId": "master212:slab_foundation:scope-need:base-water",
+      "parameterId": "m212_slab_foundation_scope_need_base_water",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство песчано-щебёночного основания",
+      "reasonRu": "Сохранённая граница полного результата: Устройство песчано-щебёночного основания. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство песчано-щебёночного основания, затем получить первичную норму и объектную ведомость для технологическая вода основания."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "operationTitleRu": "Устройство песчано-щебёночного основания",
+      "key": "base-labor",
+      "titleRu": "Устройство и уплотнение основания",
+      "category": "work",
+      "unitId": "man_hour",
+      "matrixCategory": "labor",
+      "needId": "master212:slab_foundation:scope-need:base-labor",
+      "parameterId": "m212_slab_foundation_scope_need_base_labor",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство песчано-щебёночного основания",
+      "reasonRu": "Сохранённая граница полного результата: Устройство песчано-щебёночного основания. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство песчано-щебёночного основания, затем получить первичную норму и объектную ведомость для устройство и уплотнение основания."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "operationTitleRu": "Устройство песчано-щебёночного основания",
+      "key": "base-compactor",
+      "titleRu": "Механизм уплотнения с оператором",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "matrixCategory": "machines_and_operators",
+      "needId": "master212:slab_foundation:scope-need:base-compactor",
+      "parameterId": "m212_slab_foundation_scope_need_base_compactor",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство песчано-щебёночного основания",
+      "reasonRu": "Сохранённая граница полного результата: Устройство песчано-щебёночного основания. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство песчано-щебёночного основания, затем получить первичную норму и объектную ведомость для механизм уплотнения с оператором."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "operationTitleRu": "Устройство песчано-щебёночного основания",
+      "key": "base-delivery",
+      "titleRu": "Доставка сыпучих материалов",
+      "category": "delivery",
+      "unitId": "trip",
+      "matrixCategory": "delivery_feed",
+      "needId": "master212:slab_foundation:scope-need:base-delivery",
+      "parameterId": "m212_slab_foundation_scope_need_base_delivery",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство песчано-щебёночного основания",
+      "reasonRu": "Сохранённая граница полного результата: Устройство песчано-щебёночного основания. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство песчано-щебёночного основания, затем получить первичную норму и объектную ведомость для доставка сыпучих материалов."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "operationTitleRu": "Устройство гидроизоляции",
+      "key": "waterproofing-primer",
+      "titleRu": "Грунтовка гидроизоляции",
+      "category": "material",
+      "unitId": "kg",
+      "matrixCategory": "consumables",
+      "needId": "master212:slab_foundation:scope-need:waterproofing-primer",
+      "parameterId": "m212_slab_foundation_scope_need_waterproofing_primer",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство гидроизоляции",
+      "reasonRu": "Сохранённая граница полного результата: Устройство гидроизоляции. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство гидроизоляции, затем получить первичную норму и объектную ведомость для грунтовка гидроизоляции."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "operationTitleRu": "Устройство гидроизоляции",
+      "key": "waterproofing-membrane",
+      "titleRu": "Гидроизоляционная мембрана",
+      "category": "material",
+      "unitId": "m2",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:waterproofing-membrane",
+      "parameterId": "m212_slab_foundation_scope_need_waterproofing_membrane",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство гидроизоляции",
+      "reasonRu": "Сохранённая граница полного результата: Устройство гидроизоляции. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство гидроизоляции, затем получить первичную норму и объектную ведомость для гидроизоляционная мембрана."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "operationTitleRu": "Устройство гидроизоляции",
+      "key": "waterproofing-details",
+      "titleRu": "Усиление и оформление примыканий",
+      "category": "material",
+      "unitId": "m2",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:waterproofing-details",
+      "parameterId": "m212_slab_foundation_scope_need_waterproofing_details",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство гидроизоляции",
+      "reasonRu": "Сохранённая граница полного результата: Устройство гидроизоляции. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство гидроизоляции, затем получить первичную норму и объектную ведомость для усиление и оформление примыканий."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "operationTitleRu": "Устройство гидроизоляции",
+      "key": "waterproofing-sealant",
+      "titleRu": "Герметик примыканий",
+      "category": "material",
+      "unitId": "l",
+      "matrixCategory": "consumables",
+      "needId": "master212:slab_foundation:scope-need:waterproofing-sealant",
+      "parameterId": "m212_slab_foundation_scope_need_waterproofing_sealant",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство гидроизоляции",
+      "reasonRu": "Сохранённая граница полного результата: Устройство гидроизоляции. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство гидроизоляции, затем получить первичную норму и объектную ведомость для герметик примыканий."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "operationTitleRu": "Устройство гидроизоляции",
+      "key": "waterproofing-fillets",
+      "titleRu": "Раствор галтелей",
+      "category": "material",
+      "unitId": "kg",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:waterproofing-fillets",
+      "parameterId": "m212_slab_foundation_scope_need_waterproofing_fillets",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство гидроизоляции",
+      "reasonRu": "Сохранённая граница полного результата: Устройство гидроизоляции. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство гидроизоляции, затем получить первичную норму и объектную ведомость для раствор галтелей."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "operationTitleRu": "Устройство гидроизоляции",
+      "key": "waterproofing-labor",
+      "titleRu": "Монтаж гидроизоляции",
+      "category": "work",
+      "unitId": "man_hour",
+      "matrixCategory": "labor",
+      "needId": "master212:slab_foundation:scope-need:waterproofing-labor",
+      "parameterId": "m212_slab_foundation_scope_need_waterproofing_labor",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство гидроизоляции",
+      "reasonRu": "Сохранённая граница полного результата: Устройство гидроизоляции. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство гидроизоляции, затем получить первичную норму и объектную ведомость для монтаж гидроизоляции."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "operationTitleRu": "Устройство гидроизоляции",
+      "key": "waterproofing-tools",
+      "titleRu": "Инструмент нанесения гидроизоляции",
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "needId": "master212:slab_foundation:scope-need:waterproofing-tools",
+      "parameterId": "m212_slab_foundation_scope_need_waterproofing_tools",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство гидроизоляции",
+      "reasonRu": "Сохранённая граница полного результата: Устройство гидроизоляции. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство гидроизоляции, затем получить первичную норму и объектную ведомость для инструмент нанесения гидроизоляции."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "operationTitleRu": "Монтаж теплоизоляции фундамента",
+      "key": "insulation-boards",
+      "titleRu": "Плиты теплоизоляции",
+      "category": "material",
+      "unitId": "m2",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:insulation-boards",
+      "parameterId": "m212_slab_foundation_scope_need_insulation_boards",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Монтаж теплоизоляции фундамента",
+      "reasonRu": "Сохранённая граница полного результата: Монтаж теплоизоляции фундамента. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод монтаж теплоизоляции фундамента, затем получить первичную норму и объектную ведомость для плиты теплоизоляции."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "operationTitleRu": "Монтаж теплоизоляции фундамента",
+      "key": "insulation-tape",
+      "titleRu": "Лента стыков теплоизоляции",
+      "category": "material",
+      "unitId": "m",
+      "matrixCategory": "consumables",
+      "needId": "master212:slab_foundation:scope-need:insulation-tape",
+      "parameterId": "m212_slab_foundation_scope_need_insulation_tape",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Монтаж теплоизоляции фундамента",
+      "reasonRu": "Сохранённая граница полного результата: Монтаж теплоизоляции фундамента. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод монтаж теплоизоляции фундамента, затем получить первичную норму и объектную ведомость для лента стыков теплоизоляции."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "operationTitleRu": "Монтаж теплоизоляции фундамента",
+      "key": "insulation-labor",
+      "titleRu": "Монтаж теплоизоляции",
+      "category": "work",
+      "unitId": "man_hour",
+      "matrixCategory": "labor",
+      "needId": "master212:slab_foundation:scope-need:insulation-labor",
+      "parameterId": "m212_slab_foundation_scope_need_insulation_labor",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Монтаж теплоизоляции фундамента",
+      "reasonRu": "Сохранённая граница полного результата: Монтаж теплоизоляции фундамента. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод монтаж теплоизоляции фундамента, затем получить первичную норму и объектную ведомость для монтаж теплоизоляции."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "operationTitleRu": "Вводы и заземление фундамента",
+      "key": "embeds-sleeves",
+      "titleRu": "Гильзы инженерных вводов",
+      "category": "material",
+      "unitId": "piece",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:embeds-sleeves",
+      "parameterId": "m212_slab_foundation_scope_need_embeds_sleeves",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Вводы и заземление фундамента",
+      "reasonRu": "Сохранённая граница полного результата: Вводы и заземление фундамента. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод вводы и заземление фундамента, затем получить первичную норму и объектную ведомость для гильзы инженерных вводов."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "operationTitleRu": "Вводы и заземление фундамента",
+      "key": "embeds-grounding",
+      "titleRu": "Полоса заземления",
+      "category": "material",
+      "unitId": "m",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:embeds-grounding",
+      "parameterId": "m212_slab_foundation_scope_need_embeds_grounding",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Вводы и заземление фундамента",
+      "reasonRu": "Сохранённая граница полного результата: Вводы и заземление фундамента. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод вводы и заземление фундамента, затем получить первичную норму и объектную ведомость для полоса заземления."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "operationTitleRu": "Вводы и заземление фундамента",
+      "key": "embeds-connectors",
+      "titleRu": "Соединители заземления",
+      "category": "material",
+      "unitId": "piece",
+      "matrixCategory": "fasteners",
+      "needId": "master212:slab_foundation:scope-need:embeds-connectors",
+      "parameterId": "m212_slab_foundation_scope_need_embeds_connectors",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Вводы и заземление фундамента",
+      "reasonRu": "Сохранённая граница полного результата: Вводы и заземление фундамента. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод вводы и заземление фундамента, затем получить первичную норму и объектную ведомость для соединители заземления."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "operationTitleRu": "Вводы и заземление фундамента",
+      "key": "embeds-labor",
+      "titleRu": "Монтаж вводов и заземления",
+      "category": "work",
+      "unitId": "man_hour",
+      "matrixCategory": "labor",
+      "needId": "master212:slab_foundation:scope-need:embeds-labor",
+      "parameterId": "m212_slab_foundation_scope_need_embeds_labor",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Вводы и заземление фундамента",
+      "reasonRu": "Сохранённая граница полного результата: Вводы и заземление фундамента. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод вводы и заземление фундамента, затем получить первичную норму и объектную ведомость для монтаж вводов и заземления."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "operationTitleRu": "Допустимое исправление дефектов",
+      "key": "repair-mortar",
+      "titleRu": "Ремонтный раствор",
+      "category": "material",
+      "unitId": "kg",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:repair-mortar",
+      "parameterId": "m212_slab_foundation_scope_need_repair_mortar",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Допустимое исправление дефектов",
+      "reasonRu": "Сохранённая граница полного результата: Допустимое исправление дефектов. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод допустимое исправление дефектов, затем получить первичную норму и объектную ведомость для ремонтный раствор."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "operationTitleRu": "Допустимое исправление дефектов",
+      "key": "repair-water",
+      "titleRu": "Вода затворения ремонтного раствора",
+      "category": "material",
+      "unitId": "l",
+      "matrixCategory": "consumables",
+      "needId": "master212:slab_foundation:scope-need:repair-water",
+      "parameterId": "m212_slab_foundation_scope_need_repair_water",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Допустимое исправление дефектов",
+      "reasonRu": "Сохранённая граница полного результата: Допустимое исправление дефектов. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод допустимое исправление дефектов, затем получить первичную норму и объектную ведомость для вода затворения ремонтного раствора."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "operationTitleRu": "Допустимое исправление дефектов",
+      "key": "repair-labor",
+      "titleRu": "Исправление дефектов бетона",
+      "category": "work",
+      "unitId": "man_hour",
+      "matrixCategory": "labor",
+      "needId": "master212:slab_foundation:scope-need:repair-labor",
+      "parameterId": "m212_slab_foundation_scope_need_repair_labor",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Допустимое исправление дефектов",
+      "reasonRu": "Сохранённая граница полного результата: Допустимое исправление дефектов. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод допустимое исправление дефектов, затем получить первичную норму и объектную ведомость для исправление дефектов бетона."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "operationTitleRu": "Допустимое исправление дефектов",
+      "key": "repair-tools",
+      "titleRu": "Инструмент подготовки и ремонта",
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "needId": "master212:slab_foundation:scope-need:repair-tools",
+      "parameterId": "m212_slab_foundation_scope_need_repair_tools",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Допустимое исправление дефектов",
+      "reasonRu": "Сохранённая граница полного результата: Допустимое исправление дефектов. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод допустимое исправление дефектов, затем получить первичную норму и объектную ведомость для инструмент подготовки и ремонта."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "operationTitleRu": "Обратная засыпка",
+      "key": "backfill-soil",
+      "titleRu": "Пригодный грунт обратной засыпки",
+      "category": "material",
+      "unitId": "m3",
+      "matrixCategory": "materials",
+      "needId": "master212:slab_foundation:scope-need:backfill-soil",
+      "parameterId": "m212_slab_foundation_scope_need_backfill_soil",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Обратная засыпка",
+      "reasonRu": "Сохранённая граница полного результата: Обратная засыпка. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод обратная засыпка, затем получить первичную норму и объектную ведомость для пригодный грунт обратной засыпки."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "operationTitleRu": "Обратная засыпка",
+      "key": "backfill-labor",
+      "titleRu": "Обратная засыпка пазух",
+      "category": "work",
+      "unitId": "man_hour",
+      "matrixCategory": "labor",
+      "needId": "master212:slab_foundation:scope-need:backfill-labor",
+      "parameterId": "m212_slab_foundation_scope_need_backfill_labor",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Обратная засыпка",
+      "reasonRu": "Сохранённая граница полного результата: Обратная засыпка. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод обратная засыпка, затем получить первичную норму и объектную ведомость для обратная засыпка пазух."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "operationTitleRu": "Обратная засыпка",
+      "key": "backfill-compactor",
+      "titleRu": "Механизм уплотнения засыпки",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "matrixCategory": "machines_and_operators",
+      "needId": "master212:slab_foundation:scope-need:backfill-compactor",
+      "parameterId": "m212_slab_foundation_scope_need_backfill_compactor",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Обратная засыпка",
+      "reasonRu": "Сохранённая граница полного результата: Обратная засыпка. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод обратная засыпка, затем получить первичную норму и объектную ведомость для механизм уплотнения засыпки."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "operationTitleRu": "Демобилизация временных средств",
+      "key": "demobilization-service",
+      "titleRu": "Демобилизация временных средств",
+      "category": "service",
+      "unitId": "service",
+      "matrixCategory": "services",
+      "needId": "master212:slab_foundation:scope-need:demobilization-service",
+      "parameterId": "m212_slab_foundation_scope_need_demobilization_service",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Демобилизация временных средств",
+      "reasonRu": "Сохранённая граница полного результата: Демобилизация временных средств. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод демобилизация временных средств, затем получить первичную норму и объектную ведомость для демобилизация временных средств."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "operationTitleRu": "Устройство проектных рабочих швов",
+      "key": "joint-sealing",
+      "titleRu": "Расходные материалы узлов шва",
+      "category": "material",
+      "unitId": "kg",
+      "matrixCategory": "consumables",
+      "needId": "master212:strip_foundation:scope-need:joint-sealing",
+      "parameterId": "m212_strip_foundation_scope_need_joint_sealing",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство проектных рабочих швов",
+      "reasonRu": "Сохранённая граница полного результата: Устройство проектных рабочих швов. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство проектных рабочих швов, затем получить первичную норму и объектную ведомость для расходные материалы узлов шва."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "operationTitleRu": "Устройство проектных рабочих швов",
+      "key": "joint-fixing",
+      "titleRu": "Крепления гидрошпонки",
+      "category": "material",
+      "unitId": "piece",
+      "matrixCategory": "fasteners",
+      "needId": "master212:strip_foundation:scope-need:joint-fixing",
+      "parameterId": "m212_strip_foundation_scope_need_joint_fixing",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство проектных рабочих швов",
+      "reasonRu": "Сохранённая граница полного результата: Устройство проектных рабочих швов. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство проектных рабочих швов, затем получить первичную норму и объектную ведомость для крепления гидрошпонки."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "operationTitleRu": "Устройство проектных рабочих швов",
+      "key": "joint-tools",
+      "titleRu": "Инструмент устройства швов",
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "needId": "master212:strip_foundation:scope-need:joint-tools",
+      "parameterId": "m212_strip_foundation_scope_need_joint_tools",
+      "missingAuthority": "APPLICABLE_COMPLETE_OPERATION_NORM_OR_VERIFIED_PROJECT_TAKEOFF",
+      "projectFact": "Применимость и проектный узел операции: Устройство проектных рабочих швов",
+      "reasonRu": "Сохранённая граница полного результата: Устройство проектных рабочих швов. Нужны применимая система, проектная ведомость, собственная норма расхода/труда/часов и границы поставки. Старые budget/default количества и фасовки не переносятся.",
+      "nextStepRu": "Утвердить применимость и конкретный метод устройство проектных рабочих швов, затем получить первичную норму и объектную ведомость для инструмент устройства швов."
+    }
+  ],
+  "retainedOperationMapping": {
+    "strip_foundation": {
+      "supply": "delivery",
+      "curing": "curing",
+      "heating": "curing",
+      "placement": "compacting",
+      "finishing": "finishing",
+      "control": "quality",
+      "joint": "retained:joint"
+    },
+    "slab_foundation": {
+      "site": "scope-base",
+      "setting-out": "setting-out",
+      "boundary": "formwork",
+      "excavation": "retained:excavation",
+      "geotextile": "retained:geotextile",
+      "drainage": "retained:drainage",
+      "base": "retained:base",
+      "blinding": "preparation",
+      "waterproofing": "retained:waterproofing",
+      "insulation": "retained:insulation",
+      "formwork": "formwork",
+      "reinforcement": "reinforcement",
+      "embeds": "retained:embeds",
+      "placing": "compacting",
+      "curing": "curing",
+      "quality": "quality",
+      "repair": "retained:repair",
+      "backfill": "retained:backfill",
+      "cleanup": "cleanup",
+      "demobilization": "retained:demobilization"
+    }
+  },
+  "retainedOperationCategoryMatrix": [
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "materials",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "consumables",
+      "needIds": [
+        "master212:strip_foundation:scope-need:joint-sealing"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "fasteners",
+      "needIds": [
+        "master212:strip_foundation:scope-need:joint-fixing"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "tools",
+      "needIds": [
+        "master212:strip_foundation:scope-need:joint-tools"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "machines_and_operators",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "labor",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "services",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "delivery_feed",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "strip_foundation",
+      "operationKey": "joint",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции joint; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "materials",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "consumables",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "fasteners",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "tools",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:slab_foundation:scope-need:excavation-excavator",
+        "master212:slab_foundation:scope-need:excavation-loader"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "labor",
+      "needIds": [
+        "master212:slab_foundation:scope-need:excavation-soil-cut"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "services",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:slab_foundation:scope-need:excavation-soil-haul"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "excavation",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции excavation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "materials",
+      "needIds": [
+        "master212:slab_foundation:scope-need:geotextile-fabric"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "consumables",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "fasteners",
+      "needIds": [
+        "master212:slab_foundation:scope-need:geotextile-pins"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "tools",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "machines_and_operators",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "labor",
+      "needIds": [
+        "master212:slab_foundation:scope-need:geotextile-labor"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "services",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "delivery_feed",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "geotextile",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции geotextile; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "materials",
+      "needIds": [
+        "master212:slab_foundation:scope-need:drainage-pipe",
+        "master212:slab_foundation:scope-need:drainage-stone",
+        "master212:slab_foundation:scope-need:drainage-chambers"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "consumables",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "fasteners",
+      "needIds": [
+        "master212:slab_foundation:scope-need:drainage-couplings"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "tools",
+      "needIds": [
+        "master212:slab_foundation:scope-need:drainage-tools"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "machines_and_operators",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "labor",
+      "needIds": [
+        "master212:slab_foundation:scope-need:drainage-labor"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "services",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "delivery_feed",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "drainage",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции drainage; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "materials",
+      "needIds": [
+        "master212:slab_foundation:scope-need:base-sand",
+        "master212:slab_foundation:scope-need:base-stone",
+        "master212:slab_foundation:scope-need:base-wedging"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "consumables",
+      "needIds": [
+        "master212:slab_foundation:scope-need:base-water"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "fasteners",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "tools",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:slab_foundation:scope-need:base-compactor"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "labor",
+      "needIds": [
+        "master212:slab_foundation:scope-need:base-labor"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "services",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:slab_foundation:scope-need:base-delivery"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "base",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции base; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "materials",
+      "needIds": [
+        "master212:slab_foundation:scope-need:waterproofing-membrane",
+        "master212:slab_foundation:scope-need:waterproofing-details",
+        "master212:slab_foundation:scope-need:waterproofing-fillets"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "consumables",
+      "needIds": [
+        "master212:slab_foundation:scope-need:waterproofing-primer",
+        "master212:slab_foundation:scope-need:waterproofing-sealant"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "fasteners",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "tools",
+      "needIds": [
+        "master212:slab_foundation:scope-need:waterproofing-tools"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "machines_and_operators",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "labor",
+      "needIds": [
+        "master212:slab_foundation:scope-need:waterproofing-labor"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "services",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "delivery_feed",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "waterproofing",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции waterproofing; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "materials",
+      "needIds": [
+        "master212:slab_foundation:scope-need:insulation-boards"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "consumables",
+      "needIds": [
+        "master212:slab_foundation:scope-need:insulation-tape"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "fasteners",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "tools",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "machines_and_operators",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "labor",
+      "needIds": [
+        "master212:slab_foundation:scope-need:insulation-labor"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "services",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "delivery_feed",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "insulation",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции insulation; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "materials",
+      "needIds": [
+        "master212:slab_foundation:scope-need:embeds-sleeves",
+        "master212:slab_foundation:scope-need:embeds-grounding"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "consumables",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "fasteners",
+      "needIds": [
+        "master212:slab_foundation:scope-need:embeds-connectors"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "tools",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "machines_and_operators",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "labor",
+      "needIds": [
+        "master212:slab_foundation:scope-need:embeds-labor"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "services",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "delivery_feed",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "embeds",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции embeds; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "materials",
+      "needIds": [
+        "master212:slab_foundation:scope-need:repair-mortar"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "consumables",
+      "needIds": [
+        "master212:slab_foundation:scope-need:repair-water"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "fasteners",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "tools",
+      "needIds": [
+        "master212:slab_foundation:scope-need:repair-tools"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "machines_and_operators",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "labor",
+      "needIds": [
+        "master212:slab_foundation:scope-need:repair-labor"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "services",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "delivery_feed",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "repair",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции repair; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "materials",
+      "needIds": [
+        "master212:slab_foundation:scope-need:backfill-soil"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "consumables",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "fasteners",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "tools",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:slab_foundation:scope-need:backfill-compactor"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "labor",
+      "needIds": [
+        "master212:slab_foundation:scope-need:backfill-labor"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "services",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "delivery_feed",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "backfill",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции backfill; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "materials",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории materials для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "consumables",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории consumables для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "fasteners",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории fasteners для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "tools",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории tools для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "rigging",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории rigging для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "machines_and_operators",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории machines_and_operators для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "labor",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории labor для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "services",
+      "needIds": [
+        "master212:slab_foundation:scope-need:demobilization-service"
+      ],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории services для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "delivery_feed",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории delivery_feed для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "access_protection",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории access_protection для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "control",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории control для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    },
+    {
+      "kind": "slab_foundation",
+      "operationKey": "demobilization",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "unresolvedApplicability": true,
+      "nextStepRu": "Подтвердить отдельный физический состав категории cleaning_waste для операции demobilization; объём подготовки и старые budget-профили его не задают."
+    }
+  ],
+  "currentSourceCutoverR1153": {
+    "contract": "fresh-current-component-source-cutover-reference/r1153",
+    "status": "CURRENT_COMPONENT_PROOF_ONLY_POST_INTAKE_RECIPE_GATES_UNRUN",
+    "receipt": {
+      "path": "data/estimate-benchmarks/source-packs/shared-foundation-owner-current-cutover-r1153.json",
+      "sha256": "f07aa46fa94b541ddce733c1a9a037107b2b6a3289fbeb69aba4f9b73f084cf1"
+    },
+    "acceptedScope": "Current strip/slab/Frami components, shared builder default, retirement and direct foundation consumer",
+    "priorSourcePinHistory": [
+      {
+        "path": "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+        "previousExpectedSha256": "5ab5f50cfbd465f6b9697ff04e96b330aa5dde6ccfdb864a66b54ddaf8c7829f",
+        "historyStatus": "HOLD_ORIGINAL_PREIMAGE_UNRECOVERED_NO_OLD_BYTE_EQUIVALENCE"
+      },
+      {
+        "path": "src/lib/estimate/v4/slabFoundationReinforcementR1.ts",
+        "previousExpectedSha256": "e8d899d321c25725542865fc7c256c1e7e2d5584502dc85f522b8dc0d84ed675",
+        "historyStatus": "HOLD_ORIGINAL_PREIMAGE_UNRECOVERED_NO_OLD_BYTE_EQUIVALENCE"
+      },
+      {
+        "path": "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+        "previousExpectedSha256": "625a7f175f102874092661360c42b2d050ef874d3dc012553fd0bf11ecb66157",
+        "historyStatus": "HOLD_ORIGINAL_PREIMAGE_UNRECOVERED_NO_OLD_BYTE_EQUIVALENCE"
+      },
+      {
+        "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+        "previousExpectedSha256": "56ffadc92ec669df51ab0f94a5bfc1d8f25a12b9eb9121f4c6323ea30a40cfc0",
+        "historyStatus": "HOLD_ORIGINAL_PREIMAGE_UNRECOVERED_NO_OLD_BYTE_EQUIVALENCE"
+      }
+    ],
+    "oldByteEquivalenceProven": false,
+    "historicalFourMissingPreimages": "Four original accepted byte versions not recovered; no old semantic-equivalence/PASS claim. Original captures, norms, units, parent history unchanged.",
+    "actualEvidence": [
+      {
+        "stageLabel": "ui-current-and-foundation-norms-nine-suites-a1",
+        "receiptSha256": "8cf66155939eb2e056b3e219c7d0ad63e85b137e16affcb747fbb2bd6e3b393c",
+        "jestJsonSha256": "bd28a391d658db927c340123ec720b6bc40ae6e4a88e21211e1de51d9bf98c5a",
+        "selectedPassedSuites": [
+          {
+            "path": "tests/estimateNorms/reinforcementBarSchedulePhysicalNorm.contract.test.ts",
+            "passedTests": 7,
+            "status": "PASS"
+          },
+          {
+            "path": "tests/estimateNorms/stripFoundationReinforcementR1.contract.test.ts",
+            "passedTests": 3,
+            "status": "PASS"
+          },
+          {
+            "path": "tests/estimateNorms/slabFoundationReinforcementR1.contract.test.ts",
+            "passedTests": 8,
+            "status": "PASS"
+          },
+          {
+            "path": "tests/estimateNorms/formworkFramiXlifeProjectKitR1.contract.test.ts",
+            "passedTests": 25,
+            "status": "PASS"
+          },
+          {
+            "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.test.ts",
+            "passedTests": 25,
+            "status": "PASS"
+          },
+          {
+            "path": "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.test.ts",
+            "passedTests": 5,
+            "status": "PASS"
+          }
+        ],
+        "entireStagePassed": true,
+        "privateLogsNotRequiredInputs": true
+      },
+      {
+        "stageLabel": "r502-and-foundation-direct-consumers-three-suites-a1",
+        "receiptSha256": "78a1dd160c50761e0feca997d3df3f9069275ec0b12297aa084ee18dea9825b7",
+        "jestJsonSha256": "0c1d3a85682e448e08702adb60bb7a449584e072748470b11b9290e0572a2037",
+        "selectedPassedSuites": [
+          {
+            "path": "src/lib/estimate/v4/master212ConcreteFoundationSuccessorR1.test.ts",
+            "passedTests": 20,
+            "status": "PASS"
+          }
+        ],
+        "entireStagePassed": false,
+        "privateLogsNotRequiredInputs": true
+      },
+      {
+        "stageLabel": "focused-jest-initial-batch-a1",
+        "receiptSha256": "78133ddddc528bd727aedbe412b322c9890150a2de5eb8a22d2468663b1e0588",
+        "jestJsonSha256": "55da836a4c80c29d920617e4da040b9440895c52d974be9f1fdf9ddacb1d11c7",
+        "selectedPassedSuites": [
+          {
+            "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts",
+            "passedTests": 3,
+            "status": "PASS"
+          }
+        ],
+        "entireStagePassed": false,
+        "privateLogsNotRequiredInputs": true
+      },
+      {
+        "stageLabel": "batch02-missing-and-uncompleted-five-suites-a1",
+        "receiptSha256": "db514b96f411e0a54812d089d5da7db248ab0cda6ddd9d6f8cd0119e4b182bdb",
+        "jestJsonSha256": "6f79f1ebf1098ca8e75d083c9a309449c49224cee7313db184713cf29d6ecd4e",
+        "selectedPassedSuites": [
+          {
+            "path": "scripts/estimate/r4a13/masterRetiredAreaCatalogR1.test.ts",
+            "passedTests": 3,
+            "status": "PASS"
+          }
+        ],
+        "entireStagePassed": false,
+        "privateLogsNotRequiredInputs": true
+      }
+    ],
+    "privateWorkFilesRequiredAsGuardInputs": false,
+    "requiredPostIntakeGates": {
+      "foundation": "PENDING_METADATA_INTAKE_AND_ACTUAL_FACTORY_TEST",
+      "master29": "88PASS_60BLOCKED_ON_OLD_SOURCE_PIN_BEFORE_METADATA_ACTUAL_FULL_RECHECK_REQUIRED"
+    },
+    "fullTechnicalAcceptance": false,
+    "productionReady": false,
+    "nativeDatabaseVerified": false,
+    "currentRegistryAuthority": "UNREAD"
+  }
+}

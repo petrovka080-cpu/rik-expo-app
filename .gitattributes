@@ -1,4 +1,4 @@
-﻿* text=auto eol=lf
+* text=auto eol=lf
 artifacts/pdf/**/*.pdf binary
 data/estimate-benchmarks/fixtures/fischer-duopower-535463-official-product-r1.html binary
 data/estimate-benchmarks/fixtures/iek-elecor-60x40-official-product-edition8-link-r1.html binary
@@ -17,3 +17,104 @@ scripts/estimate/r4a13/prepareStairsDokaStandardFullRetainedMasterR2.ts -text wh
 # Preserve the exact current curb capture guard across Git checkout.
 data/estimate-benchmarks/fixtures/curb03-curing-full-current-capture-guard-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 data/estimate-benchmarks/fixtures/floor-sand-thickness-full-current-capture-guard-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Keep all PDF spellings byte-exact; PDF is not authored text.
+*.[pP][dD][fF] binary
+# Preserve exact SHA-bound raw vendor HTML captures; source code checks remain active.
+data/estimate-benchmarks/source-artifacts/bosch-gas35h-06019c3600-scope-20261024.html -text -diff
+data/estimate-benchmarks/source-artifacts/bosch-stirrer-paddle-table-20261023.html -text -diff
+data/estimate-benchmarks/source-artifacts/concrete-curing-roller-r108/exact-six-piece-case.html -text -diff
+data/estimate-benchmarks/source-artifacts/concrete-curing-roller-r108/roller-cover.html -text -diff
+data/estimate-benchmarks/source-artifacts/masonry-bearing-dpc-r4/doerken-dpc-own-maker-page-2026-10-23.html -text -diff
+data/estimate-benchmarks/source-artifacts/monolithic-physical-r2-ele-slump-test-set-2026-10-23.html -text -diff
+data/estimate-benchmarks/source-artifacts/monolithic-physical-r2-irfu-product-2026-10-23.html -text -diff
+data/estimate-benchmarks/source-artifacts/monolithic-physical-r2-irfu-technical-2026-10-23.html -text -diff
+data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-5x6-066-official.html -text -diff
+data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-5x6-1-official.html -text -diff
+data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-family-official.html -text -diff
+# Preserve exact recorded floor R83 evidence; it is historical unit input.
+data/estimate-benchmarks/fixtures/floor-screed20mm-r1/governed/currentReadGuard-0c4ab5605eb24119.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/floor-screed20mm-r1/governed/semanticReview-84fad0f80c9b9c92.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Preserve reviewed roof source-pack bytes and portable raw source identity.
+data/estimate-benchmarks/source-packs/master212-roof-whole-systems-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Preserve tested hash-bound component code and original captures across checkout.
+src/lib/estimate/v4/stripFoundationReinforcementR1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/v4/slabFoundationReinforcementR1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/contracts/reinforcementProductionPromptParametersR1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/master212-concrete-foundation-successor-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/master212-concrete-two-current-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/master29-roof-facade-whole-subworks-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Preserve the remaining recipe-consumed raw source identities.
+src/lib/estimate/v4/effectivePurchaseBalanceR1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/ct54-rectangular-protection-eight-s27-70.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/master29-roof-facade-current-twelve-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Preserve the dependent completion recipe raw source identity.
+data/estimate-benchmarks/source-packs/concrete-foundation-krer06-00122-completion-master212-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Preserve exact raw bytes for current Master30 content-addressed inputs.
+src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/v4/master30ElectricalPlumbingFactoryKitsR1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-templates/estimate-10000-readiness-manifest.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/ai/globalEstimate/globalWorkSmartSearch.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/platform/estimateRevisionDurableStore.contract.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-catalog/work-items/work-catalog-10000.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/backendPlatform/canonicalEstimateConditionProfilesV1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/master30-electrical-plumbing-independent-expected-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/backendPlatform/canonicalPublicEstimateInputWordingRu.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/public-calculation-detail-roles-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/ct126-four-prepared-wall-branches-r2.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/v4/ct126PreparedWallBranchesR2.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/ct126-current-four-v4-parents-r2.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/legacy-operation-display-five-saved-v1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimateStructuredPipeline/structuredEstimateTypes.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/master30-electrical-plumbing-five-current-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/estimate/r4a13/masterMonolithicRepairGeometryVisibilityOnlyR60.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/backendPlatform/canonicalCt126SixDryWallMigrationS2769.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/professionalUnitRegistry.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/features/consumerRepair/consumerRepairRowMetadata.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/v4/asphalt/asphaltRelatedResourceParameterIdsV4.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/platform/compactConsumerRepairDurableState.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/ai/estimateTemplate10000/productionExpandedWorkCatalog10000.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/master30-factory-kit-current-source-cutover-r1153.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/master30-electrical-plumbing-complete-factory-kits-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Preserve exact reviewed post-155 source afterimages and portable raw witnesses.
+scripts/estimate/r4a13/preparePanelReadyGridCurrentMasterR287.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/dev/startWholeAppDeveloperReview.ps1 -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+tests/estimateNorms/ct29IndoorPlasterGeometryR1.contract.test.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/release/auditCurrentCoreNoTestWeakening.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Preserve exact reviewed latent contract afterimages.
+tests/requestEstimate/canonicalParameterAndProfessionalPdfP0.contract.test.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/socket-current-read-witness-a11-r1153.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Preserve the independently reviewed closed A13 raw oracle and provenance bytes.
+data/estimate-benchmarks/fixtures/concrete-curing-integrated-wall-a13-raw-r145.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/concrete-curing-integrated-wall-a13-provenance-r145.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Preserve mixed line endings in the exact reviewed hash-bound R108/R145 sources.
+scripts/estimate/r4a13/prepareConcreteCuringRollerWholePostR108.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/estimate/r4a13/concreteCuringRegistryNormalLockedR145.test.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Preserve independently closed A16 full scoped raw TEXT and provenance bytes.
+data/estimate-benchmarks/fixtures/concrete-curing-existing-scoped-union-a16-r275.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/concrete-curing-existing-scoped-union-a16-provenance-r275.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/socket-current-read-witness-a17-r1153.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Preserve independently hash-bound current29 source fixtures byte-for-byte.
+tests/requestEstimate/fixtures/master30-current29/ARCHIVE_ORDERED_PARAMETER_IDS.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
+tests/requestEstimate/fixtures/master30-current29/CURRENT29_EXPECTATION_MATRIX.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
+tests/requestEstimate/fixtures/master30-current29/CURRENT29_PHYSICAL_EXPECTATIONS.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
+tests/requestEstimate/fixtures/master30-current29/CURRENT29_SOURCE_PHYSICAL_PROOF.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
+tests/requestEstimate/fixtures/master30-current29/SOURCE_REFERENCES.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/monolithic-family-b-master212-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/lib/estimate/v4/interiorWallFinishingProvisionGroupR7.test.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/source-packs/interior-wall-finishing-provision-group-r8.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

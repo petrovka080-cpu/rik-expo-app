@@ -3,8 +3,8 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 import {
-  ASPHALT_LEVEL_SMALL_AREA_S2716_CATALOG_ID,
-} from "../../src/lib/estimate/v4/asphaltLevelSmallAreaS2716";
+  ASPHALT_LEVEL_S2716_CATALOG_ID,
+} from "../../src/lib/estimate/v4/asphaltLevelS2716";
 import {
   SLAB_FOUNDATION_LOCAL_REPAIR_S2716_CATALOG_ID,
 } from "../../src/lib/estimate/v4/slabFoundationLocalRepairS2716";
@@ -226,16 +226,16 @@ async function main(): Promise<void> {
     && runtime.compatibilityTuple?.searchReleaseId === searchReleaseId,
   "RUNTIME_RELEASE_PAIR_RED");
 
-  const asphaltPrompt = "Выравнивание асфальтового покрытия на малой площади 100 м² толщиной 100 мм";
+  const asphaltPrompt = "Выравнивание асфальтового покрытия 100 м² толщиной 100 мм";
   const asphaltSearch = await api(token,
     `search/catalog?query=${encodeURIComponent(asphaltPrompt)}&pageSize=50&scope=WORKS`);
   const asphaltItems = Array.isArray(asphaltSearch.items) ? asphaltSearch.items as Json[] : [];
   const asphaltIndex = asphaltItems.findIndex((item) =>
-    item.catalogId === ASPHALT_LEVEL_SMALL_AREA_S2716_CATALOG_ID);
+    item.catalogId === ASPHALT_LEVEL_S2716_CATALOG_ID);
   invariant(asphaltIndex >= 0 && asphaltIndex < 10
     && asphaltItems[asphaltIndex]?.estimateReady === true,
     `ASPHALT_SEARCH_RED:${asphaltIndex}:${asphaltItems.slice(0, 5).map((item) => item.catalogId).join(",")}`);
-  const asphalt = await compile(token, ASPHALT_LEVEL_SMALL_AREA_S2716_CATALOG_ID, {
+  const asphalt = await compile(token, ASPHALT_LEVEL_S2716_CATALOG_ID, {
     area_m2: 100,
     layer_thickness_mm: 100,
   }, asphaltPrompt, "area_m2", runId);
@@ -361,7 +361,7 @@ async function main(): Promise<void> {
   "SLAB_EDIT_LINEAGE_OR_QUANTITY_RED");
 
   const asphaltHistory = await api(token,
-    `revisions?catalogId=${encodeURIComponent(ASPHALT_LEVEL_SMALL_AREA_S2716_CATALOG_ID)}&limit=20`);
+    `revisions?catalogId=${encodeURIComponent(ASPHALT_LEVEL_S2716_CATALOG_ID)}&limit=20`);
   const slabHistory = await api(token,
     `revisions?catalogId=${encodeURIComponent(SLAB_FOUNDATION_LOCAL_REPAIR_S2716_CATALOG_ID)}&limit=20`);
   invariant((asphaltHistory.revisions as Json[]).some((revision) =>

@@ -1,6 +1,6 @@
 import { expectReal10000ScopedOutForIosTestFlight, runP1EvidenceRefreshForTest } from "./p1EvidenceRefreshTestHelper";
 
-test("Real10000 P1 evidence ledger requires all sources", () => {
+test("Real10000 P1 remains scoped out of internal TestFlight without claiming green", () => {
   const result = runP1EvidenceRefreshForTest();
 
   expectReal10000ScopedOutForIosTestFlight(result);

@@ -1,0 +1,142 @@
+{
+  "contract": "TEST_ONLY_EXISTING_WALL_CERAMIC_FINITE/f271",
+  "actualProjectObjects": 0,
+  "actualRuntimeCalls": 0,
+  "expectedNative12_5": {
+    "whole-labour": [
+      "28.5",
+      "man_hour"
+    ],
+    "operator-labour": [
+      "0.1075",
+      "man_hour"
+    ],
+    "loader": [
+      "0.00625",
+      "machine_hour"
+    ],
+    "hoist": [
+      "0.10125",
+      "machine_hour"
+    ],
+    "water": [
+      "0.057875",
+      "m3"
+    ],
+    "cement": [
+      "0.005",
+      "t"
+    ],
+    "tile": [
+      "12.5",
+      "m2"
+    ],
+    "rags": [
+      "0.0625",
+      "kg"
+    ],
+    "sawdust": [
+      "0.0125",
+      "m3"
+    ],
+    "ready-mortar": [
+      "0.1875",
+      "m3"
+    ]
+  },
+  "scenarios": [
+    {
+      "key": "original-legacy",
+      "expected": "RESULT",
+      "input": {
+        "q": "2"
+      }
+    },
+    {
+      "key": "composed-legacy",
+      "expected": "RESULT",
+      "input": {
+        "q": "2",
+        "wall019_requested_physical_method": "Сохранённый предварительный состав облицовки стены"
+      }
+    },
+    {
+      "key": "native12_5",
+      "expected": "RESULT_PRELIMINARY",
+      "input": {
+        "wall019_requested_physical_method": "Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе",
+        "wall019_actual_cladding_area_m2": "12.5",
+        "wall019_room_height_m": "3"
+      }
+    },
+    {
+      "key": "missing-own-area",
+      "expected": "RESULT_PRELIMINARY",
+      "input": {
+        "wall019_requested_physical_method": "Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе",
+        "wall019_room_height_m": "3"
+      }
+    },
+    {
+      "key": "submitted-forbidden-q",
+      "expected": "REJECT",
+      "input": {
+        "q": "100",
+        "wall019_requested_physical_method": "Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе",
+        "wall019_actual_cladding_area_m2": "12.5",
+        "wall019_room_height_m": "3"
+      }
+    },
+    {
+      "key": "height-above-ordinary-source-scope",
+      "expected": "REJECT",
+      "input": {
+        "wall019_requested_physical_method": "Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе",
+        "wall019_actual_cladding_area_m2": "12.5",
+        "wall019_room_height_m": "4"
+      }
+    }
+  ],
+  "pricedTEST_ONLY": {
+    "currencyCode": "KGS",
+    "nature": "SYNTHETIC_TEST_TARIFFS_NOT_MARKET_QUOTES_OR_SOURCE_BASE_SOM_PRICES",
+    "snapshotId": "TEST_ONLY_F271_KGS_7_SYNTHETIC",
+    "areaM2": "100",
+    "heightM": "3",
+    "prices": {
+      "whole-labour": [
+        "50",
+        "man_hour"
+      ],
+      "water": [
+        "10",
+        "m3"
+      ],
+      "cement": [
+        "10000",
+        "t"
+      ],
+      "tile": [
+        "500",
+        "m2"
+      ],
+      "rags": [
+        "2",
+        "kg"
+      ],
+      "sawdust": [
+        "100",
+        "m3"
+      ],
+      "ready-mortar": [
+        "1000",
+        "m3"
+      ]
+    },
+    "expectedKnownAmount": "63315.63",
+    "machineTariffsAdmitted": false,
+    "operatorSecondPayment": false,
+    "procurementReady": false
+  },
+  "FULL": false
+}

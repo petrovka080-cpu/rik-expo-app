@@ -39,12 +39,6 @@ export const WOOD_FIREPROOFING_SEALING_SOURCE_METADATA = Object.freeze({
 });
 
 export const WOOD_FIREPROOFING_SEALING_VARIANTS = Object.freeze({
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:special_repair_interior_fireproof_seal_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Совместимая герметизация существующей огнезащиты деревянных конструкций малой площади",
-    aliasesRu: ["герметизация огнезащиты малая площадь", "герметизация огнезащиты древесины"],
-  }),
   standard: Object.freeze({
     catalogId: "canonical-work:base:special_repair_interior_fireproof_seal_standard",
     catalogVariant: "STANDARD_AREA_SEARCH_IDENTITY",

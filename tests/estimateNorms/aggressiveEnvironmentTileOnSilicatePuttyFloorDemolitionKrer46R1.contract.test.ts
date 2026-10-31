@@ -17,7 +17,7 @@ describe("KRER 46 aggressive-environment tile-on-silicate-putty floor demolition
   test("binds the exact tile-on-silicate-putty aggressive-environment boundary", () => {
     expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_SILICATE_PUTTY_FLOOR_DEMOLITION_KRER46_CATALOG_ID)
       .toBe("canonical-work:base:demolition_interior_tile_strip_standard");
-    expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_SILICATE_PUTTY_FLOOR_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(4);
+    expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_SILICATE_PUTTY_FLOOR_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(2);
     expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_SILICATE_PUTTY_FLOOR_DEMOLITION_KRER46_ARTIFACT_SHA256)
       .toMatch(/^[0-9a-f]{64}$/u);
     expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_SILICATE_PUTTY_FLOOR_DEMOLITION_KRER46_PARAMETERS).toHaveLength(3);

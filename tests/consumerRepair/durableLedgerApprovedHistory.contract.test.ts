@@ -4,14 +4,16 @@ import {
 } from "../../src/lib/consumerRequests";
 import { getConsumerRepairAiEstimateLedgerStoreForTests } from "../../src/lib/consumerRequests/consumerRequestLedgerBridge";
 import { createApprovedConsumerRepairRequest } from "./consumerRepairTestHelpers";
+import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 
 describe("consumer repair durable ledger approved history", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("keeps approved history count and paging on the ledger, not the 20 item UI page", () => {
+  it("keeps approved history count and paging on the ledger, not the 20 item UI page", async () => {
     for (let index = 0; index < 30; index += 1) {
       createApprovedConsumerRepairRequest({ userId: "ledger-history-owner", problemText: `Работа ${index}` });
     }
+    await flushTransactionalConsumerRepairWrites();
 
     const page = listConsumerRepairApprovedHistory("ledger-history-owner", { limit: 20 });
     const ledgerCount = getConsumerRepairAiEstimateLedgerStoreForTests().countApprovedHistory({

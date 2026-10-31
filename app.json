@@ -15,7 +15,12 @@
       "policy": "fingerprint"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "asyncRoutes": "development"
+        }
+      ],
       "expo-updates",
       "@sentry/react-native/expo",
       [

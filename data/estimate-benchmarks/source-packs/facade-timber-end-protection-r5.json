@@ -1,0 +1,137 @@
+{
+  "contract": "gox.facade.timber-whole-end-protection.r5",
+  "status": "SOURCE_PROGRESS_IN_EXISTING_THERMOWOOD_CYCLE_NOT_FULL",
+  "parentProfile": "thermowood-horizontal-tg",
+  "parentNeedRowId": "facade:board-fixing:r3:thermowood-horizontal-tg:need:cut-end-protection",
+  "parentBoardSourceSha256": "b22f49aef753e630cee81a1e850182232b59c1f4ba8aba47bb18ad65255810a0",
+  "sources": [
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-timber-end-protection-r5/TEKNOS-endgrain-240001-TDS-2022-10-11.pdf",
+      "url": "https://www.teknos.com/document/tds/DRYWOOD%20KOPSE%20SEALER%20_%20ENDGRAIN%20SEALER_240001-00_TDS_en.pdf",
+      "sha256": "f483fd6adfd719e9b4ab74e2d92832247521ccb6a7b3341908c75f9c6cbdd906",
+      "pdfPages": 2,
+      "fullRelevantPagesRead": [
+        1,
+        2
+      ],
+      "retrievedAtUtc": "2026-10-23T09:33:19.766109+00:00"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-timber-end-protection-r5/TEKNOS-endgrain-SDS-2025-11-21.pdf",
+      "url": "https://www.teknos.com/document/sds/DRYWOOD%20KOPSE%20SEALER%20_%20ENDGRAIN%20SEALER_2025-11-21_EU_en.pdf",
+      "sha256": "61d5b4af89a32937cbac3d9ec624cb3c08aca703be542e864ad51c92fee7ac34",
+      "pdfPages": 26,
+      "fullRelevantPagesRead": [
+        1,
+        5,
+        6,
+        10,
+        11,
+        12,
+        20
+      ],
+      "retrievedAtUtc": "2026-10-23T09:33:20.750313+00:00"
+    }
+  ],
+  "internalExactMaterial": "DRYWOOD KOPSE SEALER / ENDGRAIN SEALER 240001-00, TDS2022-10-11rev3; SDS2025-11-21rev3",
+  "publicTitleRu": "Защита раскроенных торцов термодревесной фасадной доски",
+  "selectedMethod": {
+    "publicNameRu": "Защита торца одним слоем водного состава",
+    "sourcePdfPage": 2,
+    "quantityKind": "MINIMUM_APPLIED_MASS_NOT_DELIVERY_OR_PURCHASE",
+    "minimumKgPerM2NetEndGrain": "0.6",
+    "geometry": "Actual net exposed cut-end area from accepted profile/cutting layout, not facade face area, intersection count or nominal rectangular envelope of T&G section",
+    "application": "Brush, one600g/m2method only; professional dry/sanded/dustfree exact source-fit material",
+    "noImplicitSecondCoat": true,
+    "noTwoLayer475gAlternative": true,
+    "noOptiprimerMixedMethod": true,
+    "noLiterConversion": "TDS density1.02-1.20kg/l varies bycolour; SDS allvariant1.2 is not an exact selected colour/lot density",
+    "theoretical3m2PerLiterAt300gNotSubstituted": true
+  },
+  "operations": [
+    {
+      "key": "accept",
+      "titleRu": "Принять материал, схему раскроя и фактические торцы"
+    },
+    {
+      "key": "prepare",
+      "titleRu": "Высушить, отшлифовать и обеспылить торцы в заявленной границе"
+    },
+    {
+      "key": "apply",
+      "titleRu": "Перемешать и нанести состав на торцы одним согласованным слоем"
+    },
+    {
+      "key": "dry-check",
+      "titleRu": "Выдержать и проверить покрытие перед последующими работами"
+    },
+    {
+      "key": "clean-waste",
+      "titleRu": "Очистить инструмент и собрать остатки с упаковкой"
+    }
+  ],
+  "needs": [
+    {
+      "key": "whole-labour",
+      "titleRu": "Труд полного цикла защиты торцов",
+      "category": "work",
+      "unitId": "hour",
+      "missing": "Нет применимой нормы активного труда подготовки, нанесения, проверки и очистки. Выдержка покрытия не равна оплаченным часам звена."
+    },
+    {
+      "key": "brush-post",
+      "titleRu": "Комплект кистевого нанесения и перемешивания состава",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "Нет достаточной количественной нормы целого ручного поста, включая совместимые кисти, ёмкость и приспособление перемешивания."
+    },
+    {
+      "key": "abrasives",
+      "titleRu": "Абразивный материал для подготовки торцов",
+      "category": "material",
+      "unitId": null,
+      "missing": "Требуется шлифование, но вид и расход абразива точного материала не заданы источником."
+    },
+    {
+      "key": "dust-removal",
+      "titleRu": "Обеспыливание подготовленных торцов",
+      "category": "service",
+      "unitId": null,
+      "missing": "Не подтверждены достаточные средства удаления пыли, их расход и обеспечение поста."
+    },
+    {
+      "key": "chemical-PPE",
+      "titleRu": "Защитные перчатки и очки при работе с водным составом",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "SDS11 требует подходящие EN374нитриловые перчатки толще0.3мм и защиту от брызг по оценке; количество и совместимое обеспечение звена не установлены."
+    },
+    {
+      "key": "cleaning-detergent",
+      "titleRu": "Совместимое средство очистки кистей и оборудования",
+      "category": "material",
+      "unitId": null,
+      "missing": "TDS2 требует подходящее моющее средство; точный очиститель, расход и применимая промывочная вода не подтверждены. Водная основа не задаёт норму воды."
+    },
+    {
+      "key": "waste-collection",
+      "titleRu": "Сбор остатков водного состава и загрязнённой упаковки",
+      "category": "service",
+      "unitId": null,
+      "missing": "SDS20 требует безопасное обращение с остатками и упаковкой; расход ёмкостей, сбор и вывоз не рассчитаны."
+    },
+    {
+      "key": "quality-storage",
+      "titleRu": "Проверка покрытия, хранение и подача состава",
+      "category": "service",
+      "unitId": null,
+      "missing": "Не подтверждены полный контроль минимального нанесения и высыхания, логистика, хранение без замораживания и их ресурсное обеспечение."
+    }
+  ],
+  "parentSupplyOwnerStillUnresolved": true,
+  "applicability": "Exact thermally modified cladding and original international product method; no WPC/plainwood/materialname substitution; local regulatory localization separately evaluated, not a technical source blockade",
+  "countryAdoptionRequiredForTechnicalSourceReadiness": false,
+  "newCatalogIds": 0,
+  "newFULL": 0,
+  "actualProductExecution": "UNRUN"
+}

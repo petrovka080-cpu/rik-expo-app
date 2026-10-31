@@ -1,0 +1,864 @@
+{
+  "contract": "monolithic-family-independent-operation-provision-map/r1",
+  "generatedFromCurrentResourceRows": false,
+  "basis": "Primary source operations and technical§1.1–1.6/1.35/1.36/1.43 independently crosschecked against mandatory12categories; presence of one source machine never proves its full physical kit.",
+  "sourceSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+  "technicalRead": {
+    "PDF6§1.1": "Whole cost cycle includes unloading, on-site warehouse-to-installation delivery, scaffolding, formwork lubrication/setup/strip with turnover, form contact assembly, reinforcement, placement/compaction/care and necessary exposed-surface rubbing, necessary working/deformation seams; no inferred unit count from this inclusion.",
+    "PDF6§1.2": "Project steel consumption replaces printed average without changing installation labour/machines.",
+    "PDF6§1.3": "Electric-welded or tied installation as stated; other welding method separate only when genuinely required, no automatic extra labour.",
+    "PDF6§1.4": "Actual project concrete class/aggregate. Current bounded profile conservatively fixes exact source B15/40mm; no arbitrary substitution.",
+    "PDF6§1.6": "Ordinary height/depth≤15m; specialstructures/coefficient outside profile.",
+    "PDF10§1.35": "107–111 Doka/Dokaflex form; plywood deck consumption includes normative turnover/losses, amortisation uses contact area/project and source/technical turnover, not initial kit order.",
+    "PDF10§1.36": "Prepared rebar pieces with bends/cuts/welding/threadedjoints/couplers; project schedule required, not a universal kg/m3.",
+    "PDF11§1.43": "Concrete bucket crane or direct pump delivery to form without additional rehandling; additional manual carrying excluded.",
+    "PDF11§1.44": "Percent split is act-accounting convention, not a new labour productivity norm or additional pay owner.",
+    "PDF11§2.2/2.3": "Column section×height with defined bottom/top; beam section×length between internal support faces, do not doublecount intersections.",
+    "PDF10§1.39/1.40": "Truckmixer additionally when POS specifies it, time equals leading machine only where that actual scheme applies; truckmountedpump additionally when POS/PPR specifies it. Source crane hours do not close either service; no universal new hours."
+  },
+  "profiles": [
+    {
+      "profileKey": "column-107-02",
+      "normId": "06-01-107-02",
+      "operations": [
+        "Устройство и разборка инвентарных элементов опалубки",
+        "Раскрой и крепление щитов из бакелизированной фанеры",
+        "Установка арматуры",
+        "Укладка бетона",
+        "Укрытие конструкций матами Дорнит",
+        "Уход за бетоном"
+      ],
+      "categories": [
+        {
+          "key": "materials",
+          "sourceKnownResourceKeys": [
+            "concrete",
+            "rebar",
+            "deck",
+            "unedged44II"
+          ],
+          "independentSourceOrFactRequirement": "Полная ведомость класса/диаметров/длин/количества/массы, соединений и закладных, раскрой, отходы и баланс поставки; одна суммарная масса и ссылка КЖ не закрывают комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:reinforcement-bom-fabrication",
+            "monolithic-family:krer06:r1:column-107-02:need:formwork-shoring-kit"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:project-bar-schedule",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:project-embed",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:project-bar-spacer",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:project-bar-joint"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "consumables",
+          "sourceKnownResourceKeys": [
+            "water",
+            "oil",
+            "electrodes",
+            "dornit",
+            "wire"
+          ],
+          "independentSourceOrFactRequirement": "Совместимые питание, защита, кабели и подвод воды; конкретная организация и источниковые количества, без кВт×всех машино-часов как выдуманного расхода.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:energy-water-provision",
+            "monolithic-family:krer06:r1:column-107-02:need:curing-physical-method",
+            "monolithic-family:krer06:r1:column-107-02:need:cleaning-waste"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:temporary-power-cable",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:electrical-protection",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:water-feed-hose",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:water-applicator",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:temperature-control"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "fasteners",
+          "sourceKnownResourceKeys": [
+            "nails",
+            "wire"
+          ],
+          "independentSourceOrFactRequirement": "Расчёт нагрузки/устойчивости, щиты, балки, стойки, связи, анкеры и крепления, площадки, распалубка, полный начальный и возвратный баланс; расход палубы/древесины и П не равны поставке.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:formwork-shoring-kit",
+            "monolithic-family:krer06:r1:column-107-02:need:reinforcement-bom-fabrication",
+            "monolithic-family:krer06:r1:column-107-02:need:junctions-finish"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:formwork-tie",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:formwork-anchor",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:project-bar-joint"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "tools",
+          "sourceKnownResourceKeys": [
+            "arc-welder",
+            "vibrator",
+            "chain-saw"
+          ],
+          "independentSourceOrFactRequirement": "Полный совместимый физический комплект резки, сварки, уплотнения и ручного инструмента с рабочими частями, организацией и обоснованными количествами; машино-часы не задают число постов.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:tools-working-parts"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:chain-saw-chain",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:chain-saw-bar",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:hand-hammer",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:concrete-shovel",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:concrete-trowel",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:concrete-straightedge",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:welding-lead",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:welding-face-shield",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:deep-vibrator-working-part"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "rigging",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Совместимые бадья, стропы, траверсы, захваты, канаты и оснастка с ведомостью и проверкой нагрузки; источник не задаёт универсальный комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:rigging"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:concrete-bucket",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:lifting-sling",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:lifting-traverse"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "machines_and_operators",
+          "sourceKnownResourceKeys": [
+            "tower-crane8t",
+            "truck-crane10t",
+            "forklift5t",
+            "arc-welder",
+            "vibrator",
+            "chain-saw",
+            "flatbed8t",
+            "operators"
+          ],
+          "independentSourceOrFactRequirement": "Полный совместимый физический комплект резки, сварки, уплотнения и ручного инструмента с рабочими частями, организацией и обоснованными количествами; машино-часы не задают число постов.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:tools-working-parts",
+            "monolithic-family:krer06:r1:column-107-02:need:rigging",
+            "monolithic-family:krer06:r1:column-107-02:need:energy-water-provision"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "labor",
+          "sourceKnownResourceKeys": [
+            "workers"
+          ],
+          "independentSourceOrFactRequirement": "Принятая поверхность опирания, оси, отметки, подготовка и допуски; собственная норма геодезической подработы и физический комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:setting-out-preparation",
+            "monolithic-family:krer06:r1:column-107-02:need:junctions-finish"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "services",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Операционный контроль, испытания/пробы, исполнительные документы, приборы и труд по собственной норме; число протоколов не принимается произвольно.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:quality-acceptance",
+            "monolithic-family:krer06:r1:column-107-02:need:external-delivery-feed"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:external-concrete-delivery",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:concrete-testing",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:asbuilt-control",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:waste-disposal"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "delivery_feed",
+          "sourceKnownResourceKeys": [
+            "tower-crane8t",
+            "truck-crane10t",
+            "forklift5t",
+            "flatbed8t"
+          ],
+          "independentSourceOrFactRequirement": "Внешняя доставка, согласованная схема подачи и дополнительные перемещения вне исходных машино-часов, транспортная единица и количественная норма без двойной оплаты.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:external-delivery-feed",
+            "monolithic-family:krer06:r1:column-107-02:need:rigging"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:additional-truckmixer",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:additional-concrete-pump",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:external-concrete-delivery"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "access_protection",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Совместимые рабочие площадки, ограждение края, доступ, защита от падения и СИЗ с организацией и количественной нормой; объём не определяет число комплектов.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:access-protection",
+            "monolithic-family:krer06:r1:column-107-02:need:formwork-shoring-kit"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:inventory-prop",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:formwork-transom",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:formwork-beam",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:formwork-brace",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:formwork-tie",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:formwork-anchor",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:formwork-connector",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:work-platform",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:access-stair",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:edge-guard",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:fall-protection"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "control",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Принятая поверхность опирания, оси, отметки, подготовка и допуски; собственная норма геодезической подработы и физический комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:setting-out-preparation",
+            "monolithic-family:krer06:r1:column-107-02:need:quality-acceptance"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:measuring-tape",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:level-instrument",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:test-sample-mould",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:concrete-testing",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:asbuilt-control"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "cleaning_waste",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Очистка опалубки/оборудования, количественный состав расходников, сбор/вывоз и обращение с отходами по совместимой внутренней норме и действительной схеме объекта.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need:cleaning-waste"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:cleaning-scraper",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:cleaning-brush",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:washwater-container",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:solid-waste-container",
+            "monolithic-family:krer06:r1:column-107-02:need-leaf:waste-disposal"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        }
+      ],
+      "realProjectFacts": [
+        "Actualgeometry/elevation/sourcefit",
+        "Completeclass/diameter/length/count/massbarBOMandconnections",
+        "Formwork/shoringload/stability/projectBOMandreturnbalance",
+        "Trueoperatingloads/routes/qualityprojectscope"
+      ],
+      "internalNormsNotAskedAsProjectFacts": [
+        "toolpostcount",
+        "slings/hose/bucketcounts",
+        "cuttingwear/electricity/cleaningrates",
+        "externalqualitylabour/testfrequency",
+        "defaultphysicalaccess/PPEquantities"
+      ],
+      "concreteLeafRosterCount": 45
+    },
+    {
+      "profileKey": "beam-109-03",
+      "normId": "06-01-109-03",
+      "operations": [
+        "Устройство и разборка инвентарных элементов опалубки",
+        "Раскрой и крепление щитов из бакелизированной фанеры",
+        "Установка арматуры",
+        "Укладка бетона",
+        "Уход за бетоном"
+      ],
+      "categories": [
+        {
+          "key": "materials",
+          "sourceKnownResourceKeys": [
+            "concrete",
+            "rebar",
+            "deck",
+            "bars",
+            "boards25III",
+            "boards44III"
+          ],
+          "independentSourceOrFactRequirement": "Полная ведомость класса/диаметров/длин/количества/массы, соединений и закладных, раскрой, отходы и баланс поставки; одна суммарная масса и ссылка КЖ не закрывают комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:reinforcement-bom-fabrication",
+            "monolithic-family:krer06:r1:beam-109-03:need:formwork-shoring-kit"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:project-bar-schedule",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:project-embed",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:project-bar-spacer",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:project-bar-joint"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "consumables",
+          "sourceKnownResourceKeys": [
+            "water",
+            "oil",
+            "electrodes",
+            "wire"
+          ],
+          "independentSourceOrFactRequirement": "Совместимые питание, защита, кабели и подвод воды; конкретная организация и источниковые количества, без кВт×всех машино-часов как выдуманного расхода.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:energy-water-provision",
+            "monolithic-family:krer06:r1:beam-109-03:need:curing-physical-method",
+            "monolithic-family:krer06:r1:beam-109-03:need:cleaning-waste"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:temporary-power-cable",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:electrical-protection",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:water-feed-hose",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:water-applicator",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:temperature-control"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "fasteners",
+          "sourceKnownResourceKeys": [
+            "nails",
+            "wire"
+          ],
+          "independentSourceOrFactRequirement": "Расчёт нагрузки/устойчивости, щиты, балки, стойки, связи, анкеры и крепления, площадки, распалубка, полный начальный и возвратный баланс; расход палубы/древесины и П не равны поставке.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:formwork-shoring-kit",
+            "monolithic-family:krer06:r1:beam-109-03:need:reinforcement-bom-fabrication",
+            "monolithic-family:krer06:r1:beam-109-03:need:junctions-finish"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:formwork-tie",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:formwork-anchor",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:project-bar-joint"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "tools",
+          "sourceKnownResourceKeys": [
+            "arc-welder",
+            "vibrator",
+            "chain-saw"
+          ],
+          "independentSourceOrFactRequirement": "Полный совместимый физический комплект резки, сварки, уплотнения и ручного инструмента с рабочими частями, организацией и обоснованными количествами; машино-часы не задают число постов.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:tools-working-parts"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:chain-saw-chain",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:chain-saw-bar",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:hand-hammer",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:concrete-shovel",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:concrete-trowel",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:concrete-straightedge",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:welding-lead",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:welding-face-shield",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:deep-vibrator-working-part"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "rigging",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Совместимые бадья, стропы, траверсы, захваты, канаты и оснастка с ведомостью и проверкой нагрузки; источник не задаёт универсальный комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:rigging"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:concrete-bucket",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:lifting-sling",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:lifting-traverse"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "machines_and_operators",
+          "sourceKnownResourceKeys": [
+            "tower-crane8t",
+            "truck-crane10t",
+            "forklift5t",
+            "arc-welder",
+            "vibrator",
+            "chain-saw",
+            "flatbed8t",
+            "operators"
+          ],
+          "independentSourceOrFactRequirement": "Полный совместимый физический комплект резки, сварки, уплотнения и ручного инструмента с рабочими частями, организацией и обоснованными количествами; машино-часы не задают число постов.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:tools-working-parts",
+            "monolithic-family:krer06:r1:beam-109-03:need:rigging",
+            "monolithic-family:krer06:r1:beam-109-03:need:energy-water-provision"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "labor",
+          "sourceKnownResourceKeys": [
+            "workers"
+          ],
+          "independentSourceOrFactRequirement": "Принятая поверхность опирания, оси, отметки, подготовка и допуски; собственная норма геодезической подработы и физический комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:setting-out-preparation",
+            "monolithic-family:krer06:r1:beam-109-03:need:junctions-finish"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "services",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Операционный контроль, испытания/пробы, исполнительные документы, приборы и труд по собственной норме; число протоколов не принимается произвольно.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:quality-acceptance",
+            "monolithic-family:krer06:r1:beam-109-03:need:external-delivery-feed"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:external-concrete-delivery",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:concrete-testing",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:asbuilt-control",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:waste-disposal"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "delivery_feed",
+          "sourceKnownResourceKeys": [
+            "tower-crane8t",
+            "truck-crane10t",
+            "forklift5t",
+            "flatbed8t"
+          ],
+          "independentSourceOrFactRequirement": "Внешняя доставка, согласованная схема подачи и дополнительные перемещения вне исходных машино-часов, транспортная единица и количественная норма без двойной оплаты.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:external-delivery-feed",
+            "monolithic-family:krer06:r1:beam-109-03:need:rigging"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:additional-truckmixer",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:additional-concrete-pump",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:external-concrete-delivery"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "access_protection",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Совместимые рабочие площадки, ограждение края, доступ, защита от падения и СИЗ с организацией и количественной нормой; объём не определяет число комплектов.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:access-protection",
+            "monolithic-family:krer06:r1:beam-109-03:need:formwork-shoring-kit"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:inventory-prop",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:formwork-transom",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:formwork-beam",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:formwork-brace",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:formwork-tie",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:formwork-anchor",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:formwork-connector",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:work-platform",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:access-stair",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:edge-guard",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:fall-protection"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "control",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Принятая поверхность опирания, оси, отметки, подготовка и допуски; собственная норма геодезической подработы и физический комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:setting-out-preparation",
+            "monolithic-family:krer06:r1:beam-109-03:need:quality-acceptance"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:measuring-tape",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:level-instrument",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:test-sample-mould",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:concrete-testing",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:asbuilt-control"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "cleaning_waste",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Очистка опалубки/оборудования, количественный состав расходников, сбор/вывоз и обращение с отходами по совместимой внутренней норме и действительной схеме объекта.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need:cleaning-waste"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:cleaning-scraper",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:cleaning-brush",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:washwater-container",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:solid-waste-container",
+            "monolithic-family:krer06:r1:beam-109-03:need-leaf:waste-disposal"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        }
+      ],
+      "realProjectFacts": [
+        "Actualgeometry/elevation/sourcefit",
+        "Completeclass/diameter/length/count/massbarBOMandconnections",
+        "Formwork/shoringload/stability/projectBOMandreturnbalance",
+        "Trueoperatingloads/routes/qualityprojectscope"
+      ],
+      "internalNormsNotAskedAsProjectFacts": [
+        "toolpostcount",
+        "slings/hose/bucketcounts",
+        "cuttingwear/electricity/cleaningrates",
+        "externalqualitylabour/testfrequency",
+        "defaultphysicalaccess/PPEquantities"
+      ],
+      "concreteLeafRosterCount": 45
+    },
+    {
+      "profileKey": "stair-111-01",
+      "normId": "06-01-111-01",
+      "operations": [
+        "Устройство и разборка инвентарных элементов опалубки",
+        "Раскрой и крепление щитов из бакелизированной фанеры",
+        "Установка арматуры",
+        "Укладка бетона",
+        "Уход за бетоном"
+      ],
+      "categories": [
+        {
+          "key": "materials",
+          "sourceKnownResourceKeys": [
+            "concrete",
+            "rebar",
+            "deck",
+            "bars",
+            "boards25III",
+            "boards44III"
+          ],
+          "independentSourceOrFactRequirement": "Полная ведомость класса/диаметров/длин/количества/массы, соединений и закладных, раскрой, отходы и баланс поставки; одна суммарная масса и ссылка КЖ не закрывают комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:reinforcement-bom-fabrication",
+            "monolithic-family:krer06:r1:stair-111-01:need:formwork-shoring-kit"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:project-bar-schedule",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:project-embed",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:project-bar-spacer",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:project-bar-joint"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "consumables",
+          "sourceKnownResourceKeys": [
+            "water",
+            "oil",
+            "electrodes",
+            "matting",
+            "wire"
+          ],
+          "independentSourceOrFactRequirement": "Совместимые питание, защита, кабели и подвод воды; конкретная организация и источниковые количества, без кВт×всех машино-часов как выдуманного расхода.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:energy-water-provision",
+            "monolithic-family:krer06:r1:stair-111-01:need:curing-physical-method",
+            "monolithic-family:krer06:r1:stair-111-01:need:cleaning-waste"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:temporary-power-cable",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:electrical-protection",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:water-feed-hose",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:water-applicator",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:temperature-control"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "fasteners",
+          "sourceKnownResourceKeys": [
+            "nails",
+            "wire"
+          ],
+          "independentSourceOrFactRequirement": "Расчёт нагрузки/устойчивости, щиты, балки, стойки, связи, анкеры и крепления, площадки, распалубка, полный начальный и возвратный баланс; расход палубы/древесины и П не равны поставке.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:formwork-shoring-kit",
+            "monolithic-family:krer06:r1:stair-111-01:need:reinforcement-bom-fabrication",
+            "monolithic-family:krer06:r1:stair-111-01:need:junctions-finish"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:formwork-tie",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:formwork-anchor",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:project-bar-joint"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "tools",
+          "sourceKnownResourceKeys": [
+            "arc-welder",
+            "vibrator",
+            "chain-saw"
+          ],
+          "independentSourceOrFactRequirement": "Полный совместимый физический комплект резки, сварки, уплотнения и ручного инструмента с рабочими частями, организацией и обоснованными количествами; машино-часы не задают число постов.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:tools-working-parts"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:chain-saw-chain",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:chain-saw-bar",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:hand-hammer",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:concrete-shovel",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:concrete-trowel",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:concrete-straightedge",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:welding-lead",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:welding-face-shield",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:surface-vibrator-working-plate"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "rigging",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Совместимые бадья, стропы, траверсы, захваты, канаты и оснастка с ведомостью и проверкой нагрузки; источник не задаёт универсальный комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:rigging"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:concrete-bucket",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:lifting-sling",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:lifting-traverse"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "machines_and_operators",
+          "sourceKnownResourceKeys": [
+            "tower-crane8t",
+            "truck-crane10t",
+            "forklift5t",
+            "arc-welder",
+            "vibrator",
+            "chain-saw",
+            "flatbed8t",
+            "operators"
+          ],
+          "independentSourceOrFactRequirement": "Полный совместимый физический комплект резки, сварки, уплотнения и ручного инструмента с рабочими частями, организацией и обоснованными количествами; машино-часы не задают число постов.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:tools-working-parts",
+            "monolithic-family:krer06:r1:stair-111-01:need:rigging",
+            "monolithic-family:krer06:r1:stair-111-01:need:energy-water-provision"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "labor",
+          "sourceKnownResourceKeys": [
+            "workers"
+          ],
+          "independentSourceOrFactRequirement": "Принятая поверхность опирания, оси, отметки, подготовка и допуски; собственная норма геодезической подработы и физический комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:setting-out-preparation",
+            "monolithic-family:krer06:r1:stair-111-01:need:junctions-finish"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "services",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Операционный контроль, испытания/пробы, исполнительные документы, приборы и труд по собственной норме; число протоколов не принимается произвольно.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:quality-acceptance",
+            "monolithic-family:krer06:r1:stair-111-01:need:external-delivery-feed"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:external-concrete-delivery",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:concrete-testing",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:asbuilt-control",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:waste-disposal"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "delivery_feed",
+          "sourceKnownResourceKeys": [
+            "tower-crane8t",
+            "truck-crane10t",
+            "forklift5t",
+            "flatbed8t"
+          ],
+          "independentSourceOrFactRequirement": "Внешняя доставка, согласованная схема подачи и дополнительные перемещения вне исходных машино-часов, транспортная единица и количественная норма без двойной оплаты.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:external-delivery-feed",
+            "monolithic-family:krer06:r1:stair-111-01:need:rigging"
+          ],
+          "status": "SOURCE_QUANTITIES_KNOWN_AND_PHYSICAL_REMAINDER_OPEN",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:additional-truckmixer",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:additional-concrete-pump",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:external-concrete-delivery"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "access_protection",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Совместимые рабочие площадки, ограждение края, доступ, защита от падения и СИЗ с организацией и количественной нормой; объём не определяет число комплектов.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:access-protection",
+            "monolithic-family:krer06:r1:stair-111-01:need:formwork-shoring-kit"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:inventory-prop",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:formwork-transom",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:formwork-beam",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:formwork-brace",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:formwork-tie",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:formwork-anchor",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:formwork-connector",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:work-platform",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:access-stair",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:edge-guard",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:fall-protection"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "control",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Принятая поверхность опирания, оси, отметки, подготовка и допуски; собственная норма геодезической подработы и физический комплект.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:setting-out-preparation",
+            "monolithic-family:krer06:r1:stair-111-01:need:quality-acceptance"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:measuring-tape",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:level-instrument",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:test-sample-mould",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:concrete-testing",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:asbuilt-control"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        },
+        {
+          "key": "cleaning_waste",
+          "sourceKnownResourceKeys": [],
+          "independentSourceOrFactRequirement": "Очистка опалубки/оборудования, количественный состав расходников, сбор/вывоз и обращение с отходами по совместимой внутренней норме и действительной схеме объекта.",
+          "stableNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need:cleaning-waste"
+          ],
+          "status": "PHYSICAL_METHOD_SOURCE_REQUIRED",
+          "closedWholeCategory": false,
+          "concreteLeafNeedIds": [
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:cleaning-scraper",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:cleaning-brush",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:washwater-container",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:solid-waste-container",
+            "monolithic-family:krer06:r1:stair-111-01:need-leaf:waste-disposal"
+          ],
+          "conditionsExecutableWhereProjectChoiceExists": true
+        }
+      ],
+      "realProjectFacts": [
+        "Actualgeometry/elevation/sourcefit",
+        "Completeclass/diameter/length/count/massbarBOMandconnections",
+        "Formwork/shoringload/stability/projectBOMandreturnbalance",
+        "Trueoperatingloads/routes/qualityprojectscope"
+      ],
+      "internalNormsNotAskedAsProjectFacts": [
+        "toolpostcount",
+        "slings/hose/bucketcounts",
+        "cuttingwear/electricity/cleaningrates",
+        "externalqualitylabour/testfrequency",
+        "defaultphysicalaccess/PPEquantities"
+      ],
+      "concreteLeafRosterCount": 45
+    }
+  ],
+  "fullTechnicalAcceptance": false,
+  "newFULL": 0
+}

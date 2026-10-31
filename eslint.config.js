@@ -1,5 +1,6 @@
 const { defineConfig } = require("eslint/config");
 const expoConfig = require("eslint-config-expo/flat");
+const typescriptEslint = require("@typescript-eslint/eslint-plugin");
 
 module.exports = defineConfig([
   expoConfig,
@@ -7,6 +8,7 @@ module.exports = defineConfig([
     ignores: ["dist/**", "coverage/**", ".expo/**"],
   },
   {
+    plugins: { "@typescript-eslint": typescriptEslint },
     // Governance: prefer logger.* over raw console.* in new code.
     // Only console.log / console.debug trigger warn; info/warn/error allowed
     // until more files migrate to the logger boundary.
@@ -50,8 +52,6 @@ module.exports = defineConfig([
     // platform-specific module loading (web vs native splits).
     files: [
       "src/components/map/MapRenderer.tsx",
-      "src/dev/_debugStyleTrap.web.ts",
-      "src/dev/_webStyleGuard.tsx",
       "src/ui/GlobalBusy.tsx",
       "src/lib/notify.ts",
     ],

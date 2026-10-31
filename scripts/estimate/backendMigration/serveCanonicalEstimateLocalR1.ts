@@ -1,3 +1,16 @@
+import {normalizeCanonicalProfessionalPdfPurposeJobErrorV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
+import {canonicalProfessionalPdfReviewEligibilityV1,canonicalManualPreliminaryReviewEligibilityV1,canonicalProfessionalPdfIssuancePurposeV1,canonicalProfessionalPdfReviewAcknowledgmentV1,assertCanonicalProfessionalPdfIssuanceV1,assertCanonicalProfessionalPdfPurposeMatchesV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
+import {canonicalOperationCompositionEvidenceFromPassportV1,canonicalSavedOperationCompositionEvidenceV1,type CanonicalOperationCompositionEvidenceV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
+import {assertCanonicalProfessionalArtifactCurrentPresentationV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
+import {canonicalProfessionalPdfReportOriginalAuditV1,canonicalEstimateSavedOperationAcceptanceV1, assertCanonicalEstimateSavedArtifactStructureV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
+import type {CanonicalEstimateOperationResourceAcceptanceV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
+import { attachCanonicalPhysicalNormEvidenceV1, canonicalPhysicalNormRevisionFromStorageV1 } from '../../../src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection';
+import {deriveCanonicalCatalogPromptExtractionV1} from "../../../src/lib/estimate/backendPlatform/canonicalConcretePlacementPromptServerR1";
+import {parseCanonicalCatalogPromptRequestV1,assertCanonicalCatalogPromptBytesV1,
+  MAX_CANONICAL_CATALOG_PROMPT_REQUEST_BYTES_V1,MAX_CANONICAL_CATALOG_PROMPT_RESPONSE_BYTES_V1} from "../../../src/lib/estimate/backendPlatform/canonicalCatalogPromptExtractionV1";
+import {resolveRoofRetainedHistoryContextR1} from './roofRetainedHistoryContextR1';
+import {CANONICAL_PUBLIC_CATALOG_VISIBILITY_V1,CANONICAL_PUBLIC_SEARCH_GROUP_SQL_V1,isCanonicalAreaVariantV1,CANONICAL_PUBLIC_WORK_PROJECTION_CTE_V1,canonicalPublicWorkProfileIdsV1,canonicalPublicWorkCardMetadataV1,canonicalPublicWorkNameV1,deduplicateCanonicalPublicWorkRowsV1} from '../../../src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1';
+import {canonicalFormulaOutputBoundsPublicReasonRu} from '../../../src/lib/estimate/backendPlatform/canonicalFormulaOutputBounds';
 import {prepareCanonicalSelectedMaterialDeliveryServerR1,assertCanonicalSelectedDeliveryNotDroppedR1,canonicalSelectedDeliveryPreviewR1,isSelectedMaterialDeliveryCatalogR1} from './canonicalSelectedMaterialDeliveryServerR1';
 import {canonicalSelectedDeliveryDerivedParametersR1,finalizeCanonicalSelectedDeliveryReceiptR1,selectedMaterialDeliveryRowOverridesR1} from './canonicalSelectedMaterialDeliveryAdmissionR1';
 import { canonicalParameterMigrationBindingCompatibleV1 } from "../../../src/lib/estimate/backendPlatform/canonicalParameterMigrationBindingV1";
@@ -52,16 +65,20 @@ import {
 } from "node:http";
 import { dirname, resolve } from "node:path";
 import { Pool, type PoolClient } from "pg";
-import { chromium, type Browser } from "playwright";
+import type { Browser } from "playwright";
 
 import { evaluateFormulaGraph } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
 import {
   bindCanonicalEstimateResourcePriceKeys,
+  canonicalEstimateResourceIncludedByDefault,
   canonicalRoundDecimal,
   compileCanonicalEstimateCore,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
+import {canonicalPublicResourceDisplayPresentationV1} from '../../../src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
-import { canonicalManualPriceMigrationBindings, canonicalManualExclusionMigrationBindings, assertCanonicalStoredManualPriceReleaseMigration } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration";
+import { canonicalManualPriceMigrationBindings, canonicalManualExclusionMigrationBindings, canonicalManualQuantityMigrationBindings, assertCanonicalStoredManualPriceReleaseMigration } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration";
+import {admitCt29OrdinaryManualMigrationR1,CT29_ORDINARY_MANUAL_MIGRATION_R1} from '../../../src/lib/estimate/backendPlatform/canonicalCt29OrdinaryManualMigrationR1';
+import {admitWholeProvisionSavedManualMigrationR1,WHOLE_PROVISION_SAVED_MANUAL_MIGRATION_R1} from '../../../src/lib/estimate/backendPlatform/canonicalWholeProvisionSavedManualMigrationR1';
 import {readCanonicalSameImmutableCalculationR1,assertCanonicalImmutableCalculationSavedInputsR1} from './canonicalImmutableCalculationContinuityR1';
 import { admitCanonicalFusionDerivedQuantityClearServerS2758, previewCanonicalFusionDerivedQuantityClearServerS2758 } from './canonicalFusionDerivedQuantityClearServerS2758';
 import { assertCanonicalFusionSourceTransactionS2758, type CanonicalFusionSourceTransactionIdentityS2758 } from './canonicalFusionPublishedSourceReaderS2758';
@@ -91,11 +108,27 @@ async function localRoofStandaloneWorkScopeMigrationV1(client:PoolClient,definit
   return models;
 }
 
+/** One shared exact dispatch for catalog metadata and fresh worker calculations.
+ * The original roof binders remain unchanged and receive only their own v12. */
+async function localValidatedRoofRetainedHistoryR1(client:PoolClient,definition:JsonRecord,
+ model:{resources:JsonRecord[];formulas:JsonRecord[];parameters:JsonRecord[]}){
+ return resolveRoofRetainedHistoryContextR1({currentDefinition:definition,currentModel:model,
+  loadExactParent:async(id)=>{
+   const[d,r,f,p]=await Promise.all([
+    client.query('select * from public.estimate_definition_version where id=$1',[id]),
+    client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[id]),
+    client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[id]),
+    client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[id])]);
+   if(!d.rows[0])throw Object.assign(new Error('Exact historical roof parent missing.'),{code:'DEFINITION_INTEGRITY_FAILED'});
+   return{definition:d.rows[0],model:{resources:r.rows,formulas:f.rows,parameters:p.rows}};
+  },validateOriginalFixedChain:async(d,m)=>localRoofScreed25MigrationV1(client,d,{resources:[...m.resources],formulas:[...m.formulas],parameters:[...m.parameters]})});
+}
 async function localManualAmendmentMigrationBindings(client: PoolClient, definitionId: string): Promise<{
   manualPriceMigrationBindings: Record<string, string>; manualExclusionMigrationBindings: Record<string, string>;
+  manualQuantityMigrationBindings: Record<string,string>;
   compositionOperationMigrationBindingsV1: Record<string,string>;
   orderedSpecificationBindings: CanonicalOrderedSpecificationBinding[];
-  manualMigrationPredecessorV1?:{definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;operationBindings:Record<string,string>;compositionSelectionIdsPreservedV1?:true};
+  manualMigrationPredecessorV1?:{definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;quantityBindings?:Record<string,string>;operationBindings:Record<string,string>;compositionSelectionIdsPreservedV1?:true};
   manualMigrationPredecessorsV1?:{definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;operationBindings:Record<string,string>;compositionSelectionIdsPreservedV1?:true}[];
 }> {
   const [resources, formulas, parameters] = await Promise.all([
@@ -106,6 +139,25 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
   const input = {resources: resources.rows, formulas: formulas.rows, parameters: parameters.rows};
   let predecessorBindings:Record<string,unknown>={};
   const definition=(await client.query('select * from public.estimate_definition_version where id=$1',[definitionId])).rows[0];
+  const roofHistory=await localValidatedRoofRetainedHistoryR1(client,definition,input);
+  if(roofHistory.kind==='VALIDATED_HISTORICAL_ONLY'){
+    // Fixed parent is native CURRENT; recursion cannot follow arbitrary descendants.
+    const historical=await localManualAmendmentMigrationBindings(client,roofHistory.historicalParentDefinitionId);
+    const actualPrices=canonicalManualPriceMigrationBindings(input);
+    const candidates=[{definitionId:roofHistory.historicalParentDefinitionId,priceBindings:historical.manualPriceMigrationBindings},
+      ...(historical.manualMigrationPredecessorV1?[historical.manualMigrationPredecessorV1]:[]),
+      ...(historical.manualMigrationPredecessorsV1??[])];
+    const compatible=candidates.filter((c,i)=>candidates.findIndex(x=>x.definitionId===c.definitionId)===i).map(c=>({definitionId:c.definitionId,
+      priceBindings:Object.fromEntries(Object.entries(c.priceBindings).filter(([id,value])=>actualPrices[id]===value)),
+      exclusionBindings:{},quantityBindings:{},operationBindings:{}})).filter(c=>Object.keys(c.priceBindings).length>0);
+    // Current maps are ALWAYS actualv13. No new quantity/exclusion/operation carry.
+    return{manualPriceMigrationBindings:actualPrices,manualQuantityMigrationBindings:canonicalManualQuantityMigrationBindings(input),
+      orderedSpecificationBindings:canonicalOrderedSpecificationBindings(resources.rows),
+      manualExclusionMigrationBindings:canonicalManualExclusionMigrationBindings(input),
+      compositionOperationMigrationBindingsV1:canonicalCompositionOperationMigrationBindingsV1(input),
+      ...(compatible.length?{manualMigrationPredecessorsV1:compatible}:{})};
+  }
+
   const asphaltProof=definition?.source_metadata?.asphaltFloorWasteMigrationS2769;
   if(asphaltProof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(asphaltProof.fromDefinitionId))){
     const fromId=String(asphaltProof.fromDefinitionId),[oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
@@ -139,7 +191,8 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
     if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
       exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo),operationBindings:canonicalCompositionOperationMigrationBindingsV1(admitted.normalizedTo),compositionSelectionIdsPreservedV1:true}};
   }
-  const ct126Proof=definition?.source_metadata?.ct126SixDryWallMigrationS2769;
+  const ct126Proof=definition?.source_metadata?.retainedParentBindingSuccessorV1?.ct126PreparedWallMigrationR2
+    ??definition?.source_metadata?.ct126SixDryWallMigrationS2769;
   if(ct126Proof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(ct126Proof.fromDefinitionId))){
     const fromId=String(ct126Proof.fromDefinitionId),[oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
       client.query('select * from public.estimate_definition_version where id=$1',[fromId]),client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[fromId]),
@@ -238,7 +291,45 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
     const path=await localRoofScreed25MigrationV1(client,definition,input);
     if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model),operationBindings:canonicalCompositionOperationMigrationBindingsV1(m.model)}))};
   }
+  if(definitionId===CT29_ORDINARY_MANUAL_MIGRATION_R1.to.id){
+    const oldId=CT29_ORDINARY_MANUAL_MIGRATION_R1.from.id;
+    const [d,r,f,p]=await Promise.all([
+      client.query('select * from public.estimate_definition_version where id=$1',[oldId]),
+      client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[oldId]),
+      client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[oldId]),
+      client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[oldId]),
+    ]);
+    const identity=(value:JsonRecord)=>({id:String(value.id),catalogId:String(value.catalog_id),sha256:String(value.definition_sha256)});
+    const admitted=d.rows[0]?admitCt29OrdinaryManualMigrationR1({fromIdentity:identity(d.rows[0]),toIdentity:identity(definition),
+      from:{resources:r.rows,formulas:f.rows,parameters:p.rows},to:input}):null;
+    if(!admitted)throw Object.assign(new Error('Перенос ручных данных CT29 не подтверждён.'),{code:'DEFINITION_INTEGRITY_FAILED'});
+    predecessorBindings={...predecessorBindings,manualMigrationPredecessorV1:admitted};
+  }
+  const provisionTransitions=WHOLE_PROVISION_SAVED_MANUAL_MIGRATION_R1.transitions.filter(t=>t.to.id===definitionId);
+  if(provisionTransitions.length>4)throw Object.assign(new Error('Слишком много непроверенных переходов обеспечения.'),{code:'DEFINITION_INTEGRITY_FAILED'});
+  const provisionPredecessors=[];
+  for(const provisionTransition of provisionTransitions){
+    const oldId=provisionTransition.from.id;
+    const [d,r,f,p]=await Promise.all([
+      client.query('select * from public.estimate_definition_version where id=$1',[oldId]),
+      client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[oldId]),
+      client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[oldId]),
+      client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[oldId]),
+    ]);
+    const identity=(value:JsonRecord)=>({id:String(value.id),catalogId:String(value.catalog_id),sha256:String(value.definition_sha256)});
+    const admitted=d.rows[0]?admitWholeProvisionSavedManualMigrationR1({fromIdentity:identity(d.rows[0]),toIdentity:identity(definition),
+      from:{resources:r.rows,formulas:f.rows,parameters:p.rows},to:input}):null;
+    if(!admitted)throw Object.assign(new Error('Перенос сохранённых количеств обеспечения не подтверждён.'),{code:'DEFINITION_INTEGRITY_FAILED'});
+    provisionPredecessors.push(admitted);
+  }
+  if(provisionPredecessors.length){
+    const previous=predecessorBindings.manualMigrationPredecessorsV1;
+    const all=[...(Array.isArray(previous)?previous:[]),...provisionPredecessors];
+    predecessorBindings={...predecessorBindings,manualMigrationPredecessorV1:provisionPredecessors[0],
+      manualMigrationPredecessorsV1:all.filter((p,i)=>all.findIndex(a=>a.definitionId===p.definitionId)===i)};
+  }
   return {...predecessorBindings,manualPriceMigrationBindings: canonicalManualPriceMigrationBindings(input),
+    manualQuantityMigrationBindings:canonicalManualQuantityMigrationBindings(input),
     orderedSpecificationBindings: canonicalOrderedSpecificationBindings(resources.rows),
     manualExclusionMigrationBindings: canonicalManualExclusionMigrationBindings(input),compositionOperationMigrationBindingsV1:canonicalCompositionOperationMigrationBindingsV1(input)};
 }
@@ -340,6 +431,7 @@ import {
 import {
   CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
   buildCanonicalRevisionCommitPayload,
+  assertCanonicalRevisionHasContent,
   canonicalInheritedConfirmedParameters,
   buildCanonicalRevisionIdentity,
   canonicalDefinitionTitleRu,
@@ -376,6 +468,7 @@ import {
 import { canonicalEstimateCandidateAdmissionIdempotencyKey } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCommandIdentity";
 import { normalizePublicBoqNameRu } from "../../../src/lib/estimate/publicBoqNaming";
 import {
+  CanonicalEstimateApiError,
   type CanonicalEstimateCatalogItem,
   canonicalEstimateEffectivePriceSnapshotIds,
 } from "../../../src/lib/estimate/backendPlatform/contracts";
@@ -735,7 +828,10 @@ function send(
   response: ServerResponse,
   status: number,
   body: JsonRecord,
+  maximumBytes?: number,
 ): void {
+  const serialized=JSON.stringify({ ...body, requestId: randomUUID() });
+  if(maximumBytes!==undefined)assertCanonicalCatalogPromptBytesV1(serialized,maximumBytes,"response");
   response.writeHead(status, {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers":
@@ -745,7 +841,7 @@ function send(
     "Content-Type": "application/json; charset=utf-8",
     "X-Content-Type-Options": "nosniff",
   });
-  response.end(JSON.stringify({ ...body, requestId: randomUUID() }));
+  response.end(serialized);
 }
 
 async function requireLocalPrincipal(
@@ -1087,13 +1183,13 @@ async function readBinaryBody(
   return Buffer.concat(chunks);
 }
 
-async function readBody(request: IncomingMessage): Promise<JsonRecord> {
+async function readBody(request: IncomingMessage,maximumBytes=MAX_BODY_BYTES): Promise<JsonRecord> {
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of request) {
     const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
     size += buffer.length;
-    if (size > MAX_BODY_BYTES)
+    if (size > maximumBytes)
       throw Object.assign(new Error("request body is too large"), {
         httpStatus: 413,
         code: "REQUEST_TOO_LARGE",
@@ -2135,6 +2231,10 @@ async function createArtifactJob(
   revisionId: string,
   kind: "pdf" | "professional_pdf" | "procurement",
 ) {
+  const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(body.issuancePurpose);
+  if(issuancePurpose==='PRELIMINARY_REVIEW'&&kind!=='professional_pdf'
+    ||issuancePurpose==='STANDARD'&&Object.hasOwn(body,'reviewRequest'))
+    throw Object.assign(new Error('invalid PDF purpose request'),{code:'ARTIFACT_PURPOSE_INVALID',httpStatus:400});
   const idempotencyKey = String(body.idempotencyKey ?? "").trim();
   if (!idempotencyKey || idempotencyKey.length > 200)
     throw Object.assign(new Error("idempotencyKey is required"), {
@@ -2157,7 +2257,7 @@ async function createArtifactJob(
       code: "NOT_FOUND",
       httpStatus: 404,
     });
-  const contentAdmission = await assertArtifactContentAdmission(
+  const contentAdmission = issuancePurpose==='PRELIMINARY_REVIEW' ? null : await assertArtifactContentAdmission(
     String(sourceRevision.catalog_id),
     kind === "procurement"
       ? "procurement_artifact_create"
@@ -2170,7 +2270,7 @@ async function createArtifactJob(
       // The same saved state is checked before cache lookup/job creation. The
       // worker repeats the guard; a UI flag cannot authorize procurement.
       const supplyRevision = (await client.query(
-        "select * from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3) for update",
+        "select r.*,public.estimate_definition_withdrawal_reason_v1(r.definition_version_id) definition_withdrawal_reason from public.estimate_revision r where id=$1 and (owner_user_id=$2 or organization_id=$3) for update",
         [revisionId, currentOwnerId(), currentTenantId()],
       )).rows[0];
       if (!supplyRevision) throw Object.assign(new Error("revision not found"), {code:"NOT_FOUND",httpStatus:404});
@@ -2178,11 +2278,18 @@ async function createArtifactJob(
         "select * from public.estimate_revision_row where revision_id=$1 order by ordinal", [revisionId],
       )).rows;
       if (supplySourceRows.length !== supplyRevision.row_count) throw Object.assign(new Error("artifact source invalid"), {code:"ARTIFACT_SOURCE_INVALID"});
-      const supplyRows = [...supplySourceRows, ...canonicalArtifactPreliminaryNeeds(supplyRevision)];
-      assertCanonicalPurchaseSupplyRevisionV1(supplyRows, supplyRevision.amendment_contract);
+      const reportPriceRecords=issuancePurpose==='PRELIMINARY_REVIEW'
+        ? (await client.query('select revision_id::text,row_id,price_snapshot_id::text,resolution_trace from public.estimate_revision_row_price where revision_id=$1',[revisionId])).rows : null;
+      const savedRows=reportPriceRecords ? canonicalArtifactRowsWithPriceRecordsV1({revisionId,rows:supplySourceRows,prices:reportPriceRecords}) : supplySourceRows;
+      const supplyRows = [...savedRows, ...canonicalArtifactPreliminaryNeeds(supplyRevision,{issuancePurpose})];
+      const reviewAcknowledgmentV1=issuancePurpose==='PRELIMINARY_REVIEW'
+        ?canonicalProfessionalPdfReviewAcknowledgmentV1({revision:supplyRevision,resources:supplyRows,
+          request:body.reviewRequest,actorUserId:currentOwnerId(),acknowledgedAt:new Date().toISOString()}):undefined;
+      assertCanonicalProfessionalPdfIssuanceV1({revision:supplyRevision,resources:supplyRows,issuancePurpose,reviewAcknowledgmentV1});
+      if(issuancePurpose!=='PRELIMINARY_REVIEW')assertCanonicalPurchaseSupplyRevisionV1(supplyRows, supplyRevision.amendment_contract);
       if (kind === "procurement") assertCanonicalPurchaseSupplyReadyV1(supplyRows);
       const candidateCapabilityId =
-        contentAdmission.decision.mode === "isolated_candidate_test"
+        contentAdmission?.decision.mode === "isolated_candidate_test"
           ? await resolveCandidateCapabilityId(client)
           : null;
       await client.query("select set_config('request.jwt.claim.sub',$1,true)", [
@@ -2192,7 +2299,7 @@ async function createArtifactJob(
         "select set_config('request.estimate_tenant_id_r541',$1,true)",
         [currentTenantId()],
       );
-      await client.query(
+      if(contentAdmission)await client.query(
         "select set_config('request.estimate_admission_r3',$1,true)",
         [
           JSON.stringify({
@@ -2208,7 +2315,10 @@ async function createArtifactJob(
           }),
         ],
       );
-      const created = kind === "professional_pdf"
+      const created = kind==='professional_pdf'&&issuancePurpose==='PRELIMINARY_REVIEW'
+        ? await client.query('select * from public.estimate_create_professional_pdf_job_v2($1,$2,$3,$4::jsonb)',
+          [idempotencyKey,revisionId,CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,JSON.stringify({issuancePurpose,reviewAcknowledgmentV1})])
+        : kind === "professional_pdf"
         ? await client.query(
           "select * from public.estimate_create_professional_pdf_job_v2($1,$2,$3)",
           [idempotencyKey, revisionId, CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION],
@@ -2224,7 +2334,7 @@ async function createArtifactJob(
       return created.rows[0];
     } catch (error) {
       await client.query("rollback");
-      throw error;
+      throw normalizeCanonicalProfessionalPdfPurposeJobErrorV1(error);
     }
   });
   if (result.job_id)
@@ -2378,6 +2488,8 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
                   JSON.stringify({
                     compilerVersion: COMPILER_VERSION,
                     retryable,
+                    publicReasonRu: canonicalFormulaOutputBoundsPublicReasonRu(code,
+                      error != null && typeof error === 'object' && 'publicReasonRu' in error ? error.publicReasonRu : null),
                   }),
                   retryable,
                   retryDelaySeconds,
@@ -2420,7 +2532,7 @@ async function compileClaimedJob(
     await client.query(
       `
     select effective.id,effective.cumulative_manifest,effective.approved_template_baseline_id,
-      resolved.definition_version,resolved.passport,resolved.catalog_id,resolved.definition_sha256,resolved.source_metadata,identity.title_ru,identity.domain,
+      resolved.definition_version,resolved.passport,resolved.catalog_id,resolved.definition_sha256,resolved.source_metadata,resolved.applicability,identity.title_ru,identity.domain,
       coalesce(baseline.input_values,'{}'::jsonb) baseline_input_values,
       coalesce(baseline.input_classification,'{}'::jsonb) baseline_input_classification
     from public.estimate_definition_release release
@@ -2475,7 +2587,7 @@ async function compileClaimedJob(
     input_values: definition.baseline_input_values,
     input_classification: definition.baseline_input_classification,
   };
-  const baselineParameters = canonicalApprovedBaselineRuntimeParameters(baselineRecord) as JsonRecord;
+  let baselineParameters = canonicalApprovedBaselineRuntimeParameters(baselineRecord) as JsonRecord;
   const submittedParameters = (payload.parameters ?? {}) as JsonRecord;
   let confirmedParameters: JsonRecord = { ...baselineParameters };
   let inheritedUserParameters: JsonRecord = {};
@@ -2523,10 +2635,27 @@ async function compileClaimedJob(
     ...inheritedUserParameters,
     ...submittedParameters,
   };
+  const scopedBaselineParameters = canonicalApprovedBaselineRuntimeParameters(baselineRecord, {
+    parameterDefinitions,
+    inputParameters: effectiveUserParameters,
+  });
+  const inactiveBaselineIds = new Set(Object.keys(baselineParameters)
+    .filter(id => !Object.hasOwn(scopedBaselineParameters, id)));
+  baselineParameters = scopedBaselineParameters;
+  confirmedParameters = Object.fromEntries(Object.entries(confirmedParameters)
+    .filter(([id]) => !inactiveBaselineIds.has(id) || Object.hasOwn(effectiveUserParameters, id)));
+  const sourceProfileSelectionMetadata = definition.applicability?.sourceProfileSelectionV1;
   const profileInputResolution = resolveCanonicalEstimateProfileInputsS2723({
     catalogId: String(job.catalog_id),
     confirmedParameters,
     effectiveUserParameters,
+    sourceProfileSelectionMetadata,
+    parameterSchema: parameterDefinitions.map(p => ({
+      parameterId: String(p.parameter_id), valueType: String(p.value_type), unitId: p.unit_id,
+      visibilityRole: p.truth_metadata?.visibility_role, valueSourceRole: p.truth_metadata?.value_source_role,
+      provenance: p.truth_metadata?.provenance, constraints: p.constraints_json, defaultValue: p.default_value,
+      formulaConsumers: p.truth_metadata?.formula_consumers,
+    })),
   });
   confirmedParameters = { ...profileInputResolution.confirmedParameters };
   const formulas = (
@@ -2565,19 +2694,21 @@ async function compileClaimedJob(
     targetReleaseId: String(job.target_release_id),
   }) : null;
   if (quantityClear && definition.id !== quantityClear.targetDefinitionId) throw Object.assign(new Error('Fusion clear target definition changed.'), { code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
+  const roofHistoryContext=await localValidatedRoofRetainedHistoryR1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
+  const roofHistoryIsCurrent=roofHistoryContext.kind==='CURRENT';
   const inheritedRoofMigration=readRoofPreparationMigrationProofV1(((parentRevision?.amendment_contract as JsonRecord|undefined)?.parameterSources as JsonRecord|undefined)?.roofPreparationMigrationV1);
-  let roofPreparationMigrationV1:RoofPreparationMigrationProofV1|null=inheritedRoofMigration!=null&&inheritedRoofMigration.toDefinitionId===definition.id
+  let roofPreparationMigrationV1:RoofPreparationMigrationProofV1|null=roofHistoryIsCurrent&&inheritedRoofMigration!=null&&inheritedRoofMigration.toDefinitionId===definition.id
     &&inheritedRoofMigration.catalogId===job.catalog_id?inheritedRoofMigration:null;
-  const roofStageMigration=await localRoofStageMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
+  const roofStageMigration=roofHistoryIsCurrent?await localRoofStageMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions}):null;
   const roofStageRestorationV1=roofStageMigration?.receipt??null;
-  const roofScreedMigration=await localRoofScreedMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
+  const roofScreedMigration=roofHistoryIsCurrent?await localRoofScreedMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions}):null;
   const roofStageRestorationV2=roofScreedMigration?.receipt??null;
-  const roofMetalTrimMigration=await localRoofMetalTrimMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
+  const roofMetalTrimMigration=roofHistoryIsCurrent?await localRoofMetalTrimMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions}):null;
   const roofStageRestorationV3=roofMetalTrimMigration?.receipt??null;
-  const roofLowerLayersMigration=await localRoofLowerLayersMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
+  const roofLowerLayersMigration=roofHistoryIsCurrent?await localRoofLowerLayersMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions}):null;
   let roofStageRestorationV4=roofLowerLayersMigration?.receipt??null;
-  const roofScreed25Migration=await localRoofScreed25MigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
-  const roofGuttersMigration=roofScreed25Migration?.previous??await localRoofGuttersMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
+  const roofScreed25Migration=roofHistoryIsCurrent?await localRoofScreed25MigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions}):null;
+  const roofGuttersMigration=roofScreed25Migration?.previous??(roofHistoryIsCurrent?await localRoofGuttersMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions}):null);
   let roofStageRestorationV5=roofGuttersMigration?.receipt??null;
   let roofStageRestorationV6=roofScreed25Migration?.receipt??null;
   if(roofStageRestorationV1)roofPreparationMigrationV1=roofStageRestorationV1.originalPreparationProof;
@@ -2620,7 +2751,8 @@ async function compileClaimedJob(
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const cn87Admitted=before?admitCn87SubfloorMigrationProofS2769({proof:definition.source_metadata?.cn87SubfloorMigrationS2769,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
-    const ct126Admitted=before?admitCt126SixDryWallMigrationProofS2769({proof:definition.source_metadata?.ct126SixDryWallMigrationS2769,
+    const ct126Admitted=before?admitCt126SixDryWallMigrationProofS2769({proof:definition.source_metadata?.retainedParentBindingSuccessorV1?.ct126PreparedWallMigrationR2
+      ??definition.source_metadata?.ct126SixDryWallMigrationS2769,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const aggressiveAdmitted=before?admitAggressiveFloorActualThicknessMigrationProofS2769({proof:definition.source_metadata?.aggressiveFloorActualThicknessMigrationS2769,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
@@ -2735,13 +2867,25 @@ async function compileClaimedJob(
     assertCanonicalCompositionSelectionReleaseMigrationV1({selection:(parentAmendments.parameterSources as JsonRecord|undefined)?.compositionSelectionV1,
       from:{resources:parentResources.rows,formulas:parentFormulas.rows,parameters:parentParameters.rows},
       to:migrationTo});
+    const storedFromModel={resources:parentResources.rows,formulas:parentFormulas.rows,parameters:parentParameters.rows};
+    const ct29ManualMigration=admitCt29OrdinaryManualMigrationR1({
+      fromIdentity:{id:String(parentRevision.definition_version_id),catalogId:String(before?.catalog_id),sha256:String(before?.definition_sha256)},
+      toIdentity:{id:String(definition.id),catalogId:String(definition.catalog_id),sha256:String(definition.definition_sha256)},
+      from:storedFromModel,to:migrationTo});
+    const provisionManualMigration=admitWholeProvisionSavedManualMigrationR1({
+      fromIdentity:{id:String(parentRevision.definition_version_id),catalogId:String(before?.catalog_id),sha256:String(before?.definition_sha256)},
+      toIdentity:{id:String(definition.id),catalogId:String(definition.catalog_id),sha256:String(definition.definition_sha256)},
+      from:storedFromModel,to:migrationTo});
+    const savedManualMigration=ct29ManualMigration??provisionManualMigration;
     if(!quantityClear&&!sameImmutableCalculation) assertCanonicalStoredManualPriceReleaseMigration({
       parentOverrides: parentAmendments.rowOverrides ?? {},
       parentCustomRows: parentAmendments.customRows ?? [],
       requestedOverrides: payload.rowOverrides ?? {}, requestedCustomRows: payload.customRows ?? [],
       parentCurrency: parentRevision.currency_code, requestedCurrency: currencyCode,
       fromBindings: canonicalManualPriceMigrationBindings({resources: parentResources.rows, formulas: parentFormulas.rows, parameters: parentParameters.rows}),
-      toBindings: canonicalManualPriceMigrationBindings(migrationTo),
+      toBindings: savedManualMigration?.priceBindings??canonicalManualPriceMigrationBindings(migrationTo),
+      fromQuantityBindings:canonicalManualQuantityMigrationBindings(storedFromModel),
+      toQuantityBindings:savedManualMigration?.quantityBindings??canonicalManualQuantityMigrationBindings(migrationTo),
       fromExclusionBindings: canonicalManualExclusionMigrationBindings({resources: parentResources.rows, formulas: parentFormulas.rows, parameters: parentParameters.rows}),
       toExclusionBindings: canonicalManualExclusionMigrationBindings(migrationTo),
     });
@@ -2787,7 +2931,7 @@ async function compileClaimedJob(
   const selectedDelivery=selectedDeliveryRequested?await prepareCanonicalSelectedMaterialDeliveryServerR1(client,{
     phase:'WORKER',operation:String(job.operation),payload,parentRevisionId:String(job.parent_revision_id),catalogId:String(job.catalog_id),
     ownerUserId:String(job.owner_user_id),organizationId:job.organization_id==null?null:String(job.organization_id),targetReleaseId:String(job.target_release_id),priceSnapshotIds}):null;
-  confirmedParameters = { ...baselineParameters, ...stripCanonicalAutomaticPreliminaryInputsV1(parameterDefinitions, confirmedParameters, effectiveUserParameters),
+  confirmedParameters = { ...(sourceProfileSelectionMetadata === undefined ? baselineParameters : {}), ...stripCanonicalAutomaticPreliminaryInputsV1(parameterDefinitions, confirmedParameters, effectiveUserParameters),
     ...(selectedDelivery?.admission.confirmedParameters??{}) };
   if(definition.source_metadata?.floorPlannedPreparationContract)assertFloorPreparationIntentS2769(String(job.catalog_id),{...confirmedParameters,...submittedParameters});
   if(definition.source_metadata?.stoneCubesWasteMigrationS2769)
@@ -2797,6 +2941,37 @@ async function compileClaimedJob(
     parent:parentRevision?{catalogId:String(parentRevision.catalog_id),parameters:parentRevision.input_parameters}:null,
     submittedParameters,effectiveParameters:{...confirmedParameters,...submittedParameters},
   });
+  if (Object.hasOwn(definition.applicability ?? {}, 'primaryMeasureSelectionV1')) {
+    const { assertCanonicalPrimaryMeasureSelectionV1, isCanonicalSourceManagedPrimarySelectorV1 } = await import('../../../src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1');
+    const parentPrimary = parentRevision == null ? undefined : {
+      parameterId: String(parentRevision.primary_measure_parameter_id ?? ''),
+      unitId: (await client.query(
+        'select unit_id from public.estimate_parameter_definition where definition_version_id=$1 and parameter_id=$2',
+        [parentRevision.definition_version_id, parentRevision.primary_measure_parameter_id],
+      )).rows[0]?.unit_id,
+    };
+    const primaryParameterSchema = localParameterSessionSchema(String(job.catalog_id), parameterDefinitions, null).map(p => ({
+        ...p,
+        guide: p.guide ? {...p.guide,
+          sourceDocument: typeof p.guide.sourceDocument === 'string' ? p.guide.sourceDocument : undefined,
+          sourceLocator: typeof p.guide.sourceLocator === 'string' ? p.guide.sourceLocator : undefined,
+          sourceSnapshotHash: typeof p.guide.sourceSnapshotHash === 'string' ? p.guide.sourceSnapshotHash : undefined,
+        } : undefined,
+        formulaConsumers: formulas.filter(f => f.input_parameter_ids.includes(p.parameterId)).map(f => f.formula_id),
+      }));
+    const sourceManagedBranch = isCanonicalSourceManagedPrimarySelectorV1(primaryParameterSchema.find(
+      p => p.parameterId === definition.applicability.primaryMeasureSelectionV1.selectorParameterId,
+    ));
+    assertCanonicalPrimaryMeasureSelectionV1({
+      selectionMetadata: definition.applicability.primaryMeasureSelectionV1,
+      parameterSchema: primaryParameterSchema,
+      submittedParameters: sourceManagedBranch ? submittedParameters : { ...confirmedParameters, ...submittedParameters },
+      confirmedParameters,
+      explicitPrimaryMeasureParameterId: parentRevision == null
+        ? (payload.requestIdentity as JsonRecord | undefined)?.primaryMeasureParameterId : undefined,
+      parentPrimaryMeasure: parentPrimary,
+    });
+  }
   const compiled = await compileCanonicalEstimateCore({
     compositionSelectionV1:effectiveCompositionSelectionV1,
     operation: String(job.operation) as "compile" | "recalculate",
@@ -2813,6 +2988,9 @@ async function compileClaimedJob(
     resourceDefinitions: resources,
     submittedParameters,
     confirmedParameters,
+    ...(sourceProfileSelectionMetadata === undefined ? {} : {sourceProfileSelectionV1: {
+      metadata: sourceProfileSelectionMetadata, effectiveUserParameters,
+    }}),
     currencyCode,
     priceSnapshotIds,
     priceItems,
@@ -2827,6 +3005,7 @@ async function compileClaimedJob(
     hashJson: sha256,
   });
   const { parameters, rows, totals } = compiled;
+  assertCanonicalRevisionHasContent({rowCount: rows.length, preliminaryNeeds: compiled.preliminaryNeeds});
   const commitDerivedParameters = selectedDelivery ? canonicalSelectedDeliveryDerivedParametersR1({
     admission: selectedDelivery.admission, parameterDefinitions, parameters,
     derivedParameters: compiled.derivedParameters, submittedParameters,
@@ -2869,8 +3048,30 @@ async function compileClaimedJob(
       createHash("sha256").update(value, "utf8").digest("hex"),
   });
   const selectedMaterialDeliveryV1=selectedDelivery?finalizeCanonicalSelectedDeliveryReceiptR1(selectedDelivery.admission,rows):undefined;
+  // Read only the exact resolved immutable definition's persisted passport.
+  // This transaction already owns the compilation; no active/current lookup.
+  const compositionPassports = (await client.query(
+    'select definition_version_id,catalog_id,decision,payload_sha256 from public.estimate_content_passport_r3 where definition_version_id=$1',
+    [definition.id],
+  )).rows;
+  if (compositionPassports.length > 1 || (compositionPassports[0]
+      && compositionPassports[0].catalog_id !== job.catalog_id))
+    throw new Error('OPERATION_COMPOSITION_PASSPORT_BINDING_INVALID');
+  const parentComposition = parentRevision
+    && parentRevision.release_id === job.target_release_id
+    && parentRevision.definition_version_id === definition.id
+    ? canonicalSavedOperationCompositionEvidenceV1(parentRevision) : undefined;
+  if (parentComposition?.issue) throw new Error(parentComposition.issue);
+  const inheritedCompositionEvidence = parentComposition?.independentComposition !== undefined
+    ? (parentRevision!.amendment_contract as JsonRecord).parameterSources as JsonRecord : undefined;
+  const operationCompositionEvidenceV1 = inheritedCompositionEvidence
+    ? inheritedCompositionEvidence.operationCompositionEvidenceV1 as CanonicalOperationCompositionEvidenceV1
+    : compositionPassports[0]
+    ? canonicalOperationCompositionEvidenceFromPassportV1({releaseId:String(job.target_release_id),
+      definitionVersionId:String(definition.id),passport:compositionPassports[0]}) : undefined;
   const revisionProjection = {
     ...compiled.revisionProjection,
+    ...(operationCompositionEvidenceV1 ? {operationCompositionEvidenceV1} : {}),
     ...(selectedMaterialDeliveryV1?{selectedMaterialDeliveryV1}:{}),
     identity: identityContract,
     ...(roofPreparationMigrationV1?{roofPreparationMigrationV1}:{}),
@@ -2883,6 +3084,7 @@ async function compileClaimedJob(
     ...(roofPrimerPrerequisiteV1?{roofPrimerPrerequisiteV1}:{}),
   };
   const commitPayload = buildCanonicalRevisionCommitPayload({
+    operationCompositionEvidenceV1,
     ...(selectedMaterialDeliveryV1?{selectedMaterialDeliveryV1}:{}),
     rowCount: rows.length,
     currencyCode,
@@ -2897,6 +3099,10 @@ async function compileClaimedJob(
     parentRevisionId:
       job.parent_revision_id == null ? null : String(job.parent_revision_id),
     derivedParameters: commitDerivedParameters,
+    ...(compiled.sourceProfileProducerV1 == null ? {} : {sourceProfileProducerV1: {
+      ...compiled.sourceProfileProducerV1,
+      definitionVersionId: String(definition.id), definitionSha256: String(definition.definition_sha256),
+    }}),
     identityContract,
     preliminaryNeeds: compiled.preliminaryNeeds,
     purchaseSupplyIndexV1: compiled.purchaseSupplyIndexV1,
@@ -3487,7 +3693,10 @@ async function artifactBrowser(): Promise<Browser> {
   artifactBrowserInstance = null;
   if (artifactBrowserPromise) return artifactBrowserPromise;
 
-  const launch = chromium.launch({ headless: true });
+  // Load the existing PDF engine only when an artifact actually needs it.
+  // Assign the import-and-launch promise before awaiting either step so two
+  // concurrent PDF requests still share one browser and the same failure.
+  const launch = import("playwright").then(({ chromium }) => chromium.launch({ headless: true }));
   artifactBrowserPromise = launch;
   try {
     const browser = await launch;
@@ -3594,8 +3803,11 @@ async function buildArtifactClaimedJob(
   job: JsonRecord,
 ): Promise<void> {
   const revisionId = String(job.parent_revision_id ?? "");
+  const inputPayload = job.input_payload as JsonRecord | null | undefined;
+  const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(inputPayload?.issuancePurpose);
+  if(issuancePurpose==='PRELIMINARY_REVIEW'&&job.operation!=='professional_pdf')throw Object.assign(new Error('invalid PDF purpose'),{code:'ARTIFACT_PURPOSE_INVALID'});
   const revision = (
-    await client.query("select * from public.estimate_revision where id=$1", [
+    await client.query("select r.*,public.estimate_definition_withdrawal_reason_v1(r.definition_version_id) definition_withdrawal_reason from public.estimate_revision r where id=$1", [
       revisionId,
     ])
   ).rows[0];
@@ -3611,14 +3823,19 @@ async function buildArtifactClaimedJob(
     throw Object.assign(new Error("artifact source invalid"), {
       code: "ARTIFACT_SOURCE_INVALID",
     });
-  assertCanonicalPurchaseSupplyRevisionV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)], revision.amendment_contract);
+  if(issuancePurpose!=='PRELIMINARY_REVIEW')assertCanonicalPurchaseSupplyRevisionV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)], revision.amendment_contract);
   if (job.operation === "procurement") assertCanonicalPurchaseSupplyReadyV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)]);
-  const selection = selectCanonicalArtifactRows(allRows);
+  const reviewAcknowledgmentV1=inputPayload?.reviewAcknowledgmentV1 as import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalProfessionalPdfReviewAcknowledgmentV1|undefined;
+  if(issuancePurpose==='PRELIMINARY_REVIEW'&&reviewAcknowledgmentV1?.actorUserId!==String(job.owner_user_id))throw Object.assign(new Error('review actor mismatch'),{code:'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID'});
+  const artifactAcceptance=assertCanonicalProfessionalPdfIssuanceV1({revision,resources:[...allRows,...canonicalArtifactPreliminaryNeeds(revision,{issuancePurpose})],issuancePurpose,reviewAcknowledgmentV1});
+  const selection = issuancePurpose==='PRELIMINARY_REVIEW'
+    ? {sourceRows:allRows,estimateRows:[],professionalPdfRows:allRows,procurementRows:[]}
+    : selectCanonicalArtifactRows(allRows);
   const estimateRows = selection.estimateRows;
   const rows = job.operation === "procurement"
     ? selection.procurementRows
     : job.operation === "professional_pdf"
-      ? selection.professionalPdfRows
+      ? issuancePurpose==='PRELIMINARY_REVIEW' ? allRows : selection.professionalPdfRows
       : estimateRows;
   let bytes: Buffer;
   let contentType: string;
@@ -3659,15 +3876,17 @@ async function buildArtifactClaimedJob(
         { code: "ARTIFACT_IDENTITY_LOAD_FAILED" },
       );
     }
+    const parameterDefinitions=(await client.query(
+      "select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal",
+      [definitionVersionId],
+    )).rows;
     const projection = buildCanonicalProfessionalPdfProjection({
       revision,
       rows,
-      preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision),
-      parameterTitlesRu: Object.fromEntries((await client.query(
-        "select parameter_id,title_ru from public.estimate_parameter_definition where definition_version_id=$1",
-        [definitionVersionId],
-      )).rows.map(parameter => [String(parameter.parameter_id), String(parameter.title_ru ?? "")])),
-      expectedProjectedRowCount: selection.professionalPdfRows.length,
+      preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision,{issuancePurpose}), issuancePurpose, reviewAcknowledgmentV1,
+      parameterTitlesRu: Object.fromEntries(parameterDefinitions.map(parameter => [String(parameter.parameter_id), String(parameter.title_ru ?? "")])),
+      ...(issuancePurpose==='PRELIMINARY_REVIEW'?{}:{parameterSchema: localParameterSessionSchema(String(revision.catalog_id),parameterDefinitions,null) as CanonicalEstimateCatalogItem['parameterSchema']}),
+      expectedProjectedRowCount: rows.length,
       workTitleRu: String(
         revision.display_title_ru
           ?? revision.canonical_work_title_ru
@@ -3746,18 +3965,18 @@ async function buildArtifactClaimedJob(
         contentType,
         byteSize: bytes.byteLength,
         sha256: artifactSha256,
-        metadata: buildCanonicalArtifactMetadata({
+        metadata: {...buildCanonicalArtifactMetadata({
           operation: job.operation as
             "pdf" | "professional_pdf" | "procurement",
           renderer,
           revision,
           sourceRowCount: selection.sourceRows.length,
           projectedRowCount: artifactProjectedRowCount,
-          selectedProcurementRowCount: selection.procurementRows.length,
+          selectedProcurementRowCount: selection.procurementRows.length, issuancePurpose,reviewAcknowledgmentV1,operationResourceAcceptanceV1:artifactAcceptance,
           definitionVersionId,
           pageCount,
           grandTotalStatus,
-        }),
+        }),...(issuancePurpose==='PRELIMINARY_REVIEW'?{jobId:String(job.id),snapshotReadReportV1:inputPayload?.snapshotReadReportV1}:{})},
       }),
     ],
   );
@@ -3784,6 +4003,7 @@ type LocalSearchCursor = {
   orderKey: string;
   shown: number;
   rankingAlgorithm?: string;
+  catalogVisibilityVersion?: string;
 };
 
 function searchCursor(raw: string | null): LocalSearchCursor | null {
@@ -3820,6 +4040,8 @@ type LocalCanonicalResourceSearchRow = {
   procurementEligible: boolean;
   sourceSearchText: string;
   publicSearchText: string;
+  displayNameRu: string;
+  displayDetailsRu: readonly string[];
 };
 
 let localCanonicalResourceIndexPromise: Promise<LocalCanonicalResourceSearchRow[]> | null = null;
@@ -3851,9 +4073,15 @@ function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[
     withClient(async (client) => (await client.query(`
       select distinct on(lower(title_ru),row_type,unit_id)
         id::text resource_id,definition_version_id::text,row_id,title_ru,row_type,unit_id,
-        semantic_owner,procurement_eligible
+        semantic_owner,procurement_eligible,
+        jsonb_build_object('costTreatment',resource_graph->'costTreatment',
+          'publicResourcePresentationV1',resource_graph->'publicResourcePresentationV1') resource_graph,
+        jsonb_build_object('costTreatment',source_metadata->'costTreatment') source_metadata
       from public.estimate_resource_spec
       where definition_version_id=any($1::uuid[]) and trim(title_ru)<>''
+        and trim(coalesce(unit_id,''))<>''
+        and trim(coalesce(resource_graph->>'costTreatment',source_metadata->>'costTreatment',''))
+          not in ('INCLUDED_IN_RESOURCE_ROWS','INFORMATIONAL_SCOPE','CONTROL_OR_DOCUMENT')
       order by lower(title_ru),row_type,unit_id,definition_version_id,row_id
     `, [definitionVersionIds])).rows),
     withClient(async (client) => (await client.query(`
@@ -3870,6 +4098,9 @@ function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[
     );
     const unique = new Map<string, LocalCanonicalResourceSearchRow>();
     for (const resource of resources as Record<string, any>[]) {
+      // Apply the compiler's exact standalone cost policy before public-name
+      // deduplication. Included items and counters are not new payable rows.
+      if (!canonicalEstimateResourceIncludedByDefault({resource_graph:resource.resource_graph,source_metadata:resource.source_metadata})) continue;
       const semanticOwnerId = String(resource.semantic_owner ?? "").trim();
       const sourceCatalogId = catalogIdFromResourceSemanticOwner(semanticOwnerId);
       const workTitleRu = sourceCatalogId
@@ -3885,7 +4116,15 @@ function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[
       ) continue;
       const rowType = String(resource.row_type) as LocalCanonicalResourceSearchRow["rowType"];
       if (!["material", "labor", "equipment", "service", "waste"].includes(rowType)) continue;
-      const unitId = String(resource.unit_id ?? "").trim() || "pcs";
+      const unitId = String(resource.unit_id).trim();
+      const presentation=canonicalPublicResourceDisplayPresentationV1({rowId:String(resource.row_id),
+        titleRu:String(resource.title_ru),descriptor:resource.resource_graph?.publicResourcePresentationV1});
+      const displayNameRu=presentation?.nameRu ?? titleRu;
+      // Catalog choices show physical specifications, never legacy method notes.
+      const displayDetailsRu=displayNameRu!==titleRu
+        ? presentation?.specificationRu ? [presentation.specificationRu]
+          : ['material','equipment'].includes(rowType) ? [titleRu] : []
+        : [];
       const key = `${normalizeSearchQuery(titleRu)}\u001f${rowType}\u001f${unitId}`;
       if (unique.has(key)) continue;
       unique.set(key, {
@@ -3894,12 +4133,14 @@ function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[
         sourceCatalogId,
         rowId: String(resource.row_id),
         titleRu,
+        displayNameRu,
+        displayDetailsRu,
         rowType,
         unitId,
         semanticOwnerId,
         procurementEligible: resource.procurement_eligible === true,
-        sourceSearchText: normalizeSearchQuery(String(resource.title_ru)),
-        publicSearchText: normalizeSearchQuery(titleRu),
+        sourceSearchText: normalizeSearchQuery([String(resource.title_ru),...displayDetailsRu].join(' ')),
+        publicSearchText: normalizeSearchQuery(displayNameRu),
       });
     }
     return [...unique.values()];
@@ -3961,8 +4202,8 @@ function fuzzySearchPage(
       const terms = [
         ...new Set(
           [
-            row.normalized_canonical_name,
-            ...(row.normalized_search_terms ?? []),
+            row.profile_normalized_canonical_name ?? row.normalized_canonical_name,
+            ...(row.profile_normalized_search_terms ?? row.normalized_search_terms ?? []),
           ]
             .map(String)
             .filter(Boolean),
@@ -4002,7 +4243,7 @@ function fuzzySearchPage(
       return [
         {
           ...row,
-          source_catalog_id: row.catalog_id,
+          source_catalog_id: row.matched_profile_catalog_id ?? row.catalog_id,
           tier: 6,
           matched_term: best.map((item) => item.term).join(" | "),
           stable_order_key: stableOrderKey,
@@ -4015,20 +4256,21 @@ function fuzzySearchPage(
         String(right.stable_order_key),
       ),
     );
+  const publicRanked = deduplicateCanonicalPublicWorkRowsV1(ranked);
   const resultSetSha256 = createHash("sha256")
     .update(
       canonicalEstimateStableJson(
-        ranked.map((row) => [row.catalog_id, row.score, row.stable_order_key]),
+        publicRanked.map((row) => [row.catalog_id, row.score, row.stable_order_key]),
       ),
     )
     .digest("hex");
-  const groupTotalCount = new Set(ranked.map((row) => row.group_id)).size;
-  const page = ranked
+  const groupTotalCount = new Set(publicRanked.map((row) => row.group_id)).size;
+  const page = publicRanked
     .filter((row) => after == null || row.stable_order_key > after)
     .slice(0, limit)
     .map((row) => ({
       ...row,
-      fuzzy_total_count: ranked.length,
+      fuzzy_total_count: publicRanked.length,
       group_total_count: groupTotalCount,
       result_set_sha256: resultSetSha256,
       literal_total_count: 0,
@@ -4134,11 +4376,45 @@ function localDraftView(row: Record<string, any>) {
   };
 }
 
+// Call only after the existing actor check or signed-file identity check.
+// The signed-file route intentionally has no logged-in principal.
+async function localSavedOperationAcceptanceV1(revisionId:string,issuance?:{issuancePurpose?:unknown;reviewAcknowledgmentV1?:unknown},
+  reviewEligibility?:(value:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalManualPreliminaryReviewEligibilityV1)=>void,
+  pdfReviewEligibility?:(value:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalProfessionalPdfReviewEligibilityV1)=>void,
+  readPurpose?:'PRELIMINARY_REVIEW') {
+  const acceptance=await findAcrossModelDatabases(async client=>{
+    await client.query('begin isolation level repeatable read read only');
+    try {
+      const revision=(await client.query('select r.*,public.estimate_definition_withdrawal_reason_v1(r.definition_version_id) definition_withdrawal_reason from public.estimate_revision r where id=$1',[revisionId])).rows[0];
+      if(!revision){await client.query('rollback');return null;}
+      let rows=(await client.query('select * from public.estimate_revision_row where revision_id=$1 order by ordinal',[revisionId])).rows;
+      if(issuance||reviewEligibility||pdfReviewEligibility){const prices=(await client.query('select revision_id::text,row_id,price_snapshot_id::text,resolution_trace from public.estimate_revision_row_price where revision_id=$1',[revisionId])).rows;
+        rows=canonicalArtifactRowsWithPriceRecordsV1({revisionId,rows,prices});}
+      if(rows.length!==Number(revision.row_count))throw Object.assign(new Error('revision source invalid'),{code:'ARTIFACT_SOURCE_INVALID',httpStatus:409});
+      // No independent roster is persisted on this revision storage contract.
+      // Absence remains UNVERIFIED; never load the active factory/map.
+      const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(issuance?.issuancePurpose??readPurpose);
+      const resources=[...rows,...canonicalArtifactPreliminaryNeeds(revision,{issuancePurpose})];
+      const result=issuancePurpose==='PRELIMINARY_REVIEW'?canonicalProfessionalPdfReportOriginalAuditV1({revision,resources}):canonicalEstimateSavedOperationAcceptanceV1({revision,resources});
+      reviewEligibility?.(canonicalManualPreliminaryReviewEligibilityV1({revision,resources}));
+      pdfReviewEligibility?.(canonicalProfessionalPdfReviewEligibilityV1({revision,resources}));
+      if(issuance)assertCanonicalProfessionalPdfIssuanceV1({revision,resources,...issuance});
+      await client.query('rollback');return result;
+    } catch(error){await client.query('rollback');throw error;}
+  });
+  if(!acceptance)throw Object.assign(new Error('revision not found'),{code:'NOT_FOUND',httpStatus:404});
+  return acceptance;
+}
+
 function localRevisionView(
   revision: Record<string, any>,
   environment: {
+    issuancePurpose?:'PRELIMINARY_REVIEW';
     contentAdmission?: AdmissionDecision;
     legacyWarningRu?: string | null;
+    operationResourceAcceptanceV1?: CanonicalEstimateOperationResourceAcceptanceV1;
+    manualPreliminaryReviewEligibilityV1?:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalManualPreliminaryReviewEligibilityV1;
+    professionalPdfReviewEligibilityV1?:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalProfessionalPdfReviewEligibilityV1;
   } = {},
 ) {
   return canonicalEstimateRevisionDetailFromStorage(revision, {
@@ -4406,7 +4682,7 @@ async function route(
         (
           await client.query(
             `
-      select a.*,r.owner_user_id,r.organization_id from public.estimate_revision_artifact a join public.estimate_revision r on r.id=a.revision_id
+      select a.*,r.release_id,r.catalog_id,r.definition_version_id,r.row_count,r.checksum_sha256 revision_checksum_sha256,r.owner_user_id,r.organization_id from public.estimate_revision_artifact a join public.estimate_revision r on r.id=a.revision_id
       where a.id=$1 and a.status='ready'
     `,
             [path[1]],
@@ -4434,6 +4710,12 @@ async function route(
         httpStatus: 401,
       });
     }
+    const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(url.searchParams.get('issuancePurpose')??undefined);
+    assertCanonicalProfessionalPdfPurposeMatchesV1(artifact.metadata,issuancePurpose);
+    await localSavedOperationAcceptanceV1(String(artifact.revision_id),{issuancePurpose,reviewAcknowledgmentV1:artifact.metadata?.reviewAcknowledgmentV1});
+    if(artifact.artifact_kind==='professional_pdf'||artifact.artifact_kind==='professional_pdf_review')assertCanonicalProfessionalArtifactCurrentPresentationV1({
+      metadata:artifact.metadata,rendererVersion:CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,expectedIssuancePurpose:issuancePurpose,
+      revision:{...artifact,id:artifact.revision_id,checksum_sha256:artifact.revision_checksum_sha256}});
     const bytes = readFileSync(artifactFilePath(artifact.storage_key));
     response.writeHead(200, {
       "Access-Control-Allow-Origin": "*",
@@ -4697,11 +4979,11 @@ async function route(
           )
         ).rows[0] ?? null;
       const counts = (
-        await client.query(`select
-        (select count(*)::integer from public.estimate_search_document d
-          join public.estimate_search_index_release r on r.id=d.search_release_id
-          where (($1::uuid is not null and r.id=$1) or ($1::uuid is null and r.status='active'))) active_search_documents
-      `, [TARGET_SEARCH_RELEASE_ID || null])
+        await client.query(`with ${CANONICAL_PUBLIC_WORK_PROJECTION_CTE_V1}
+        select (select count(*)::integer from public.estimate_search_document where search_release_id=$1) active_search_documents,
+          (select count(*)::integer from public_work_profile_groups) public_catalog_works,
+          (select count(*)::integer from public_work_candidates) internal_condition_profiles
+      `, [searchRelease?.id ?? TARGET_SEARCH_RELEASE_ID ?? null])
       ).rows[0];
       return { searchRelease, counts };
     });
@@ -4781,6 +5063,10 @@ async function route(
       activeSearchDocumentCount: Number(
         searchDatabase.counts?.active_search_documents ?? 0,
       ),
+      publicCatalogWorkCount: Number(searchDatabase.counts?.public_catalog_works ?? 0),
+      internalConditionProfileCount: Number(searchDatabase.counts?.internal_condition_profiles ?? 0),
+      catalogVisibilityVersion: CANONICAL_PUBLIC_CATALOG_VISIBILITY_V1,
+      catalogRankingAlgorithm: CANONICAL_CATALOG_RANKING_ALGORITHM,
       activeCompileJobCount: Number(modelDatabase.counts?.active_compile_jobs ?? 0),
       compatibilityTuple: {
         definitionReleaseId: modelDatabase.definitionRelease?.id ?? null,
@@ -4863,6 +5149,8 @@ async function route(
         sourceCatalogId: row.sourceCatalogId,
         rowId: row.rowId,
         titleRu: row.titleRu,
+        displayNameRu: row.displayNameRu,
+        displayDetailsRu: row.displayDetailsRu,
         rowType: row.rowType,
         unitId: row.unitId,
         semanticOwnerId: row.semanticOwnerId,
@@ -4959,19 +5247,18 @@ async function route(
       if (rows.length === 0 && intent.mode === "PHRASE" && scope === "WORKS") {
         const candidates = (
           await client.query(
-            `select document.catalog_id,document.definition_version_id,
-          document.definition_release_id,document.canonical_name_ru,document.group_id,group_row.group_name_ru,
-          document.domain_id,document.system_id,document.subsystem_id,document.assembly_id,
-          document.work_family_id,document.element_type,document.operation_kind,document.technology_variant,
-          document.primary_uom,document.publication_state,document.catalog_origin,document.adjudication_class,
-          document.selectable,document.short_scope_ru,document.key_distinguishing_parameters,
-          document.required_inputs_count,document.clarification_fields,document.included_boundaries,
-          document.excluded_boundaries,document.normalized_canonical_name,document.normalized_search_terms
-        from public.estimate_search_document document
+            `with ${CANONICAL_PUBLIC_WORK_PROJECTION_CTE_V1}
+        select target.*,group_row.group_name_ru,projection.public_work_key,projection.public_catalog_id,projection.condition_profiles,
+          document.catalog_id matched_profile_catalog_id,
+          document.normalized_canonical_name profile_normalized_canonical_name,
+          document.normalized_search_terms profile_normalized_search_terms
+        from public_work_candidates document
+        join public_work_projection projection on projection.member_catalog_id=document.catalog_id
+        join public.estimate_search_document target
+          on target.search_release_id=$1 and target.catalog_id=projection.public_catalog_id
         join public.estimate_search_group group_row
-          on group_row.search_release_id=document.search_release_id and group_row.group_id=document.group_id
-        where document.search_release_id=$1 and document.adjudication_class='EFFECTIVE_WORK'
-          and document.selectable and length(replace($2,' ',''))>2
+          on group_row.search_release_id=target.search_release_id and group_row.group_id=target.group_id
+        where length(replace($2,' ',''))>2
           and exists(select 1 from unnest(document.normalized_search_terms) term
             where term like left($2,2)||'%')
           and (coalesce($3,'')='' or document.domain_id=$3)
@@ -5022,7 +5309,7 @@ async function route(
       return { release, rows, inventory, resultLevel };
     });
     const contentAdmissionByCatalog = await readContentAdmissions(
-      result.rows.map((row: Record<string, any>) => String(row.catalog_id)),
+      result.rows.flatMap((row: Record<string, any>) => [String(row.catalog_id), ...canonicalPublicWorkProfileIdsV1(row)]),
     );
     const runtimeTargetState = await withClient(readRuntimeTargetState);
     const literalTotalCount = Number(result.rows[0]?.literal_total_count ?? 0);
@@ -5043,6 +5330,7 @@ async function route(
       searchIndexSnapshotSha256: result.release.snapshot_sha256,
       taxonomyVersion: result.release.taxonomy_version,
       groupRelationVersion: result.release.group_relation_version,
+      catalogVisibilityVersion: CANONICAL_PUBLIC_CATALOG_VISIBILITY_V1,
       rankingContractVersion: `${result.release.ranking_contract_version}+${CANONICAL_CATALOG_RANKING_ALGORITHM}`,
       resultSetSha256:
         result.rows[0]?.result_set_sha256 ??
@@ -5086,17 +5374,20 @@ async function route(
         const matchedAlias = matchTier === 2 || matchTier === 4;
         const contentAdmission =
           contentAdmissionByCatalog.get(String(row.catalog_id)) ?? null;
-        const estimateReady =
-          row.selectable === true &&
+        const card = canonicalPublicWorkCardMetadataV1(row, contentAdmissionByCatalog, runtimeTargetState.userCompileAllowed);
+        const estimateReady = card.conditionProfiles.length > 0
+          ? card.conditionProfiles.some(profile => profile.estimateReady)
+          : row.selectable === true &&
           Boolean(row.definition_version_id) &&
           row.publication_state === "ADMITTED_BACKEND" &&
           runtimeTargetState.userCompileAllowed &&
           contentAdmission?.status === "PROFESSIONAL_READY";
         return {
+          ...card,
           catalogId: row.catalog_id,
           definitionVersionId: row.definition_version_id,
           definitionReleaseId: row.definition_release_id,
-          canonicalNameRu: row.canonical_name_ru,
+          canonicalNameRu: canonicalPublicWorkNameV1(String(row.canonical_name_ru), String(row.catalog_id), String(row.group_id), row.public_work_key),
           groupId: row.group_id,
           groupNameRu: row.group_name_ru,
           domainId: row.domain_id,
@@ -5120,7 +5411,7 @@ async function route(
           includedBoundaries: row.included_boundaries,
           excludedBoundaries: row.excluded_boundaries,
           replacementCatalogId:
-            row.source_catalog_id !== row.catalog_id ? row.catalog_id : null,
+            row.source_catalog_id !== row.catalog_id && !card.conditionProfiles.some(profile => profile.catalogId === row.source_catalog_id) ? row.catalog_id : null,
           matchTier,
           matchType,
           matchedTerm: row.matched_term,
@@ -5186,7 +5477,8 @@ async function route(
       if (
         cursor &&
         (cursor.releaseId !== release.id ||
-          cursor.snapshotSha256 !== release.snapshot_sha256)
+          cursor.snapshotSha256 !== release.snapshot_sha256 ||
+          cursor.catalogVisibilityVersion !== CANONICAL_PUBLIC_CATALOG_VISIBILITY_V1)
       )
         throw Object.assign(
           new Error("Поисковый индекс обновился. Откройте группу заново."),
@@ -5194,7 +5486,7 @@ async function route(
         );
       const rows = (
         await client.query(
-          "select * from public.estimate_list_search_group_r58($1,$2,$3,$4)",
+          CANONICAL_PUBLIC_SEARCH_GROUP_SQL_V1,
           [release.id, groupId, cursor?.orderKey ?? null, limit],
         )
       ).rows;
@@ -5206,9 +5498,10 @@ async function route(
         httpStatus: 404,
       });
     const admissions = await readContentAdmissions(
-      result.rows.map((row: Record<string, any>) => String(row.catalog_id)),
+      result.rows.flatMap((row: Record<string, any>) => [String(row.catalog_id), ...canonicalPublicWorkProfileIdsV1(row)]),
       "search_selectable",
     );
+    const runtimeTargetState = await withClient(readRuntimeTargetState);
     const totalCount = Number(result.rows[0]?.member_count ?? 0);
     const shownCount = (cursor?.shown ?? 0) + result.rows.length;
     const last = result.rows[result.rows.length - 1];
@@ -5218,23 +5511,27 @@ async function route(
       searchIndexSnapshotSha256: result.release.snapshot_sha256,
       taxonomyVersion: result.release.taxonomy_version,
       groupRelationVersion: result.release.group_relation_version,
+      catalogVisibilityVersion: CANONICAL_PUBLIC_CATALOG_VISIBILITY_V1,
       groupId,
       groupNameRu: result.rows[0]?.group_name_ru ?? "",
       totalCount,
       shownCount,
-      items: result.rows.map((row: Record<string, any>) => ({
-        catalogId: row.catalog_id,
-        canonicalNameRu: row.canonical_name_ru,
-        publicationState: row.publication_state,
-        catalogOrigin: row.catalog_origin,
-        operationKind: row.operation_kind,
-        technologyVariant: row.technology_variant,
-        estimateReady:
-          admissions.get(String(row.catalog_id))?.status ===
-          "PROFESSIONAL_READY",
-        contentAdmission:
-          admissions.get(String(row.catalog_id))?.decision ?? null,
-      })),
+      items: result.rows.map((row: Record<string, any>) => {
+        const card = canonicalPublicWorkCardMetadataV1(row, admissions, runtimeTargetState.userCompileAllowed);
+        return {
+          ...card,
+          catalogId: row.catalog_id,
+          definitionVersionId: row.definition_version_id,
+          definitionReleaseId: row.definition_release_id,
+          canonicalNameRu: canonicalPublicWorkNameV1(String(row.canonical_name_ru), String(row.catalog_id), String(row.group_id), row.public_work_key),
+          publicationState: row.publication_state,
+          catalogOrigin: row.catalog_origin,
+          operationKind: row.operation_kind,
+          technologyVariant: row.technology_variant,
+          estimateReady: card.conditionProfiles.some(profile => profile.estimateReady),
+          contentAdmission: admissions.get(String(row.catalog_id))?.decision ?? null,
+        };
+      }),
       nextCursor:
         last && shownCount < totalCount
           ? Buffer.from(
@@ -5242,6 +5539,7 @@ async function route(
                 releaseId: result.release.id,
                 snapshotSha256: result.release.snapshot_sha256,
                 orderKey: String(last.catalog_id),
+                catalogVisibilityVersion: CANONICAL_PUBLIC_CATALOG_VISIBILITY_V1,
                 shown: shownCount,
               }),
             ).toString("base64url")
@@ -5300,6 +5598,8 @@ async function route(
       const selected = Array.isArray(body.selectedCatalogIds)
         ? [...new Set(body.selectedCatalogIds.map(String))]
         : [];
+      if (selected.some(isCanonicalAreaVariantV1))
+        throw Object.assign(new Error("Выберите общую работу и укажите её геометрию."), {code:"AREA_PRESET_RETIRED",httpStatus:409});
       if (selected.length) {
         const known = Number(
           (
@@ -5496,6 +5796,7 @@ async function route(
       attempt: job.attempt,
       resultRevisionId: job.result_revision_id,
       errorCode: job.error_code,
+      errorUserMessageRu: canonicalFormulaOutputBoundsPublicReasonRu(job.error_code,job.error_detail?.publicReasonRu),
       createdAt: job.created_at,
       updatedAt: job.updated_at,
     });
@@ -5621,6 +5922,7 @@ async function route(
     path.length === 2 &&
     path[0] === "revisions"
   ) {
+    const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(url.searchParams.get('issuancePurpose')??undefined);
     const revision = await findAcrossModelDatabases(
       async (client) =>
         (
@@ -5635,11 +5937,11 @@ async function route(
         code: "NOT_FOUND",
         httpStatus: 404,
       });
-    const contentAdmission = legacyReadContentAdmission(
+    const contentAdmission = issuancePurpose==='PRELIMINARY_REVIEW'?null:legacyReadContentAdmission(
       revision,
       "revision_read",
     );
-    const selectedMaterialDeliveryContext=isSelectedMaterialDeliveryCatalogR1(String(revision.catalog_id))?await withDatabaseClient(await modelDatabaseUrlForRevision(path[1]),async client=>{
+    const selectedMaterialDeliveryContext=issuancePurpose!=='PRELIMINARY_REVIEW'&&isSelectedMaterialDeliveryCatalogR1(String(revision.catalog_id))?await withDatabaseClient(await modelDatabaseUrlForRevision(path[1]),async client=>{
       await client.query('begin isolation level repeatable read read only');
       try{
         const context=await canonicalSelectedDeliveryPreviewR1(client,{parentRevisionId:String(revision.id),catalogId:String(revision.catalog_id),
@@ -5651,10 +5953,17 @@ async function route(
         throw error;
       }
     }):null;
+    let manualPreliminaryReviewEligibilityV1:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalManualPreliminaryReviewEligibilityV1|undefined;
+    let professionalPdfReviewEligibilityV1:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalProfessionalPdfReviewEligibilityV1|undefined;
+    const operationResourceAcceptanceV1=await localSavedOperationAcceptanceV1(String(revision.id),undefined,
+      issuancePurpose==='PRELIMINARY_REVIEW'?undefined:value=>{manualPreliminaryReviewEligibilityV1=value;},
+      value=>{professionalPdfReviewEligibilityV1=value;},issuancePurpose==='PRELIMINARY_REVIEW'?issuancePurpose:undefined);
     return send(response, 200, {...localRevisionView(revision, {
-      contentAdmission: contentAdmission.decision,
-      legacyWarningRu:
-        "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
+      operationResourceAcceptanceV1,manualPreliminaryReviewEligibilityV1,professionalPdfReviewEligibilityV1,
+      ...(issuancePurpose==='PRELIMINARY_REVIEW'?{issuancePurpose}:{contentAdmission:contentAdmission?.decision}),
+      legacyWarningRu:issuancePurpose==='PRELIMINARY_REVIEW'
+        ?"Предварительный отчёт о сохранённых данных; не подтверждает готовность расчёта."
+        :"Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
     }),...(selectedMaterialDeliveryContext?{selectedMaterialDeliveryContext}:{})});
   }
   if (request.method === "GET" && path.length === 5 && path[0] === "revisions"
@@ -5684,7 +5993,7 @@ async function route(
       async (client) =>
         (
           await client.query(
-            "select id,release_id::text,catalog_id,definition_version_id::text,amendment_contract from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3)",
+            "select id,release_id::text,catalog_id,definition_version_id::text,amendment_contract,input_parameters,checksum_sha256,created_at from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3)",
             [path[1], currentOwnerId(), currentTenantId()],
           )
         ).rows[0] as JsonRecord | undefined,
@@ -5737,7 +6046,7 @@ async function route(
       apiVersion: API_VERSION,
       revisionId: path[1],
       contentAdmission: contentAdmission.decision,
-      rows: page.map((row) => canonicalEstimateRevisionRowFromStorage(
+      rows: page.map((row) => attachCanonicalPhysicalNormEvidenceV1(canonicalPhysicalNormRevisionFromStorageV1(revision),canonicalEstimateRevisionRowFromStorage(
         row,
         row._price_record_present
           ? {
@@ -5753,7 +6062,7 @@ async function route(
           route_source_kind: row._price_route_source_kind,
         },
         revision.amendment_contract,
-      )),
+      ))),
       nextCursor:
         rows.length > limit
           ? Buffer.from(
@@ -5896,6 +6205,9 @@ async function route(
     if (request.method === "POST")
       return send(response, 202, await createArtifactJob(body, path[1], kind));
     if (request.method === "GET") {
+      const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(url.searchParams.get('issuancePurpose')??undefined);
+      if(issuancePurpose==='PRELIMINARY_REVIEW'&&kind!=='professional_pdf')throw Object.assign(new Error('invalid PDF purpose'),{code:'ARTIFACT_PURPOSE_INVALID',httpStatus:400});
+      const storedArtifactKind=issuancePurpose==='PRELIMINARY_REVIEW'?'professional_pdf_review':kind;
       const modelDatabaseUrl = await modelDatabaseUrlForRevision(path[1]);
       const artifact = await withDatabaseClient(
         modelDatabaseUrl,
@@ -5909,7 +6221,7 @@ async function route(
         where a.revision_id=$1 and a.artifact_kind=$2
           and (r.owner_user_id=$3 or r.organization_id=$4)
       `,
-              [path[1], kind, currentOwnerId(), currentTenantId()],
+              [path[1], storedArtifactKind, currentOwnerId(), currentTenantId()],
             )
           ).rows[0],
       );
@@ -5918,6 +6230,20 @@ async function route(
           code: "NOT_FOUND",
           httpStatus: 404,
         });
+      assertCanonicalProfessionalPdfPurposeMatchesV1(artifact.metadata,issuancePurpose);
+      if(artifact.status==='ready'&&kind==='professional_pdf')assertCanonicalProfessionalArtifactCurrentPresentationV1({
+        metadata:artifact.metadata,rendererVersion:CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,expectedIssuancePurpose:issuancePurpose,
+        revision:{...artifact,id:artifact.revision_id,checksum_sha256:artifact.revision_checksum_sha256}});
+      let operationResourceAcceptanceV1:CanonicalEstimateOperationResourceAcceptanceV1;
+      try {
+        operationResourceAcceptanceV1=await localSavedOperationAcceptanceV1(String(artifact.revision_id),artifact.status==='ready'?{issuancePurpose,reviewAcknowledgmentV1:artifact.metadata?.reviewAcknowledgmentV1}:undefined,
+          undefined,undefined,issuancePurpose==='PRELIMINARY_REVIEW'?issuancePurpose:undefined);
+      } catch(error) {
+        if(issuancePurpose==='PRELIMINARY_REVIEW'&&artifact.status==='ready'
+          &&(error as {code?:unknown}).code==='ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID')
+          throw Object.assign(new Error('saved report diagnostics changed; explicit refresh required'),{code:'ARTIFACT_PRESENTATION_REFRESH_REQUIRED',httpStatus:409});
+        throw error;
+      }
       const forwardedProtocol = String(
         request.headers["x-forwarded-proto"] ?? "",
       )
@@ -5933,7 +6259,7 @@ async function route(
       });
       const signedUrl =
         artifact.status === "ready"
-          ? `${protocol}://${request.headers.host ?? `127.0.0.1:${PORT}`}/canonical-estimate/artifact-files/${artifact.id}?expires=${signedUrlExpiresAtMs}&signature=${encodeURIComponent(signature)}`
+          ? `${protocol}://${request.headers.host ?? `127.0.0.1:${PORT}`}/canonical-estimate/artifact-files/${artifact.id}?expires=${signedUrlExpiresAtMs}&signature=${encodeURIComponent(signature)}&issuancePurpose=${issuancePurpose}`
           : null;
       const sourceMetadata = artifact.metadata ?? {};
       if (
@@ -5979,7 +6305,7 @@ async function route(
         sourceOwnerUserId: artifact.owner_user_id,
         sourceOrganizationId: artifact.organization_id ?? null,
       };
-      const contentAdmission = legacyReadContentAdmission(
+      const contentAdmission = issuancePurpose==='PRELIMINARY_REVIEW'?null:legacyReadContentAdmission(
         artifact,
         "artifact_read",
         true,
@@ -5996,7 +6322,8 @@ async function route(
           artifact.byte_size == null ? null : Number(artifact.byte_size),
         sha256: artifact.sha256,
         metadata,
-        contentAdmission: contentAdmission.decision,
+        ...(contentAdmission?{contentAdmission:contentAdmission.decision}:{}),
+        operationResourceAcceptanceV1,
         errorCode: artifact.error_code,
         createdAt: artifact.created_at,
         updatedAt: artifact.updated_at,
@@ -6017,10 +6344,29 @@ async function route(
     });
   }
   if (request.method === "GET" && path.length === 2 && path[0] === "catalog") {
-    const catalogId = decodeURIComponent(path[1]);
-    const requestedReleaseId = String(
-      url.searchParams.get("releaseId") ?? TARGET_RELEASE_ID,
-    ).trim();
+    return send(response,200,await readCanonicalCatalogItemLocalR1(path[1],String(url.searchParams.get("releaseId")??TARGET_RELEASE_ID).trim()));
+  }
+  if (request.method === "POST" && path.length === 2 && path[0] === "catalog") {
+    const rawBody=await readBody(request,MAX_CANONICAL_CATALOG_PROMPT_REQUEST_BYTES_V1).catch((error:unknown)=>{
+      if(error instanceof SyntaxError||error instanceof Error&&error.message==="request body must be an object"){
+        throw new CanonicalEstimateApiError("Некорректный JSON запроса.",{code:"INVALID_ARGUMENT",httpStatus:400});
+      }
+      throw error;
+    });
+    const body=parseCanonicalCatalogPromptRequestV1(rawBody);
+    const result=await readCanonicalCatalogItemLocalR1(path[1],body.releaseId??TARGET_RELEASE_ID);
+    return send(response,200,{...result,promptExtraction:deriveCanonicalCatalogPromptExtractionV1(result.item,body.prompt)},
+      MAX_CANONICAL_CATALOG_PROMPT_RESPONSE_BYTES_V1);
+  }
+  throw Object.assign(new Error("route not found"), {
+    code: "ROUTE_NOT_FOUND",
+    httpStatus: 404,
+  });
+}
+
+async function readCanonicalCatalogItemLocalR1(rawCatalogId:string,requestedReleaseId:string){
+    const catalogId = decodeURIComponent(rawCatalogId);
+
     if (
       requestedReleaseId &&
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -6266,12 +6612,7 @@ async function route(
         code: "NOT_FOUND",
         httpStatus: 404,
       });
-    return send(response, 200, { apiVersion: API_VERSION, item });
-  }
-  throw Object.assign(new Error("route not found"), {
-    code: "ROUTE_NOT_FOUND",
-    httpStatus: 404,
-  });
+    return { apiVersion: API_VERSION, item };
 }
 
 const server = createServer((request, response) => {

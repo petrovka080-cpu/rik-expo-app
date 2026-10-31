@@ -33,18 +33,6 @@ export const FIRE_ALARM_PROJECT_PREPARATION_SOURCE_METADATA = Object.freeze({
 });
 
 export const FIRE_ALARM_PROJECT_PREPARATION_VARIANTS = Object.freeze({
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_prepare_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Подготовка проекта пожарной сигнализации большой площади",
-    aliasesRu: ["подготовка проекта АПС большой площади", "исходные данные АПС большого объекта"],
-  }),
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_prepare_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Подготовка проекта пожарной сигнализации малой площади",
-    aliasesRu: ["подготовка проекта АПС малой площади", "исходные данные АПС небольшого объекта"],
-  }),
   standard: Object.freeze({
     catalogId: "canonical-work:base:electrical_interior_fire_alarm_prepare_standard",
     catalogVariant: "STANDARD_ZONE_SEARCH_IDENTITY",

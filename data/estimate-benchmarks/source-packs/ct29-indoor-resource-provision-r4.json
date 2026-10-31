@@ -1,0 +1,353 @@
+{
+  "contract": "ct29-indoor-resource-provision:r4",
+  "catalogId": "canonical-work:master:ct29_existing_cement_lime_plaster_indoor_standard",
+  "titleRu": "Выравнивание CT29 по готовой внутренней штукатурке: обеспечение операций",
+  "resultRu": "Однослойное ручное выравнивание CT29 en_GL до20мм по уже прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри; нанесение, разглаживание, защита от быстрого высыхания, контроль и обычная уборка рабочего места.",
+  "source": {
+    "id": "ct29-en-gl-0120-physical-provision-r3",
+    "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+    "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+    "edition": "C_CT29_TDS_1_0120; signed2025-11-27",
+    "locatorRu": "Стр1 APPLICATION: целый мешок, заранее отмеренная вода, дрель с миксером, металлический длинный полутерок. Стр2 TECHNICAL DATA: плотности, вода и жизнеспособность; OTHER INFORMATION: лёгкое распыление; защита кожи и глаз. Тип инструмента не является нормой числа экземпляров.",
+    "unsupportedRu": "Не содержит литровой нормы ухода/промывки, модели/числа инструментов, организации звена, схемы подачи и комплекта уборки. Эти величины не выведены из накладной стоимости."
+  },
+  "retainedBaselineContract": "rik-expo-app.ct29-indoor-resource-provision.r3",
+  "operations": [
+    {
+      "id": "preparation-check",
+      "ordinal": 1,
+      "titleRu": "Проверить готовность основания",
+      "resultRu": "Подтверждены готовые прочность, чистота, шероховатость, влажность и геометрия входящего основания."
+    },
+    {
+      "id": "delivery",
+      "ordinal": 5,
+      "titleRu": "Доставить новый заказ CT29",
+      "resultRu": "Сохранён принятый расчёт сухой массы нового заказа и одностороннего расстояния."
+    },
+    {
+      "id": "handling",
+      "ordinal": 10,
+      "titleRu": "Подать материалы к рабочему месту",
+      "resultRu": "Для принятой геометрии определена фактическая схема подачи; нормативные затраты не подменяют её."
+    },
+    {
+      "id": "mixing",
+      "ordinal": 20,
+      "titleRu": "Приготовить последовательные целые замесы CT29",
+      "resultRu": "Целые25кгмешки смешаны с отмеренной чистой холодной водой в однородный состав без комков; каждый замес используется в пределах2ч."
+    },
+    {
+      "id": "application",
+      "ordinal": 30,
+      "titleRu": "Нанести и разгладить CT29",
+      "resultRu": "Состав нанесён металлическим длинным полутерком и разглажен до принятого однослойного результата."
+    },
+    {
+      "id": "curing",
+      "ordinal": 40,
+      "titleRu": "Защитить слой от быстрого высыхания",
+      "resultRu": "Обеспечены лёгкое распыление и допустимые условия; расход и труд ухода должны иметь отдельное подтверждение."
+    },
+    {
+      "id": "acceptance",
+      "ordinal": 50,
+      "titleRu": "Проверить результат выравнивания",
+      "resultRu": "Проверены толщина, ровность и состояние слоя в заявленном узле."
+    },
+    {
+      "id": "completion",
+      "ordinal": 60,
+      "titleRu": "Очистить инструмент и сдать рабочее место",
+      "resultRu": "Собраны упаковка и обычные остатки, инструмент и рабочее место очищены; отдельный платный вывоз не назначен."
+    }
+  ],
+  "profiles": [
+    {
+      "id": "CT29_ONE_SERIAL_MIXTUB60601_R4",
+      "resourceKey": "mixing-vessel",
+      "titleRu": "Ёмкость Collomix mixTUB 34 л, 60601",
+      "specificationRu": "Светло-серая ёмкость 34 л, полезный объём 25 л; 380×420 мм, металлическая ручка. Фиксация от проворачивания учитывается отдельно.",
+      "model": "Collomix mixTUB 34 L",
+      "sku": "60601",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "costOwnerKey": "labor",
+      "specification": {
+        "nominalL": 34,
+        "usefulL": 25,
+        "widthMm": 380,
+        "heightMm": 420,
+        "dryBatchKg": 25,
+        "maximumWaterL": 6.2,
+        "freshMortarDensityKgPerL": 1.89,
+        "approximateFreshBatchL": 16.50793650793651,
+        "rotationBarIncluded": false
+      },
+      "sources": [
+        {
+          "file": "COLLOMIX_BUCKETS_45711_DE.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/03%20flowTEC/Eimer/DB_Eimer_DE_45711_ebook.pdf",
+          "sha256": "3af7f7a39eb8a37cbd23e28c8aa627d3b40efa64f27be4144ae3ce0a4cdd29e0",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_BUCKETS_45711_DE.pdf"
+        },
+        {
+          "file": "COLLOMIX_FLOWTEC_EN.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/03%20flowTEC/45832-011_flowTEC-Flyer_Fensterfalz_3Bruch_EN_HImB_FA_ebook.pdf",
+          "sha256": "0c84be1830b797cd6e6a044e3a925182d290f0f2ff77158cc29ccc6777b0bb62",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_FLOWTEC_EN.pdf"
+        }
+      ],
+      "locatorsRu": [
+        "45711 ©04.24, PDF с.2: 60600/60601/60602 — 34 л, полезный объём 25 л, 380×420 мм, один мешок.",
+        "45832-011 ©04.2024, PDF с.1: светло-серый60601, ручки; паз под арматурный стержень для защиты от вращения.",
+        "CT29 en_GL, PDF с.1–2: воду отмерить заранее, смесь добавлять с перемешиванием; плотность свежего раствора приблизительно1,89 кг/дм³."
+      ],
+      "derivationRu": "На одном последовательном посту нужна одна многоразовая ёмкость. Для25 кг CT29 и6,2 л воды расчётный объём свежего раствора приблизительно31,2/1,89=16,51 л, меньше полезных25 л. Это проверка вместимости с ориентировочной плотностью, не норма расхода. Сухую смесь добавляют в воду с перемешиванием; рабочий объём не заменяется номинальными34 л.",
+      "limitsRu": [
+        "Стержень и проверка фиксации не заявлены в комплекте. Отдельная обязательная потребность mixing-rotation-lock остаётся открытой, поэтому операция замеса не объявляется обеспеченной полностью.",
+        "Диаметр380 мм — внешняя ширина, не внутренний диаметр и не доказательство совместимости с mix.GRIP250–325мм. mix.GRIP не выбран.",
+        "Вода промывки, электропитание и организационная длительность цикла остаются отдельными задачами."
+      ],
+      "requiredCount": 1,
+      "countExpression": "min(1,ct29_whole_batches)",
+      "unitId": "pcs",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "numericManufacturerCrewNormClaimed": false
+    },
+    {
+      "id": "CT29_ONE_SERIAL_GLORIA_HOBBY10FLEX_R4",
+      "resourceKey": "sprayer",
+      "titleRu": "Распылитель GLORIA Hobby 10 FLEX, 1 л",
+      "specificationRu": "000860.0000: ручной мелкодисперсный распылитель; бачок1 л, общий объём1,1 л; регулируемое сопло с латунной вставкой, насос и гибкая трубка360°.",
+      "model": "GLORIA Hobby 10 FLEX",
+      "sku": "000860.0000",
+      "operations": [
+        "curing",
+        "completion"
+      ],
+      "costOwnerKey": "labor",
+      "specification": {
+        "fillL": 1,
+        "totalL": 1.1,
+        "manualDoubleActingPump": true,
+        "adjustableFineNozzle": true,
+        "waterCompatibilityConfirmed": true,
+        "integralFlexibleTube": true,
+        "cleanWaterOnly": true,
+        "careWaterNormL": null,
+        "fillCount": null
+      },
+      "sources": [
+        {
+          "file": "GLORIA_HOBBY10FLEX.html",
+          "url": "https://www.gloriagarten.de/haus-und-garten/spruehgeraete/handspruehgeraete/product/hobby-10-flex/sku/000860.0000/",
+          "sha256": "c88db3bca886eec0623b47811573e4f06e9ac9fb93e574c70b41e28a67906fdf",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/GLORIA_HOBBY10FLEX.html"
+        },
+        {
+          "file": "GLORIA_HOBBY_FLEX_MANUAL.pdf",
+          "url": "https://www.gloriagarten.de/fileadmin/user_upload/Akeneo/files/000850.0000/gebrauchsanweisung/977568-09.pdf",
+          "sha256": "7ffceb29c7df7bfc7134f98a87de459025421e8b1a6939ee9b33fe2dadccb836",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/GLORIA_HOBBY_FLEX_MANUAL.pdf"
+        },
+        {
+          "file": "GLORIA_WATER_COMPATIBILITY.pdf",
+          "url": "https://www.gloriagarten.de/fileadmin/user_upload/Mittelvertraeglichkeit_GLORIA_Spruehgeraete.pdf",
+          "sha256": "d34d72c32db40f61c0d39208a2eb3944988f2fa0d1c06cb3d792389c0c8dd859",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/GLORIA_WATER_COMPATIBILITY.pdf"
+        }
+      ],
+      "locatorsRu": [
+        "Карточка000860.0000:1 л/1,1 л, регулируемое сопло с латунной вставкой, двойной ручной насос и трубка360°.",
+        "977568-09, PDF с.1–2: конкретные модели/артикулы и мелкое распыление; нельзя кислоты/растворители.",
+        "Матрица совместимости GLORIA, PDF с.1, строка Hobby10FLEX000860.0000 × столбец Wasser: разрешена вода, проверено визуально.",
+        "CT29 en_GL, PDF с.1: защита свежего слоя от быстрого высыхания лёгким распылением воды."
+      ],
+      "derivationRu": "Один последовательный пост ухода использует один отдельный чистый ручной распылитель с повторным наполнением. Функциональная применимость — инженерное сопоставление требуемого CT29 лёгкого распыления воды с подтверждённым мелким распылением и совместимостью с водой. Производитель GLORIA не заявляет отдельной технологии ухода CT29.",
+      "limitsRu": [
+        "1 л — вместимость одного наполнения, не общий расход воды на уход. Число наполнений, литровая норма и труд ухода не выведены из вместимости.",
+        "Не заявлены подтверждённые производительность, длительность ухода или доступ к любой высоте. Доступ и труд остаются открытыми.",
+        "Используется только чистая вода; устройство не делится с грунтовкой, растворителями или химическими средствами."
+      ],
+      "requiredCount": 1,
+      "countExpression": "min(1,ct29_whole_batches)",
+      "unitId": "pcs",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "numericManufacturerCrewNormClaimed": false
+    },
+    {
+      "id": "CT29_ONE_SERIAL_MIXERCLEAN46036_R4",
+      "resourceKey": "paddle-cleaner",
+      "titleRu": "Очиститель насадки Collomix Mixer-Clean 46036",
+      "specificationRu": "Многоразовый очиститель34 л для насадок до210 мм: ёмкость с ручкой, съёмная металлическая крышка и пара встроенных сменных щёток. Для XQ/Xo(R)(duo).",
+      "model": "Collomix Mixer-Clean 34 L",
+      "sku": "46036",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "costOwnerKey": "labor",
+      "specification": {
+        "nominalL": 34,
+        "maxPaddleDiameterMm": 210,
+        "selectedPaddleDiameterMm": 135,
+        "heightMm": 432,
+        "widthMm": 405,
+        "integralBrushCount": 2,
+        "integralLid": true,
+        "compatibleDriveFamily": "XQ",
+        "washWaterL": null,
+        "usesExistingPaddleShaftForOpening": true
+      },
+      "sources": [
+        {
+          "file": "COLLOMIX_MIXERCLEAN_46036_EN.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/03%20flowTEC/Mixer-Clean%2034L/DB_%20MixerClean%2034L_EN_45400-011_ebook.pdf",
+          "sha256": "3ac3d5487726aa8bb34cd583cd6b7967f0d2744d0067de8c2386d6b0fa7292db",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_MIXERCLEAN_46036_EN.pdf"
+        },
+        {
+          "file": "COLLOMIX_MIXERCLEAN_46036_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/02%20flowTEC/MixerCLEAN/Mixer-Clean%2034L/BA_Mixer-Clean%2034L_DE_EN_FR__9gal._US_07057_ebook.pdf",
+          "sha256": "c68c25851fd036c61d432077b5b88dce8995b00c60c7ec5ff530d738eadcacc8",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_MIXERCLEAN_46036_MANUAL.pdf"
+        }
+      ],
+      "locatorsRu": [
+        "45400-011EN ©05/2025, PDF с.1: артикул46036,34 л,4,5 кг,432×405мм, XQ/Xo(R)(duo),насадки≤210мм;ёмкость,металлическаякрышка,двещётки.",
+        "07057-1.0-0325, PDF с.2: вода до верхнего края щёток, немедленная очистка свежего раствора; сначала сниженная скорость.",
+        "Тот же manual, PDF с.3: крышка открывается уже имеющимся валом насадки, затем извлечение вставки и слив осадка."
+      ],
+      "derivationRu": "Один последовательный пост приготовления использует один полный многоразовый очиститель; две щётки входят в этот предмет и повторно не заказываются. Поддержаны XQ и насадка135мм≤210мм. Для открывания используется уже учтённый вал насадки, отдельный рычаг не дублируется.",
+      "limitsRu": [
+        "34 л — номинальная вместимость, не норматив воды на цикл. Указан уровень до края щёток, но литраж и число замен не подтверждены; wash-water остаётся открытой потребностью.",
+        "Очиститель не заменяет сухую салфетку корпуса электропривода, уборку пола, сбор упаковки или вывоз. Эти потребности остаются отдельными.",
+        "Артикул46036 не подменён старым46002(30л по старому паспорту). Время работы не переносится из нормы65-литрового смесителя."
+      ],
+      "requiredCount": 1,
+      "countExpression": "min(1,ct29_whole_batches)",
+      "unitId": "pcs",
+      "category": "equipment",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "numericManufacturerCrewNormClaimed": false
+    }
+  ],
+  "additionalNeeds": [
+    {
+      "id": "mixing-rotation-lock",
+      "titleRu": "Фиксация ёмкости mixTUB от проворачивания",
+      "specificationRu": "Совместимый стержень в нижнем пазу mixTUB; комплектность, сечение, длина и надёжное удержание должны быть подтверждены.",
+      "operations": [
+        "mixing"
+      ],
+      "costOwner": "labor",
+      "category": "equipment",
+      "unitId": "pcs",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "reasonRu": "Производитель подтверждает паз под арматурный стержень, но не заявляет его поставку, размеры или готовую фиксацию. Профиль стержня и применимость удержания ещё не подтверждены. Привод требует закреплённую от вращения ёмкость; ведро само по себе этого не закрывает.",
+      "requirementsEvidence": [
+        {
+          "file": "COLLOMIX_FLOWTEC_EN.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/03%20flowTEC/45832-011_flowTEC-Flyer_Fensterfalz_3Bruch_EN_HImB_FA_ebook.pdf",
+          "sha256": "0c84be1830b797cd6e6a044e3a925182d290f0f2ff77158cc29ccc6777b0bb62",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_FLOWTEC_EN.pdf"
+        }
+      ],
+      "locatorRu": "45832-011 ©04.2024, PDF с.1, нижний выносной указатель recess for reinforcing bar."
+    }
+  ],
+  "readiness": {
+    "physicalResourceCoverageComplete": false,
+    "fullTechnicalAcceptance": false,
+    "knownPlannedPhysicalComponents": 7,
+    "unknownApplicationQuantities": 18,
+    "requiredUserTechnicalQuestions": 0,
+    "numericNormsIntroduced": 0,
+    "ruleRu": "Конкретные ёмкость, распылитель и очиститель дополняют сохранённые четыре предмета. Фиксация ёмкости, вода ухода/промывки и остальные открытые потребности остаются задачами разработки. Наличие рассчитанного предмета не закрывает всю использующую его операцию."
+  },
+  "sourceSearchDecisions": [
+    {
+      "candidate": "GLORIA PRO500",
+      "admitted": false,
+      "reasonRu": "Найденный977918 относится кProControl100; его нельзя переносить наPRO500. Выбран конкретный водосовместимый Hobby10FLEX с собственной документацией."
+    },
+    {
+      "candidate": "Collomix mix.GRIP19180",
+      "admitted": false,
+      "reasonRu": "Диапазон250–325мм не подтверждает зажим выбранного380мм mixTUB; нельзя смешивать внешнюю ширину и зажимной диаметр."
+    }
+  ],
+  "sharedPoweredCleaningRequirements": [
+    {
+      "resourceKey": "power-provision",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "reasonRu": "Mixer-Clean46036 очищает насадку работающим XQ: при очистке сохраняются электропитание, защита слуха и рабочая одежда. Количества и второй платёж не добавляются.",
+      "requirementsEvidence": [
+        {
+          "file": "COLLOMIX_MIXERCLEAN_46036_EN.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/03%20flowTEC/Mixer-Clean%2034L/DB_%20MixerClean%2034L_EN_45400-011_ebook.pdf",
+          "sha256": "3ac3d5487726aa8bb34cd583cd6b7967f0d2744d0067de8c2386d6b0fa7292db",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_MIXERCLEAN_46036_EN.pdf"
+        },
+        {
+          "file": "COLLOMIX_MIXERCLEAN_46036_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/02%20flowTEC/MixerCLEAN/Mixer-Clean%2034L/BA_Mixer-Clean%2034L_DE_EN_FR__9gal._US_07057_ebook.pdf",
+          "sha256": "c68c25851fd036c61d432077b5b88dce8995b00c60c7ec5ff530d738eadcacc8",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_MIXERCLEAN_46036_MANUAL.pdf"
+        }
+      ]
+    },
+    {
+      "resourceKey": "hearing-protection",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "reasonRu": "Mixer-Clean46036 очищает насадку работающим XQ: при очистке сохраняются электропитание, защита слуха и рабочая одежда. Количества и второй платёж не добавляются.",
+      "requirementsEvidence": [
+        {
+          "file": "COLLOMIX_MIXERCLEAN_46036_EN.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/03%20flowTEC/Mixer-Clean%2034L/DB_%20MixerClean%2034L_EN_45400-011_ebook.pdf",
+          "sha256": "3ac3d5487726aa8bb34cd583cd6b7967f0d2744d0067de8c2386d6b0fa7292db",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_MIXERCLEAN_46036_EN.pdf"
+        },
+        {
+          "file": "COLLOMIX_MIXERCLEAN_46036_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/02%20flowTEC/MixerCLEAN/Mixer-Clean%2034L/BA_Mixer-Clean%2034L_DE_EN_FR__9gal._US_07057_ebook.pdf",
+          "sha256": "c68c25851fd036c61d432077b5b88dce8995b00c60c7ec5ff530d738eadcacc8",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_MIXERCLEAN_46036_MANUAL.pdf"
+        }
+      ]
+    },
+    {
+      "resourceKey": "work-clothing",
+      "operations": [
+        "mixing",
+        "completion"
+      ],
+      "reasonRu": "Mixer-Clean46036 очищает насадку работающим XQ: при очистке сохраняются электропитание, защита слуха и рабочая одежда. Количества и второй платёж не добавляются.",
+      "requirementsEvidence": [
+        {
+          "file": "COLLOMIX_MIXERCLEAN_46036_EN.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/03%20flowTEC/Mixer-Clean%2034L/DB_%20MixerClean%2034L_EN_45400-011_ebook.pdf",
+          "sha256": "3ac3d5487726aa8bb34cd583cd6b7967f0d2744d0067de8c2386d6b0fa7292db",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_MIXERCLEAN_46036_EN.pdf"
+        },
+        {
+          "file": "COLLOMIX_MIXERCLEAN_46036_MANUAL.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/02%20flowTEC/MixerCLEAN/Mixer-Clean%2034L/BA_Mixer-Clean%2034L_DE_EN_FR__9gal._US_07057_ebook.pdf",
+          "sha256": "c68c25851fd036c61d432077b5b88dce8995b00c60c7ec5ff530d738eadcacc8",
+          "canonicalPath": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_MIXERCLEAN_46036_MANUAL.pdf"
+        }
+      ]
+    }
+  ]
+}

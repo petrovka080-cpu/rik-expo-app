@@ -17,7 +17,7 @@ describe("KRER 46 tile-on-plastic-putty-or-sulfur-cement floor covering demoliti
   test("binds the exact official rate and complete narrow operation boundary", () => {
     expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_PLASTIC_PUTTY_OR_SULFUR_CEMENT_FLOOR_DEMOLITION_KRER46_CATALOG_ID)
       .toBe("canonical-work:base:demolition_interior_flooring_strip_standard");
-    expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_PLASTIC_PUTTY_OR_SULFUR_CEMENT_FLOOR_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(4);
+    expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_PLASTIC_PUTTY_OR_SULFUR_CEMENT_FLOOR_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(2);
     expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_PLASTIC_PUTTY_OR_SULFUR_CEMENT_FLOOR_DEMOLITION_KRER46_ARTIFACT_SHA256)
       .toMatch(/^[0-9a-f]{64}$/u);
     expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_PLASTIC_PUTTY_OR_SULFUR_CEMENT_FLOOR_DEMOLITION_KRER46_PARAMETERS).toHaveLength(3);

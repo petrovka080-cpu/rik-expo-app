@@ -3,7 +3,7 @@ import {
   RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
   RICS_NRM2_FORMWORK_REQUIRED_EXPLICIT_PARAMETER_IDS,
 } from "../../src/lib/estimate/v4/domainFactory/formworkRicsNrm2PhysicalNormV1";
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 
 const prompt = [
   "Монтаж и демонтаж опалубки по измеренной площади контакта RICS NRM 2.",

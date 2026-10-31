@@ -1,4 +1,5 @@
-import { Client, type ClientConfig } from "pg";
+import { Client } from "pg";
+import { buildBffPostgresTlsConfig } from "./stagingBffPostgresTls";
 
 import type {
   BffMutationPorts,
@@ -68,13 +69,6 @@ const ALL_REQUEST_META_COLUMNS = new Set<string>([
   ...NUMBER_META_COLUMNS,
 ]);
 
-const resolvePgSsl = (connectionString: string): ClientConfig["ssl"] => {
-  const url = new URL(connectionString);
-  const sslmode = url.searchParams.get("sslmode") ?? "require";
-  if (sslmode === "disable") return false;
-  return { rejectUnauthorized: sslmode === "verify-full" };
-};
-
 const pgErrorCode = (error: unknown): string => {
   const code = typeof error === "object" && error !== null && "code" in error
     ? String((error as { code?: unknown }).code ?? "")
@@ -139,11 +133,10 @@ const buildRequestMetaUpdateStatement = (
 const createClient = (connectionString: string): Client =>
   new Client({
     application_name: "rik_staging_bff_catalog_mutations",
-    connectionString,
+    ...buildBffPostgresTlsConfig(connectionString),
     connectionTimeoutMillis: DEFAULT_CONNECTION_TIMEOUT_MS,
     query_timeout: DEFAULT_QUERY_TIMEOUT_MS,
     statement_timeout: DEFAULT_QUERY_TIMEOUT_MS,
-    ssl: resolvePgSsl(connectionString),
   });
 
 const runInTransaction = async <T>(

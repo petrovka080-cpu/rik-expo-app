@@ -130,6 +130,8 @@ function AppBottomNav({
           prompt: undefined,
           description: undefined,
           draftId: undefined,
+          canonicalRevisionId: undefined,
+          catalogWorkId: undefined,
           launchError: undefined,
           launchId: undefined,
           launchPayloadV1: undefined,

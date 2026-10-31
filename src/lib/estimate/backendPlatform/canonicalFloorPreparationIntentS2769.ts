@@ -1,6 +1,6 @@
 import pack from '../../../../data/estimate-benchmarks/source-packs/floor-demolition-planned-preparation-thirteen-s27-69.json';
 import concreteBase from '../../../../data/estimate-benchmarks/source-packs/concrete-base-planned-preparation-two-s27-69.json';
-import pvcFloor from '../../../../data/estimate-benchmarks/source-packs/pvc-floor-complete-four-s27-69.json';
+import pvcFloorHistorical from '../../../../data/estimate-benchmarks/fixtures/pvc-floor-complete-binding-historical-four-s27-69.json';
 
 type Json=Record<string,unknown>;
 export const floorPreparationIntentBindingS2769=pack;
@@ -8,7 +8,9 @@ export const floorPreparationFreshDefaultsS2769:Record<string,string>={
  [pack.modeId]:pack.plannedMode,...Object.fromEntries(pack.stages.map(s=>[s.id,s.planned])),
  [pack.barrierMethodId]:pack.barrierValue,[pack.dustMethodId]:pack.dustValue,
 };
-export function isFloorPreparationConsumerS2769(catalogId:string){return pack.targets.some(t=>t.catalogId===catalogId)||concreteBase.targets.some(t=>t.catalogId===catalogId)||pvcFloor.targets.some(t=>t.catalogId===catalogId);}
+// Identity recognition also covers saved revisions whose catalogue entries were retired.
+// The pinned descriptor is not an active definition factory or publication target list.
+export function isFloorPreparationConsumerS2769(catalogId:string){return pack.targets.some(t=>t.catalogId===catalogId)||concreteBase.targets.some(t=>t.catalogId===catalogId)||pvcFloorHistorical.targets.some(t=>t.catalogId===catalogId);}
 /** Approved defaults retain their origin. Old composition is a user choice,
  * never a replacement baseline or a physical fact inferred from old absence. */
 export function assertFloorPreparationRecalculationChoiceS2769(input:{catalogId:string;parentParameters:Json;submittedParameters:Json}):void{

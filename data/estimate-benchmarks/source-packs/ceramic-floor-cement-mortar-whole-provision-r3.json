@@ -1,0 +1,874 @@
+{
+  "contract": "gox-build.ceramic-floor-m150-whole-provision.r3",
+  "status": "EXECUTABLE_SCOPED_SKIN_COMPONENT_AND_FORMATS_WITH_EXPLICIT_PHYSICAL_DEPENDENCIES",
+  "taskId": "master27-next-floor-whole-provision",
+  "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+  "titleRu": "Керамические полы и прямой плинтус на растворе М150",
+  "namespace": "ceramic-floor:cement-mortar:krer11-01-027-03:r3",
+  "publicationSourceId": "ceramic_m150_whole_provision_r3",
+  "parent": {
+    "factory": "ceramicFloorM150ResourceGroupDefinitionR2",
+    "module": "src/lib/estimate/v4/ceramicFloorCementMortarResourceGroupR2.ts",
+    "publishedParentReleaseId": "b2d415c6-62ce-5b8b-b235-a3ee3da73c9f",
+    "canonicalHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+    "primaryParameterId": "net_ceramic_floor_area_m2",
+    "skirtingLengthParameterId": "ceramic_m150_skirting_length_m",
+    "preimages": [
+      {
+        "path": "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-resource-group-r2.json",
+        "sha256": "576d9d7ab5bcd1faaf8f8b14f0aaf4d3c1c01f6191054e65dc6f6fb8419d8a2b",
+        "localPreimage": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-r2-preimage/data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-resource-group-r2.json"
+      },
+      {
+        "path": "src/lib/estimate/v4/ceramicFloorCementMortarResourceGroupR2.ts",
+        "sha256": "c44cf81554ada489036784e34bcbfa48b8941d6d323b4d9fff9887f60edb31c5",
+        "localPreimage": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-r2-preimage/src/lib/estimate/v4/ceramicFloorCementMortarResourceGroupR2.ts"
+      },
+      {
+        "path": "src/lib/estimate/v4/ceramicFloorCementMortarResourceGroupR2.test.ts",
+        "sha256": "f28660bf8727c386c13d74c1a3fe960c8ee2f981b48912cf590bc4d5e520b5ae",
+        "localPreimage": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-r2-preimage/src/lib/estimate/v4/ceramicFloorCementMortarResourceGroupR2.test.ts"
+      }
+    ],
+    "immutable": true,
+    "sourceNorms": [
+      "KRER11-01-027-03",
+      "KRER11-01-039-04"
+    ],
+    "oldSourceProfilesUnchanged": true,
+    "sourceToolCount": 44,
+    "realControls": 6
+  },
+  "scope": {
+    "reuse": "WHOLE_R2_FLOOR_PLUS_STRAIGHT_SKIRTING",
+    "unchanged": "Предварительный профиль: одноцветная гладкая неглазурованная керамика100×100/150×150мм, ручная поштучная укладка по принятому железобетонному/цементному основанию на готовомМ150 слоем10–15мм, обычные внутренние условия, одна бригада6человек(3звена×2), последовательные захватки. Вода из доступной сети в пределах20–25м шланга. Не объявляет готовность конкретного объекта или фактическую закупку.",
+    "requiredUserInputs": [
+      "net_ceramic_floor_area_m2",
+      "ceramic_m150_skirting_length_m"
+    ],
+    "userTechnicalNorms": false,
+    "manufacturingOrMedicalGuaranteeClaimed": false,
+    "geometryExtensionForJointNodePermitted": true,
+    "noJointLengthFromAreaOrSkirting": true
+  },
+  "skin": {
+    "status": "CALCULATED_SKIN_COMPONENT_WITH_EXPLICIT_UNRESOLVED_HAND_HYGIENE_DEPENDENCIES",
+    "product": "MarlySkinDasOriginal",
+    "kind": "AEROSOL_SKIN_PROTECTION_ADDITIONAL_TO_REQUIRED_GLOVES",
+    "manufacturer": "MarlyProductsSusanneBehre-Moniene.K.,Ismaning,Germany",
+    "cementAndLimeExplicit": true,
+    "workingProtectionHours": 4,
+    "activationMinutes": 3,
+    "nominalCanL": "0.1",
+    "approxNormalHandApplicationsPerCan": 150,
+    "capacityApproximate": true,
+    "notStokoderm1MlDose": true,
+    "sharedNonContactCans": true,
+    "sourcePooledExample": true,
+    "organisation": {
+      "workers": 6,
+      "shiftHours": 8,
+      "sourceShiftLocator": "TK36-03PDF32table7hours1–8;onlyorganisation,notitsdifferentlabourrate",
+      "wholeManHours": "(net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)",
+      "baseShiftBound": "ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)",
+      "contactPhases": [
+        "cement-floor-production-and-immediate-jointing",
+        "straight-skirting-if-positive",
+        "final-cement-residue-cleaning"
+      ],
+      "phaseRoundingAddend": "1+min(1,ceil(ceramic_m150_skirting_length_m))",
+      "plannedShiftBound": "ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m))",
+      "applicationsExpression": "6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m)))",
+      "derivation": "Normal six-worker brigade,balanced work in eight-hour days/two four-hour protected periods. For two active contact phases (three with skirting),sum ceil(phaseHours/48)≤ceil(sumPhaseHours/48)+phaseCount−1. WholeKRERhours bound all active phasehours without splitting or adding labour. This is an explicit conservative supply plan,not a claim that all plannedperiods are consumed.",
+      "curingContactBoundary": "Periodic moistening by existing20–25m hose/cleanwaterpost with gloves and dry-hand handling of the hose does not itself expose hands to freshcement. Initial sawdust/spread and finalcementresiduehandling are inside protected contactphases. No operator handcontact with wetcement/sawdust is selected during separate remote watering visits;such changedmethod needs its own applicableprotectionplan,not an invented zero of requiredcream.",
+      "abnormalReplacementNotPretendedToBeNorm": true,
+      "noActualAttendanceClaim": true,
+      "noAddedLabourHours": true
+    },
+    "normalSupplyReserve": {
+      "basis": "MANUFACTURER_NORMAL_SUPPLY_EXAMPLE_WHOLE_BLOCKS",
+      "source": "MARLY_CONSUMPTION_2024.pdf",
+      "sourceApplications": 400,
+      "source100MlCans": 3,
+      "nominalCapacityApplications": 450,
+      "minimumNominalSupplyHeadroomFraction": "0.125",
+      "derivation": "Repeat the manufacturer normal-supply block:3whole100mlcans per started400plannedhandapplications. Only the source capacity example is reused; its10people/20days are not applied as the project attendance or a monthly construction norm. Fullblocks and unusednominalsurplus remain visible. Manufacturer capacity remains approximate, not an exact metered dose, statistical lower-bound or guarantee against misuse/lost cans. Manufacturer explicitly retains protection through repeated hand washing; no extra washing applications are silently omitted.",
+      "unplannedExposureOrLossBoundary": "Changed method, additional exposure phases, lost or misused supply require an amended protection provision; an unbounded contingency is not claimed covered."
+    },
+    "formulas": {
+      "wholeManHours": "(net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)",
+      "plannedApplications": "6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m)))",
+      "nominalUseL": "(6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m))))*0.1/150",
+      "normalSupplyReserveL": "ceil((6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m))))/400)*0.3-((6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m))))*0.1/150)",
+      "canOrderCount": "ceil((6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m))))/400)*3",
+      "orderL": "ceil((6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m))))/400)*0.3",
+      "nominalRemainderL": "ceil((6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m))))/400)*0.3-((6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m))))*0.1/150)"
+    },
+    "orderOwnerRowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:paste-fire-access",
+    "orderFormulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:formula:paste-fire-access",
+    "nominalUseRowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:skin-nominal-use",
+    "nominalUseFormulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:skin-nominal-use",
+    "removedUnknownParameterId": "ceramic_m150_r2_paste_fire_access_qty",
+    "operations": [
+      "preparation",
+      "delivery",
+      "placing",
+      "skirting",
+      "cleanup"
+    ],
+    "workCostOwnerRowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:provision-owner",
+    "ownMaterialOwnerOnly": true,
+    "noPerStagePurchase": true,
+    "stockCredit": 0,
+    "notGuaranteedMeasuredDose": true,
+    "safetyConditions": [
+      "Required rubbergloves and44positionR2PPE/inventory retained;foam does not replace mandated PPE.",
+      "Apply only to clean dryhands,activate3min,repeat no later than4h of exposure;sharedcan dispenses without handcontact to outlet.",
+      "ManufacturerSDSaerosol:protect fromignition/heating/sunlight,storecool;existingR2equippedfire/accesspoint remains.",
+      "No UV orspecialchemicalperformance outside sourceindustrialcement/cleaningprofile asserted."
+    ],
+    "primaryEvidence": [
+      {
+        "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_SKIN_PLAN_2024.pdf",
+        "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_SKIN_PLAN_2024.pdf",
+        "url": "https://marly-skin.shop/wp-content/uploads/2024/08/MARLY-SKIN-Hautschutzplan.pdf",
+        "sha256": "13d0103c70918d6cb97f31cb71ad4311f72079b4d9917c430cf726aa8f0e34a5",
+        "bytes": 1084799,
+        "locator": "PDF2 every4h/washing retained/PPEnotreplaced;PDF3 gloves;PDF4cement/lime;PDF5waterbasedwork/cleaning"
+      },
+      {
+        "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_INDUSTRY_2024.pdf",
+        "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_INDUSTRY_2024.pdf",
+        "url": "https://marly-skin.shop/wp-content/uploads/2024/09/MARLY-SKIN-Hautschutz-in-INDUSTRIE_HANDWERK.pdf",
+        "sha256": "e45be4307fd00614621dad23a93677df6d68e1ab7b2651be84d525c7a6528681",
+        "bytes": 5844148,
+        "locator": "PDF1 four-hour applications despite washing,100ml≈150normalhandapplications;PDF2 Bau/Maler/Lackierer:cement/adhesives/paints/plastics"
+      },
+      {
+        "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_CONSUMPTION_2024.pdf",
+        "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_CONSUMPTION_2024.pdf",
+        "url": "https://marly-skin.shop/wp-content/uploads/2024/09/MARLY-SKIN-Hautschutzschaum_MONATSBEDARF_Verbrauch.pdf",
+        "sha256": "c4927ae3626f79f4107a0aa3abd60bd7368066003dac07c8f36b561027158bd1",
+        "bytes": 73078,
+        "locator": "PDF1 visuallyread image:10people×20workingdays×2daily=400applications→3cans100ml/450applications;30people1200applications→8cans"
+      },
+      {
+        "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_PRODUCT.html",
+        "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_PRODUCT.html",
+        "url": "https://marly-skin.shop/produkte/",
+        "sha256": "ee058a949b536844a31aefc08d3c5dc2ab8d20f63f27db76f8d17b2278bdf0e0",
+        "bytes": 237398,
+        "locator": "Application bullets:clean/dryhands,walnut-sized,3min,every4–6h;repeatedwashingunchanged"
+      },
+      {
+        "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_PROFILE_EN.html",
+        "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_PROFILE_EN.html",
+        "url": "https://marly-skin.shop/en/product-profile/",
+        "sha256": "4d353fd35dabe6672679cf2cc2025c3db74cfbb2a690bcdadcabf9a94ce65734",
+        "bytes": 215258,
+        "locator": "ProductProfile100ml≈150applications,50ml≈75;normalhandapplication;manufacturerbusinessidentity"
+      },
+      {
+        "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_IDENTITY.html",
+        "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_IDENTITY.html",
+        "url": "https://marly-skin.shop/ueber-uns/",
+        "sha256": "8cbb233bb88b9deb6a9c5f0001ca1233cd217f232116315fedb5c2949be61095",
+        "bytes": 213584,
+        "locator": "AboutUs:manufacture/professional skinprotection,MarlyProductsSusanneBehre-Moniene.K.,Ismaning"
+      },
+      {
+        "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_SDS2019.pdf",
+        "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_SDS2019.pdf",
+        "url": "https://marly-skin.shop/wp-content/uploads/2019/09/Sdb_Marly-Skin-%C2%AE-Hautschutzschaum_V2_de.pdf",
+        "sha256": "5dc9778c5b14358a3e13b9d49af2fc66499cea7bafbcdd9c807df12a976910c0",
+        "bytes": 143897,
+        "locator": "PDF1–2 aerosolpressure/heat/fire;PDF3–4 handling/storage/PPE"
+      }
+    ]
+  },
+  "resolvedR2Needs": [
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:paste-fire-access",
+      "resolution": "CALCULATED_WHOLE_SKIN_PROVISION_OWNER",
+      "replacedUnknownNorm": true,
+      "noExtraServiceOrNumericCondition": true
+    }
+  ],
+  "actualRemaining": [
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:deformation-junctions",
+      "resourceRu": "Деформационные сопряжения",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Для применимых узлов нужны самостоятельная геометрия и выбранная совместимая система. Обычныецементныемежплиточныешвы уже включены."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:additional-logistics-waste",
+      "resourceRu": "Обращение с внешними отходами",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "ТК§4.15требует удаленияотходов; не установлены количество/тара/масса и внешниймаршрут внеисходныхмашин/очистки. Покупкаилипоездка1штнеподставляется."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:handwash-water",
+      "resourceRu": "Вода для мытья рук перед нанесением защиты кожи",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Производитель требует мыть руки перед применением. Число нанесений известно, применимый расход воды не подтверждён; исходная вода для пола не присваивается мытью рук."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-cleanser",
+      "resourceRu": "Мягкое средство для очищения рук перед нанесением защиты кожи",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Выбран обычный способ очистки водой с мягким средством для достижения чистой обезжиренной кожи; средство и его доза для этого плана не подтверждены."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-drying-towels",
+      "resourceRu": "Одноразовые салфетки для сушки рук перед нанесением защиты кожи",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Производитель требует тщательно высушить руки. Выбрана одноразовая сушка; достаточное число и подходящая спецификация салфеток не подтверждены."
+    }
+  ],
+  "externalBlockers": [
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:deformation-junctions",
+      "status": "SOURCE_BLOCKED_WHOLE_COMPATIBLE_NODE_AND_OBJECT_GEOMETRY",
+      "ordinaryGeometryAllowed": [
+        "separately measured perimeterjunction length",
+        "separately measured field/structural joint length",
+        "joint width/depth",
+        "floor assembly thickness",
+        "maximumfielddimensions and movementgeometry"
+      ],
+      "notAskedAsUserNorm": [
+        "sealantconsumption",
+        "primerconsumption",
+        "backerrodoversize",
+        "PPE/toolcleanerconsumption"
+      ],
+      "findings": [
+        {
+          "candidate": "DILEX-MP",
+          "classification": "NOT_REUSE_EXACT",
+          "reason": "Baseheight35mm;extensionsonlyincreaseheight. Existing10–15mmmortarplusunspecifiedtilethicknessdoesnotprove35mmassembly. No deepening or thinner tile is fabricated."
+        },
+        {
+          "candidate": "SikaflexPRO3PurformIE2022",
+          "classification": "PARTIAL_ADAPTATION_NOT_WHOLE_NODE",
+          "reason": "Cementmortar/trafficjoint use and10–40mmjoint envelope are source-supported. Complete exact unglazedtile-edgepretreatment,geometry/movement design,primer/backerrod/gun/toolcleaningandits quantities not admitted by this one PDS. No generic10×10mm joint or unchangedM150cure is inferred."
+        },
+        {
+          "candidate": "SoproKSI/P4050/GM026 same-system",
+          "classification": "PARTIAL_QUANTITIES_PROVEN_NOT_WHOLE_NODE",
+          "reason": "Ceramicperimeter/movement scope;sealant310ml≈3.1m at10x10mm;primerapprox4ml/m at10mm;GM026approx20ml/m. Wholemovementlayout,exactnode andtoolcleaner/itsphysicalquantity/labour remain unproved;these figures are notpublished as a completedkit."
+        },
+        {
+          "candidate": "ProgressProfilesmortar-laidPVC/C51125mm",
+          "classification": "PROMISING_PROVEN_ADAPTATION_NOT_COMPLETE",
+          "reason": "25mmprofileinstalls0.5–1mmbelowfloor,requires matchingtotalassembly;R2onlyfixes10–15mmbed,not tilethickness. Source printed16–30m3moduleunit ambiguous,not silentlycorrectedtom2. Floor-wall/perimeterdetail and fullinstallationexecution notestablished."
+        },
+        {
+          "candidate": "ProgressProfilesGAC20/40",
+          "classification": "PARTIAL_COMPATIBLE_HEIGHT_WITH_NEW_REQUIRED_RESOURCE",
+          "reason": "Mortarbedceramicuseand20/40mmheight confirmed. Steelhacksawcutrequirespassivationproduct;not a chemistry-free substitution. Exactcompatibleperimeternode,passivationquantities and fullexecutionstillrequired."
+        }
+      ],
+      "nextEvidence": "One complete compatible field+perimeternode including local-productpretreatment and cleaningprofile,with independent measured nodegeometry. Length is geometry,not a developertechnicalnorm.",
+      "owner": "floor-kit-author",
+      "consumers": [
+        "ceramic100x100",
+        "ceramic150x150"
+      ],
+      "returnCondition": "One complete exact M150 floor+straight-skirting field/perimeter junction profile with matching assemblyheight, geometry/movement envelope, all material/tool/cleaning quantities and measured execution owner. Required geometry must stay visible; no defaultwithoutjoints."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:additional-logistics-waste",
+      "status": "SOURCE_BLOCKED_WHOLE_WASTE_COLLECTION_TRANSPORT_PROFILE",
+      "knownSourceScope": "TK4.15 removeallwaste beforecompletion;KRERwhole internalcleaning,sourcewater/sawdust andthree machines retained.",
+      "remaining": "No admitted whole source-specific packaging/cut-off/mortar/sawdustwaste balance,container capacity/loadprofile,externalroute anddestination. Materialconsumption−installedfloorarea is not a proved totalwastemass;source truckhours are not a newhaultrip.",
+      "ordinaryGeometryAllowed": [
+        "externaltransportdistance",
+        "collection/containervolumegeometry if the actual chosen service requires it"
+      ],
+      "forbiddenRepairs": [
+        "oneundefinedhaulkit",
+        "oneextra trucktrip",
+        "all102% tileconsumptiondiscarded asactualwaste",
+        "replace externalwastebyINFORMATIONALorobjectcondition",
+        "recharge existinginternalcleaning/unloading sourceowners"
+      ],
+      "nextEvidence": "Applicable whole sitewastecollection/containment/loading/externalhaulprofile with a sourcequantitybasis and nonoverlapping includedowner. Price/actualwarehouse/actsalone are not physicalnorms.",
+      "owner": "floor-kit-author",
+      "consumers": [
+        "ceramic100x100",
+        "ceramic150x150"
+      ],
+      "returnCondition": "A source-supported whole wastebalance or conservative physical collectionplan including all wasteclasses, compatible containment/loading/payload, external route geometry and actual recipient acceptance scope. EPAconversion/TBOmunicipalcharter alone does notprove these."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-hygiene",
+      "resourceRowIds": [
+        "ceramic-floor:cement-mortar:krer11-01-027-03:r3:handwash-water",
+        "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-cleanser",
+        "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-drying-towels"
+      ],
+      "status": "SOURCE_BLOCKED_WHOLE_HAND_HYGIENE_PROFILE",
+      "owner": "shared-personal-provision-author",
+      "consumers": [
+        "ceramic100x100",
+        "ceramic150x150"
+      ],
+      "sourceRequirement": "MARLY_INDUSTRY_2024.pdf PDF1:Hande/Haut vorAnwendung waschenundgutabtrocknen;MARLY_SKIN_PLAN_2024.pdfPDF2:clean/dry/greasefree",
+      "remaining": "Finite applicable pre-application washing/cleanser/drying consumption and compatible products are not established by the foam capacity. Three named physical rows remain visible; no assumed zero, one arbitrary hygiene kit or floorwater borrowing.",
+      "returnCondition": "A complete source-supported or reproducible finite hand-washing/cleaning/drying profile for the known planned applications, including waste and one cost owner per actual resource."
+    }
+  ],
+  "independentExpectedComposition": {
+    "reuseReference": "ceramicFloorM150ResourceGroupCompletenessR2",
+    "frozenInheritedExpectedRows": "ALL_80_R2_EXPECTED_ROWS_EXCEPT_REPLACED_SKIN_UNKNOWN_ROW",
+    "reusedToolsAndPpe": 44,
+    "reusedRealControls": 6,
+    "newExpected": [
+      {
+        "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:skin-nominal-use",
+        "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:skin-nominal-use",
+        "category": "material",
+        "unitId": "l",
+        "quantityRule": "MANUFACTURER_APPROX_NORMAL_HAND_APPLICATION_CAPACITY_AND_WHOLE_KRER_ORGANISATION"
+      },
+      {
+        "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:paste-fire-access",
+        "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:formula:paste-fire-access",
+        "category": "material",
+        "unitId": "l",
+        "quantityRule": "SINGLE_SHARED_FACTORY_100ML_PURCHASE_IN_MANUFACTURER_BLOCKS_THREE_CANS_PER_STARTED_400_PLANNED_APPLICATIONS"
+      },
+      {
+        "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:handwash-water",
+        "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:handwash-water",
+        "category": "material",
+        "unitId": "m3",
+        "quantityRule": "REQUIRED_PHYSICAL_HAND_HYGIENE_DEPENDENCY_QUANTITY_NOT_PROVEN"
+      },
+      {
+        "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-cleanser",
+        "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:hand-cleanser",
+        "category": "material",
+        "unitId": "l",
+        "quantityRule": "REQUIRED_PHYSICAL_HAND_HYGIENE_DEPENDENCY_QUANTITY_NOT_PROVEN"
+      },
+      {
+        "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-drying-towels",
+        "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:hand-drying-towels",
+        "category": "material",
+        "unitId": "pcs",
+        "quantityRule": "REQUIRED_PHYSICAL_HAND_HYGIENE_DEPENDENCY_QUANTITY_NOT_PROVEN"
+      }
+    ],
+    "conditionsAreNotQuantityRows": true,
+    "noNewAuxiliaryCostOwner": true
+  },
+  "primaryEvidence": [
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_SKIN_PLAN_2024.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_SKIN_PLAN_2024.pdf",
+      "url": "https://marly-skin.shop/wp-content/uploads/2024/08/MARLY-SKIN-Hautschutzplan.pdf",
+      "sha256": "13d0103c70918d6cb97f31cb71ad4311f72079b4d9917c430cf726aa8f0e34a5",
+      "bytes": 1084799,
+      "locator": "PDF2 every4h/washing retained/PPEnotreplaced;PDF3 gloves;PDF4cement/lime;PDF5waterbasedwork/cleaning"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_INDUSTRY_2024.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_INDUSTRY_2024.pdf",
+      "url": "https://marly-skin.shop/wp-content/uploads/2024/09/MARLY-SKIN-Hautschutz-in-INDUSTRIE_HANDWERK.pdf",
+      "sha256": "e45be4307fd00614621dad23a93677df6d68e1ab7b2651be84d525c7a6528681",
+      "bytes": 5844148,
+      "locator": "PDF1 four-hour applications despite washing,100ml≈150normalhandapplications;PDF2 Bau/Maler/Lackierer:cement/adhesives/paints/plastics"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_CONSUMPTION_2024.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_CONSUMPTION_2024.pdf",
+      "url": "https://marly-skin.shop/wp-content/uploads/2024/09/MARLY-SKIN-Hautschutzschaum_MONATSBEDARF_Verbrauch.pdf",
+      "sha256": "c4927ae3626f79f4107a0aa3abd60bd7368066003dac07c8f36b561027158bd1",
+      "bytes": 73078,
+      "locator": "PDF1 visuallyread image:10people×20workingdays×2daily=400applications→3cans100ml/450applications;30people1200applications→8cans"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_PRODUCT.html",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_PRODUCT.html",
+      "url": "https://marly-skin.shop/produkte/",
+      "sha256": "ee058a949b536844a31aefc08d3c5dc2ab8d20f63f27db76f8d17b2278bdf0e0",
+      "bytes": 237398,
+      "locator": "Application bullets:clean/dryhands,walnut-sized,3min,every4–6h;repeatedwashingunchanged"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_PROFILE_EN.html",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_PROFILE_EN.html",
+      "url": "https://marly-skin.shop/en/product-profile/",
+      "sha256": "4d353fd35dabe6672679cf2cc2025c3db74cfbb2a690bcdadcabf9a94ce65734",
+      "bytes": 215258,
+      "locator": "ProductProfile100ml≈150applications,50ml≈75;normalhandapplication;manufacturerbusinessidentity"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_IDENTITY.html",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_IDENTITY.html",
+      "url": "https://marly-skin.shop/ueber-uns/",
+      "sha256": "8cbb233bb88b9deb6a9c5f0001ca1233cd217f232116315fedb5c2949be61095",
+      "bytes": 213584,
+      "locator": "AboutUs:manufacture/professional skinprotection,MarlyProductsSusanneBehre-Moniene.K.,Ismaning"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_SDS2019.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/MARLY_SDS2019.pdf",
+      "url": "https://marly-skin.shop/wp-content/uploads/2019/09/Sdb_Marly-Skin-%C2%AE-Hautschutzschaum_V2_de.pdf",
+      "sha256": "5dc9778c5b14358a3e13b9d49af2fc66499cea7bafbcdd9c807df12a976910c0",
+      "bytes": 143897,
+      "locator": "PDF1–2 aerosolpressure/heat/fire;PDF3–4 handling/storage/PPE"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/DILEX_MP_2025.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/DILEX_MP_2025.pdf",
+      "url": "https://eu.schluter.com/statics/www_schlueter_gb_2x/downloads/cumulus/schlueter_db_4_3_dilex_mp_mpv_uk.pdf",
+      "sha256": "3904991e7f98c9e797cba5ca0873121584b2f1748a3dbf35b0031a2fa3538d6d",
+      "bytes": 213152,
+      "locator": "PDF3 productoverview:minH35mm;MPVonlyadds15/25mm;heightmatch required;PDF1–2 mortarbed installation"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/SIKA_PRO3_PURFORM_IE2022.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/SIKA_PRO3_PURFORM_IE2022.pdf",
+      "url": "https://irl.sika.com/dam/dms/ie01/1/sikaflex-pro-3-purform.pdf",
+      "sha256": "c264c7373dc9f0fd3def1f7aa2fd2a1bf43695fe2529db6884a2ff3c6cdefd8d",
+      "bytes": 1335843,
+      "locator": "PDF2–3 joint design10–40mm/geometrymustdesign;PDF4porouscementmortars/nonporousglazedtilespretreatment;PDF5toolwater/Remover208cleaning"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/SOPRO_KSI.html",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/SOPRO_KSI.html",
+      "url": "https://www.sopro.com/uk-en/products/tile-grouts-joint-sealants/773-ksi-ceramic-silicone",
+      "sha256": "713884c5e0b64e1539e8a762ab0e17b711c5c596470c964da5a2867bc780b489",
+      "bytes": 116488,
+      "locator": "Manufacturer product scope:ceramic perimeter/movement joints;310ml≈3.1m for10x10mm;not a complete node by itself"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/SOPRO_PRIMER4050.html",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/SOPRO_PRIMER4050.html",
+      "url": "https://www.sopro.com/uk-en/products/tile-and-natural-stone-adhesive-special-adhesives/021-primer-p-4050",
+      "sha256": "876eabbc7a9ecaac7d0754d5a40894e78eb206acba9f178a65c28d8c803b967c",
+      "bytes": 50479,
+      "locator": "Manufacturer product scope:absorbent mineral/concrete;100ml bottle;approx4ml/m at10mm jointdepth"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/SOPRO_GM026.html",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/SOPRO_GM026.html",
+      "url": "https://www.sopro.com/uk-en/products/tile-grouts-joint-sealants/026-smoothing-agent",
+      "sha256": "8f476e5d1d6ac2c188cd2da900bf84c6fa1816f8436e2c4b37e3287fa35b7839",
+      "bytes": 51484,
+      "locator": "Manufacturer same-system smoothingagent;approx20ml/m;0.5l spray bottle/5lcan"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/PROGRESS_MORTAR_PVC2024.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/PROGRESS_MORTAR_PVC2024.pdf",
+      "url": "https://www.progressprofiles.com/public/documents/catalogue2024/153_EN_ProgressProfiles.pdf",
+      "sha256": "19a17b294cdabb7f463fa79e2b998b98496da331aa1a372eb5e42ed2eb2d7b25",
+      "bytes": 1095545,
+      "locator": "Catalogue2024 printed153:25/35/45mm mortar-laid PVC;source recommends16–30 fieldmodules but printedm3 dimension is ambiguous;profile0.5–1mmbelowcovering;wholepacks100m"
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/PROGRESS_MORTAR_STEEL_PDS2016.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/m150-r3-sources/PROGRESS_MORTAR_STEEL_PDS2016.pdf",
+      "url": "https://www.progressprofiles.com/public/documents/giunti_dilatazione/pdf/schede-tecniche/giunti-posa-malta-acciaio-304-en.pdf",
+      "sha256": "801db50556b9d215a1177db0d79f642c8752d3c94da73fdd00e5fbdb29d0ecb2",
+      "bytes": 178101,
+      "locator": "Rev1May2016:20/40mm stainlesssteel AISI304/EPDM;cutting requires steelhacksaw AND stainless passivationproduct;not solvent/chemistry-free completion"
+    }
+  ],
+  "additionalPrimaryReuse": [
+    {
+      "id": "pkti_36_03_ceramic_m150_kit_r2",
+      "url": "https://files.stroyinf.ru/Data2/1/4293853/4293853995.pdf",
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r2-sources/tk36-03.pdf",
+      "sha256": "49328bf7ab36d8a5ad073145a64a520d506f895e3ffa1e92a7c2aa92a365a3a7",
+      "kind": "PRIMARY_AUTHORED_DOCUMENT_SCAN_ON_PUBLIC_MIRROR",
+      "edition": "ОАОПКТИпромстрой36-03ТК,2003",
+      "locatorRu": "PDF5–10§1.1–2.15; PDF20–24§3; PDF25–27§4; PDF28–29табл.3/4; PDF30§6.1",
+      "reusePolicy": "OPEN_REFERENCE_ONLY_NO_FULL_DOCUMENT_COPY_IN_GIT"
+    },
+    {
+      "id": "kg_overhead_method",
+      "url": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/nakladnyerashodyvstroitelstv-938692055ac0ce2a6.16153263.pdf",
+      "path": ".release-runtime/r568/next-wave/ceramic02703/r2-sources/kr-overhead.pdf",
+      "sha256": "89afde6f0135bb465db576dc8e6d1a1154054df6887e8011447e6fcdee114a76",
+      "locatorRu": "PDF22приложениеII.4иIII.1–2:СИЗ,инвентарь,временныеподводы; PDF24–25III.9/11/12:контроль/содержание/сдача"
+    }
+  ],
+  "finiteSearch": {
+    "closed": true,
+    "newSourcePathsOnly": true,
+    "oldUnsuccessfulSkinWashCountNotRepeated": true,
+    "unprovedJointKitNotPublished": true,
+    "doNotReopenWithoutNewApplicableWholeNodeEvidence": true
+  },
+  "fullTechnicalAcceptance": false,
+  "newCompleteTypes": 0,
+  "published": false,
+  "databaseAccessed": false,
+  "runtimeStarted": false,
+  "ppeOperationExtensions": [
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:coverall",
+      "additionalOperations": [
+        "curing",
+        "control"
+      ],
+      "source": "TK36-03table4wholebrigadepersonalprovision;§2.11wetcuring/§3control",
+      "classification": "REUSE_WITH_PROVEN_ORGANISATIONAL_ADAPTATION",
+      "quantityUnchanged": true
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:helmet",
+      "additionalOperations": [
+        "curing",
+        "control"
+      ],
+      "source": "TK36-03table4wholebrigadepersonalprovision;§2.11wetcuring/§3control",
+      "classification": "REUSE_WITH_PROVEN_ORGANISATIONAL_ADAPTATION",
+      "quantityUnchanged": true
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:rubber-boots",
+      "additionalOperations": [
+        "curing",
+        "control"
+      ],
+      "source": "TK36-03table4wholebrigadepersonalprovision;§2.11wetcuring/§3control",
+      "classification": "REUSE_WITH_PROVEN_ORGANISATIONAL_ADAPTATION",
+      "quantityUnchanged": true
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:rubber-gloves",
+      "additionalOperations": [
+        "curing",
+        "control"
+      ],
+      "source": "TK36-03table4wholebrigadepersonalprovision;§2.11wetcuring/§3control",
+      "classification": "REUSE_WITH_PROVEN_ORGANISATIONAL_ADAPTATION",
+      "quantityUnchanged": true
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:tile-hammer",
+      "additionalOperations": [
+        "control"
+      ],
+      "source": "TK36-03§3.22wholeareatapping;table3tilehammer",
+      "classification": "REUSE_WITH_PROVEN_ORGANISATIONAL_ADAPTATION",
+      "quantityUnchanged": true
+    }
+  ],
+  "stageProvisionAudit": {
+    "independentOfGeneratedRows": true,
+    "source": "TK36-03§2/3/4,table3/4;KRER02703/03904;Marlymanufacturer4hplan",
+    "policy": "Expected applicable resources are linked to every consuming stage; whollymanual stages do not acquire fake machine rows. Sharedquantities retain one purchase/cost owner.",
+    "stages": [
+      {
+        "id": "preparation",
+        "materials": [
+          "water",
+          "skin",
+          "handwash-water",
+          "hand-cleanser",
+          "hand-drying-towels"
+        ],
+        "labour": [
+          "whole-floor-labour"
+        ],
+        "tools": [
+          "straightedge",
+          "scraper",
+          "steel-brush",
+          "hair-brush",
+          "bucket",
+          "water-hose",
+          "basic-personal-ppe"
+        ],
+        "equipment": [],
+        "services": [
+          "input-quality-control"
+        ],
+        "logistics": "sourceincludedpreparation and wholematerialdelivery"
+      },
+      {
+        "id": "delivery",
+        "materials": [
+          "skin",
+          "handwash-water",
+          "hand-cleanser",
+          "hand-drying-towels"
+        ],
+        "labour": [
+          "sourceoperators-in-single-machinefulfillment"
+        ],
+        "tools": [
+          "mortar-cart",
+          "tile-cart",
+          "mortar-box",
+          "tile-container",
+          "basic-personal-ppe"
+        ],
+        "equipment": [
+          "forklift5t",
+          "hoist500kg45m",
+          "truck5t"
+        ],
+        "services": [
+          "input-quality-control"
+        ],
+        "logistics": "one source truckowner includes both floor and straight skirting exactcolumns; external waste is separateunresolved"
+      },
+      {
+        "id": "layout",
+        "materials": [
+          "ceramic-floor-tile"
+        ],
+        "labour": [
+          "whole-floor-labour"
+        ],
+        "tools": [
+          "sort-template",
+          "tile-nippers",
+          "tile-hammer",
+          "locksmith-hammer",
+          "roller-cutter",
+          "lever-cutter",
+          "scarpel",
+          "steel-pin",
+          "water-level",
+          "tape",
+          "marking-cord",
+          "square",
+          "tile-scriber",
+          "tile-cart",
+          "beacon-rail",
+          "cutter-bench",
+          "tile-container",
+          "cutting-personal-ppe"
+        ],
+        "equipment": [],
+        "services": [],
+        "logistics": "reusedsourceinternaldelivery"
+      },
+      {
+        "id": "placing",
+        "materials": [
+          "ready-mortar-m150",
+          "ceramic-floor-tile",
+          "water",
+          "skin",
+          "handwash-water",
+          "hand-cleanser",
+          "hand-drying-towels"
+        ],
+        "labour": [
+          "whole-floor-labour"
+        ],
+        "tools": [
+          "tile-trowel",
+          "mortar-shovel",
+          "tile-hammer",
+          "straightedge",
+          "steel-spatula",
+          "wood-mallet",
+          "wood-float",
+          "mortar-cart",
+          "bucket",
+          "scoop",
+          "beacon-rail",
+          "mortar-rail",
+          "wood-block",
+          "mortar-box",
+          "basic-personal-ppe"
+        ],
+        "equipment": [],
+        "services": [
+          "bedding-thickness-control",
+          "joint-control"
+        ],
+        "logistics": "reusedsourceinternaldelivery"
+      },
+      {
+        "id": "skirting",
+        "materials": [
+          "ready-mortar-m150",
+          "straight-skirting-tile",
+          "skin",
+          "handwash-water",
+          "hand-cleanser",
+          "hand-drying-towels"
+        ],
+        "labour": [
+          "exact03904skirting-labour"
+        ],
+        "tools": [
+          "tile-trowel",
+          "mortar-shovel",
+          "tile-nippers",
+          "tile-hammer",
+          "locksmith-hammer",
+          "roller-cutter",
+          "lever-cutter",
+          "steel-spatula",
+          "scarpel",
+          "wood-float",
+          "tile-scriber",
+          "mortar-cart",
+          "scoop",
+          "cutter-bench",
+          "mortar-box",
+          "cutting-personal-ppe"
+        ],
+        "equipment": [
+          "source-truck5t-shared"
+        ],
+        "services": [],
+        "logistics": "singlemortar/sourcetruckowner,summedexactrates"
+      },
+      {
+        "id": "curing",
+        "materials": [
+          "water",
+          "sawdust"
+        ],
+        "labour": [
+          "whole-floor-labour"
+        ],
+        "tools": [
+          "maklovitsa",
+          "bucket",
+          "water-hose",
+          "basic-personal-ppe"
+        ],
+        "equipment": [],
+        "services": [],
+        "logistics": "networkwaterpost20–25m,sourcedquantity3.85m3/100m2;no inventedwaterallocation"
+      },
+      {
+        "id": "control",
+        "materials": [],
+        "labour": [
+          "inspection-in-provision-owner"
+        ],
+        "tools": [
+          "straightedge",
+          "water-level",
+          "tape",
+          "marking-cord",
+          "square",
+          "control-rail",
+          "tile-hammer",
+          "basic-personal-ppe"
+        ],
+        "equipment": [],
+        "services": [
+          "six-independent-quality-controls"
+        ],
+        "logistics": "manualinspection,notextraappropriatedlabtest"
+      },
+      {
+        "id": "cleanup",
+        "materials": [
+          "water",
+          "sawdust",
+          "skin",
+          "handwash-water",
+          "hand-cleanser",
+          "hand-drying-towels"
+        ],
+        "labour": [
+          "whole-floor-labour"
+        ],
+        "tools": [
+          "mortar-shovel",
+          "steel-spatula",
+          "scraper",
+          "steel-brush",
+          "hair-brush",
+          "maklovitsa",
+          "bucket",
+          "water-hose",
+          "broom",
+          "basic-personal-ppe"
+        ],
+        "equipment": [],
+        "services": [],
+        "logistics": "sourceinternalcleaningreused;actualexternalcontainment/loading/haul/recipientremainunresolved"
+      }
+    ]
+  },
+  "reuseAudit": [
+    {
+      "candidate": "ceramicFloorM150ResourceGroupDefinitionR2",
+      "classification": "REUSE_EXACT",
+      "reason": "Whole8subworks,44inventoryPPEpositions,6controls,exactfloor/skirtingrates and singlematerial/transportowners retainedbyte-identical."
+    },
+    {
+      "candidate": "constructionJointCompletionS2733",
+      "classification": "INCOMPATIBLE",
+      "reason": "ConcreteWATERSTOP actualBOM/toolhours/trips profile;not a readygeometry-only tile/mortar junction. Cannotrequestthose technicalnorms fromuser."
+    },
+    {
+      "candidate": "concreteJointCompleteInstallationR1",
+      "classification": "INCOMPATIBLE",
+      "reason": "ACIstructuralslabjoint/projectdetail/directprojectlabour profile. Geometryandgenericresourceidentityalone cannot convert it intoM150tile junction."
+    },
+    {
+      "candidate": "domainFactory/wasteRemovalEpaPhysicalNormV1",
+      "classification": "INCOMPATIBLE_AS_WHOLE_WASTE_PROFILE",
+      "reason": "Converts explicitlymeasuredcompatibleC&Dvolume topreliminarymass only;module explicitlyforbidsinferringcontainer/trips/disposal. Mixedfreshmortar/sawdust/water/packaging notproved EPAclass."
+    },
+    {
+      "candidate": "asphaltFloorWasteScopeS2769/stoneCubesWasteScopeS2769",
+      "classification": "INCOMPATIBLE_AS_GEOMETRY_ONLY_FULFILLMENT",
+      "reason": "Existingfloor-demolitionremoval boundaries and actualfullserviceconfirmation;preserveunknownmass/bags/trips and supplierrecipientfacts. NewM150installationwaste cannotinheritdemolitionquantity."
+    }
+  ],
+  "handHygiene": {
+    "status": "REQUIRED_PHYSICAL_DEPENDENCIES_QUANTITIES_UNRESOLVED",
+    "source": "MARLY_INDUSTRY_2024.pdf PDF1:Hande/Haut vorAnwendung waschenundgutabtrocknen;MARLY_SKIN_PLAN_2024.pdfPDF2:clean/dry/greasefree",
+    "selectedMethod": "Wash with water and a suitable mild hand cleanser; dry with single-use hand towels before each application. This explicit ordinary organisation choice is not a quantified source norm.",
+    "doesNotBorrowSourceFloorWater": true,
+    "applicationCountKnownButWaterCleanserTowelQuantityNotProven": true,
+    "resources": [
+      {
+        "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:handwash-water",
+        "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:handwash-water",
+        "parameterId": "ceramic_m150_r3_handwash_water_qty",
+        "titleRu": "Вода для мытья рук перед нанесением защиты кожи",
+        "unitId": "m3",
+        "reasonRu": "Производитель требует мыть руки перед применением. Число нанесений известно, применимый расход воды не подтверждён; исходная вода для пола не присваивается мытью рук."
+      },
+      {
+        "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-cleanser",
+        "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:hand-cleanser",
+        "parameterId": "ceramic_m150_r3_hand_cleanser_qty",
+        "titleRu": "Мягкое средство для очищения рук перед нанесением защиты кожи",
+        "unitId": "l",
+        "reasonRu": "Выбран обычный способ очистки водой с мягким средством для достижения чистой обезжиренной кожи; средство и его доза для этого плана не подтверждены."
+      },
+      {
+        "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-drying-towels",
+        "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:hand-drying-towels",
+        "parameterId": "ceramic_m150_r3_hand_drying_towels_qty",
+        "titleRu": "Одноразовые салфетки для сушки рук перед нанесением защиты кожи",
+        "unitId": "pcs",
+        "reasonRu": "Производитель требует тщательно высушить руки. Выбрана одноразовая сушка; достаточное число и подходящая спецификация салфеток не подтверждены."
+      }
+    ]
+  },
+  "sharedSkinProfile": {
+    "contract": "marly-skin-normal-hand-provision.r1",
+    "sourcePack": "data/estimate-benchmarks/source-packs/marly-skin-normal-provision-r1.json",
+    "module": "src/lib/estimate/v4/marlySkinNormalProvisionProfileR1.ts",
+    "reuseConsumers": [
+      "ceramic100x100",
+      "ceramic150x150",
+      "compatibleVGTadapters"
+    ],
+    "newCalculationEngine": false
+  }
+}

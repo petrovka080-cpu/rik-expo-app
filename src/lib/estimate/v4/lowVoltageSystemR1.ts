@@ -1,3 +1,5 @@
+import scsMethodPack from '../../../../data/estimate-benchmarks/source-packs/low-current-nk688m-jackrapid-method-post-r24.json';
+import {buildAutomaticConstructionOwnerR1,type AutomaticOwnerDefinition,type AutomaticParameterSpec} from './automaticConstructionOwnerR1';
 import {
   compileCanonicalEstimateCore,
   type CanonicalEstimateCompileCoreResult,
@@ -357,4 +359,68 @@ export async function compileLowVoltageSystemR1(
     confirmedParameters: { ...LOW_VOLTAGE_SYSTEM_RUNTIME_INPUT }, currencyCode: "KGS",
     priceItems: [], maximumResourceRows: 40, hashJson: async (value) => JSON.stringify(value),
   });
+}
+
+export function withLowVoltageSystemWholeObjectScopeR5(input:Readonly<{
+  catalogId:string;definition:AutomaticOwnerDefinition;
+}>):AutomaticOwnerDefinition{
+  if(input.catalogId!==LOW_VOLTAGE_SYSTEM_CATALOG_ID)throw Error('SCS_WHOLE_SCOPE_EXISTING_CATALOG_REQUIRED');
+  const base=input.definition,c=scsMethodPack.wholeOperationObjectScopeR5;
+  const nativeContract=base.parameters[0]?.truth_metadata.contract;
+  if(typeof nativeContract!=='string'||!nativeContract.trim()
+    ||new Set(base.parameters.map(p=>p.truth_metadata.contract)).size!==1
+    ||!base.parameters.every(p=>p.truth_metadata.semantic_parameter_key===`${input.catalogId}:${p.parameter_id}`))
+    throw Error('SCS_WHOLE_SCOPE_NATIVE_PARAMETER_IDENTITY_REQUIRED');
+  const owner=base.resources.find(row=>row.row_id===c.rowId);
+  if(!owner||owner.resource_graph.costTreatment!=='INFORMATIONAL_SCOPE'||owner.resource_graph.scopeRequirementV1!=null)
+    throw Error('SCS_WHOLE_SCOPE_EXISTING_INFORMATIONAL_OWNER_REQUIRED');
+  const ids=[...c.facts.map(f=>f.id),c.decisionId];
+  if(base.parameters.some(p=>ids.includes(p.parameter_id)))throw Error('SCS_WHOLE_SCOPE_PARAMETER_COLLISION');
+  for(const id of c.nativeContextParameterIds)if(!base.parameters.some(p=>p.parameter_id===id&&['integer','decimal'].includes(p.value_type)))
+    throw Error('SCS_WHOLE_SCOPE_NATIVE_CONTEXT_REQUIRED:'+id);
+  for(const binding of c.existingResourceOperations)if(!base.resources.some(r=>r.row_id===binding.rowId))
+    throw Error('SCS_WHOLE_SCOPE_ACTUAL_NATIVE_RESOURCE_REQUIRED:'+binding.rowId);
+  const active={kind:'greater_than' as const,parameterId:'lvs_system_count',value:0};
+  const specs:AutomaticParameterSpec[]=[...c.facts.map(f=>({id:f.id,title:f.titleRu,kind:'conditional' as const,valueType:'text' as const,
+    unitId:null,resourceBranchConsumers:[c.rowId]})),
+    {id:c.decisionId,title:'Каков документированный итог проверки методов и обеспечения СКС?',kind:'conditional',valueType:'enum',unitId:null,
+      values:[c.unknown,c.approved,c.incompatible],resourceBranchConsumers:[c.rowId]}];
+  const questions=buildAutomaticConstructionOwnerR1({contract:c.contract,semanticOwner:c.groupId,
+    sourceId:LOW_VOLTAGE_SYSTEM_SOURCE_ID,normId:LOW_VOLTAGE_SYSTEM_NORM_ID,sourceMetadata:LOW_VOLTAGE_SYSTEM_SOURCE_METADATA,
+    applicabilityRu:c.reasonRu,ordinary:[],profile:[],conditional:specs,rows:[],excludedUnownedAssumptions:[c.sourceBoundary],deferMissingProjectFactsToRows:true});
+  const parameters=[...base.parameters,...questions.parameters.map((p,index)=>({...p,ordinal:base.parameters.length+index,
+    constraints_json:{...p.constraints_json,requiredWhen:p.parameter_id===c.decisionId?active:c.facts.find(f=>f.id===p.parameter_id)!.when},
+    truth_metadata:{...p.truth_metadata,contract:nativeContract,semantic_parameter_key:`${input.catalogId}:${p.parameter_id}`,value_source_role:'PROJECT_SPECIFIC_INPUT',source_confirmation_required:false,
+      provenance:{consumer_input_role_v1:'OBJECT_FACT'},...(p.parameter_id===c.decisionId?{unknown_enum_values:[c.unknown]}:{})}}))];
+  const reference=(key:string)=>{const op=c.operations.find(o=>o.key===key);if(!op)throw Error('SCS_WHOLE_SCOPE_OPERATION_KEY_INVALID');
+    const{key:_key,...body}=op;return body;};
+  const resources=base.resources.map(row=>{
+    const binding=c.existingResourceOperations.find(b=>b.rowId===row.row_id);
+    const postKey=row.row_id.startsWith('low-current:idc-manual-post:r24:')?'outlet'
+      :row.row_id.startsWith('low-current:copper-certifier-pro:stock:r24:')?'qa':null;
+    if(!binding&&!postKey)return row;
+    const previous=row.resource_graph.operationCompositionV1 as Record<string,unknown>|undefined;
+    if(binding&&previous!=null)throw Error('SCS_WHOLE_SCOPE_NATIVE_OPERATION_METADATA_REVIEW_REQUIRED:'+row.row_id);
+    const linked=(binding?binding.operationKeys:[postKey!]).map(reference),[primary,...related]=linked;
+    const oldAdditional=previous?.additionalOperations;
+    if(previous&&oldAdditional!=null&&!Array.isArray(oldAdditional))throw Error('SCS_WHOLE_SCOPE_EXISTING_ADDITIONAL_OPERATIONS_INVALID');
+    const operation=previous?{...previous,groupId:c.groupId,groupTitleRu:c.groupTitleRu,additionalOperations:[...(Array.isArray(oldAdditional)?oldAdditional:[]),...linked]}
+      :{contractVersion:'canonical-operation-resource/v1',groupId:c.groupId,groupTitleRu:c.groupTitleRu,...primary,
+        ...(related.length?{additionalOperations:related}:{})};
+    const{row_sha256:_old,...body}=row;
+    const next={...body,resource_graph:{...row.resource_graph,operationCompositionV1:operation,
+      sourceWholeObjectBoundaryR5:{sameExistingRow:true,relationshipOnly:true,newPaidOrProcurementOwners:false,
+        numericNormAccepted:false,documentAuthenticityAttested:false,sourceAdmission:false,FULL:false},
+      ...(row.row_id===c.rowId?{inputParameterIds:[...ids,...c.nativeContextParameterIds],
+        scopeRequirementV1:{contractVersion:'canonical-scope-requirement/v1',kind:'OBJECT_SCOPE',groupId:c.groupId,
+          groupTitleRu:c.groupTitleRu,titleRu:'Проверка методов и обеспечения выбранных медных линий',reasonRu:c.reasonRu,
+          exactScopeWhen:{kind:'and',operands:[active,{kind:'equals',parameterId:c.decisionId,value:c.approved}]},
+          objectFactMode:'PROJECT_APPLICABILITY_ONLY',objectFactParameterId:c.decisionId,unknownObjectValues:[c.unknown],
+          requiredFactParameterIds:[c.decisionId,...c.nativeContextParameterIds],coveringRowIds:[],
+          originalRowIds:c.existingResourceOperations.map(r=>r.rowId).filter(id=>id!==c.rowId),sourceEvidence:c.sourceEvidence,
+          projectOperationContextsV1:c.facts.map(f=>({when:f.when,resourceRowIds:f.anchorRowIds,
+            applicabilityWhen:{kind:'equals',parameterId:c.decisionId,value:c.approved},requiredFactParameterIds:[f.id]}))}}:{})}};
+    return{...next,row_sha256:estimateDeterministicHash(next)};
+  });
+  return{...base,parameters,resources};
 }

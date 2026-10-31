@@ -6,12 +6,14 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  readSync,
   renameSync,
   statSync,
   writeFileSync,
 } from "node:fs";
 import { connect } from "node:net";
 import { dirname, relative, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { Client } from "pg";
 
@@ -23,6 +25,7 @@ invariant(Number.isInteger(BACKEND_PORT) && BACKEND_PORT >= 1024 && BACKEND_PORT
   "R568_BACKEND_PORT_INVALID");
 const BACKEND_URL = `http://127.0.0.1:${BACKEND_PORT}`;
 const BACKEND_SOURCE = resolve("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts");
+const BACKEND_STARTUP_PRELOAD = resolve("scripts/dev/waitForBackendStartupManagerExit.mjs");
 const PURPOSE = "estimate_candidate_admission_r3";
 type BackendAuthProfile = "local_provider" | "whole_app_staging";
 const BACKEND_AUTH_PROFILE_INPUT = String(
@@ -53,6 +56,11 @@ const EVIDENCE_ROOT = resolve(
 );
 const OUTPUT = resolve(EVIDENCE_ROOT, "backend.json");
 const PREFLIGHT_ONLY = process.argv.includes("--preflight");
+const PREPARE_ONLY = process.argv.includes("--prepare-only");
+const RETURN_AFTER_START = process.argv.includes("--return-after-start");
+invariant(!(PREFLIGHT_ONLY && PREPARE_ONLY), "R568_MANAGER_MODE_CONFLICT");
+invariant(!RETURN_AFTER_START || (!PREFLIGHT_ONLY && !PREPARE_ONLY && WHOLE_APP_AUTH_PROFILE),
+  "R568_MANAGER_START_HANDOFF_MODE_CONFLICT");
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -87,32 +95,45 @@ function resolveLocalImport(importer: string, specifier: string): string | null 
   )) ?? null;
 }
 
-function backendRuntimeClosureSha256(entryPath: string): string {
+function backendRuntimeClosureSha256(entryPath: string, startupPaths: readonly string[] = []): string {
   const visited = new Set<string>();
   const visit = (path: string): void => {
     const absolute = resolve(path);
     if (visited.has(absolute)) return;
     visited.add(absolute);
-    const source = readFileSync(absolute, "utf8");
+    let source: string | null = readFileSync(absolute, "utf8");
     const importPattern = /(?:from\s+|import\s*)["'](\.{1,2}\/[^"']+)["']/gu;
     const imports = [...source.matchAll(importPattern)]
       .map((match) => resolveLocalImport(absolute, String(match[1] ?? "")))
       .filter((value): value is string => Boolean(value))
       .sort();
+    source = null;
     for (const imported of imports) visit(imported);
   };
   visit(entryPath);
+  for (const path of startupPaths) visit(path);
   const hash = createHash("sha256");
+  const buffer = Buffer.allocUnsafe(64 * 1024);
   for (const path of [...visited].sort()) {
     hash.update(relative(process.cwd(), path).replace(/\\/gu, "/"));
     hash.update("\0");
-    hash.update(readFileSync(path));
+    const descriptor = openSync(path, "r");
+    try {
+      let count: number;
+      while ((count = readSync(descriptor, buffer, 0, buffer.length, null)) > 0) {
+        hash.update(buffer.subarray(0, count));
+      }
+    } finally { closeSync(descriptor); }
     hash.update("\0");
   }
   return hash.digest("hex");
 }
 
-function portOwner(): { pid: number; name: string; commandLine: string } | null {
+async function portOwner(): Promise<{ pid: number; name: string; commandLine: string } | null> {
+  // A closed port has no listener to inspect. Avoid loading another shell and
+  // its CIM modules alongside the completed Web graph on a quiescent startup.
+  // A listener appearing later still has to pass the exact runtime tuple.
+  if (!await portOpen()) return null;
   const script = [
     `$c=Get-NetTCPConnection -LocalPort ${BACKEND_PORT} -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1`,
     "if($null -eq $c){'null';exit 0}",
@@ -128,7 +149,7 @@ function portOwner(): { pid: number; name: string; commandLine: string } | null 
   return raw && raw !== "null" ? JSON.parse(raw) : null;
 }
 
-function isOwnedBackend(owner: ReturnType<typeof portOwner>): boolean {
+function isOwnedBackend(owner: Awaited<ReturnType<typeof portOwner>>): boolean {
   if (!owner || owner.name.toLocaleLowerCase() !== "node.exe") return false;
   const command = owner.commandLine.replace(/\\/gu, "/").toLocaleLowerCase();
   return command.includes("servecanonicalestimatelocalr1.ts");
@@ -198,6 +219,22 @@ async function runtimeIdentity(): Promise<Json | null> {
   return response.json().catch(() => null) as Promise<Json | null>;
 }
 
+async function verifyBackendRuntimeStart(
+  desired: Json, backendPid: number, newlyStarted: boolean, returnAfterStart: boolean,
+): Promise<boolean> {
+  // The whole-app launcher already owns the final exact-identity barrier.
+  // Release this short-lived manager before the backend loads its graph; a
+  // process having been spawned is explicitly not a verified running backend.
+  if (newlyStarted && returnAfterStart) return false;
+  if (newlyStarted) {
+    invariant(await waitForPort(true, 25_000), `R568_BACKEND_START_TIMEOUT_PID_${backendPid}`);
+  }
+  const identity = await runtimeIdentity();
+  invariant(runtimeIdentityMatches(identity, desired), "R568_RUNTIME_IDENTITY_TUPLE_RED");
+  invariant(identity?.processId === backendPid, "R568_RUNTIME_IDENTITY_PID_RED");
+  return true;
+}
+
 function runtimeIdentityMatches(identity: Json | null, desired: Json): boolean {
   const frontend = identity?.frontendBuildIdentity ?? {};
   return identity?.schemaVersion === "rik-expo-app.local-runtime-identity.v1" &&
@@ -250,6 +287,7 @@ function startBackend(input: {
   const stdout = openSync(resolve(runtimeDirectory, "stdout.log"), "a");
   const stderr = openSync(resolve(runtimeDirectory, "stderr.log"), "a");
   const child = spawn(process.execPath, [
+    ...(RETURN_AFTER_START ? ["--import", pathToFileURL(BACKEND_STARTUP_PRELOAD).href] : []),
     "--import",
     "tsx",
     "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts",
@@ -257,9 +295,10 @@ function startBackend(input: {
     cwd: process.cwd(),
     detached: true,
     windowsHide: true,
-    stdio: ["ignore", stdout, stderr],
+    stdio: RETURN_AFTER_START ? ["ignore", stdout, stderr, "ipc"] : ["ignore", stdout, stderr],
     env: {
       ...process.env,
+      LOCAL_DEVELOPER_BACKEND_STARTUP_MANAGER_PID: RETURN_AFTER_START ? String(process.pid) : "",
       CANONICAL_ESTIMATE_LOCAL_AUTH_MODE: "STRICT_SESSION_INTROSPECTION",
       CANONICAL_ESTIMATE_SUPABASE_AUTH_URL: input.authProviderUrl,
       CANONICAL_ESTIMATE_SUPABASE_AUTH_API_KEY: input.authPublicKey,
@@ -311,6 +350,7 @@ function startBackend(input: {
   closeSync(stderr);
   invariant(child.pid, "R568_BACKEND_PID_MISSING");
   child.unref();
+  if (RETURN_AFTER_START) child.channel?.unref();
   return child.pid;
 }
 
@@ -343,6 +383,9 @@ async function main(): Promise<void> {
   const credentials = JSON.parse(readFileSync(CREDENTIALS, "utf8")) as Json;
   const tenantId = String(credentials.test_tenant_id ?? "");
   invariant(tenantId, "R568_TENANT_ID_MISSING");
+  if (PREPARE_ONLY) {
+    invariant(!await portOpen(), "R568_PREPARE_REQUIRES_BACKEND_PORT_QUIESCENT");
+  }
 
   const client = new Client({ connectionString: DATABASE_URL, application_name: "r568-local-backend-manager" });
   await client.connect();
@@ -353,6 +396,13 @@ async function main(): Promise<void> {
   try {
     await client.query("begin");
     await client.query("select pg_advisory_xact_lock(hashtextextended('r568-local-backend-manager',0))");
+    if (PREPARE_ONLY) {
+      activeJobs = Number((await client.query(`
+        select count(*)::integer count from public.estimate_compile_job
+        where upper(status) in ('QUEUED','RUNNING','CLAIMED','RETRY_WAIT')
+      `)).rows[0]?.count ?? 0);
+      invariant(activeJobs === 0, `R568_ACTIVE_COMPILE_JOBS_${activeJobs}`);
+    }
     basis = (await client.query(`
       select definition.id::text release_id,search.id::text search_release_id
       from public.estimate_definition_release definition
@@ -424,13 +474,37 @@ async function main(): Promise<void> {
     frontendSourceTreeHash: sourceTree,
     frontendProductSourceHash,
     frontendJsBundleFingerprint,
-    backendRuntimeSourceSha256: backendRuntimeClosureSha256(BACKEND_SOURCE),
+    backendRuntimeSourceSha256: backendRuntimeClosureSha256(BACKEND_SOURCE, [BACKEND_STARTUP_PRELOAD]),
     masterSha256: MASTER_SHA256,
     capabilityId: String(capability!.id ?? ""),
     authProviderUrlSha256: createHash("sha256").update(authProviderUrl).digest("hex"),
     authPublicKeySha256: createHash("sha256").update(authPublicKey).digest("hex"),
   };
-  const ownerBefore = portOwner();
+  // Cold frontend compilation does not need a running calculation process.
+  // Provision the same real capability now; the launcher starts this manager
+  // normally after bundling and must verify that the exact tuple is reused.
+  if (PREPARE_ONLY) {
+    invariant(activeJobs === 0, `R568_ACTIVE_COMPILE_JOBS_${activeJobs}`);
+    process.stdout.write(`${JSON.stringify({
+      status: "R568_BACKEND_INPUTS_PREPARED_PROCESS_NOT_STARTED",
+      auth_profile: BACKEND_AUTH_PROFILE,
+      backend_action: "NOT_STARTED_PREPARE_ONLY",
+      capability_action: capabilityAction,
+      backend_pid: 0,
+      active_compile_jobs: activeJobs,
+      definition_release_id: desired.releaseId,
+      search_release_id: desired.searchReleaseId,
+      master_sha256: desired.masterSha256,
+      capability_id: desired.capabilityId,
+      capability_expires_at: new Date(capability!.expires_at).toISOString(),
+      runtime_identity_verified: false,
+      authenticated_runtime_manifest_verified: false,
+      evidence_root: EVIDENCE_ROOT,
+      production_requests: 0,
+    })}\n`);
+    return;
+  }
+  const ownerBefore = await portOwner();
   if (ownerBefore && !isOwnedBackend(ownerBefore)) throw new Error(`R568_BACKEND_FOREIGN_OWNER_PID_${ownerBefore.pid}`);
   const identityBefore = ownerBefore ? await runtimeIdentity() : null;
   if (ownerBefore && !manifestOwnedByCurrentWorktree(identityBefore)) {
@@ -464,11 +538,11 @@ async function main(): Promise<void> {
       invariant(await waitForPort(false, 15_000), `R568_BACKEND_STOP_TIMEOUT_PID_${ownerBefore.pid}`);
     }
     backendPid = startBackend({ authPublicKey, authProviderUrl, desired, capability: capability! });
-    invariant(await waitForPort(true, 25_000), `R568_BACKEND_START_TIMEOUT_PID_${backendPid}`);
     backendAction = "RESTARTED";
   }
-  const identity = await runtimeIdentity();
-  invariant(runtimeIdentityMatches(identity, desired), "R568_RUNTIME_IDENTITY_TUPLE_RED");
+  const runtimeIdentityVerified = await verifyBackendRuntimeStart(
+    desired, backendPid, backendAction === "RESTARTED", RETURN_AFTER_START,
+  );
   const manifest = WHOLE_APP_AUTH_PROFILE ? null : await authenticatedManifest(credentials);
   if (!WHOLE_APP_AUTH_PROFILE) {
     invariant(manifestMatches(manifest, desired), "R568_RUNTIME_MANIFEST_TUPLE_RED");
@@ -488,12 +562,14 @@ async function main(): Promise<void> {
     schema_version: "rik-expo-app.r568.local-developer-canonical-backend.v1",
     generated_utc: new Date().toISOString(),
     master_sha256: MASTER_SHA256,
-    status: WHOLE_APP_AUTH_PROFILE
-      ? "READY_R568_WHOLE_APP_BACKEND_AWAITING_AUTHENTICATED_REQUEST"
-      : "GREEN_R568_LOCAL_DEVELOPER_CANONICAL_BACKEND_EXACT",
+    status: !runtimeIdentityVerified
+      ? "R568_WHOLE_APP_BACKEND_STARTED_RUNTIME_IDENTITY_PENDING"
+      : WHOLE_APP_AUTH_PROFILE
+        ? "READY_R568_WHOLE_APP_BACKEND_AWAITING_AUTHENTICATED_REQUEST"
+        : "GREEN_R568_LOCAL_DEVELOPER_CANONICAL_BACKEND_EXACT",
     auth_profile: BACKEND_AUTH_PROFILE,
     authenticated_runtime_manifest_verified: !WHOLE_APP_AUTH_PROFILE,
-    runtime_identity_verified: true,
+    runtime_identity_verified: runtimeIdentityVerified,
     backend_action: backendAction,
     capability_action: capabilityAction,
     backend_pid: backendPid,
@@ -539,6 +615,9 @@ async function main(): Promise<void> {
     auth_profile: BACKEND_AUTH_PROFILE,
     authenticated_runtime_manifest_verified: receipt.authenticated_runtime_manifest_verified,
     runtime_identity_verified: receipt.runtime_identity_verified,
+    backend_runtime_source_sha256: desired.backendRuntimeSourceSha256,
+    auth_provider_url_sha256: desired.authProviderUrlSha256,
+    auth_public_key_sha256: desired.authPublicKeySha256,
     evidence_root: EVIDENCE_ROOT,
     request_audit_path: resolve(
       EVIDENCE_ROOT,

@@ -11,6 +11,8 @@ import { assertCanonicalPurchaseSupplyRevisionV1, assertCanonicalPurchaseSupplyR
   canonicalPurchaseSupplyWarningV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { buildCanonicalProcurementProjection, selectCanonicalArtifactRows, canonicalArtifactPreliminaryNeeds } from "./canonicalEstimateArtifactContract";
 import { buildCanonicalProfessionalPdfProjection } from "./canonicalProfessionalPdf";
+import { canonicalProfessionalPdfReportOriginalAuditV1, canonicalProfessionalPdfReviewAcknowledgmentV1,
+  canonicalProfessionalPdfReviewEligibilityV1 } from "./canonicalEstimateSavedOperationAcceptanceV1";
 import { buildCanonicalRevisionCommitPayload } from "./canonicalEstimateRevisionWriter";
 
 const provenance = {kind:"manual",reason:"synthetic retention control; no published material or norm"};
@@ -164,15 +166,45 @@ test("normalization of manual whitespace and zero leaves original amendment byte
 });
 test("PDF keeps manual title and currency price informational, escapes text, and stays partial",async()=>{
   const source=input(),result=await compileCanonicalEstimateCore(source),revision=saved(result,source);
-  const pdf=buildCanonicalProfessionalPdfProjection({revision,rows:result.rows as never[],preliminaryNeeds:canonicalArtifactPreliminaryNeeds(revision),
-    workTitleRu:"Synthetic fixture",definitionVersionId:String(revision.definition_version_id),expectedProjectedRowCount:result.rows.length});
-  expect(pdf.html).toContain("Мой &lt;материал&gt; требует уточнения");expect(pdf.html).toContain("справочно");
-  expect(pdf.html).toContain("полный итог не рассчитан");expect(pdf.html).toContain("Закупка пока не готова");
+  const preliminaryNeeds=canonicalArtifactPreliminaryNeeds(revision,{issuancePurpose:"PRELIMINARY_REVIEW"}),
+    snapshot={revision,resources:[...result.rows,...preliminaryNeeds]},
+    original=JSON.stringify({source,result,revision,preliminaryNeeds}),
+    audit=canonicalProfessionalPdfReportOriginalAuditV1(snapshot),
+    projectionInput={revision,rows:result.rows as never[],preliminaryNeeds,workTitleRu:"Synthetic fixture",
+      definitionVersionId:String(revision.definition_version_id),expectedProjectedRowCount:result.rows.length};
+  // This synthetic supply contract has no independent construction composition.
+  // Exact read acknowledgment permits a report, never STANDARD acceptance.
+  expect(audit).toMatchObject({status:"STRUCTURE_INVALID",pdfAllowed:false,definitionAdmissionAllowed:false,completeClaimAllowed:false});
+  expect(audit.issues).toContainEqual({code:"INDEPENDENT_OPERATION_COMPOSITION_UNVERIFIED"});
+  expect(()=>buildCanonicalProfessionalPdfProjection(projectionInput)).toThrow(expect.objectContaining({code:"ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID"}));
+  const eligibility=canonicalProfessionalPdfReviewEligibilityV1(snapshot);
+  expect(eligibility).toMatchObject({eligible:true,status:"ELIGIBLE"});
+  const ack=canonicalProfessionalPdfReviewAcknowledgmentV1({...snapshot,
+    request:{revisionId:revision.id,releaseId:revision.release_id,definitionVersionId:revision.definition_version_id,
+      checksumSha256:revision.checksum_sha256,acknowledgedPreliminaryReview:true},
+    actorUserId:"TEST_ONLY_MANUAL_SUPPLY_REPORT_READER",acknowledgedAt:"2026-10-30T00:00:00.000Z"});
+  expect(ack.auditSha256).toBe(eligibility.auditSha256);
+  const reviewInput={...projectionInput,issuancePurpose:"PRELIMINARY_REVIEW" as const};
+  expect(()=>buildCanonicalProfessionalPdfProjection(reviewInput)).toThrow(expect.objectContaining({code:"ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID"}));
+  expect(()=>buildCanonicalProfessionalPdfProjection({...reviewInput,reviewAcknowledgmentV1:{...ack,checksumSha256:"f".repeat(64)}}))
+    .toThrow(expect.objectContaining({code:"ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID"}));
+  const pdf=buildCanonicalProfessionalPdfProjection({...reviewInput,reviewAcknowledgmentV1:ack});
+  expect(pdf.html).toContain("Мой &lt;материал&gt; требует уточнения");
+  const order=pdf.html.split('Мой &lt;материал&gt; требует уточнения</strong>')[1]!.split('</tr>')[0]!;
+  expect([...order.matchAll(/<td class="money">(.*?)<\/td>/gu)].map(match=>match[1])).toEqual(['12,50 USD','']);
+  expect(pdf.html).not.toContain('справочно');
+  expect(pdf.html).toContain("Итог не подтверждён");
+  expect(pdf.html).toContain("отчёт не разрешает оплату или закупку");
+  expect(pdf.html).toContain("есть незавершённые или противоречивые сведения поставки. Это не разрешение на закупку.");
   expect(canonicalPurchaseSupplyWarningV1(byId(result,"order"))).toContain("8");
   expect(pdf.grandTotalStatus).toBe("PARTIAL_NEEDS_PRICE");
-  expect(pdf.html).toContain('class="purchase-supply-block"');
-  expect(pdf.html).toContain("введено вручную; заказ не подтверждён");
+  expect(pdf.html).toContain('class="preliminary-need"');
+  expect(order).not.toMatch(/введено вручную|заказ не подтверждён/u);
+  expect(order).toContain('<td class="numeric">8</td>');
   expect(pdf.html).toContain(".purchase-supply-block .numeric{white-space:normal;overflow-wrap:anywhere}");
+  expect(pdf.html).not.toContain('class="approval-block"');
+  expect(canonicalProfessionalPdfReportOriginalAuditV1(snapshot)).toEqual(audit);
+  expect(JSON.stringify({source,result,revision,preliminaryNeeds})).toBe(original);
 });
 
 test("commit payload carries the compiler index without rewriting original amendment Q/provenance",async()=>{

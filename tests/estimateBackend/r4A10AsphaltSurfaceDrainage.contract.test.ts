@@ -2,6 +2,7 @@ import {
   ASPHALT_SURFACE_DRAINAGE_CATALOG_ID,
   ASPHALT_SURFACE_DRAINAGE_INPUTS,
   ASPHALT_SURFACE_DRAINAGE_LINEAR_GOLD_INPUT,
+  ASPHALT_SURFACE_DRAINAGE_PASSPORT,
   ASPHALT_SURFACE_DRAINAGE_ROWS,
   buildAsphaltSurfaceDrainageContentPassportR3,
   compileAsphaltSurfaceDrainageEstimate,
@@ -14,7 +15,7 @@ import {
 } from "../../src/lib/estimate/r4A10AsphaltDrainagePrompt";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import { validateCanonicalEstimateParameterInputs } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 
 const USER_FRAGMENT = "водоотвод для асфальтового покрытия на большой площади";
 const FULL_LINEAR_PROMPT = `${USER_FRAGMENT}; тип системы: линейный лоток; проектная длина трассы 180 м; проектный продольный уклон 0,8%; ширина траншеи 0,6 м; средняя глубина траншеи 0,5 м; материал подготовки: щебень; толщина подготовки 0,1 м; плотность материала подготовки 1,6 т/м3; расстояние доставки материала подготовки 12 км; сечение обратной засыпки 0,18 м2; привозная обратная засыпка: да; материал обратной засыпки: песок; плотность привозного материала обратной засыпки 1,65 т/м3; расстояние доставки обратной засыпки 14 км; количество подключений к выпуску 2 шт; выпуск подтвержден; вывоз грунта: да; объем вывоза грунта 10,8 м3; плотность грунта 1,8 т/м3; расстояние вывоза грунта 20 км; доставка отдельно: да; транспортная масса системы 18 т; расстояние доставки системы 30 км; модель экскаватора E35; производительность экскаватора 25 м3/ч; модель траншейного уплотнителя DPU 6555; производительность траншейного уплотнителя 12 м3/ч; восстановление асфальта: нет; сечение лотка DN200; класс нагрузки лотка D400; длина модуля лотка 1 м; длина решетки 0,5 м; сечение бетонного основания и обоймы лотка 0,08 м2; расход герметика на стык лотка 0,12 кг/стык; крепеж на одну решетку 2 шт; пескоуловителей 6 шт; длина одного пескоуловителя 1 м; расстояние доставки бетона лотков 18 км`;
@@ -87,6 +88,32 @@ describe("R4-A10 asphalt surface drainage canonical owner", () => {
     expect(state.missingParameterIds).not.toContain("tray_nominal_size");
     expect(state.missingParameterIds).not.toContain("drain_pipe_nominal_size");
     expect(state.missingParameterIds).not.toContain("storm_pipe_nominal_size");
+  });
+
+  test("keeps the asphalt site's area separate from drainage route and restoration geometry", () => {
+    const prompt = `${USER_FRAGMENT}; площадь 10000 м²; проектная длина трассы 25 м`;
+    expect(parseR4A10AsphaltDrainagePrompt(prompt)).toEqual({ route_length_m: "25" });
+    const state = preliminaryPlanState(prompt);
+    expect(state.plan.parameters).toEqual({ route_length_m: "25" });
+    expect(state.plan.parameters).not.toHaveProperty("asphalt_restoration_area_m2");
+    expect(state.plan.parameters).not.toHaveProperty("surface_restoration_scope");
+  });
+
+  test("retains an explicitly named local restoration area and explicit editor override", () => {
+    const site = `${USER_FRAGMENT}; площадь 10000 м²; проектная длина трассы 25 м`;
+    const prompt = `${site}; восстановление асфальта: да; площадь локального восстановления асфальта 7,5 м²`;
+    expect(parseR4A10AsphaltDrainagePrompt(prompt)).toMatchObject({
+      route_length_m: "25", surface_restoration_scope: "local_asphalt_strip",
+      asphalt_restoration_area_m2: "7.5",
+    });
+    expect(preliminaryPlanState(prompt).plan.parameters).toMatchObject({
+      route_length_m: "25", surface_restoration_scope: "local_asphalt_strip",
+      asphalt_restoration_area_m2: "7.5",
+    });
+    const overridden = buildCanonicalBaselinePlan({
+      catalog: catalog(), prompt: site, parameterOverrides: { asphalt_restoration_area_m2: 6 },
+    });
+    expect(overridden.parameters.asphalt_restoration_area_m2).toBe(6);
   });
 
   test("recognizes an explicitly named drainage technology without requiring a 'system type' prefix", () => {
@@ -254,4 +281,14 @@ describe("R4-A10 asphalt surface drainage canonical owner", () => {
     expect(passport.resources).toHaveLength(ASPHALT_SURFACE_DRAINAGE_ROWS.length);
     expect(passport.resources.some((row) => /налог|сметн.*сопровожд|исполнительн.*документ|чек-лист/iu.test(row.titleRu))).toBe(false);
   });
+});
+
+
+test("drainage publishes the standard route-based work without an area preset", () => {
+  expect(ASPHALT_SURFACE_DRAINAGE_CATALOG_ID)
+    .toBe("canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard");
+  const { passport } = buildAsphaltSurfaceDrainageContentPassportR3();
+  expect(passport.catalogId).toBe(ASPHALT_SURFACE_DRAINAGE_CATALOG_ID);
+  expect(ASPHALT_SURFACE_DRAINAGE_PASSPORT.searchAliases.join(" "))
+    .not.toMatch(/large.area|small.area|большой площади|малой площади/iu);
 });

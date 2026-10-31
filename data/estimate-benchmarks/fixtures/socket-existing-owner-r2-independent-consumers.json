@@ -1,0 +1,1289 @@
+{
+  "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+  "sourceKind": "PROJECT_SYSTEM",
+  "generatedFromCurrentRows": false,
+  "operationResourceBindingRequired": true,
+  "evidenceSha256": "6d1d508bcbb624ea1850727e8a720ebfa4525236afccea5066c79912418a69ba",
+  "sourceOnlyEvidence": {
+    "socketSourcePack": {
+      "logicalPath": "data/estimate-benchmarks/source-packs/socket-composable-surface-two-gang-r1.json",
+      "sha256": "d564d11b57f7adbf401d2610fcc647002c94e7fc39b2cf738fb56aa020e57f24"
+    },
+    "instrumentSourcePack": {
+      "logicalPath": "data/estimate-benchmarks/source-packs/electrical-verification-owned-post-r1.json",
+      "sha256": "cb4fe63ed240ff1e85ef785d95232410a442c154cf384119a8b7386a084c7077"
+    },
+    "boxFactoryPrimaryText": {
+      "logicalPath": "data/estimate-benchmarks/source-artifacts/socket-composable-two-gang-r1/LEGRAND_069672L_FACTORY_CONTENTS_PRIMARY_TEXT_R1.txt",
+      "sha256": "f0e395caabed9b0c54219819080682abdf3bf1e563a8ce8ae7f22882c830bf82"
+    }
+  },
+  "sourceAuthorityPromoted": false,
+  "projectAuthenticated": false,
+  "fullTechnicalAcceptance": false,
+  "newPublicCatalogs": 0,
+  "entries": [
+    {
+      "operationId": "r2-composable:mechanism-front",
+      "expectedResourceId": "candidate:mechanism:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:mechanism:consumed",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:mechanism:consumed",
+        "parentRowId": "electrical:socket-composable-two-gang-r1:mechanism:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:mechanism-front",
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:mechanism-front",
+      "expectedResourceId": "candidate:mechanism:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:mechanism:order",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:mechanism:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:mechanism-front",
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:mechanism-front",
+      "expectedResourceId": "candidate:mechanism:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:mechanism:remaining",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:mechanism:remaining"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:mechanism-front",
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:mechanism-front",
+      "expectedResourceId": "candidate:mechanism:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:mechanism:free",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:mechanism:free"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:mechanism-front",
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:mechanism-front",
+      "expectedResourceId": "candidate:mechanism:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:mechanism:shortage",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:mechanism:shortage"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:mechanism-front",
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:mechanism-front",
+      "expectedResourceId": "candidate:mechanism:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:mechanism:reserve-deficit",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:mechanism:reserve-deficit"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:mechanism-front",
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:box:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:box:consumed",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:box:consumed",
+        "parentRowId": "electrical:socket-composable-two-gang-r1:box:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:box:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:box:order",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:box:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:box:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:box:remaining",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:box:remaining"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:box:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:box:free",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:box:free"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:box:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:box:shortage",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:box:shortage"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:box:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:box:reserve-deficit",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:box:reserve-deficit"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:screws:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:screws:consumed",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:screws:consumed",
+        "parentRowId": "electrical:socket-composable-two-gang-r1:screws:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:screws:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:screws:order",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:screws:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:screws:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:screws:remaining",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:screws:remaining"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:screws:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:screws:free",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:screws:free"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:screws:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:screws:shortage",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:screws:shortage"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:screws:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:screws:reserve-deficit",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:screws:reserve-deficit"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:anchors:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:anchors:consumed",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:anchors:consumed",
+        "parentRowId": "electrical:socket-composable-two-gang-r1:anchors:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:anchors:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:anchors:order",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:anchors:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:anchors:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:anchors:remaining",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:anchors:remaining"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:anchors:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:anchors:free",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:anchors:free"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:anchors:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:anchors:shortage",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:anchors:shortage"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:anchors:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:anchors:reserve-deficit",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:anchors:reserve-deficit"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix"
+      ]
+    },
+    {
+      "operationId": "r2-composable:connection",
+      "expectedResourceId": "candidate:markers:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:markers:consumed",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:markers:consumed",
+        "parentRowId": "electrical:socket-composable-two-gang-r1:markers:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:connection",
+      "expectedResourceId": "candidate:markers:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:markers:order",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:markers:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:connection",
+      "expectedResourceId": "candidate:markers:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:markers:remaining",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:markers:remaining"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:connection",
+      "expectedResourceId": "candidate:markers:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:markers:free",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:markers:free"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:connection",
+      "expectedResourceId": "candidate:markers:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:markers:shortage",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:markers:shortage"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:connection",
+      "expectedResourceId": "candidate:markers:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:markers:reserve-deficit",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:markers:reserve-deficit"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:cleanup",
+      "expectedResourceId": "candidate:waste-bags:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:waste-bags:consumed",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:waste-bags:consumed",
+        "parentRowId": "electrical:socket-composable-two-gang-r1:waste-bags:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:cleanup"
+      ]
+    },
+    {
+      "operationId": "r2-composable:cleanup",
+      "expectedResourceId": "candidate:waste-bags:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:waste-bags:order",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:waste-bags:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:cleanup"
+      ]
+    },
+    {
+      "operationId": "r2-composable:cleanup",
+      "expectedResourceId": "candidate:waste-bags:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:waste-bags:remaining",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:waste-bags:remaining"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:cleanup"
+      ]
+    },
+    {
+      "operationId": "r2-composable:cleanup",
+      "expectedResourceId": "candidate:waste-bags:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:waste-bags:free",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:waste-bags:free"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:cleanup"
+      ]
+    },
+    {
+      "operationId": "r2-composable:cleanup",
+      "expectedResourceId": "candidate:waste-bags:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:waste-bags:shortage",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:waste-bags:shortage"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:cleanup"
+      ]
+    },
+    {
+      "operationId": "r2-composable:cleanup",
+      "expectedResourceId": "candidate:waste-bags:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; actual applicability per accepted fixing/PPR",
+      "quantityRule": "DECLARED_HOMOGENEOUS_EFFECTIVE_PURCHASE_BALANCE_NOT_MANUFACTURER_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:waste-bags:reserve-deficit",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:waste-bags:reserve-deficit"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:cleanup"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:own:driver",
+      "category": "equipment",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR; retained broad inventory display unless explicitly covered by whole instrument selection",
+      "quantityRule": "ACTUAL_OWNED_USABLE_INVENTORY_NOT_NODE_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:own:driver",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:own:driver"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front",
+        "electrical:socket-composable-two-gang-r1:connection"
+      ]
+    },
+    {
+      "operationId": "r2-composable:connection",
+      "expectedResourceId": "candidate:own:stripper-cutter",
+      "category": "equipment",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR; retained broad inventory display unless explicitly covered by whole instrument selection",
+      "quantityRule": "ACTUAL_OWNED_USABLE_INVENTORY_NOT_NODE_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:own:stripper-cutter",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:own:stripper-cutter"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection"
+      ]
+    },
+    {
+      "operationId": "r2-composable:connection",
+      "expectedResourceId": "candidate:own:voltage-indicator",
+      "category": "equipment",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR; retained broad inventory display unless explicitly covered by whole instrument selection",
+      "quantityRule": "ACTUAL_OWNED_USABLE_INVENTORY_NOT_NODE_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:own:voltage-indicator",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:own:voltage-indicator"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:connection",
+      "expectedResourceId": "candidate:own:proving-unit",
+      "category": "equipment",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR; retained broad inventory display unless explicitly covered by whole instrument selection",
+      "quantityRule": "ACTUAL_OWNED_USABLE_INVENTORY_NOT_NODE_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:own:proving-unit",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:own:proving-unit"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:qa-close",
+      "expectedResourceId": "candidate:own:installation-tester",
+      "category": "equipment",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR; retained broad inventory display unless explicitly covered by whole instrument selection",
+      "quantityRule": "ACTUAL_OWNED_USABLE_INVENTORY_NOT_NODE_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:own:installation-tester",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:own:installation-tester"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:own:ppe",
+      "category": "equipment",
+      "unitId": "set",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR; retained broad inventory display unless explicitly covered by whole instrument selection",
+      "quantityRule": "ACTUAL_OWNED_USABLE_INVENTORY_NOT_NODE_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:own:ppe",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:own:ppe"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front",
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:connection",
+      "expectedResourceId": "candidate:own:isolation",
+      "category": "equipment",
+      "unitId": "set",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR; retained broad inventory display unless explicitly covered by whole instrument selection",
+      "quantityRule": "ACTUAL_OWNED_USABLE_INVENTORY_NOT_NODE_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:own:isolation",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:own:isolation"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:whole-labour",
+      "category": "construction_work",
+      "unitId": "man_hour",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD",
+      "quantityRule": "ACTUAL_WHOLE_PROJECT_TOTAL_NO_MANUFACTURER_LABOUR_OR_TRIP_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:whole-labour",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:whole-labour"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front",
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close",
+        "electrical:socket-composable-two-gang-r1:delivery",
+        "electrical:socket-composable-two-gang-r1:cleanup"
+      ]
+    },
+    {
+      "operationId": "r2-composable:qa-close",
+      "expectedResourceId": "candidate:qa-included",
+      "category": "service",
+      "unitId": "test",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD",
+      "quantityRule": "ACTUAL_WHOLE_PROJECT_TOTAL_NO_MANUFACTURER_LABOUR_OR_TRIP_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:qa-included",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:qa-included",
+        "parentRowId": "electrical:socket-composable-two-gang-r1:whole-labour"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:delivery",
+      "expectedResourceId": "candidate:delivery",
+      "category": "service",
+      "unitId": "trip",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD",
+      "quantityRule": "ACTUAL_WHOLE_PROJECT_TOTAL_NO_MANUFACTURER_LABOUR_OR_TRIP_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:delivery",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:delivery"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:delivery"
+      ]
+    },
+    {
+      "operationId": "r2-composable:cleanup",
+      "expectedResourceId": "candidate:waste-removal",
+      "category": "service",
+      "unitId": "trip",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD",
+      "quantityRule": "ACTUAL_WHOLE_PROJECT_TOTAL_NO_MANUFACTURER_LABOUR_OR_TRIP_RATE",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:waste-removal",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:waste-removal"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:cleanup"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:voltage-indicator",
+      "expectedResourceId": "candidate:instrument:voltage-indicator",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:voltage-indicator",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:voltage-indicator"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:proving-unit",
+      "expectedResourceId": "candidate:instrument:proving-unit",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:proving-unit",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:proving-unit"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:proving-batteries",
+      "expectedResourceId": "candidate:instrument:proving-batteries",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:proving-batteries",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:proving-batteries"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:proving-magnetic-hanger",
+      "expectedResourceId": "candidate:instrument:proving-magnetic-hanger",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:proving-magnetic-hanger",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:proving-magnetic-hanger"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:voltage-kit-case",
+      "expectedResourceId": "candidate:instrument:voltage-kit-case",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:voltage-kit-case",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:voltage-kit-case"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:connection",
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:installation-tester",
+      "expectedResourceId": "candidate:instrument:installation-tester",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:installation-tester",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:installation-tester"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-red-lead",
+      "expectedResourceId": "candidate:instrument:continuity-red-lead",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-red-lead",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-red-lead"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-green-lead",
+      "expectedResourceId": "candidate:instrument:continuity-green-lead",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-green-lead",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-green-lead"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-red-probe",
+      "expectedResourceId": "candidate:instrument:continuity-red-probe",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-red-probe",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-red-probe"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-green-probe",
+      "expectedResourceId": "candidate:instrument:continuity-green-probe",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-green-probe",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-green-probe"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-red-gs38-cap",
+      "expectedResourceId": "candidate:instrument:continuity-red-gs38-cap",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-red-gs38-cap",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-red-gs38-cap"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-green-gs38-cap",
+      "expectedResourceId": "candidate:instrument:continuity-green-gs38-cap",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-green-gs38-cap",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-green-gs38-cap"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-red-clip",
+      "expectedResourceId": "candidate:instrument:continuity-red-clip",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-red-clip",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-red-clip"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-green-clip",
+      "expectedResourceId": "candidate:instrument:continuity-green-clip",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-green-clip",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-green-clip"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-zero-adapter",
+      "expectedResourceId": "candidate:instrument:continuity-zero-adapter",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-zero-adapter",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-zero-adapter"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-batteries",
+      "expectedResourceId": "candidate:instrument:continuity-batteries",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-batteries",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-batteries"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-padded-strap",
+      "expectedResourceId": "candidate:instrument:continuity-padded-strap",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-padded-strap",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-padded-strap"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:continuity-hard-case",
+      "expectedResourceId": "candidate:instrument:continuity-hard-case",
+      "category": "equipment",
+      "unitId": "piece",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; actual suitable inventory documents/count, no test result or safe-isolation authority",
+      "quantityRule": "ACTUAL_INVENTORY_SETS_MULTIPLIED_BY_EXACT_INITIAL_WHOLE_BOM_COMPONENT_COUNT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:continuity-hard-case",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:continuity-hard-case"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:qa-close",
+      "expectedResourceId": "candidate:instrument:need:battery-renewal",
+      "category": "material",
+      "unitId": "",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; INTERNAL_UNRESOLVED_APPLICATION_NORM_NOT_MANUAL_OR_CONFIRMED_FACT",
+      "quantityRule": "UNRESOLVED_APPLICATION_NORM_NO_DEFAULT_OR_FABRICATED_UNIT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:need:battery-renewal",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:need:battery-renewal"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:qa-close",
+      "expectedResourceId": "candidate:instrument:need:periodic-verification",
+      "category": "service",
+      "unitId": "",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; INTERNAL_UNRESOLVED_APPLICATION_NORM_NOT_MANUAL_OR_CONFIRMED_FACT",
+      "quantityRule": "UNRESOLVED_APPLICATION_NORM_NO_DEFAULT_OR_FABRICATED_UNIT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:need:periodic-verification",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:need:periodic-verification"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-owned-instrument:qa-close",
+      "expectedResourceId": "candidate:instrument:need:additional-measurements",
+      "category": "service",
+      "unitId": "",
+      "sourceId": "master32_frozen_instrument_capability_owned_socket_inventory_r1",
+      "condition": "EXACT_COMPOSABLE_AND_WHOLE_OWNED_INSTRUMENT_SELECTORS; INTERNAL_UNRESOLVED_APPLICATION_NORM_NOT_MANUAL_OR_CONFIRMED_FACT",
+      "quantityRule": "UNRESOLVED_APPLICATION_NORM_NO_DEFAULT_OR_FABRICATED_UNIT",
+      "formulaId": "electrical:verification-owned-post-r1:formula:need:additional-measurements",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:verification-owned-post-r1:need:additional-measurements"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:qa-close"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:box:factory-support-plate",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; factory box source candidate, actual lot/pair/PPR not admitted",
+      "quantityRule": "1 factory-contained parts per one whole box; not an onsite consumption or separate order norm",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:box:factory-support-plate",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:box:factory-support-plate",
+        "parentRowId": "electrical:socket-composable-two-gang-r1:box:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:box:factory-frame",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; factory box source candidate, actual lot/pair/PPR not admitted",
+      "quantityRule": "1 factory-contained parts per one whole box; not an onsite consumption or separate order norm",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:box:factory-frame",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:box:factory-frame",
+        "parentRowId": "electrical:socket-composable-two-gang-r1:box:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front"
+      ]
+    },
+    {
+      "operationId": "r2-composable:housing-fix",
+      "expectedResourceId": "candidate:box:factory-membrane-entry",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "electrical_composable_surface_two_gang_primary_review_pending_r1",
+      "condition": "EXACT_OPT_IN_COMPOSABLE_SELECTOR_WITH_INTERNAL_SOURCE_HOLD; factory box source candidate, actual lot/pair/PPR not admitted",
+      "quantityRule": "4 factory-contained parts per one whole box; not an onsite consumption or separate order norm",
+      "formulaId": "electrical:socket-composable-two-gang-r1:formula:box:factory-membrane-entry",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-composable-two-gang-r1:box:factory-membrane-entry",
+        "parentRowId": "electrical:socket-composable-two-gang-r1:box:order"
+      },
+      "requiredOperationIds": [
+        "electrical:socket-composable-two-gang-r1:housing-fix",
+        "electrical:socket-composable-two-gang-r1:mechanism-front"
+      ]
+    }
+  ]
+}

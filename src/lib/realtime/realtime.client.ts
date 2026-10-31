@@ -73,8 +73,10 @@ export const REALTIME_ACTIVE_CHANNEL_SPREAD_MAX_MS = 2_000;
 const activeChannels = new Map<string, ActiveRealtimeChannel>();
 const reconnectBackoffAttempts = new Map<string, number>();
 let activeChannelSeq = 0;
-let realtimeAuthPromise: Promise<void> | null = null;
+const realtimeAuthMutations = new WeakMap<SupabaseClient, Promise<void>>();
 let realtimeAuthToken = "";
+let realtimeAuthClient: SupabaseClient | null = null;
+let realtimeSessionGeneration = 0;
 
 export function getRealtimeDebugState() {
   return {
@@ -99,14 +101,16 @@ export function getRealtimeDebugState() {
  * Gracefully unsubscribes active channels before clearing state.
  */
 export function clearRealtimeSessionState() {
+  realtimeSessionGeneration += 1;
   for (const [name, entry] of activeChannels) {
     disposeRealtimeEntry(entry, name);
   }
   activeChannels.clear();
   reconnectBackoffAttempts.clear();
   activeChannelSeq = 0;
-  realtimeAuthPromise = null;
+  // Keep an in-flight setAuth ordered before the next session authenticates.
   realtimeAuthToken = "";
+  realtimeAuthClient = null;
 }
 
 export function redactRealtimeChannelNameForTelemetry(channelName: string) {
@@ -379,52 +383,62 @@ const ensureRealtimeAuth = async (
   scope: RealtimeLifecycleScope,
   route: string,
 ) => {
-  if (!realtimeAuthPromise) {
-    realtimeAuthPromise = (async () => {
-      try {
-        const session = await client.auth.getSession();
-        const accessToken = String(session.data.session?.access_token ?? "").trim();
-        if (!accessToken || accessToken === realtimeAuthToken) return;
-        await client.realtime.setAuth(accessToken);
-        realtimeAuthToken = accessToken;
-        recordPlatformObservability({
-          screen: scope,
-          surface: "realtime_channel",
-          category: "reload",
-          event: "realtime_auth_ready",
-          result: "success",
-          trigger: "realtime",
-          sourceKind: "supabase:realtime",
-          extra: {
-            route: redactRealtimeRouteForTelemetry(route),
-            hasAccessToken: true,
-            owner: "realtime_lifecycle",
-            stage: "auth_ready",
-          },
-        });
-      } catch (error) {
-        recordPlatformObservability({
-          screen: scope,
-          surface: "realtime_channel",
-          category: "reload",
-          event: "realtime_channel_error",
-          result: "error",
-          trigger: "realtime",
-          sourceKind: "supabase:realtime",
-          errorStage: "realtime_set_auth",
-          extra: {
-            route: redactRealtimeRouteForTelemetry(route),
-            errorMessage: error instanceof Error ? error.message : String(error),
-            owner: "realtime_lifecycle",
-          },
-        });
-      } finally {
-        realtimeAuthPromise = null;
-      }
-    })();
+  const generation = realtimeSessionGeneration;
+  try {
+    // A stale session read must not hold up the next actor or another client.
+    const session = await client.auth.getSession();
+    if (generation !== realtimeSessionGeneration) return;
+    const accessToken = String(session.data.session?.access_token ?? "").trim();
+    if (!accessToken) return;
+    const precedingMutation = realtimeAuthMutations.get(client);
+    // Only mutations of this client's auth state need completion ordering.
+    const pendingMutation = (precedingMutation ?? Promise.resolve()).catch(() => undefined).then(async () => {
+      if (generation !== realtimeSessionGeneration) return;
+      if (client === realtimeAuthClient && accessToken === realtimeAuthToken) return;
+      await client.realtime.setAuth(accessToken);
+      if (generation !== realtimeSessionGeneration) return;
+      realtimeAuthToken = accessToken;
+      realtimeAuthClient = client;
+      recordPlatformObservability({
+        screen: scope,
+        surface: "realtime_channel",
+        category: "reload",
+        event: "realtime_auth_ready",
+        result: "success",
+        trigger: "realtime",
+        sourceKind: "supabase:realtime",
+        extra: {
+          route: redactRealtimeRouteForTelemetry(route),
+          hasAccessToken: true,
+          owner: "realtime_lifecycle",
+          stage: "auth_ready",
+        },
+      });
+    });
+    realtimeAuthMutations.set(client, pendingMutation);
+    try {
+      await pendingMutation;
+    } finally {
+      if (realtimeAuthMutations.get(client) === pendingMutation) realtimeAuthMutations.delete(client);
+    }
+  } catch (error) {
+    if (generation !== realtimeSessionGeneration) return;
+    recordPlatformObservability({
+      screen: scope,
+      surface: "realtime_channel",
+      category: "reload",
+      event: "realtime_channel_error",
+      result: "error",
+      trigger: "realtime",
+      sourceKind: "supabase:realtime",
+      errorStage: "realtime_set_auth",
+      extra: {
+        route: redactRealtimeRouteForTelemetry(route),
+        errorMessage: error instanceof Error ? error.message : String(error),
+        owner: "realtime_lifecycle",
+      },
+    });
   }
-
-  await realtimeAuthPromise;
 };
 
 const buildBindingSignature = (bindings: readonly RealtimeChannelBinding[]) =>
@@ -446,7 +460,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
   const bindingSignature = buildBindingSignature(params.bindings);
 
   const existing = activeChannels.get(params.name);
-  if (existing && existing.bindingSignature === bindingSignature) {
+  if (existing && existing.client === client && existing.bindingSignature === bindingSignature) {
     existing.subscribers.set(token, {
       scope: params.scope,
       route: params.route,
@@ -467,7 +481,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
 
     return () => {
       const current = activeChannels.get(params.name);
-      if (!current || !current.subscribers.delete(token)) return;
+      if (current !== existing || current.disposed || !current.subscribers.delete(token)) return;
       if (current.subscribers.size > 0) return;
       activeChannels.delete(params.name);
       disposeRealtimeEntry(current, params.name);
@@ -583,7 +597,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
         },
         (payload) => {
           const liveEntry = activeChannels.get(params.name);
-          if (!liveEntry) return;
+          if (entry.disposed || liveEntry !== entry) return;
           recordPlatformObservability({
             screen: params.scope,
             surface,
@@ -603,6 +617,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
           });
           const typedPayload = payload as RealtimePostgresChangesPayload<Record<string, unknown>>;
           for (const subscriber of liveEntry.subscribers.values()) {
+            if (entry.disposed || activeChannels.get(params.name) !== entry) return;
             subscriber.onEvent({
               binding,
               payload: typedPayload,
@@ -663,6 +678,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
     }
 
     channel.subscribe((status) => {
+      if (entry.disposed || activeChannels.get(params.name) !== entry) return;
       observeChannelStatus({
         scope: params.scope,
         route: params.route,
@@ -687,7 +703,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
 
   return () => {
     const current = activeChannels.get(params.name);
-    if (!current || !current.subscribers.delete(token)) return;
+    if (current !== entry || current.disposed || !current.subscribers.delete(token)) return;
     if (current.subscribers.size > 0) return;
     activeChannels.delete(params.name);
     disposeRealtimeEntry(current, params.name);

@@ -31,7 +31,7 @@ export type CatalogProfessionalCoverageRowV4 = {
 
 export type CatalogProfessionalCoverageLedgerV4 = {
   schema: "catalog-professional-coverage-ledger-v4";
-  catalogTotal: 11610;
+  catalogTotal: 7602;
   rows: readonly CatalogProfessionalCoverageRowV4[];
   counts: Readonly<Record<CatalogProfessionalCoverageStateV4, number>>;
   unclassifiedCatalogIds: readonly string[];
@@ -65,8 +65,6 @@ const baseRows = (baseManifestJson as { templates: BaseManifestRow[] }).template
 const expandedRows = expandedTemplatesJson as ExpandedTemplateRow[];
 
 const SCOPE_SUFFIXES = [
-  "small_area",
-  "large_area",
   "wet_zone",
   "technical_room",
 ] as const;
@@ -275,7 +273,7 @@ export function buildCatalogProfessionalCoverageLedgerV4(): CatalogProfessionalC
   ]));
   cachedLedger = Object.freeze({
     schema: "catalog-professional-coverage-ledger-v4",
-    catalogTotal: 11610,
+    catalogTotal: 7602,
     rows: Object.freeze(rows),
     counts: Object.freeze(counts),
     unclassifiedCatalogIds: Object.freeze(unclassifiedCatalogIds),
@@ -307,7 +305,7 @@ export function validateReferencePassportCatalogBindingsV4(): string[] {
 
 export const ESTIMATE_SCALE_FOUNDATION_SCHEMA =
   "estimate-scale-foundation-readiness:2026-07-29.v1" as const;
-export const ESTIMATE_SCALE_FOUNDATION_EXPECTED_WORKS = 11610 as const;
+export const ESTIMATE_SCALE_FOUNDATION_EXPECTED_WORKS = 7602 as const;
 export const ESTIMATE_SCALE_FOUNDATION_REGISTRY_VERSIONS = {
   workPassport: "work-passport-registry:2026-07-29.v1",
   canonicalParameterSchema: "canonical-parameter-schema-registry:2026-07-29.v1",

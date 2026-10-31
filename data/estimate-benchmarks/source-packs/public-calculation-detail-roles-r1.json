@@ -1,0 +1,127 @@
+{
+  "contractVersion": "canonical-authored-public-calculation-detail-roles/r1",
+  "scope": "Display only. Exact unpaid CT126 batch counters; real physical resources, manual titles, saved prices and owners remain governed by the common row-kind guard.",
+  "sourcePresentationSha256": "d46879709c79f99485203f86b86f631521fd11469597ed81c2c3703fd1b841d1",
+  "bindings": [
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-minimum-batches",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 5 кг — не факт приготовления",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-planned-batches",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 5 кг",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-plan-coverage",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-plan-excess",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-minimum-batches",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 20 кг — не факт приготовления",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-planned-batches",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 20 кг",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-plan-coverage",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-plan-excess",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-minimum-batches",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 5 кг — не факт приготовления",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-planned-batches",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 5 кг",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-plan-coverage",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-plan-excess",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-minimum-batches",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 20 кг — не факт приготовления",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-planned-batches",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 20 кг",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-plan-coverage",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-plan-excess",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-minimum-batches",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 5 кг — не факт приготовления",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-planned-batches",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 5 кг",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-plan-coverage",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-plan-excess",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-minimum-batches",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 20 кг — не факт приготовления",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-planned-batches",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 20 кг",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-plan-coverage",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-plan-excess",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "rowKind": "CALCULATION_DETAIL"
+    }
+  ]
+}

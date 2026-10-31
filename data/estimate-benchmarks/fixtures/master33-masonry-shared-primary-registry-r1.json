@@ -1,0 +1,3793 @@
+{
+  "contract": "master33-whole-primary-source-registry-capture/r1",
+  "readOnly": true,
+  "sourceAndAllLocatorRows": {
+    "source": {
+      "id": "3d976d46-0a08-5a7d-87b2-52ee7c5c4f59",
+      "source_key": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+      "title_ru": "КРЕР08-2015. Стены из кирпича и ячеистых блоков: точные исходные системы",
+      "authority": "Кыргызская Республика; Министерство строительства; КРЕР2015сборник08",
+      "official_url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+      "artifact_sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "effective_from": null,
+      "effective_to": null,
+      "metadata": {
+        "contract": "gox-build.masonry-wall-krer08-systems-source/r1",
+        "sourceKind": "PRIMARY_TERRITORIAL_RESOURCE_NORM_EXACT_COLUMNS",
+        "useRestriction": "Только явно принятая проектом базаKG/КРЕР2015. Кирпич250ммM100+готовыйM50; AAC400/500мм, исходная объёмная масса900кг/м³,В3.5,категория2с точным исходным клеем. НеD500.",
+        "activationAllowed": false,
+        "universalConsumptionClaimed": false,
+        "universalProductivityClaimed": false
+      },
+      "created_at": "2026-10-22T17:03:38.261084+05:00"
+    },
+    "locators": [
+      {
+        "id": "728fd4f1-882f-580c-8fa6-3ed12860432a",
+        "source_id": "3d976d46-0a08-5a7d-87b2-52ee7c5c4f59",
+        "locator_key": "master33-krer08-exact-brick-aac-walls-r1",
+        "locator": {
+          "contract": "gox-build.masonry-wall-krer08-systems-source/r1",
+          "sourcePack": {
+            "source": {
+              "path": "data/estimate-benchmarks/source-artifacts/masonry-wall-krer08-systems-r1/KRER08-2015-official.pdf",
+              "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+              "edition": "КРЕР-2015, сборник08, официальное издание Бишкек2015; введение01.01.2016 по приказу28.03.2016№2-нпа",
+              "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+              "jurisdiction": "KG",
+              "officialPage": "https://minstroy.gov.kg/ru/kyzmat/424/show",
+              "editionReview": "Official current ministry collection page and exact primary PDF reviewed2026-10-22. Project must expressly adopt this territorial edition. No claim of universal or automatic legal applicability; supplements not silently assumed."
+            },
+            "status": "AUTHORED_LEGACY_SAFE_SELECTED_PROFILE_WITH_BASE_UNIT_SUPPLY_NOT_PUBLISHED_NOT_FULL",
+            "newFULL": 0,
+            "payment": {
+              "labour": "One whole source labour norm owner; no arbitrary split by operation",
+              "machines": "One exact FULL_SOURCE_OPERATION machine-hour owner with existing canonical-machine-hour-price-coverage/v1 evidence. Source operators INFO, no second paid operator. Physical rigging/power/provision remains residual.",
+              "materials": "One OWN_COST/PROCUREMENT owner per compatible source material in base units. New order versus source demand; no actual warehouse stock claim or extra reserve. Piece demand is rounded once to whole pieces; kg/m3 orders use canonical_decimal. Retail packaging may refine later, no source price2015.",
+              "operators": "Source operator hours are informational. They are not subtracted from worker labour or paid additionally.",
+              "inheritGenericParentPrice": false
+            },
+            "targets": [
+              {
+                "decision": "INCOMPATIBLE_WITHOUT_SEPARATE_CONDITIONS_PROFILE",
+                "reasonRu": "Влажная зона/повышенная нагрузка не доказываются исходной нормой и общим названием; специальные условия/конструктив не приравниваются.",
+                "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_high_load",
+                "systemFamily": "ceramic-brick",
+                "currentDefinitionId": "b82ad708-2583-5275-901a-50f321a8c165",
+                "currentDefinitionSha256": "e467d8b6e9f0d7e78b7bd1f5ceda75d99f03ce104ae2ba98571824dce2f6ff34",
+                "applicableSourceProfiles": [],
+                "currentDefinitionVersion": 3
+              },
+              {
+                "decision": "REUSE_WITH_PROVEN_ADAPTATION",
+                "reasonRu": "Точный внутренний профиль исходной нормы выбирается отдельно; прежняя ветвь и история сохраняются. Новый исходный расход не наследует generic price.",
+                "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+                "systemFamily": "ceramic-brick",
+                "currentDefinitionId": "7237aa95-be0f-5b6d-a638-5f06b9381749",
+                "currentDefinitionSha256": "90df55e18072a4726705a3dd797877e4c645758fb7c9daea9e0a5edab3e3af34",
+                "applicableSourceProfiles": [
+                  "ceramic-brick-upto4",
+                  "ceramic-brick-above4"
+                ],
+                "currentDefinitionVersion": 7
+              },
+              {
+                "decision": "REUSE_WITH_PROVEN_ADAPTATION",
+                "reasonRu": "Точный внутренний профиль исходной нормы выбирается отдельно; прежняя ветвь и история сохраняются. Новый исходный расход не наследует generic price.",
+                "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
+                "systemFamily": "ceramic-brick",
+                "currentDefinitionId": "e0740cb8-9dc8-5c6c-b16d-5ae6b59ce339",
+                "currentDefinitionSha256": "3ee22ae3cb67bad70e59badc08fd66ee266f016522e8977a645f081b00a2f46a",
+                "applicableSourceProfiles": [
+                  "ceramic-brick-upto4",
+                  "ceramic-brick-above4"
+                ],
+                "currentDefinitionVersion": 7
+              },
+              {
+                "decision": "INCOMPATIBLE_WITHOUT_SEPARATE_CONDITIONS_PROFILE",
+                "reasonRu": "Влажная зона/повышенная нагрузка не доказываются исходной нормой и общим названием; специальные условия/конструктив не приравниваются.",
+                "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_wet_zone",
+                "systemFamily": "ceramic-brick",
+                "currentDefinitionId": "8440f44c-f739-53fc-959e-433583635f6c",
+                "currentDefinitionSha256": "161091e1ba0ec605a00ce5ebced54154b02394acb1b9831d8b94e67e157db567",
+                "applicableSourceProfiles": [],
+                "currentDefinitionVersion": 3
+              },
+              {
+                "decision": "INCOMPATIBLE_WITHOUT_SEPARATE_CONDITIONS_PROFILE",
+                "reasonRu": "Влажная зона/повышенная нагрузка не доказываются исходной нормой и общим названием; специальные условия/конструктив не приравниваются.",
+                "catalogId": "canonical-work:base:masonry_interior_gas_block_lay_high_load",
+                "systemFamily": "aac",
+                "currentDefinitionId": "ea730dea-8e3e-54c5-814d-f1a0b5fcd2c2",
+                "currentDefinitionSha256": "b46fbd86e9b50549e2e049f8136fa749a11e1fc8ba6d3ffb4db3aa307bc01e0d",
+                "applicableSourceProfiles": [],
+                "currentDefinitionVersion": 3
+              },
+              {
+                "decision": "REUSE_WITH_PROVEN_ADAPTATION",
+                "reasonRu": "Точный внутренний профиль исходной нормы выбирается отдельно; прежняя ветвь и история сохраняются. Новый исходный расход не наследует generic price.",
+                "catalogId": "canonical-work:base:masonry_interior_gas_block_lay_standard",
+                "systemFamily": "aac",
+                "currentDefinitionId": "fb3ba561-bb08-5fbf-8780-50e9d0c66810",
+                "currentDefinitionSha256": "7964fd809f8e66bc248a4323b0b279bb9392d0c0c278ffb4f4f94cd7d736bd4f",
+                "applicableSourceProfiles": [
+                  "aac-400-upto4",
+                  "aac-400-above4",
+                  "aac-500-upto4",
+                  "aac-500-above4"
+                ],
+                "currentDefinitionVersion": 3
+              },
+              {
+                "decision": "REUSE_WITH_PROVEN_ADAPTATION",
+                "reasonRu": "Точный внутренний профиль исходной нормы выбирается отдельно; прежняя ветвь и история сохраняются. Новый исходный расход не наследует generic price.",
+                "catalogId": "canonical-work:base:masonry_interior_gas_block_lay_technical_room",
+                "systemFamily": "aac",
+                "currentDefinitionId": "f0dba2fe-5a39-5d97-b212-a9090efa827c",
+                "currentDefinitionSha256": "6f6443223dfeb418b6ada6c10c1bf3693e59d208f20ff94d068ca392313489e7",
+                "applicableSourceProfiles": [
+                  "aac-400-upto4",
+                  "aac-400-above4",
+                  "aac-500-upto4",
+                  "aac-500-above4"
+                ],
+                "currentDefinitionVersion": 3
+              },
+              {
+                "decision": "INCOMPATIBLE_WITHOUT_SEPARATE_CONDITIONS_PROFILE",
+                "reasonRu": "Влажная зона/повышенная нагрузка не доказываются исходной нормой и общим названием; специальные условия/конструктив не приравниваются.",
+                "catalogId": "canonical-work:base:masonry_interior_gas_block_lay_wet_zone",
+                "systemFamily": "aac",
+                "currentDefinitionId": "2ca306cc-26f2-567a-853f-63e3c95c5ab5",
+                "currentDefinitionSha256": "4a8cfc820160ecf6f092cb5d8e82407ab4a93265739e802b4391a7562d489a1e",
+                "applicableSourceProfiles": [],
+                "currentDefinitionVersion": 3
+              }
+            ],
+            "contract": "gox-build.masonry-wall-krer08-systems-source/r1",
+            "geometry": {
+              "rules": [
+                "PDF8§2.3: проёмы по наружному обводу коробок; при двух коробках наружная",
+                "PDF8§2.5: отдельные конструкции другого материала вычитаются; встроенные ниши исключаются, оговорённые борозды/гнёзда/каналы не вычитаются автоматически",
+                "Источник даёт м³ кладки, не м² пола; ограниченные толщины250/400/500мм выбраны внутренним точным профилем",
+                "Объём вставок не вычитается второй раз из уже вычтенного проёма"
+              ],
+              "unitId": "m3",
+              "primary": "wall_length_m",
+              "expression": "(wall_length_m*wall_height_m-openings_area_m2)*THICKNESS-nonmasonry_insert_volume_m3"
+            },
+            "profiles": [
+              {
+                "key": "ceramic-brick-upto4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 2,7",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "5.21",
+                    "procurement": false,
+                    "resourceCode": "000-1002-7",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.4",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 8 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.4",
+                    "procurement": false,
+                    "resourceCode": "02-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "0.44",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "brick",
+                    "unitId": "piece",
+                    "titleRu": "Кирпич керамический одинарный 250 × 120 × 65 мм, М100",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "395",
+                    "procurement": false,
+                    "resourceCode": "01-3306-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "timber",
+                    "unitId": "m3",
+                    "titleRu": "Брусья хвойные обрезные 4–6,5 м, 75–150 × 40–75 мм, IV сорт",
+                    "category": "material",
+                    "operation": "access",
+                    "ratePerM3": "0.0005",
+                    "procurement": false,
+                    "resourceCode": "01-6302-0095",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "mortar",
+                    "unitId": "m3",
+                    "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "0.234",
+                    "procurement": false,
+                    "resourceCode": "03-0405-0003",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-02-001-07",
+                "prefix": "masonry:wall:krer08-02-001-07",
+                "system": "ceramic-brick",
+                "titleRu": "Кладка внутренней кирпичной стены 250 мм на готовом растворе М50 при высоте этажа до 4 м",
+                "thicknessM": "0.25",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  17,
+                  18,
+                  19
+                ],
+                "storeyHeightBand": "LTE4",
+                "sourceKeyProposal": "kg_krer08_2015_08_02_001_07_wall_source_r1",
+                "manufacturerInternal": null,
+                "printedUnitConversions": [
+                  {
+                    "key": "brick",
+                    "factor": "1000",
+                    "printedRate": "0.395",
+                    "printedUnit": "1000шт.",
+                    "normalizedRate": "395"
+                  }
+                ]
+              },
+              {
+                "key": "ceramic-brick-above4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 2,7",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "5.05",
+                    "procurement": false,
+                    "resourceCode": "000-1002-7",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.35",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 8 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.35",
+                    "procurement": false,
+                    "resourceCode": "02-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "0.44",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "brick",
+                    "unitId": "piece",
+                    "titleRu": "Кирпич керамический одинарный 250 × 120 × 65 мм, М100",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "395",
+                    "procurement": false,
+                    "resourceCode": "01-3306-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "timber",
+                    "unitId": "m3",
+                    "titleRu": "Брусья хвойные обрезные 4–6,5 м, 75–150 × 40–75 мм, IV сорт",
+                    "category": "material",
+                    "operation": "access",
+                    "ratePerM3": "0.0005",
+                    "procurement": false,
+                    "resourceCode": "01-6302-0095",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "mortar",
+                    "unitId": "m3",
+                    "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "0.234",
+                    "procurement": false,
+                    "resourceCode": "03-0405-0003",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-02-001-08",
+                "prefix": "masonry:wall:krer08-02-001-08",
+                "system": "ceramic-brick",
+                "titleRu": "Кладка внутренней кирпичной стены 250 мм на готовом растворе М50 при высоте этажа свыше 4 м",
+                "thicknessM": "0.25",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  17,
+                  18,
+                  19
+                ],
+                "storeyHeightBand": "GT4",
+                "sourceKeyProposal": "kg_krer08_2015_08_02_001_08_wall_source_r1",
+                "manufacturerInternal": null,
+                "printedUnitConversions": [
+                  {
+                    "key": "brick",
+                    "factor": "1000",
+                    "printedRate": "0.395",
+                    "printedUnit": "1000шт.",
+                    "normalizedRate": "395"
+                  }
+                ]
+              },
+              {
+                "key": "aac-400-upto4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 3,1",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "3.65",
+                    "procurement": false,
+                    "resourceCode": "000-1003-1",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.08",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "02-0004",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "truck-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран на автомобильном ходу 10 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "02-0075",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "perforator",
+                    "unitId": "machine_hour",
+                    "titleRu": "Перфоратор электрический",
+                    "category": "equipment",
+                    "operation": "anchors",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "33-0462",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "flatbed-truck",
+                    "unitId": "machine_hour",
+                    "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "40-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "0.00414",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "primer",
+                    "unitId": "kg",
+                    "titleRu": "Грунтовка глифталевая красно-коричневая",
+                    "category": "material",
+                    "operation": "priming",
+                    "ratePerM3": "0.077",
+                    "procurement": false,
+                    "resourceCode": "01-1704-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "adhesive",
+                    "unitId": "kg",
+                    "titleRu": "Клей монтажный для блоков из ячеистого бетона",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "20.5",
+                    "procurement": false,
+                    "resourceCode": "01-3502-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "unitId": "kg",
+                    "titleRu": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+                    "category": "material",
+                    "operation": "anchors",
+                    "ratePerM3": "0.78",
+                    "procurement": false,
+                    "resourceCode": "03-0102-0040",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "aac-block",
+                    "unitId": "m3",
+                    "titleRu": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "1.01",
+                    "procurement": false,
+                    "resourceCode": "05-0402-0045",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-03-004-01",
+                "prefix": "masonry:wall:krer08-03-004-01",
+                "system": "aac-400",
+                "titleRu": "Кладка газобетонной стены 400 мм на монтажном клее без облицовки при высоте этажа до 4 м",
+                "thicknessM": "0.4",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  51,
+                  52
+                ],
+                "storeyHeightBand": "LTE4",
+                "sourceKeyProposal": "kg_krer08_2015_08_03_004_01_wall_source_r1",
+                "manufacturerInternal": "AEROC",
+                "printedUnitConversions": [
+                  {
+                    "key": "primer",
+                    "factor": "1000",
+                    "printedRate": "0.000077",
+                    "printedUnit": "т"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "factor": "1000",
+                    "printedRate": "0.00078",
+                    "printedUnit": "т"
+                  }
+                ]
+              },
+              {
+                "key": "aac-400-above4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 3,3",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "2.81",
+                    "procurement": false,
+                    "resourceCode": "000-1003-3",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.08",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "02-0004",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "truck-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран на автомобильном ходу 10 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "02-0075",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "perforator",
+                    "unitId": "machine_hour",
+                    "titleRu": "Перфоратор электрический",
+                    "category": "equipment",
+                    "operation": "anchors",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "33-0462",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "flatbed-truck",
+                    "unitId": "machine_hour",
+                    "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "40-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "0.00414",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "primer",
+                    "unitId": "kg",
+                    "titleRu": "Грунтовка глифталевая красно-коричневая",
+                    "category": "material",
+                    "operation": "priming",
+                    "ratePerM3": "0.051",
+                    "procurement": false,
+                    "resourceCode": "01-1704-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "adhesive",
+                    "unitId": "kg",
+                    "titleRu": "Клей монтажный для блоков из ячеистого бетона",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "20.5",
+                    "procurement": false,
+                    "resourceCode": "01-3502-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "unitId": "kg",
+                    "titleRu": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+                    "category": "material",
+                    "operation": "anchors",
+                    "ratePerM3": "0.78",
+                    "procurement": false,
+                    "resourceCode": "03-0102-0040",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "aac-block",
+                    "unitId": "m3",
+                    "titleRu": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "1.01",
+                    "procurement": false,
+                    "resourceCode": "05-0402-0045",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-03-004-02",
+                "prefix": "masonry:wall:krer08-03-004-02",
+                "system": "aac-400",
+                "titleRu": "Кладка газобетонной стены 400 мм на монтажном клее без облицовки при высоте этажа свыше 4 м",
+                "thicknessM": "0.4",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  51,
+                  52
+                ],
+                "storeyHeightBand": "GT4",
+                "sourceKeyProposal": "kg_krer08_2015_08_03_004_02_wall_source_r1",
+                "manufacturerInternal": "AEROC",
+                "printedUnitConversions": [
+                  {
+                    "key": "primer",
+                    "factor": "1000",
+                    "printedRate": "0.000051",
+                    "printedUnit": "т"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "factor": "1000",
+                    "printedRate": "0.00078",
+                    "printedUnit": "т"
+                  }
+                ]
+              },
+              {
+                "key": "aac-500-upto4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 3,1",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "4.47",
+                    "procurement": false,
+                    "resourceCode": "000-1003-1",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.08",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "02-0004",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "truck-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран на автомобильном ходу 10 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "02-0075",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "perforator",
+                    "unitId": "machine_hour",
+                    "titleRu": "Перфоратор электрический",
+                    "category": "equipment",
+                    "operation": "anchors",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "33-0462",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "flatbed-truck",
+                    "unitId": "machine_hour",
+                    "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "40-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "0.00575",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "primer",
+                    "unitId": "kg",
+                    "titleRu": "Грунтовка глифталевая красно-коричневая",
+                    "category": "material",
+                    "operation": "priming",
+                    "ratePerM3": "0.077",
+                    "procurement": false,
+                    "resourceCode": "01-1704-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "adhesive",
+                    "unitId": "kg",
+                    "titleRu": "Клей монтажный для блоков из ячеистого бетона",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "28.47",
+                    "procurement": false,
+                    "resourceCode": "01-3502-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "unitId": "kg",
+                    "titleRu": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+                    "category": "material",
+                    "operation": "anchors",
+                    "ratePerM3": "1.24",
+                    "procurement": false,
+                    "resourceCode": "03-0102-0040",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "aac-block",
+                    "unitId": "m3",
+                    "titleRu": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "1.01",
+                    "procurement": false,
+                    "resourceCode": "05-0402-0045",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-03-004-03",
+                "prefix": "masonry:wall:krer08-03-004-03",
+                "system": "aac-500",
+                "titleRu": "Кладка газобетонной стены 500 мм на монтажном клее без облицовки при высоте этажа до 4 м",
+                "thicknessM": "0.5",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  51,
+                  52
+                ],
+                "storeyHeightBand": "LTE4",
+                "sourceKeyProposal": "kg_krer08_2015_08_03_004_03_wall_source_r1",
+                "manufacturerInternal": "AEROC",
+                "printedUnitConversions": [
+                  {
+                    "key": "primer",
+                    "factor": "1000",
+                    "printedRate": "0.000077",
+                    "printedUnit": "т"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "factor": "1000",
+                    "printedRate": "0.00124",
+                    "printedUnit": "т"
+                  }
+                ]
+              },
+              {
+                "key": "aac-500-above4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 3,3",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "3.39",
+                    "procurement": false,
+                    "resourceCode": "000-1003-3",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.08",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "02-0004",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "truck-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран на автомобильном ходу 10 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "02-0075",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "perforator",
+                    "unitId": "machine_hour",
+                    "titleRu": "Перфоратор электрический",
+                    "category": "equipment",
+                    "operation": "anchors",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "33-0462",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "flatbed-truck",
+                    "unitId": "machine_hour",
+                    "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "40-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "0.00552",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "primer",
+                    "unitId": "kg",
+                    "titleRu": "Грунтовка глифталевая красно-коричневая",
+                    "category": "material",
+                    "operation": "priming",
+                    "ratePerM3": "0.053",
+                    "procurement": false,
+                    "resourceCode": "01-1704-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "adhesive",
+                    "unitId": "kg",
+                    "titleRu": "Клей монтажный для блоков из ячеистого бетона",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "27.3",
+                    "procurement": false,
+                    "resourceCode": "01-3502-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "unitId": "kg",
+                    "titleRu": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+                    "category": "material",
+                    "operation": "anchors",
+                    "ratePerM3": "1.24",
+                    "procurement": false,
+                    "resourceCode": "03-0102-0040",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "aac-block",
+                    "unitId": "m3",
+                    "titleRu": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "1.01",
+                    "procurement": false,
+                    "resourceCode": "05-0402-0045",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-03-004-04",
+                "prefix": "masonry:wall:krer08-03-004-04",
+                "system": "aac-500",
+                "titleRu": "Кладка газобетонной стены 500 мм на монтажном клее без облицовки при высоте этажа свыше 4 м",
+                "thicknessM": "0.5",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  51,
+                  52
+                ],
+                "storeyHeightBand": "GT4",
+                "sourceKeyProposal": "kg_krer08_2015_08_03_004_04_wall_source_r1",
+                "manufacturerInternal": "AEROC",
+                "printedUnitConversions": [
+                  {
+                    "key": "primer",
+                    "factor": "1000",
+                    "printedRate": "0.000053",
+                    "printedUnit": "т"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "factor": "1000",
+                    "printedRate": "0.00124",
+                    "printedUnit": "т"
+                  }
+                ]
+              }
+            ],
+            "residual": [
+              {
+                "key": "bearing-dpc",
+                "kind": "PROJECT_FACT",
+                "owner": "project structural designer / site owner",
+                "titleRu": "Опирание, отметки и применимая отсечная гидроизоляция",
+                "missingRu": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC."
+              },
+              {
+                "key": "lintels-ties-reinforcement",
+                "kind": "PROJECT_FACT",
+                "owner": "structural designer",
+                "titleRu": "Перемычки, сопряжения, связи и армирование по проекту",
+                "missingRu": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5."
+              },
+              {
+                "key": "source-system-fit",
+                "kind": "PROJECT_FACT",
+                "owner": "project designer / material technologist",
+                "titleRu": "Совместимость выбранного блока и растворной системы с проектом",
+                "missingRu": "Фактическая спецификация блоков с исходной объёмной массой900кг/м³,В3,5,2категории и исходный клейAEROC либо документированная допустимая адаптация. D400/D500, клей другой марки и блок300мм сюда не подставляются."
+              },
+              {
+                "key": "mixing-cutting-equipment",
+                "kind": "APPLICATION_NORM",
+                "owner": "application author / method engineer",
+                "titleRu": "Полный комплект приготовления клея и резки блоков",
+                "missingRu": "Таблица подтверждает труд приготовления/распиловки, но не даёт полный физический roster миксера с насадкой, дозирования, ёмкостей, пилы с полотном и пылезащиты; не назначать1комплект/м³."
+              },
+              {
+                "key": "machine-physical-provision",
+                "kind": "APPLICATION_NORM",
+                "owner": "method engineer / lifting planner",
+                "titleRu": "Оснастка подъёма, рабочие части и питание механизмов",
+                "missingRu": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся."
+              },
+              {
+                "key": "access-ppe",
+                "kind": "APPLICATION_NORM",
+                "owner": "method engineer / occupational safety",
+                "titleRu": "Физические подмости, ручной инструмент и средства защиты",
+                "missingRu": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки."
+              },
+              {
+                "key": "quality-curing-cleanup",
+                "kind": "APPLICATION_NORM_AND_PROJECT_FACT",
+                "owner": "quality / method engineer / site waste owner",
+                "titleRu": "Контроль, защита кладки, уборка и отходы",
+                "missingRu": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза."
+              },
+              {
+                "key": "external-logistics",
+                "kind": "PROJECT_FACT",
+                "owner": "logistics designer / site owner",
+                "titleRu": "Внешняя доставка и перемещение сверх исходной границы",
+                "missingRu": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи."
+              }
+            ],
+            "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+            "operationMaps": {
+              "aac": [
+                {
+                  "key": "handling",
+                  "source": "PDF51, composition01–03",
+                  "titleRu": "Выгрузка, подъём и перемещение материалов до 30 м"
+                },
+                {
+                  "key": "access",
+                  "source": "PDF51, composition04 for01/03; no such item for02/04",
+                  "titleRu": "Устройство и разборка подмостей в варианте до 4 м"
+                },
+                {
+                  "key": "preparation",
+                  "source": "PDF51, composition05 for01/03,04 for02/04",
+                  "titleRu": "Подготовка основания под укладку"
+                },
+                {
+                  "key": "priming",
+                  "source": "PDF51,composition06/05; GF021 is not silently replaced by block primer",
+                  "titleRu": "Грунтование поверхности по исходному составу"
+                },
+                {
+                  "key": "layout",
+                  "source": "PDF51,composition07/06",
+                  "titleRu": "Установка порядовки и натягивание причалки"
+                },
+                {
+                  "key": "cutting",
+                  "source": "PDF51,composition08/07",
+                  "titleRu": "Распиловка блоков"
+                },
+                {
+                  "key": "adhesive",
+                  "source": "PDF51,composition09/08",
+                  "titleRu": "Приготовление клеевого раствора"
+                },
+                {
+                  "key": "masonry",
+                  "source": "PDF51,composition10/09",
+                  "titleRu": "Кладка блоков с нишами и архитектурными деталями"
+                },
+                {
+                  "key": "anchors",
+                  "source": "PDF51,composition11/10",
+                  "titleRu": "Установка анкеров в блоки"
+                },
+                {
+                  "key": "joints",
+                  "source": "PDF51,composition12/11",
+                  "titleRu": "Расшивка швов"
+                }
+              ],
+              "ceramic-brick": [
+                {
+                  "key": "masonry",
+                  "source": "PDF17–19, table08-02-00107/08: состав01–02; labour is whole",
+                  "titleRu": "Кладка рядов, углов и деталей внутренней кирпичной стены"
+                },
+                {
+                  "key": "handling",
+                  "source": "PDF7§1.21 + table08-02-00107/08",
+                  "titleRu": "Переноска кирпича до 5 м и нормативная работа крана"
+                },
+                {
+                  "key": "access",
+                  "source": "PDF7§1.13; above4 special scaffolding excluded",
+                  "titleRu": "Установка, перестановка и разборка подмостей в исходной области до 4 м"
+                }
+              ]
+            },
+            "legacyChoiceRu": "Сохранить прежний принятый способ расчёта",
+            "newPublicCards": 0,
+            "sourceFactValue": "Подтверждены конкретные материалы и проектное применение исходной колонки без замены толщины, раствора/клея, категории блока или класса прочности; конструктив приложением не рассчитывается",
+            "systemChoicesRu": {
+              "aac-400": "Газобетонная стена 400 мм; блоки 2 категории, 900 кг/м³, В3,5; исходный монтажный клей по КРЕР-2015",
+              "aac-500": "Газобетонная стена 500 мм; блоки 2 категории, 900 кг/м³, В3,5; исходный монтажный клей по КРЕР-2015",
+              "ceramic-brick": "Керамический кирпич 250 × 120 × 65 мм, М100; внутренняя стена 250 мм; готовый раствор М50 по КРЕР-2015"
+            },
+            "canonicalMutated": false,
+            "projectBasisValue": "Проектом явно приняты Кыргызская Республика и КРЕР-2015 сборник08; исходная система и обычные положительные условия соответствуют выбранной колонке",
+            "publicationAllowed": false,
+            "fullTechnicalAcceptance": false,
+            "residualFamilyOverrides": {
+              "ceramic-brick": {
+                "source-system-fit": {
+                  "titleRu": "Совместимость керамического кирпича и готового раствора с проектом",
+                  "missingRu": "Проект подтверждает керамический одинарный250×120×65М100, внутреннюю стену250мм и готовый цементно-известковыйМ50. BIAмодульныйкирпич не переносится."
+                },
+                "mixing-cutting-equipment": {
+                  "titleRu": "Полный комплект приёмки и подачи раствора и подгонки кирпича",
+                  "missingRu": "ГотовыйМ50: метод приёмки/подачи,тара и полный инструмент подгонки кирпича. Таблица не доказывает изготовлениеМ50наобъекте или число смесителей."
+                }
+              }
+            },
+            "sourceProfileSelectorId": "m33_masonry_source_system",
+            "machineFulfillmentChoices": {
+              "own": "Собственная полная эксплуатация по исходной норме",
+              "hired": "Услуга полной эксплуатации с предусмотренным оператором или водителем"
+            }
+          },
+          "fullTechnicalAcceptance": false,
+          "independentCompletenessMap": {
+            "entries": [
+              {
+                "unitId": "man_hour",
+                "category": "labor",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:labour",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Труд рабочих-строителей, разряд 2,7",
+                "expectedResourceId": "08-02-001-07:labour",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "man_hour",
+                "category": "labor",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:operators",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:operators"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:handling",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Труд машинистов по исходной норме",
+                "expectedResourceId": "08-02-001-07:operators",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:handling"
+                ]
+              },
+              {
+                "unitId": "machine_hour",
+                "category": "equipment",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:tower-crane-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:tower-crane-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:handling",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Кран башенный 8 т",
+                "expectedResourceId": "08-02-001-07:tower-crane",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:handling"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:water-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:water-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Вода",
+                "expectedResourceId": "08-02-001-07:water",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "piece",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:brick-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:brick-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Кирпич керамический одинарный 250 × 120 × 65 мм, М100",
+                "expectedResourceId": "08-02-001-07:brick",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:timber-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:timber-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:access",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Брусья хвойные обрезные 4–6,5 м, 75–150 × 40–75 мм, IV сорт",
+                "expectedResourceId": "08-02-001-07:timber",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:access"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:mortar-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:mortar-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Раствор готовый кладочный цементно-известковый М50",
+                "expectedResourceId": "08-02-001-07:mortar",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "work",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:operation:masonry",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                  "parentRowId": "masonry:wall:krer08-02-001-07:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+                "specification": "PDF17–19, table08-02-00107/08: состав01–02; labour is whole",
+                "expectedResourceId": "08-02-001-07:operation:masonry",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "work",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:operation:handling",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:operation:handling",
+                  "parentRowId": "masonry:wall:krer08-02-001-07:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:handling",
+                "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+                "specification": "PDF7§1.21 + table08-02-00107/08",
+                "expectedResourceId": "08-02-001-07:operation:handling",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:handling"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "work",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:operation:access",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:operation:access",
+                  "parentRowId": "masonry:wall:krer08-02-001-07:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:access",
+                "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+                "specification": "PDF7§1.13; above4 special scaffolding excluded",
+                "expectedResourceId": "08-02-001-07:operation:access",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:access"
+                ]
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:bearing-dpc",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:bearing-dpc"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:bearing-dpc",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC.",
+                "expectedResourceId": "08-02-001-07:need:bearing-dpc",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:bearing-dpc"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:lintels-ties-reinforcement",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:lintels-ties-reinforcement"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:lintels-ties-reinforcement",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5.",
+                "expectedResourceId": "08-02-001-07:need:lintels-ties-reinforcement",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:lintels-ties-reinforcement"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:source-system-fit",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:source-system-fit"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:source-system-fit",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Проект подтверждает керамический одинарный250×120×65М100, внутреннюю стену250мм и готовый цементно-известковыйМ50. BIAмодульныйкирпич не переносится.",
+                "expectedResourceId": "08-02-001-07:need:source-system-fit",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:source-system-fit"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:mixing-cutting-equipment",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:mixing-cutting-equipment"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:mixing-cutting-equipment",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "ГотовыйМ50: метод приёмки/подачи,тара и полный инструмент подгонки кирпича. Таблица не доказывает изготовлениеМ50наобъекте или число смесителей.",
+                "expectedResourceId": "08-02-001-07:need:mixing-cutting-equipment",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:mixing-cutting-equipment"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:machine-physical-provision",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:machine-physical-provision"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:machine-physical-provision",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся.",
+                "expectedResourceId": "08-02-001-07:need:machine-physical-provision",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:machine-physical-provision"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:access-ppe",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:access-ppe"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:access-ppe",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки.",
+                "expectedResourceId": "08-02-001-07:need:access-ppe",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:access-ppe"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:quality-curing-cleanup",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:quality-curing-cleanup"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:quality-curing-cleanup",
+                "quantityRule": "APPLICATION_NORM_AND_PROJECT_FACT",
+                "specification": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза.",
+                "expectedResourceId": "08-02-001-07:need:quality-curing-cleanup",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:quality-curing-cleanup"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:external-logistics",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:external-logistics"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:external-logistics",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи.",
+                "expectedResourceId": "08-02-001-07:need:external-logistics",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:external-logistics"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": "man_hour",
+                "category": "labor",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:labour",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Труд рабочих-строителей, разряд 2,7",
+                "expectedResourceId": "08-02-001-08:labour",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "man_hour",
+                "category": "labor",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:operators",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:operators"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:handling",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Труд машинистов по исходной норме",
+                "expectedResourceId": "08-02-001-08:operators",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:handling"
+                ]
+              },
+              {
+                "unitId": "machine_hour",
+                "category": "equipment",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:tower-crane-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:tower-crane-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:handling",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Кран башенный 8 т",
+                "expectedResourceId": "08-02-001-08:tower-crane",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:handling"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:water-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:water-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Вода",
+                "expectedResourceId": "08-02-001-08:water",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "piece",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:brick-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:brick-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Кирпич керамический одинарный 250 × 120 × 65 мм, М100",
+                "expectedResourceId": "08-02-001-08:brick",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:timber-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:timber-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Брусья хвойные обрезные 4–6,5 м, 75–150 × 40–75 мм, IV сорт",
+                "expectedResourceId": "08-02-001-08:timber",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:mortar-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:mortar-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Раствор готовый кладочный цементно-известковый М50",
+                "expectedResourceId": "08-02-001-08:mortar",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "work",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:operation:masonry",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                  "parentRowId": "masonry:wall:krer08-02-001-08:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+                "specification": "PDF17–19, table08-02-00107/08: состав01–02; labour is whole",
+                "expectedResourceId": "08-02-001-08:operation:masonry",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "work",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:operation:handling",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:operation:handling",
+                  "parentRowId": "masonry:wall:krer08-02-001-08:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:handling",
+                "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+                "specification": "PDF7§1.21 + table08-02-00107/08",
+                "expectedResourceId": "08-02-001-08:operation:handling",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:handling"
+                ]
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:bearing-dpc",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:bearing-dpc"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:bearing-dpc",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC.",
+                "expectedResourceId": "08-02-001-08:need:bearing-dpc",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:bearing-dpc"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:lintels-ties-reinforcement",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:lintels-ties-reinforcement"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:lintels-ties-reinforcement",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5.",
+                "expectedResourceId": "08-02-001-08:need:lintels-ties-reinforcement",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:lintels-ties-reinforcement"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:source-system-fit",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:source-system-fit"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:source-system-fit",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Проект подтверждает керамический одинарный250×120×65М100, внутреннюю стену250мм и готовый цементно-известковыйМ50. BIAмодульныйкирпич не переносится.",
+                "expectedResourceId": "08-02-001-08:need:source-system-fit",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:source-system-fit"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:mixing-cutting-equipment",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:mixing-cutting-equipment"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:mixing-cutting-equipment",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "ГотовыйМ50: метод приёмки/подачи,тара и полный инструмент подгонки кирпича. Таблица не доказывает изготовлениеМ50наобъекте или число смесителей.",
+                "expectedResourceId": "08-02-001-08:need:mixing-cutting-equipment",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:mixing-cutting-equipment"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:machine-physical-provision",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:machine-physical-provision"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:machine-physical-provision",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся.",
+                "expectedResourceId": "08-02-001-08:need:machine-physical-provision",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:machine-physical-provision"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:access-ppe",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:access-ppe"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:access-ppe",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки.",
+                "expectedResourceId": "08-02-001-08:need:access-ppe",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:access-ppe"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:quality-curing-cleanup",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:quality-curing-cleanup"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:quality-curing-cleanup",
+                "quantityRule": "APPLICATION_NORM_AND_PROJECT_FACT",
+                "specification": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза.",
+                "expectedResourceId": "08-02-001-08:need:quality-curing-cleanup",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:quality-curing-cleanup"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:external-logistics",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:external-logistics"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:external-logistics",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи.",
+                "expectedResourceId": "08-02-001-08:need:external-logistics",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:external-logistics"
+                ],
+                "sourceNormQuantityAccepted": false
+              }
+            ],
+            "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+            "residual": [
+              {
+                "key": "bearing-dpc",
+                "kind": "PROJECT_FACT",
+                "owner": "project structural designer / site owner",
+                "titleRu": "Опирание, отметки и применимая отсечная гидроизоляция",
+                "missingRu": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC."
+              },
+              {
+                "key": "lintels-ties-reinforcement",
+                "kind": "PROJECT_FACT",
+                "owner": "structural designer",
+                "titleRu": "Перемычки, сопряжения, связи и армирование по проекту",
+                "missingRu": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5."
+              },
+              {
+                "key": "source-system-fit",
+                "kind": "PROJECT_FACT",
+                "owner": "project designer / material technologist",
+                "titleRu": "Совместимость выбранного блока и растворной системы с проектом",
+                "missingRu": "Фактическая спецификация блоков с исходной объёмной массой900кг/м³,В3,5,2категории и исходный клейAEROC либо документированная допустимая адаптация. D400/D500, клей другой марки и блок300мм сюда не подставляются."
+              },
+              {
+                "key": "mixing-cutting-equipment",
+                "kind": "APPLICATION_NORM",
+                "owner": "application author / method engineer",
+                "titleRu": "Полный комплект приготовления клея и резки блоков",
+                "missingRu": "Таблица подтверждает труд приготовления/распиловки, но не даёт полный физический roster миксера с насадкой, дозирования, ёмкостей, пилы с полотном и пылезащиты; не назначать1комплект/м³."
+              },
+              {
+                "key": "machine-physical-provision",
+                "kind": "APPLICATION_NORM",
+                "owner": "method engineer / lifting planner",
+                "titleRu": "Оснастка подъёма, рабочие части и питание механизмов",
+                "missingRu": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся."
+              },
+              {
+                "key": "access-ppe",
+                "kind": "APPLICATION_NORM",
+                "owner": "method engineer / occupational safety",
+                "titleRu": "Физические подмости, ручной инструмент и средства защиты",
+                "missingRu": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки."
+              },
+              {
+                "key": "quality-curing-cleanup",
+                "kind": "APPLICATION_NORM_AND_PROJECT_FACT",
+                "owner": "quality / method engineer / site waste owner",
+                "titleRu": "Контроль, защита кладки, уборка и отходы",
+                "missingRu": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза."
+              },
+              {
+                "key": "external-logistics",
+                "kind": "PROJECT_FACT",
+                "owner": "logistics designer / site owner",
+                "titleRu": "Внешняя доставка и перемещение сверх исходной границы",
+                "missingRu": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи."
+              }
+            ],
+            "sourceKind": "NORMATIVE_OPERATION_MAP",
+            "evidenceSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+            "evidenceReferences": [
+              "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf"
+            ],
+            "newFullTechnologies": 0,
+            "fullTechnicalAcceptance": false,
+            "generatedFromCurrentRows": false,
+            "operationResourceBindingRequired": true
+          }
+        },
+        "excerpt_sha256": "a18416c3bfe17931e41d451af07236eb86c56136ae56916339f6cb3c1e8d39d4"
+      }
+    ]
+  },
+  "reuse": {
+    "contract": "master-existing-normative-registry-reuse/r1",
+    "locatorExcerptHashKind": "SOURCE_LOCATOR_TEXT_SHA256",
+    "source": {
+      "id": "3d976d46-0a08-5a7d-87b2-52ee7c5c4f59",
+      "source_key": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+      "title_ru": "КРЕР08-2015. Стены из кирпича и ячеистых блоков: точные исходные системы",
+      "authority": "Кыргызская Республика; Министерство строительства; КРЕР2015сборник08",
+      "official_url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+      "artifact_sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "effective_from": null,
+      "effective_to": null,
+      "metadata": {
+        "contract": "gox-build.masonry-wall-krer08-systems-source/r1",
+        "sourceKind": "PRIMARY_TERRITORIAL_RESOURCE_NORM_EXACT_COLUMNS",
+        "useRestriction": "Только явно принятая проектом базаKG/КРЕР2015. Кирпич250ммM100+готовыйM50; AAC400/500мм, исходная объёмная масса900кг/м³,В3.5,категория2с точным исходным клеем. НеD500.",
+        "activationAllowed": false,
+        "universalConsumptionClaimed": false,
+        "universalProductivityClaimed": false
+      },
+      "created_at": "2026-10-22T17:03:38.261084+05:00"
+    },
+    "locators": [
+      {
+        "id": "728fd4f1-882f-580c-8fa6-3ed12860432a",
+        "source_id": "3d976d46-0a08-5a7d-87b2-52ee7c5c4f59",
+        "locator_key": "master33-krer08-exact-brick-aac-walls-r1",
+        "locator": {
+          "contract": "gox-build.masonry-wall-krer08-systems-source/r1",
+          "sourcePack": {
+            "source": {
+              "path": "data/estimate-benchmarks/source-artifacts/masonry-wall-krer08-systems-r1/KRER08-2015-official.pdf",
+              "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+              "edition": "КРЕР-2015, сборник08, официальное издание Бишкек2015; введение01.01.2016 по приказу28.03.2016№2-нпа",
+              "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+              "jurisdiction": "KG",
+              "officialPage": "https://minstroy.gov.kg/ru/kyzmat/424/show",
+              "editionReview": "Official current ministry collection page and exact primary PDF reviewed2026-10-22. Project must expressly adopt this territorial edition. No claim of universal or automatic legal applicability; supplements not silently assumed."
+            },
+            "status": "AUTHORED_LEGACY_SAFE_SELECTED_PROFILE_WITH_BASE_UNIT_SUPPLY_NOT_PUBLISHED_NOT_FULL",
+            "newFULL": 0,
+            "payment": {
+              "labour": "One whole source labour norm owner; no arbitrary split by operation",
+              "machines": "One exact FULL_SOURCE_OPERATION machine-hour owner with existing canonical-machine-hour-price-coverage/v1 evidence. Source operators INFO, no second paid operator. Physical rigging/power/provision remains residual.",
+              "materials": "One OWN_COST/PROCUREMENT owner per compatible source material in base units. New order versus source demand; no actual warehouse stock claim or extra reserve. Piece demand is rounded once to whole pieces; kg/m3 orders use canonical_decimal. Retail packaging may refine later, no source price2015.",
+              "operators": "Source operator hours are informational. They are not subtracted from worker labour or paid additionally.",
+              "inheritGenericParentPrice": false
+            },
+            "targets": [
+              {
+                "decision": "INCOMPATIBLE_WITHOUT_SEPARATE_CONDITIONS_PROFILE",
+                "reasonRu": "Влажная зона/повышенная нагрузка не доказываются исходной нормой и общим названием; специальные условия/конструктив не приравниваются.",
+                "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_high_load",
+                "systemFamily": "ceramic-brick",
+                "currentDefinitionId": "b82ad708-2583-5275-901a-50f321a8c165",
+                "currentDefinitionSha256": "e467d8b6e9f0d7e78b7bd1f5ceda75d99f03ce104ae2ba98571824dce2f6ff34",
+                "applicableSourceProfiles": [],
+                "currentDefinitionVersion": 3
+              },
+              {
+                "decision": "REUSE_WITH_PROVEN_ADAPTATION",
+                "reasonRu": "Точный внутренний профиль исходной нормы выбирается отдельно; прежняя ветвь и история сохраняются. Новый исходный расход не наследует generic price.",
+                "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+                "systemFamily": "ceramic-brick",
+                "currentDefinitionId": "7237aa95-be0f-5b6d-a638-5f06b9381749",
+                "currentDefinitionSha256": "90df55e18072a4726705a3dd797877e4c645758fb7c9daea9e0a5edab3e3af34",
+                "applicableSourceProfiles": [
+                  "ceramic-brick-upto4",
+                  "ceramic-brick-above4"
+                ],
+                "currentDefinitionVersion": 7
+              },
+              {
+                "decision": "REUSE_WITH_PROVEN_ADAPTATION",
+                "reasonRu": "Точный внутренний профиль исходной нормы выбирается отдельно; прежняя ветвь и история сохраняются. Новый исходный расход не наследует generic price.",
+                "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
+                "systemFamily": "ceramic-brick",
+                "currentDefinitionId": "e0740cb8-9dc8-5c6c-b16d-5ae6b59ce339",
+                "currentDefinitionSha256": "3ee22ae3cb67bad70e59badc08fd66ee266f016522e8977a645f081b00a2f46a",
+                "applicableSourceProfiles": [
+                  "ceramic-brick-upto4",
+                  "ceramic-brick-above4"
+                ],
+                "currentDefinitionVersion": 7
+              },
+              {
+                "decision": "INCOMPATIBLE_WITHOUT_SEPARATE_CONDITIONS_PROFILE",
+                "reasonRu": "Влажная зона/повышенная нагрузка не доказываются исходной нормой и общим названием; специальные условия/конструктив не приравниваются.",
+                "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_wet_zone",
+                "systemFamily": "ceramic-brick",
+                "currentDefinitionId": "8440f44c-f739-53fc-959e-433583635f6c",
+                "currentDefinitionSha256": "161091e1ba0ec605a00ce5ebced54154b02394acb1b9831d8b94e67e157db567",
+                "applicableSourceProfiles": [],
+                "currentDefinitionVersion": 3
+              },
+              {
+                "decision": "INCOMPATIBLE_WITHOUT_SEPARATE_CONDITIONS_PROFILE",
+                "reasonRu": "Влажная зона/повышенная нагрузка не доказываются исходной нормой и общим названием; специальные условия/конструктив не приравниваются.",
+                "catalogId": "canonical-work:base:masonry_interior_gas_block_lay_high_load",
+                "systemFamily": "aac",
+                "currentDefinitionId": "ea730dea-8e3e-54c5-814d-f1a0b5fcd2c2",
+                "currentDefinitionSha256": "b46fbd86e9b50549e2e049f8136fa749a11e1fc8ba6d3ffb4db3aa307bc01e0d",
+                "applicableSourceProfiles": [],
+                "currentDefinitionVersion": 3
+              },
+              {
+                "decision": "REUSE_WITH_PROVEN_ADAPTATION",
+                "reasonRu": "Точный внутренний профиль исходной нормы выбирается отдельно; прежняя ветвь и история сохраняются. Новый исходный расход не наследует generic price.",
+                "catalogId": "canonical-work:base:masonry_interior_gas_block_lay_standard",
+                "systemFamily": "aac",
+                "currentDefinitionId": "fb3ba561-bb08-5fbf-8780-50e9d0c66810",
+                "currentDefinitionSha256": "7964fd809f8e66bc248a4323b0b279bb9392d0c0c278ffb4f4f94cd7d736bd4f",
+                "applicableSourceProfiles": [
+                  "aac-400-upto4",
+                  "aac-400-above4",
+                  "aac-500-upto4",
+                  "aac-500-above4"
+                ],
+                "currentDefinitionVersion": 3
+              },
+              {
+                "decision": "REUSE_WITH_PROVEN_ADAPTATION",
+                "reasonRu": "Точный внутренний профиль исходной нормы выбирается отдельно; прежняя ветвь и история сохраняются. Новый исходный расход не наследует generic price.",
+                "catalogId": "canonical-work:base:masonry_interior_gas_block_lay_technical_room",
+                "systemFamily": "aac",
+                "currentDefinitionId": "f0dba2fe-5a39-5d97-b212-a9090efa827c",
+                "currentDefinitionSha256": "6f6443223dfeb418b6ada6c10c1bf3693e59d208f20ff94d068ca392313489e7",
+                "applicableSourceProfiles": [
+                  "aac-400-upto4",
+                  "aac-400-above4",
+                  "aac-500-upto4",
+                  "aac-500-above4"
+                ],
+                "currentDefinitionVersion": 3
+              },
+              {
+                "decision": "INCOMPATIBLE_WITHOUT_SEPARATE_CONDITIONS_PROFILE",
+                "reasonRu": "Влажная зона/повышенная нагрузка не доказываются исходной нормой и общим названием; специальные условия/конструктив не приравниваются.",
+                "catalogId": "canonical-work:base:masonry_interior_gas_block_lay_wet_zone",
+                "systemFamily": "aac",
+                "currentDefinitionId": "2ca306cc-26f2-567a-853f-63e3c95c5ab5",
+                "currentDefinitionSha256": "4a8cfc820160ecf6f092cb5d8e82407ab4a93265739e802b4391a7562d489a1e",
+                "applicableSourceProfiles": [],
+                "currentDefinitionVersion": 3
+              }
+            ],
+            "contract": "gox-build.masonry-wall-krer08-systems-source/r1",
+            "geometry": {
+              "rules": [
+                "PDF8§2.3: проёмы по наружному обводу коробок; при двух коробках наружная",
+                "PDF8§2.5: отдельные конструкции другого материала вычитаются; встроенные ниши исключаются, оговорённые борозды/гнёзда/каналы не вычитаются автоматически",
+                "Источник даёт м³ кладки, не м² пола; ограниченные толщины250/400/500мм выбраны внутренним точным профилем",
+                "Объём вставок не вычитается второй раз из уже вычтенного проёма"
+              ],
+              "unitId": "m3",
+              "primary": "wall_length_m",
+              "expression": "(wall_length_m*wall_height_m-openings_area_m2)*THICKNESS-nonmasonry_insert_volume_m3"
+            },
+            "profiles": [
+              {
+                "key": "ceramic-brick-upto4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 2,7",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "5.21",
+                    "procurement": false,
+                    "resourceCode": "000-1002-7",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.4",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 8 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.4",
+                    "procurement": false,
+                    "resourceCode": "02-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "0.44",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "brick",
+                    "unitId": "piece",
+                    "titleRu": "Кирпич керамический одинарный 250 × 120 × 65 мм, М100",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "395",
+                    "procurement": false,
+                    "resourceCode": "01-3306-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "timber",
+                    "unitId": "m3",
+                    "titleRu": "Брусья хвойные обрезные 4–6,5 м, 75–150 × 40–75 мм, IV сорт",
+                    "category": "material",
+                    "operation": "access",
+                    "ratePerM3": "0.0005",
+                    "procurement": false,
+                    "resourceCode": "01-6302-0095",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "mortar",
+                    "unitId": "m3",
+                    "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "0.234",
+                    "procurement": false,
+                    "resourceCode": "03-0405-0003",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-02-001-07",
+                "prefix": "masonry:wall:krer08-02-001-07",
+                "system": "ceramic-brick",
+                "titleRu": "Кладка внутренней кирпичной стены 250 мм на готовом растворе М50 при высоте этажа до 4 м",
+                "thicknessM": "0.25",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  17,
+                  18,
+                  19
+                ],
+                "storeyHeightBand": "LTE4",
+                "sourceKeyProposal": "kg_krer08_2015_08_02_001_07_wall_source_r1",
+                "manufacturerInternal": null,
+                "printedUnitConversions": [
+                  {
+                    "key": "brick",
+                    "factor": "1000",
+                    "printedRate": "0.395",
+                    "printedUnit": "1000шт.",
+                    "normalizedRate": "395"
+                  }
+                ]
+              },
+              {
+                "key": "ceramic-brick-above4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 2,7",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "5.05",
+                    "procurement": false,
+                    "resourceCode": "000-1002-7",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.35",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 8 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.35",
+                    "procurement": false,
+                    "resourceCode": "02-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "0.44",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "brick",
+                    "unitId": "piece",
+                    "titleRu": "Кирпич керамический одинарный 250 × 120 × 65 мм, М100",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "395",
+                    "procurement": false,
+                    "resourceCode": "01-3306-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "timber",
+                    "unitId": "m3",
+                    "titleRu": "Брусья хвойные обрезные 4–6,5 м, 75–150 × 40–75 мм, IV сорт",
+                    "category": "material",
+                    "operation": "access",
+                    "ratePerM3": "0.0005",
+                    "procurement": false,
+                    "resourceCode": "01-6302-0095",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "mortar",
+                    "unitId": "m3",
+                    "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "0.234",
+                    "procurement": false,
+                    "resourceCode": "03-0405-0003",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-02-001-08",
+                "prefix": "masonry:wall:krer08-02-001-08",
+                "system": "ceramic-brick",
+                "titleRu": "Кладка внутренней кирпичной стены 250 мм на готовом растворе М50 при высоте этажа свыше 4 м",
+                "thicknessM": "0.25",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  17,
+                  18,
+                  19
+                ],
+                "storeyHeightBand": "GT4",
+                "sourceKeyProposal": "kg_krer08_2015_08_02_001_08_wall_source_r1",
+                "manufacturerInternal": null,
+                "printedUnitConversions": [
+                  {
+                    "key": "brick",
+                    "factor": "1000",
+                    "printedRate": "0.395",
+                    "printedUnit": "1000шт.",
+                    "normalizedRate": "395"
+                  }
+                ]
+              },
+              {
+                "key": "aac-400-upto4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 3,1",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "3.65",
+                    "procurement": false,
+                    "resourceCode": "000-1003-1",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.08",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "02-0004",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "truck-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран на автомобильном ходу 10 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "02-0075",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "perforator",
+                    "unitId": "machine_hour",
+                    "titleRu": "Перфоратор электрический",
+                    "category": "equipment",
+                    "operation": "anchors",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "33-0462",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "flatbed-truck",
+                    "unitId": "machine_hour",
+                    "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "40-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "0.00414",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "primer",
+                    "unitId": "kg",
+                    "titleRu": "Грунтовка глифталевая красно-коричневая",
+                    "category": "material",
+                    "operation": "priming",
+                    "ratePerM3": "0.077",
+                    "procurement": false,
+                    "resourceCode": "01-1704-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "adhesive",
+                    "unitId": "kg",
+                    "titleRu": "Клей монтажный для блоков из ячеистого бетона",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "20.5",
+                    "procurement": false,
+                    "resourceCode": "01-3502-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "unitId": "kg",
+                    "titleRu": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+                    "category": "material",
+                    "operation": "anchors",
+                    "ratePerM3": "0.78",
+                    "procurement": false,
+                    "resourceCode": "03-0102-0040",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "aac-block",
+                    "unitId": "m3",
+                    "titleRu": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "1.01",
+                    "procurement": false,
+                    "resourceCode": "05-0402-0045",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-03-004-01",
+                "prefix": "masonry:wall:krer08-03-004-01",
+                "system": "aac-400",
+                "titleRu": "Кладка газобетонной стены 400 мм на монтажном клее без облицовки при высоте этажа до 4 м",
+                "thicknessM": "0.4",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  51,
+                  52
+                ],
+                "storeyHeightBand": "LTE4",
+                "sourceKeyProposal": "kg_krer08_2015_08_03_004_01_wall_source_r1",
+                "manufacturerInternal": "AEROC",
+                "printedUnitConversions": [
+                  {
+                    "key": "primer",
+                    "factor": "1000",
+                    "printedRate": "0.000077",
+                    "printedUnit": "т"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "factor": "1000",
+                    "printedRate": "0.00078",
+                    "printedUnit": "т"
+                  }
+                ]
+              },
+              {
+                "key": "aac-400-above4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 3,3",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "2.81",
+                    "procurement": false,
+                    "resourceCode": "000-1003-3",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.08",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "02-0004",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "truck-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран на автомобильном ходу 10 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "02-0075",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "perforator",
+                    "unitId": "machine_hour",
+                    "titleRu": "Перфоратор электрический",
+                    "category": "equipment",
+                    "operation": "anchors",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "33-0462",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "flatbed-truck",
+                    "unitId": "machine_hour",
+                    "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "40-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "0.00414",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "primer",
+                    "unitId": "kg",
+                    "titleRu": "Грунтовка глифталевая красно-коричневая",
+                    "category": "material",
+                    "operation": "priming",
+                    "ratePerM3": "0.051",
+                    "procurement": false,
+                    "resourceCode": "01-1704-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "adhesive",
+                    "unitId": "kg",
+                    "titleRu": "Клей монтажный для блоков из ячеистого бетона",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "20.5",
+                    "procurement": false,
+                    "resourceCode": "01-3502-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "unitId": "kg",
+                    "titleRu": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+                    "category": "material",
+                    "operation": "anchors",
+                    "ratePerM3": "0.78",
+                    "procurement": false,
+                    "resourceCode": "03-0102-0040",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "aac-block",
+                    "unitId": "m3",
+                    "titleRu": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "1.01",
+                    "procurement": false,
+                    "resourceCode": "05-0402-0045",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-03-004-02",
+                "prefix": "masonry:wall:krer08-03-004-02",
+                "system": "aac-400",
+                "titleRu": "Кладка газобетонной стены 400 мм на монтажном клее без облицовки при высоте этажа свыше 4 м",
+                "thicknessM": "0.4",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  51,
+                  52
+                ],
+                "storeyHeightBand": "GT4",
+                "sourceKeyProposal": "kg_krer08_2015_08_03_004_02_wall_source_r1",
+                "manufacturerInternal": "AEROC",
+                "printedUnitConversions": [
+                  {
+                    "key": "primer",
+                    "factor": "1000",
+                    "printedRate": "0.000051",
+                    "printedUnit": "т"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "factor": "1000",
+                    "printedRate": "0.00078",
+                    "printedUnit": "т"
+                  }
+                ]
+              },
+              {
+                "key": "aac-500-upto4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 3,1",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "4.47",
+                    "procurement": false,
+                    "resourceCode": "000-1003-1",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.08",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "02-0004",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "truck-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран на автомобильном ходу 10 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "02-0075",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "perforator",
+                    "unitId": "machine_hour",
+                    "titleRu": "Перфоратор электрический",
+                    "category": "equipment",
+                    "operation": "anchors",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "33-0462",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "flatbed-truck",
+                    "unitId": "machine_hour",
+                    "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "40-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "0.00575",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "primer",
+                    "unitId": "kg",
+                    "titleRu": "Грунтовка глифталевая красно-коричневая",
+                    "category": "material",
+                    "operation": "priming",
+                    "ratePerM3": "0.077",
+                    "procurement": false,
+                    "resourceCode": "01-1704-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "adhesive",
+                    "unitId": "kg",
+                    "titleRu": "Клей монтажный для блоков из ячеистого бетона",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "28.47",
+                    "procurement": false,
+                    "resourceCode": "01-3502-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "unitId": "kg",
+                    "titleRu": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+                    "category": "material",
+                    "operation": "anchors",
+                    "ratePerM3": "1.24",
+                    "procurement": false,
+                    "resourceCode": "03-0102-0040",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "aac-block",
+                    "unitId": "m3",
+                    "titleRu": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "1.01",
+                    "procurement": false,
+                    "resourceCode": "05-0402-0045",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-03-004-03",
+                "prefix": "masonry:wall:krer08-03-004-03",
+                "system": "aac-500",
+                "titleRu": "Кладка газобетонной стены 500 мм на монтажном клее без облицовки при высоте этажа до 4 м",
+                "thicknessM": "0.5",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  51,
+                  52
+                ],
+                "storeyHeightBand": "LTE4",
+                "sourceKeyProposal": "kg_krer08_2015_08_03_004_03_wall_source_r1",
+                "manufacturerInternal": "AEROC",
+                "printedUnitConversions": [
+                  {
+                    "key": "primer",
+                    "factor": "1000",
+                    "printedRate": "0.000077",
+                    "printedUnit": "т"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "factor": "1000",
+                    "printedRate": "0.00124",
+                    "printedUnit": "т"
+                  }
+                ]
+              },
+              {
+                "key": "aac-500-above4",
+                "rows": [
+                  {
+                    "key": "labour",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд рабочих-строителей, разряд 3,3",
+                    "category": "labor",
+                    "operation": "masonry",
+                    "ratePerM3": "3.39",
+                    "procurement": false,
+                    "resourceCode": "000-1003-3",
+                    "costTreatment": "OWN_COST"
+                  },
+                  {
+                    "key": "operators",
+                    "unitId": "man_hour",
+                    "titleRu": "Труд машинистов по исходной норме",
+                    "category": "labor",
+                    "operation": "handling",
+                    "ratePerM3": "0.08",
+                    "procurement": false,
+                    "resourceCode": null,
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "tower-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран башенный 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.03",
+                    "procurement": false,
+                    "resourceCode": "02-0004",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "truck-crane",
+                    "unitId": "machine_hour",
+                    "titleRu": "Кран на автомобильном ходу 10 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "02-0075",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "perforator",
+                    "unitId": "machine_hour",
+                    "titleRu": "Перфоратор электрический",
+                    "category": "equipment",
+                    "operation": "anchors",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "33-0462",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "flatbed-truck",
+                    "unitId": "machine_hour",
+                    "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+                    "category": "equipment",
+                    "operation": "handling",
+                    "ratePerM3": "0.05",
+                    "procurement": false,
+                    "resourceCode": "40-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "water",
+                    "unitId": "m3",
+                    "titleRu": "Вода",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "0.00552",
+                    "procurement": false,
+                    "resourceCode": "01-0601-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "primer",
+                    "unitId": "kg",
+                    "titleRu": "Грунтовка глифталевая красно-коричневая",
+                    "category": "material",
+                    "operation": "priming",
+                    "ratePerM3": "0.053",
+                    "procurement": false,
+                    "resourceCode": "01-1704-0005",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "adhesive",
+                    "unitId": "kg",
+                    "titleRu": "Клей монтажный для блоков из ячеистого бетона",
+                    "category": "material",
+                    "operation": "adhesive",
+                    "ratePerM3": "27.3",
+                    "procurement": false,
+                    "resourceCode": "01-3502-0001",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "unitId": "kg",
+                    "titleRu": "Сталь арматурная периодического профиля класса А-III, Ø10 мм",
+                    "category": "material",
+                    "operation": "anchors",
+                    "ratePerM3": "1.24",
+                    "procurement": false,
+                    "resourceCode": "03-0102-0040",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  },
+                  {
+                    "key": "aac-block",
+                    "unitId": "m3",
+                    "titleRu": "Блоки стеновые из ячеистого бетона, 2 категория, 900 кг/м³, В3,5",
+                    "category": "material",
+                    "operation": "masonry",
+                    "ratePerM3": "1.01",
+                    "procurement": false,
+                    "resourceCode": "05-0402-0045",
+                    "costTreatment": "INFORMATIONAL_SCOPE"
+                  }
+                ],
+                "normId": "08-03-004-04",
+                "prefix": "masonry:wall:krer08-03-004-04",
+                "system": "aac-500",
+                "titleRu": "Кладка газобетонной стены 500 мм на монтажном клее без облицовки при высоте этажа свыше 4 м",
+                "thicknessM": "0.5",
+                "sourcePages": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  51,
+                  52
+                ],
+                "storeyHeightBand": "GT4",
+                "sourceKeyProposal": "kg_krer08_2015_08_03_004_04_wall_source_r1",
+                "manufacturerInternal": "AEROC",
+                "printedUnitConversions": [
+                  {
+                    "key": "primer",
+                    "factor": "1000",
+                    "printedRate": "0.000053",
+                    "printedUnit": "т"
+                  },
+                  {
+                    "key": "anchor-steel",
+                    "factor": "1000",
+                    "printedRate": "0.00124",
+                    "printedUnit": "т"
+                  }
+                ]
+              }
+            ],
+            "residual": [
+              {
+                "key": "bearing-dpc",
+                "kind": "PROJECT_FACT",
+                "owner": "project structural designer / site owner",
+                "titleRu": "Опирание, отметки и применимая отсечная гидроизоляция",
+                "missingRu": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC."
+              },
+              {
+                "key": "lintels-ties-reinforcement",
+                "kind": "PROJECT_FACT",
+                "owner": "structural designer",
+                "titleRu": "Перемычки, сопряжения, связи и армирование по проекту",
+                "missingRu": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5."
+              },
+              {
+                "key": "source-system-fit",
+                "kind": "PROJECT_FACT",
+                "owner": "project designer / material technologist",
+                "titleRu": "Совместимость выбранного блока и растворной системы с проектом",
+                "missingRu": "Фактическая спецификация блоков с исходной объёмной массой900кг/м³,В3,5,2категории и исходный клейAEROC либо документированная допустимая адаптация. D400/D500, клей другой марки и блок300мм сюда не подставляются."
+              },
+              {
+                "key": "mixing-cutting-equipment",
+                "kind": "APPLICATION_NORM",
+                "owner": "application author / method engineer",
+                "titleRu": "Полный комплект приготовления клея и резки блоков",
+                "missingRu": "Таблица подтверждает труд приготовления/распиловки, но не даёт полный физический roster миксера с насадкой, дозирования, ёмкостей, пилы с полотном и пылезащиты; не назначать1комплект/м³."
+              },
+              {
+                "key": "machine-physical-provision",
+                "kind": "APPLICATION_NORM",
+                "owner": "method engineer / lifting planner",
+                "titleRu": "Оснастка подъёма, рабочие части и питание механизмов",
+                "missingRu": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся."
+              },
+              {
+                "key": "access-ppe",
+                "kind": "APPLICATION_NORM",
+                "owner": "method engineer / occupational safety",
+                "titleRu": "Физические подмости, ручной инструмент и средства защиты",
+                "missingRu": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки."
+              },
+              {
+                "key": "quality-curing-cleanup",
+                "kind": "APPLICATION_NORM_AND_PROJECT_FACT",
+                "owner": "quality / method engineer / site waste owner",
+                "titleRu": "Контроль, защита кладки, уборка и отходы",
+                "missingRu": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза."
+              },
+              {
+                "key": "external-logistics",
+                "kind": "PROJECT_FACT",
+                "owner": "logistics designer / site owner",
+                "titleRu": "Внешняя доставка и перемещение сверх исходной границы",
+                "missingRu": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи."
+              }
+            ],
+            "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+            "operationMaps": {
+              "aac": [
+                {
+                  "key": "handling",
+                  "source": "PDF51, composition01–03",
+                  "titleRu": "Выгрузка, подъём и перемещение материалов до 30 м"
+                },
+                {
+                  "key": "access",
+                  "source": "PDF51, composition04 for01/03; no such item for02/04",
+                  "titleRu": "Устройство и разборка подмостей в варианте до 4 м"
+                },
+                {
+                  "key": "preparation",
+                  "source": "PDF51, composition05 for01/03,04 for02/04",
+                  "titleRu": "Подготовка основания под укладку"
+                },
+                {
+                  "key": "priming",
+                  "source": "PDF51,composition06/05; GF021 is not silently replaced by block primer",
+                  "titleRu": "Грунтование поверхности по исходному составу"
+                },
+                {
+                  "key": "layout",
+                  "source": "PDF51,composition07/06",
+                  "titleRu": "Установка порядовки и натягивание причалки"
+                },
+                {
+                  "key": "cutting",
+                  "source": "PDF51,composition08/07",
+                  "titleRu": "Распиловка блоков"
+                },
+                {
+                  "key": "adhesive",
+                  "source": "PDF51,composition09/08",
+                  "titleRu": "Приготовление клеевого раствора"
+                },
+                {
+                  "key": "masonry",
+                  "source": "PDF51,composition10/09",
+                  "titleRu": "Кладка блоков с нишами и архитектурными деталями"
+                },
+                {
+                  "key": "anchors",
+                  "source": "PDF51,composition11/10",
+                  "titleRu": "Установка анкеров в блоки"
+                },
+                {
+                  "key": "joints",
+                  "source": "PDF51,composition12/11",
+                  "titleRu": "Расшивка швов"
+                }
+              ],
+              "ceramic-brick": [
+                {
+                  "key": "masonry",
+                  "source": "PDF17–19, table08-02-00107/08: состав01–02; labour is whole",
+                  "titleRu": "Кладка рядов, углов и деталей внутренней кирпичной стены"
+                },
+                {
+                  "key": "handling",
+                  "source": "PDF7§1.21 + table08-02-00107/08",
+                  "titleRu": "Переноска кирпича до 5 м и нормативная работа крана"
+                },
+                {
+                  "key": "access",
+                  "source": "PDF7§1.13; above4 special scaffolding excluded",
+                  "titleRu": "Установка, перестановка и разборка подмостей в исходной области до 4 м"
+                }
+              ]
+            },
+            "legacyChoiceRu": "Сохранить прежний принятый способ расчёта",
+            "newPublicCards": 0,
+            "sourceFactValue": "Подтверждены конкретные материалы и проектное применение исходной колонки без замены толщины, раствора/клея, категории блока или класса прочности; конструктив приложением не рассчитывается",
+            "systemChoicesRu": {
+              "aac-400": "Газобетонная стена 400 мм; блоки 2 категории, 900 кг/м³, В3,5; исходный монтажный клей по КРЕР-2015",
+              "aac-500": "Газобетонная стена 500 мм; блоки 2 категории, 900 кг/м³, В3,5; исходный монтажный клей по КРЕР-2015",
+              "ceramic-brick": "Керамический кирпич 250 × 120 × 65 мм, М100; внутренняя стена 250 мм; готовый раствор М50 по КРЕР-2015"
+            },
+            "canonicalMutated": false,
+            "projectBasisValue": "Проектом явно приняты Кыргызская Республика и КРЕР-2015 сборник08; исходная система и обычные положительные условия соответствуют выбранной колонке",
+            "publicationAllowed": false,
+            "fullTechnicalAcceptance": false,
+            "residualFamilyOverrides": {
+              "ceramic-brick": {
+                "source-system-fit": {
+                  "titleRu": "Совместимость керамического кирпича и готового раствора с проектом",
+                  "missingRu": "Проект подтверждает керамический одинарный250×120×65М100, внутреннюю стену250мм и готовый цементно-известковыйМ50. BIAмодульныйкирпич не переносится."
+                },
+                "mixing-cutting-equipment": {
+                  "titleRu": "Полный комплект приёмки и подачи раствора и подгонки кирпича",
+                  "missingRu": "ГотовыйМ50: метод приёмки/подачи,тара и полный инструмент подгонки кирпича. Таблица не доказывает изготовлениеМ50наобъекте или число смесителей."
+                }
+              }
+            },
+            "sourceProfileSelectorId": "m33_masonry_source_system",
+            "machineFulfillmentChoices": {
+              "own": "Собственная полная эксплуатация по исходной норме",
+              "hired": "Услуга полной эксплуатации с предусмотренным оператором или водителем"
+            }
+          },
+          "fullTechnicalAcceptance": false,
+          "independentCompletenessMap": {
+            "entries": [
+              {
+                "unitId": "man_hour",
+                "category": "labor",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:labour",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Труд рабочих-строителей, разряд 2,7",
+                "expectedResourceId": "08-02-001-07:labour",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "man_hour",
+                "category": "labor",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:operators",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:operators"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:handling",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Труд машинистов по исходной норме",
+                "expectedResourceId": "08-02-001-07:operators",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:handling"
+                ]
+              },
+              {
+                "unitId": "machine_hour",
+                "category": "equipment",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:tower-crane-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:tower-crane-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:handling",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Кран башенный 8 т",
+                "expectedResourceId": "08-02-001-07:tower-crane",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:handling"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:water-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:water-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Вода",
+                "expectedResourceId": "08-02-001-07:water",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "piece",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:brick-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:brick-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Кирпич керамический одинарный 250 × 120 × 65 мм, М100",
+                "expectedResourceId": "08-02-001-07:brick",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:timber-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:timber-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:access",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Брусья хвойные обрезные 4–6,5 м, 75–150 × 40–75 мм, IV сорт",
+                "expectedResourceId": "08-02-001-07:timber",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:access"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:mortar-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:mortar-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Раствор готовый кладочный цементно-известковый М50",
+                "expectedResourceId": "08-02-001-07:mortar",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "work",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:operation:masonry",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                  "parentRowId": "masonry:wall:krer08-02-001-07:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:masonry",
+                "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+                "specification": "PDF17–19, table08-02-00107/08: состав01–02; labour is whole",
+                "expectedResourceId": "08-02-001-07:operation:masonry",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "work",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:operation:handling",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:operation:handling",
+                  "parentRowId": "masonry:wall:krer08-02-001-07:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:handling",
+                "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+                "specification": "PDF7§1.21 + table08-02-00107/08",
+                "expectedResourceId": "08-02-001-07:operation:handling",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:handling"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "work",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:operation:access",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:operation:access",
+                  "parentRowId": "masonry:wall:krer08-02-001-07:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:access",
+                "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+                "specification": "PDF7§1.13; above4 special scaffolding excluded",
+                "expectedResourceId": "08-02-001-07:operation:access",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:access"
+                ]
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:bearing-dpc",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:bearing-dpc"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:bearing-dpc",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC.",
+                "expectedResourceId": "08-02-001-07:need:bearing-dpc",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:bearing-dpc"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:lintels-ties-reinforcement",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:lintels-ties-reinforcement"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:lintels-ties-reinforcement",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5.",
+                "expectedResourceId": "08-02-001-07:need:lintels-ties-reinforcement",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:lintels-ties-reinforcement"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:source-system-fit",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:source-system-fit"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:source-system-fit",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Проект подтверждает керамический одинарный250×120×65М100, внутреннюю стену250мм и готовый цементно-известковыйМ50. BIAмодульныйкирпич не переносится.",
+                "expectedResourceId": "08-02-001-07:need:source-system-fit",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:source-system-fit"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:mixing-cutting-equipment",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:mixing-cutting-equipment"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:mixing-cutting-equipment",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "ГотовыйМ50: метод приёмки/подачи,тара и полный инструмент подгонки кирпича. Таблица не доказывает изготовлениеМ50наобъекте или число смесителей.",
+                "expectedResourceId": "08-02-001-07:need:mixing-cutting-equipment",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:mixing-cutting-equipment"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:machine-physical-provision",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:machine-physical-provision"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:machine-physical-provision",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся.",
+                "expectedResourceId": "08-02-001-07:need:machine-physical-provision",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:machine-physical-provision"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:access-ppe",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:access-ppe"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:access-ppe",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки.",
+                "expectedResourceId": "08-02-001-07:need:access-ppe",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:access-ppe"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:quality-curing-cleanup",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:quality-curing-cleanup"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:quality-curing-cleanup",
+                "quantityRule": "APPLICATION_NORM_AND_PROJECT_FACT",
+                "specification": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза.",
+                "expectedResourceId": "08-02-001-07:need:quality-curing-cleanup",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:quality-curing-cleanup"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-upto4",
+                "formulaId": "masonry:wall:krer08-02-001-07:formula:need:external-logistics",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-07:need:external-logistics"
+                },
+                "operationId": "masonry:wall:krer08-02-001-07:operation:need:external-logistics",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи.",
+                "expectedResourceId": "08-02-001-07:need:external-logistics",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-07:operation:need:external-logistics"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": "man_hour",
+                "category": "labor",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:labour",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Труд рабочих-строителей, разряд 2,7",
+                "expectedResourceId": "08-02-001-08:labour",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "man_hour",
+                "category": "labor",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:operators",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:operators"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:handling",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Труд машинистов по исходной норме",
+                "expectedResourceId": "08-02-001-08:operators",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:handling"
+                ]
+              },
+              {
+                "unitId": "machine_hour",
+                "category": "equipment",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:tower-crane-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:tower-crane-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:handling",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Кран башенный 8 т",
+                "expectedResourceId": "08-02-001-08:tower-crane",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:handling"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:water-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:water-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Вода",
+                "expectedResourceId": "08-02-001-08:water",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "piece",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:brick-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:brick-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Кирпич керамический одинарный 250 × 120 × 65 мм, М100",
+                "expectedResourceId": "08-02-001-08:brick",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:timber-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:timber-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Брусья хвойные обрезные 4–6,5 м, 75–150 × 40–75 мм, IV сорт",
+                "expectedResourceId": "08-02-001-08:timber",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "material",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:mortar-consumed",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:mortar-consumed"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "EXACT_SOURCE_SCALAR_PER_NET_M3",
+                "specification": "Раствор готовый кладочный цементно-известковый М50",
+                "expectedResourceId": "08-02-001-08:mortar",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "work",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:operation:masonry",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                  "parentRowId": "masonry:wall:krer08-02-001-08:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:masonry",
+                "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+                "specification": "PDF17–19, table08-02-00107/08: состав01–02; labour is whole",
+                "expectedResourceId": "08-02-001-08:operation:masonry",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:masonry"
+                ]
+              },
+              {
+                "unitId": "m3",
+                "category": "work",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:operation:handling",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:operation:handling",
+                  "parentRowId": "masonry:wall:krer08-02-001-08:labour"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:handling",
+                "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_DIVISION",
+                "specification": "PDF7§1.21 + table08-02-00107/08",
+                "expectedResourceId": "08-02-001-08:operation:handling",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:handling"
+                ]
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:bearing-dpc",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:bearing-dpc"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:bearing-dpc",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC.",
+                "expectedResourceId": "08-02-001-08:need:bearing-dpc",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:bearing-dpc"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:lintels-ties-reinforcement",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:lintels-ties-reinforcement"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:lintels-ties-reinforcement",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5.",
+                "expectedResourceId": "08-02-001-08:need:lintels-ties-reinforcement",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:lintels-ties-reinforcement"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:source-system-fit",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:source-system-fit"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:source-system-fit",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Проект подтверждает керамический одинарный250×120×65М100, внутреннюю стену250мм и готовый цементно-известковыйМ50. BIAмодульныйкирпич не переносится.",
+                "expectedResourceId": "08-02-001-08:need:source-system-fit",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:source-system-fit"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:mixing-cutting-equipment",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:mixing-cutting-equipment"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:mixing-cutting-equipment",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "ГотовыйМ50: метод приёмки/подачи,тара и полный инструмент подгонки кирпича. Таблица не доказывает изготовлениеМ50наобъекте или число смесителей.",
+                "expectedResourceId": "08-02-001-08:need:mixing-cutting-equipment",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:mixing-cutting-equipment"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:machine-physical-provision",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:machine-physical-provision"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:machine-physical-provision",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся.",
+                "expectedResourceId": "08-02-001-08:need:machine-physical-provision",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:machine-physical-provision"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:access-ppe",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:access-ppe"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:access-ppe",
+                "quantityRule": "APPLICATION_NORM",
+                "specification": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки.",
+                "expectedResourceId": "08-02-001-08:need:access-ppe",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:access-ppe"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:quality-curing-cleanup",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:quality-curing-cleanup"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:quality-curing-cleanup",
+                "quantityRule": "APPLICATION_NORM_AND_PROJECT_FACT",
+                "specification": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза.",
+                "expectedResourceId": "08-02-001-08:need:quality-curing-cleanup",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:quality-curing-cleanup"
+                ],
+                "sourceNormQuantityAccepted": false
+              },
+              {
+                "unitId": null,
+                "category": "service",
+                "sourceId": "kg_krer08_2015_masonry_walls_ceramic_aac_systems_r1",
+                "condition": "ceramic-brick-above4",
+                "formulaId": "masonry:wall:krer08-02-001-08:formula:need:external-logistics",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "masonry:wall:krer08-02-001-08:need:external-logistics"
+                },
+                "operationId": "masonry:wall:krer08-02-001-08:operation:need:external-logistics",
+                "quantityRule": "PROJECT_FACT",
+                "specification": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи.",
+                "expectedResourceId": "08-02-001-08:need:external-logistics",
+                "requiredOperationIds": [
+                  "masonry:wall:krer08-02-001-08:operation:need:external-logistics"
+                ],
+                "sourceNormQuantityAccepted": false
+              }
+            ],
+            "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+            "residual": [
+              {
+                "key": "bearing-dpc",
+                "kind": "PROJECT_FACT",
+                "owner": "project structural designer / site owner",
+                "titleRu": "Опирание, отметки и применимая отсечная гидроизоляция",
+                "missingRu": "Акт готовности и принятый узел опоры/отсечки. Таблицы стен не включают автоматически новую опору, выравнивающий слой или DPC."
+              },
+              {
+                "key": "lintels-ties-reinforcement",
+                "kind": "PROJECT_FACT",
+                "owner": "structural designer",
+                "titleRu": "Перемычки, сопряжения, связи и армирование по проекту",
+                "missingRu": "Узлы проёмов/сопряжений, их спецификации и объёмы. Табличная сталь анкеров AAC не является расчётом конструктивного армирования; чужие конструкции вычитаются по§2.5."
+              },
+              {
+                "key": "source-system-fit",
+                "kind": "PROJECT_FACT",
+                "owner": "project designer / material technologist",
+                "titleRu": "Совместимость выбранного блока и растворной системы с проектом",
+                "missingRu": "Фактическая спецификация блоков с исходной объёмной массой900кг/м³,В3,5,2категории и исходный клейAEROC либо документированная допустимая адаптация. D400/D500, клей другой марки и блок300мм сюда не подставляются."
+              },
+              {
+                "key": "mixing-cutting-equipment",
+                "kind": "APPLICATION_NORM",
+                "owner": "application author / method engineer",
+                "titleRu": "Полный комплект приготовления клея и резки блоков",
+                "missingRu": "Таблица подтверждает труд приготовления/распиловки, но не даёт полный физический roster миксера с насадкой, дозирования, ёмкостей, пилы с полотном и пылезащиты; не назначать1комплект/м³."
+              },
+              {
+                "key": "machine-physical-provision",
+                "kind": "APPLICATION_NORM",
+                "owner": "method engineer / lifting planner",
+                "titleRu": "Оснастка подъёма, рабочие части и питание механизмов",
+                "missingRu": "Машино-часы не определяют стропы/тары/захваты/канаты, проверку грузов и полное питание/оснастку. Нужен цельный применимый метод подъёма и обеспечения; число машин и покупка из часов не выводятся."
+              },
+              {
+                "key": "access-ppe",
+                "kind": "APPLICATION_NORM",
+                "owner": "method engineer / occupational safety",
+                "titleRu": "Физические подмости, ручной инструмент и средства защиты",
+                "missingRu": "Включённый труд подмостей до4м не определяет достаточный физический комплект/число постов/ограждение/СИЗ. Свыше4м установка лесов учитывается отдельно; нельзя считать включённой из соседней колонки."
+              },
+              {
+                "key": "quality-curing-cleanup",
+                "kind": "APPLICATION_NORM_AND_PROJECT_FACT",
+                "owner": "quality / method engineer / site waste owner",
+                "titleRu": "Контроль, защита кладки, уборка и отходы",
+                "missingRu": "Нужны применимый ППР/программа контроля и количественно достаточное особое обеспечение/отходы. Финансовая категория НР не доказывает физическую достаточность, выполненный контроль или принятый объём вывоза."
+              },
+              {
+                "key": "external-logistics",
+                "kind": "PROJECT_FACT",
+                "owner": "logistics designer / site owner",
+                "titleRu": "Внешняя доставка и перемещение сверх исходной границы",
+                "missingRu": "Фактическая партия, масса, маршрут, разгрузка и границы уже учтённого подъёма/перемещения: кирпичдо5м,AACдо30м. Транспортные часы40-0001 не задают внешние рейсы и не разрешают повторную оплату той же подачи."
+              }
+            ],
+            "sourceKind": "NORMATIVE_OPERATION_MAP",
+            "evidenceSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+            "evidenceReferences": [
+              "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf"
+            ],
+            "newFullTechnologies": 0,
+            "fullTechnicalAcceptance": false,
+            "generatedFromCurrentRows": false,
+            "operationResourceBindingRequired": true
+          }
+        },
+        "excerpt_sha256": "a18416c3bfe17931e41d451af07236eb86c56136ae56916339f6cb3c1e8d39d4"
+      }
+    ]
+  },
+  "reason": "The first brick publisher registered the complete six-column sourcePack, including all AAC facts. Reuse its exact existing full rows. The consumer-specific independent completeness map is retained separately in each successor passport; a brick map is never used as an AAC completeness claim."
+}

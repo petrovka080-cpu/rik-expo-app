@@ -1,0 +1,154 @@
+{
+  "contract": "curing-integrated-existing-source-oracle/r145",
+  "rawFixture": "data/estimate-benchmarks/fixtures/concrete-curing-integrated-wall-a13-raw-r145.json",
+  "rawFixtureSha256": "86ba91bad54617899e244a2906d5cd5ca71f8fb5d4db35d965ed41b527dd3975",
+  "rawRowsSha256": "686debb3d3db54db2dc9aab54767b398be89a0fcd2942272e58b518943cf2d9e",
+  "membership": {
+    "release_id": "01417cef-3091-5012-844d-1bbd9e75cee1",
+    "catalog_id": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+    "definition_version_id": "17c7db90-0c2d-523b-a673-ae1b47ebfebc",
+    "approved_template_baseline_id": "4fbfec74-7195-50fc-9c72-5ace39c73f76",
+    "definition_hash": "64ca2993df836e098c5b316eb051637aee272ecff52c7ab306f9ffad122c4d67"
+  },
+  "counts": {
+    "membership": 1,
+    "definition": 1,
+    "baseline": 1,
+    "parameters": 507,
+    "formulas": 385,
+    "resources": 386,
+    "bindings": 326,
+    "normativeLocators": 5,
+    "normativeSources": 5,
+    "contentPassport": 1,
+    "publicIdentity": 1
+  },
+  "completeLineageV1": {
+    "entries": [
+      {
+        "sequence": 1,
+        "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+        "successor": {
+          "normId": "EXISTING_COMPLETE_DEEP_DEVICE_CONTROL_R3",
+          "contract": "monolithic-existing-deep-assembly-reuse/r3",
+          "sourceId": "root_monolithic_existing_deep_assembly_reuse_r3:wall",
+          "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+          "parentBaselineId": "096047f6-5bb1-5f02-baa7-54f16ba4d199",
+          "sourceFingerprint": "2744c6b024b6e1fa5923952eac47b4c4da1c90824aadc0aab0404a1aec09cb13",
+          "parentDefinitionId": "f5cbff31-80c2-5799-831b-5b97e560a14b",
+          "capturedParentSha256": "90f44e9173cb066f739856b36d07caff8375541907cd3820a8cc5b50c5c5923d"
+        },
+        "parentLifecycle": {
+          "contract": "gox-build.monolithic-family-physical-provision/r2",
+          "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+          "sourceFingerprint": "90f3071be037d8207d706aea998030554a21040cbf658cbf2f47ee18f490969e"
+        },
+        "parentBaselineId": "096047f6-5bb1-5f02-baa7-54f16ba4d199",
+        "parentDefinitionId": "f5cbff31-80c2-5799-831b-5b97e560a14b",
+        "capturedParentSha256": "90f44e9173cb066f739856b36d07caff8375541907cd3820a8cc5b50c5c5923d",
+        "parentDefinitionSha256": "4d3c4501515134d7785869dcaacb49d90ff6077d2f2780df3fec1ab7a9797ca4",
+        "previousSuccessorSha256": "d963594feee535e6523edf6c84ee0a8e4300150cbbae88b564d33ebeae493095",
+        "parentSourceDefinitionId": "96a425a6-423e-5132-ae79-b3daca20f528",
+        "parentSupersedesBaselineId": "d75bc7ab-d430-5f12-97e0-c44e03202fed",
+        "previousSourceMetadataSha256": "6d15074cb66e4b84d93a5aa59572cea8dedb267b090e9ff5e9fe55ff27f3321e"
+      },
+      {
+        "sequence": 2,
+        "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+        "successor": {
+          "normId": "18105-2018_22690-2015_TYPEII2448_GB_HAND_MEASURED_REPAIR_PARTIAL",
+          "contract": "monolithic-wall-existing-whole-strength-reuse/r57",
+          "sourceId": "monolithic-wall-selected-strength-and-measured-repair-r57",
+          "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+          "parentBaselineId": "0f8282f8-359b-58bf-b14d-3a122a6b9071",
+          "sourceFingerprint": "2b62c8c3a7e6647efa5283d2392b55e4215b9344a5a570d5351dca2a3696530a",
+          "parentDefinitionId": "462094da-b42e-5f09-afb8-1003b5ff86d2",
+          "capturedParentSha256": "e95d41ee208d508f54ae5589774f88ee6f071ae3ad055b6fa5ad971f7bfc7b79"
+        },
+        "parentLifecycle": {
+          "contract": "monolithic-existing-deep-assembly-reuse/r3",
+          "masterSha256": "e24f52197dab5a1bb4bbca8d139b5b6a5c722efce6c758b3efffd6266f1d78ed",
+          "sourceFingerprint": "2744c6b024b6e1fa5923952eac47b4c4da1c90824aadc0aab0404a1aec09cb13"
+        },
+        "parentBaselineId": "0f8282f8-359b-58bf-b14d-3a122a6b9071",
+        "parentDefinitionId": "462094da-b42e-5f09-afb8-1003b5ff86d2",
+        "capturedParentSha256": "e95d41ee208d508f54ae5589774f88ee6f071ae3ad055b6fa5ad971f7bfc7b79",
+        "parentDefinitionSha256": "2da2d9879e2b772557ca98c39e5cc37cafa2245ad5c5f61c3f79c3251b668ba3",
+        "previousSuccessorSha256": "f78fe92fd45ba96c654b402c6f33a3fc7329565aafdd59d354851d832d39fe21",
+        "parentSourceDefinitionId": "f5cbff31-80c2-5799-831b-5b97e560a14b",
+        "parentSupersedesBaselineId": "096047f6-5bb1-5f02-baa7-54f16ba4d199",
+        "previousSourceMetadataSha256": "e803b9809ceccb960d3c8fbeb336492efdfa905f44f8ac55fdffccdc1674dc58"
+      },
+      {
+        "sequence": 3,
+        "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+        "successor": {
+          "normId": "BOUNDED_PDS_MATERIAL_AND_LITERAL_CASE_STOCK_WITH_ACTUAL_PERIOD_NO_LIFETIME_RATE",
+          "contract": "concrete-curing-roller-whole-post/r108",
+          "sourceId": "gox_concrete_curing_exact_roller_case_method_r108",
+          "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+          "parentBaselineId": "d6910c35-5a28-5e1b-a1a9-85e785231e5e",
+          "sourceFingerprint": "593c21b41e0190ed7bd6fbc77315400126c58d213adbad9fc9fc68d8b94bfaf9",
+          "parentDefinitionId": "06577b67-09a3-5e79-8614-c7feb4aceda8",
+          "capturedParentSha256": "1eb15ef357e1d7870032e11b117361a0f6b222e15bc998830812802b912cff25"
+        },
+        "parentLifecycle": {
+          "contract": "monolithic-wall-existing-whole-strength-reuse/r57",
+          "masterSha256": "e24f52197dab5a1bb4bbca8d139b5b6a5c722efce6c758b3efffd6266f1d78ed",
+          "sourceFingerprint": "2b62c8c3a7e6647efa5283d2392b55e4215b9344a5a570d5351dca2a3696530a"
+        },
+        "parentBaselineId": "d6910c35-5a28-5e1b-a1a9-85e785231e5e",
+        "parentDefinitionId": "06577b67-09a3-5e79-8614-c7feb4aceda8",
+        "capturedParentSha256": "1eb15ef357e1d7870032e11b117361a0f6b222e15bc998830812802b912cff25",
+        "parentDefinitionSha256": "33cf63fbb500e3337be1597ec2bcde36d1fd5015e7114030ca85f03d5c7eca6a",
+        "previousSuccessorSha256": "188a007687477ae177cda211efd4805044cdfea7ac017e8016fb5d20cf58c479",
+        "parentSourceDefinitionId": "462094da-b42e-5f09-afb8-1003b5ff86d2",
+        "parentSupersedesBaselineId": "0f8282f8-359b-58bf-b14d-3a122a6b9071",
+        "previousSourceMetadataSha256": "1fd0f54b1d7b580133ce8f9b6b5a6a497c216979f70ed567af362b6c5fda8ca7"
+      }
+    ],
+    "contract": "master-retained-binding-lineage/v1"
+  },
+  "originalRetainedSuccessorV1": {
+    "normId": "ACTUAL_APPROVED_PHYSICAL_SCHEDULE_PLUS_PINNED_KG06_AND_FACTORY_ASSEMBLIES_R2",
+    "contract": "gox-build.monolithic-family-physical-provision/r2",
+    "sourceId": "gox_monolithic_family_physical_provision_r2:card8",
+    "parentBaselineId": "d75bc7ab-d430-5f12-97e0-c44e03202fed",
+    "sourceFingerprint": "90f3071be037d8207d706aea998030554a21040cbf658cbf2f47ee18f490969e",
+    "parentDefinitionId": "96a425a6-423e-5132-ae79-b3daca20f528",
+    "capturedParentSha256": "fc3626c06c953564cbdc8ee21f0959cab3828c7ade1f2b6f2196d2fe10af10b6"
+  },
+  "definition": {
+    "id": "17c7db90-0c2d-523b-a673-ae1b47ebfebc",
+    "catalog_id": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+    "definition_sha256": "64ca2993df836e098c5b316eb051637aee272ecff52c7ab306f9ffad122c4d67",
+    "rawRowSha256": "1fdfab6c6f0026978d69b85fa42aa3dea1b5c7cef2e6b53b38e729b80971bd65",
+    "sourceMetadataTopFacts": {
+      "contract": "concrete-curing-roller-whole-post/r108",
+      "normId": "06-01-031-04",
+      "sourceId": "master212_family_b_krer06_01_031_04_r1",
+      "masterSha256": "3f5f8c0e2f0ad1cdaf960d66d7561853fa0e5f70d269b6a8227cea549dcbe602",
+      "activationAllowed": false,
+      "productionEligible": false
+    },
+    "topMetadataSourceIdIsNotLatestAppendSourceId": true
+  },
+  "baselineIdentity": {
+    "id": "4fbfec74-7195-50fc-9c72-5ace39c73f76",
+    "catalog_id": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+    "definition_version_id": "17c7db90-0c2d-523b-a673-ae1b47ebfebc",
+    "source_definition_version_id": "06577b67-09a3-5e79-8614-c7feb4aceda8",
+    "supersedes_baseline_id": "d6910c35-5a28-5e1b-a1a9-85e785231e5e",
+    "accepted_release_id": "f37e4e1b-365b-5237-81e0-10861426b569",
+    "contract_version": "APPROVED_TEMPLATE_BASELINE_R54_V1"
+  },
+  "rootClosureSha256": "8214009f9d3fd956ee79886773b69f72433ba4c72eb11923d06c56c76ad044f1",
+  "captureManifestSha256": "50185265818dbbdef4d4815033b27c7d1f124d21e18aadfd81a13dc27a632d16",
+  "historicalFixtureSha256": "ff0d962873d1942a518eb76fb13b3f2ec11e31dd7e37985efb5fc6b710ea99ed",
+  "historicalCaptureSha256": "1eb15ef357e1d7870032e11b117361a0f6b222e15bc998830812802b912cff25",
+  "sourceAdmission": false,
+  "normalLockedFullGuardSatisfied": false,
+  "full": false,
+  "oldPgRawByteParity": "UNKNOWN",
+  "oldNativeOwnershipReusable": false
+}

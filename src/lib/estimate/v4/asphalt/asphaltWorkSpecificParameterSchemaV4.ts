@@ -13,7 +13,7 @@ import {
   ASPHALT_WORK_ID_V4,
   asphaltParameterIdV4,
 } from "./asphaltV4Constants";
-import { KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID } from "../domainFactory/professionalPhysicalNormApplicabilityV1";
+import { KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID } from "../../contracts/krer2706020AsphaltProfileIdentityV1";
 
 type ParameterSeed = {
   key: string;

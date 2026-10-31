@@ -1,0 +1,1171 @@
+{
+  "contract": "rik-expo-app.ready-wall-finishing-provision-group.r8",
+  "predecessorContract": "rik-expo-app.ready-wall-finishing-provision-group.r7",
+  "predecessorPins": [
+    {
+      "path": "src/lib/estimate/v4/interiorWallFinishingProvisionGroupR7.ts",
+      "sha256": "4bfd05caebb026361e01d98d9ce5628716ef76328720fd97d16b84b6ba63c4ea"
+    },
+    {
+      "path": "src/lib/estimate/v4/interiorWallFinishingProvisionGroupR7.test.ts",
+      "sha256": "9675b0ef6e5007431d92f504ea92c1e2d668d72db078bc08dcee8e5eb45d00f3"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/interior-wall-finishing-provision-group-r7.json",
+      "sha256": "ad430984fbe4c619439beb72884e1c857ca4a2575291959988c0a2c4abf57276"
+    },
+    {
+      "path": "src/lib/estimate/v4/normalHandPreparationProvisionProfileR1.ts",
+      "sha256": "fea406191512493cffd643127b8b17202ef4abcca1632892b0f106c2be206138"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/normal-hand-preparation-provision-r1.json",
+      "sha256": "7bffddfd20c455dfb22759781150114605514ed94b6b256301e89dc610f101fc"
+    }
+  ],
+  "published": false,
+  "fullTechnicalAcceptance": false,
+  "activeConsumers": [
+    "improved-wall-01",
+    "deep-primer-00603"
+  ],
+  "guardedCandidate": "high-quality-wall-05",
+  "titleRu": "Цельное обеспечение ручного поста VGT: выбранная сушка рук и точный остаток",
+  "commonDryingProfileContract": "normal-hand-preparation-drying.r1",
+  "sources": [
+    {
+      "name": "arhai-surgical-hand-antisepsis-v6-2-20231018.pdf",
+      "url": "https://www.nipcm.hps.scot.nhs.uk/web-resources-container/literature-review-hand-hygiene-surgical-hand-antisepsis-in-the-clinical-setting/",
+      "path": ".release-runtime/r568/normal-hand-preparation-drying-r1/sources/arhai-surgical-hand-antisepsis-v6-2-20231018.pdf",
+      "sha256": "2521d19d4286c1c32f97724e8e18f74792ca00068bb9dad615cf8039b15afa66",
+      "bytes": 516180,
+      "id": "arhai-two-fresh-towel-physical-drying-method-r1",
+      "title": "ARHAI Scotland Surgical hand antisepsis literature review v6.2,18October2023",
+      "locatorRu": "PDF33; PDF42–43: дать воде стечь; промакивать свежим одноразовым полотенцем одну руку/предплечье от пальцев к локтю; вторым повторить для другой стороны; после предплечья не возвращаться к кисти, сразу выбросить. Два полотенца — выбранный физический метод сушки, не строительная медицинская норма.",
+      "role": "PHYSICAL_DRYING_METHOD_TWO_SEPARATE_TOWELS_NO_CLINICAL_NORM_TRANSFER"
+    },
+    {
+      "name": "medline-proxima-catalogue-202607.pdf",
+      "url": "https://assets.medline.eu/Docs/Products/BRO_EN%20Proxima_Catalogue_2026_ML1215_EN_July_2026.pdf",
+      "path": ".release-runtime/r568/normal-hand-preparation-drying-r1/sources/medline-proxima-catalogue-202607.pdf",
+      "sha256": "15a967446142b4e819e12fd2c41ceb2f0f12eb6d1f888dde01f8da4908265d6c",
+      "bytes": 52710372,
+      "id": "medline-paired-hand-towel-dynjpe2220a-2026-r1",
+      "title": "Medline Proxima Catalogue,July2026",
+      "locatorRu": "PDF164,Hand towels:DYNJPE2220A,HNTOM3,Hand towel with scrim,componentquantity2,37×69см,cellulose,100pairedpacks/case. Количество в carton не назначается потребностью проекта.",
+      "role": "EXACT_PAIRED_HAND_TOWEL_SPECIFICATION_AND_TWO_PIECE_SUPPLY_QUANTUM"
+    },
+    {
+      "name": "imc-f63-503-specs-20250324.pdf",
+      "url": "https://middleby-cdn.com/specsheets/IMC_F63_503_AutomatedSpecSheet.pdf?update_date=1746080657",
+      "path": ".release-runtime/r568/normal-hand-preparation-drying-r1/sources/imc-f63-503-specs-20250324.pdf",
+      "sha256": "9a639e60e29084515d4edb95b6fe571314ba04791a8ae89277676d967d95d3b7",
+      "bytes": 818204,
+      "id": "imc-f63-503-new-water-cycle-lead-r8",
+      "title": "IMC F63/503 manufacturer specification,24March2025",
+      "locatorRu": "PDF1–2: ручной ножной насос без электроэнергии; свежий бак20л,до100мл/нажатие,200dispenses, внутренний отдельный сбор стока. Не указаны достаточные нажатия/вода на полный цикл подготовки,priming/очистка/сток. Не выбран как количественное закрытие.",
+      "role": "NEW_MECHANICAL_WASH_LEAD_WITH_UNPROVEN_COMPLETE_CYCLE_NOT_SELECTED"
+    }
+  ],
+  "drying": {
+    "existingResourceKey": "open-hand-drying-towels",
+    "supplyResourceKey": "hand-drying-towels-order",
+    "nameRu": "Полотенца Medline DYNJPE2220A,37×69см",
+    "detailNameRu": "Расход одноразовых полотенец для подготовки рук",
+    "unitId": "pcs",
+    "orderQuantumPcs": "2",
+    "costOwnerKey": "whole-work",
+    "sourceId": "arhai-two-fresh-towel-physical-drying-method-r1",
+    "closedNeedId": "hand-drying-towels",
+    "acceptedBudgetAuthority": "EXACT_R7_METADATA_BUDGET_CHECKED_AGAINST_INHERITED_NORMAL_HAND_CLEANSER_NOMINAL_FORMULA",
+    "newLabourAdded": false,
+    "newDeviceAdded": false,
+    "inheritedWasteResourceKeys": [
+      "tool-waste-bin",
+      "tool-waste-bin-lid"
+    ],
+    "paperDispenserNotRequiredReason": "Individually protected manufacturer paired packs opened at use; no roll/folded-sheet dispenser method is selected."
+  },
+  "physicalNeedsClosed": [
+    "hand-drying-towels"
+  ],
+  "requiredNeeds": [
+    {
+      "id": "washing-water",
+      "state": "QUANTITY_REQUIRED",
+      "resourceKind": "CONSUMED_MATERIAL",
+      "unitId": "l",
+      "knownResourceKeys": [
+        "tool-waterborne-brush",
+        "tool-application-pail",
+        "tool-application-pail-lid"
+      ],
+      "unresolvedComponentIds": [
+        "clean-water-total-demand",
+        "clean-water-delivery-and-collection",
+        "wash-effluent-route-and-recipient",
+        "hand-washing-clean-water-demand"
+      ],
+      "sourceIds": [
+        "vgt-current-ready-putty-r3",
+        "vgt-current-deep-primer0301-r3",
+        "vgt-current-covering-primer-r3",
+        "vgt-current-wall-paint-2180-r3",
+        "paint-labour-cards-1973-primary-r5"
+      ],
+      "reasonRu": "VGT требует промывку водой. У выбранного ручного поста нет проверенного общего расхода на инструменты/тару/руки,обновлений и конечной чистоты. ColorFree50 не выбран как ложное закрытие:50л камера не расход; нужны mains/backflow,привод,фильтры/реагент и принятый маршрут/получатель стока. Их наличие не предполагается. Вода остаётся потребляемыми неизвестными литрами. Перед каждым нанесением MARLY SKIN руки должны быть вымыты и тщательно высушены; вода для рук входит в эту же именованную строку. Число нанесений не задаёт литров мытья. Вода ухода за цементом сюда не переносится. Новая проверкаIMCF63/503:100мл относится к нажатиям, не к полной мойке. Для баланса не хватает воспроизводимого wet/rub/rinse цикла,достаточного числа нажатий/времени/протока,priming,смены/очистки и подтверждённого приёма стока; подготовлен внешний запрос без отправки."
+    },
+    {
+      "id": "ppe",
+      "state": "QUANTITY_REQUIRED",
+      "resourceKind": "UNRESOLVED_PHYSICAL_PROVISION",
+      "unitId": "item",
+      "knownResourceKeys": [
+        "tool-work-clothing",
+        "tool-waterproof-gloves",
+        "tool-eye-protection",
+        "skin-protection-foam"
+      ],
+      "unresolvedComponentIds": [
+        "current-complete-product-safety-sections",
+        "respiratory-protection-selection-fit-and-renewal",
+        "glove-chemical-compatibility",
+        "protective-footwear-profile",
+        "eye-skin-rinsing-provision"
+      ],
+      "sourceIds": [
+        "tk107-05-primary-author-scan-r5",
+        "vgt-putty-incomplete-expired-sds-r5",
+        "vgt-primer-incomplete-expired-sds-r5",
+        "vgt-paint-incomplete-expired-sds-r5"
+      ],
+      "reasonRu": "Защитная пена MARLY SKIN количественно обеспечена по заводскому плановому выходу и4чобновлению с отдельным учётом фаз. Это дополнительная защита рук, не химстойкость перчаток и не замена другихСИЗ. Не доказаны полные актуальные safety sectionsVGT,дыхание/концентрации/посадка/обновление,химсовместимость перчаток,спецобувь и промывание глаз/кожи.8чмаски не доказывают достаточность."
+    },
+    {
+      "id": "handling-profile",
+      "state": "QUANTITY_REQUIRED",
+      "resourceKind": "UNRESOLVED_PHYSICAL_PROVISION",
+      "unitId": "item",
+      "knownResourceKeys": [
+        "operators",
+        "lift",
+        "lift-preputty",
+        "truck",
+        "tool-waste-bin",
+        "tool-waste-bin-lid"
+      ],
+      "unresolvedComponentIds": [
+        "actual-compatible-lift-and-load-securing",
+        "actual-truck-and-loading-provision",
+        "operator-and-safe-route",
+        "waste-recipient-and-route",
+        "abrasive-storage-and-conditioning"
+      ],
+      "sourceIds": [
+        "kg-krer15-ready-acrylic-wall-150400701-r3",
+        "kg-krer15-wall-primer150400603-source-r4",
+        "guil-toro-d-rejected-range-r5",
+        "tk107-05-primary-author-scan-r5"
+      ],
+      "reasonRu": "Нормативные машино-часы и машинисты сохраняются. Фактический подъём/подача со средствами загрузки/фиксации, оператором и маршрутом не доказаны. GUIL PDF содержит D-401…407 на350/400кг, не предполагаемый D-602/500кг; ACT-04 не включена в вилы. Нет основания заменить исходные подъёмник500кг и автомобиль5т этим каталогом, назначить1рейс/цикл либо считать обычную тару грузозахватом. Принятый путь/получатель отходов и склад/выдержка шкурки также остаются открытыми."
+    }
+  ],
+  "independentExpected": [
+    {
+      "key": "whole-work",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false,
+      "category": "work",
+      "unitId": "m2"
+    },
+    {
+      "key": "preputty-primer-order",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": false,
+      "category": "material",
+      "unitId": "kg"
+    },
+    {
+      "key": "ready-putty-order",
+      "operationIds": [
+        "full-putty"
+      ],
+      "includedComponent": false,
+      "category": "material",
+      "unitId": "kg"
+    },
+    {
+      "key": "primer-order",
+      "operationIds": [
+        "prime"
+      ],
+      "includedComponent": false,
+      "category": "material",
+      "unitId": "kg"
+    },
+    {
+      "key": "paint-order",
+      "operationIds": [
+        "two-coat-paint"
+      ],
+      "includedComponent": false,
+      "category": "material",
+      "unitId": "kg"
+    },
+    {
+      "key": "abrasive-consumed",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true,
+      "category": "material",
+      "unitId": "m2"
+    },
+    {
+      "key": "rags-consumed",
+      "operationIds": [
+        "preputty-prime",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "material",
+      "unitId": "kg"
+    },
+    {
+      "key": "workers",
+      "operationIds": [
+        "preparation",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "labor",
+      "unitId": "man_hour"
+    },
+    {
+      "key": "workers-preputty",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": true,
+      "category": "labor",
+      "unitId": "man_hour"
+    },
+    {
+      "key": "workers-total",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "labor",
+      "unitId": "man_hour"
+    },
+    {
+      "key": "operators",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "labor",
+      "unitId": "man_hour"
+    },
+    {
+      "key": "lift",
+      "operationIds": [
+        "preparation",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "machine_hour"
+    },
+    {
+      "key": "lift-preputty",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "machine_hour"
+    },
+    {
+      "key": "truck",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "machine_hour"
+    },
+    {
+      "key": "rags-contribution-preputty",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": true,
+      "category": "material",
+      "unitId": "kg"
+    },
+    {
+      "key": "rags-contribution-finish",
+      "operationIds": [
+        "preparation",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "material",
+      "unitId": "kg"
+    },
+    {
+      "key": "truck-contribution-preputty",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "machine_hour"
+    },
+    {
+      "key": "truck-contribution-finish",
+      "operationIds": [
+        "preparation",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "machine_hour"
+    },
+    {
+      "key": "ordinary-access",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false,
+      "category": "service",
+      "unitId": ""
+    },
+    {
+      "key": "ordinary-accompanying",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false,
+      "category": "service",
+      "unitId": ""
+    },
+    {
+      "key": "open-washing-water",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false,
+      "category": "material",
+      "unitId": "l"
+    },
+    {
+      "key": "open-access",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false,
+      "category": "equipment",
+      "unitId": ""
+    },
+    {
+      "key": "open-ppe",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "open-handling-profile",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false,
+      "category": "service",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-putty-spatula",
+      "operationIds": [
+        "full-putty",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-waterborne-brush",
+      "operationIds": [
+        "preputty-prime",
+        "prime",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-application-pail",
+      "operationIds": [
+        "preputty-prime",
+        "prime",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-application-pail-lid",
+      "operationIds": [
+        "preputty-prime",
+        "prime",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-sanding-holder",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-paper-shears",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-paper-rule",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-paper-mark",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-dedust-brush",
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-floor-brush",
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-dustpan",
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-waste-bin",
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-work-clothing",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-waterproof-gloves",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "abrasive-sheet-provision",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true,
+      "category": "material",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-waste-bin-lid",
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "tool-abrasive-storage",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item"
+    },
+    {
+      "key": "process-preparation",
+      "operationIds": [
+        "preparation"
+      ],
+      "includedComponent": true,
+      "category": "work",
+      "unitId": "m2"
+    },
+    {
+      "key": "process-preputty-prime",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": true,
+      "category": "work",
+      "unitId": "m2"
+    },
+    {
+      "key": "process-full-putty",
+      "operationIds": [
+        "full-putty"
+      ],
+      "includedComponent": true,
+      "category": "work",
+      "unitId": "m2"
+    },
+    {
+      "key": "process-full-sand",
+      "operationIds": [
+        "full-sand"
+      ],
+      "includedComponent": true,
+      "category": "work",
+      "unitId": "m2"
+    },
+    {
+      "key": "process-prime",
+      "operationIds": [
+        "prime"
+      ],
+      "includedComponent": true,
+      "category": "work",
+      "unitId": "m2"
+    },
+    {
+      "key": "process-primer-sand",
+      "operationIds": [
+        "primer-sand"
+      ],
+      "includedComponent": true,
+      "category": "work",
+      "unitId": "m2"
+    },
+    {
+      "key": "process-two-coat-paint",
+      "operationIds": [
+        "two-coat-paint"
+      ],
+      "includedComponent": true,
+      "category": "work",
+      "unitId": "m2"
+    },
+    {
+      "key": "process-ordinary-completion",
+      "operationIds": [
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "work",
+      "unitId": "m2"
+    },
+    {
+      "key": "tool-manual-putty-pan",
+      "operationIds": [
+        "full-putty",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "MANUAL_MIXING"
+    },
+    {
+      "key": "tool-manual-putty-pan-lid",
+      "operationIds": [
+        "full-putty",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "MANUAL_MIXING"
+    },
+    {
+      "key": "access-locking-pins",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-caster-set",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-platform",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-guardrail-braces",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-long-toeboards",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-end-toeboards",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-base-plates",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-folding-base",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-frames",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-spanners",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-spirit-level",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-identification-board",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "access-board-marker",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "ACCESS"
+    },
+    {
+      "key": "tool-eye-protection",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "equipment",
+      "unitId": "item",
+      "assetRole": "PPE_PART"
+    },
+    {
+      "key": "skin-protection-foam",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "category": "material",
+      "unitId": "item"
+    },
+    {
+      "key": "open-hand-cleanser",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false,
+      "category": "material",
+      "unitId": "l",
+      "quantityRule": "SOURCE_OR_SAVED_MANUAL_EFFECTIVE_CONSUMED_DEMAND_CALCULATION_DETAIL"
+    },
+    {
+      "key": "open-hand-drying-towels",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false,
+      "category": "material",
+      "unitId": "pcs",
+      "quantityRule": "EFFECTIVE_CONSUMED_DRYING_TOWELS_DETAIL_RETAIN_LEGACY_MANUALS"
+    },
+    {
+      "key": "tool-hand-cleanser-dispenser",
+      "category": "equipment",
+      "unitId": "item",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "quantityRule": "ONE_FUNCTIONAL_MANUFACTURER_COMPATIBLE_DISPENSER_FOR_SELECTED_SERIAL_POST"
+    },
+    {
+      "key": "hand-cleanser-order",
+      "category": "material",
+      "unitId": "l",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "quantityRule": "WHOLE_ONE_LITRE_CARTRIDGES_FOR_EFFECTIVE_DEMAND_WITH_LEGACY_MANUAL_BALANCE"
+    },
+    {
+      "key": "hand-drying-towels-order",
+      "category": "material",
+      "unitId": "pcs",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true,
+      "quantityRule": "TWO_FRESH_HAND_TOWELS_PER_ACCEPTED_PREPARATION_WHOLE_PAIRED_PACKS"
+    }
+  ],
+  "notApplicableCategories": [
+    {
+      "category": "dry-mix-batch-water",
+      "reason": "Selected products are ready and normal consistency; no dry product or source-directed wetting. Optional thinning is not selected; washing water remains a real open requirement."
+    },
+    {
+      "category": "fasteners-reinforcing-mesh-corner-beads",
+      "reason": "Flat existing sound level plaster without cracks, corners/reveals or structural repair; no source operation requiring these products."
+    },
+    {
+      "category": "sprayer-compressor",
+      "reason": "Selected manual brush/roller application; these are source alternatives, not mandatory simultaneous machines. Manual-applicator profile remains open."
+    },
+    {
+      "category": "new-independent-tool-purchases",
+      "reason": "Intended provision is contractor inventory through one work owner. This avoids duplicate purchase but does not resolve currently unproved physical equipment."
+    },
+    {
+      "category": "external-delivery-distance",
+      "reason": "Declared local finish starts from products at the on-site store. Source truck hours are not external trips; full from-supplier delivery is not claimed."
+    }
+  ],
+  "remainingSourceConditions": [
+    "ordinary-access",
+    "ordinary-accompanying"
+  ],
+  "processRequirements": [
+    "open-access"
+  ],
+  "selectedScopeQuantitiesComplete": false,
+  "physicalResourceCoverageComplete": false,
+  "waterClosure": {
+    "status": "MISSING_PROVEN_COMPLETE_CYCLE",
+    "candidateSourceId": "imc-f63-503-new-water-cycle-lead-r8",
+    "selected": false,
+    "requestPath": "work/master28-b/vgt-kit-r8/external-requests.json",
+    "returnCondition": "Manufacturer-supported complete hand-preparation cycle plus all noncyclic losses/maintenance and documented effluent route sufficient to form reproducible balance; capacity and upper per-press volume alone do not satisfy."
+  },
+  "sourceResearch": {
+    "startedAtUtc": "2026-10-21T15:47:00Z",
+    "newHypotheses": [
+      "Autonomous mechanically driven complete handwash cycle",
+      "Two fresh surgical-design hand towels as selected nonclinical physical drying protocol"
+    ],
+    "knownRejectedOldLeadsNotRepeated": [
+      "STORCH50l-as-consumption",
+      "uvex8h-as-sufficient-mask-count",
+      "Torksingle-sheet-as-sufficient-dry-count"
+    ],
+    "maximumFruitlessSearchMinutes": 20,
+    "waterSearchEndedAtUtc": "2026-10-21T15:59:33.338008+00:00",
+    "waterSearchResult": "Confirmed autonomous drive,measured upper press dose and separate collection; complete cycle remains unproved. Switch to independent evidenced drying protocol."
+  }
+}

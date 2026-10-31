@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   concretePlacementPromptDetailsR1,
@@ -14,7 +14,7 @@ import {
 } from "../../src/lib/estimate/v4/concreteSlabConcretePlacementR1";
 
 describe("concrete slab concrete placement canonical family", () => {
-  it("compiles seven distinct project schedules through the shared owner", async () => {
+  it("compiles five distinct project schedules through the shared owner", async () => {
     const fixtures = new Set<string>();
     const rowCounts = new Set<number>();
     for (const target of CONCRETE_SLAB_CONCRETE_PLACEMENT_TARGETS) {
@@ -28,7 +28,7 @@ describe("concrete slab concrete placement canonical family", () => {
       fixtures.add(JSON.stringify(input));
       rowCounts.add(compiled.rows.length);
     }
-    expect(fixtures.size).toBe(7);
+    expect(fixtures.size).toBe(5);
     expect(rowCounts.size).toBeGreaterThan(1);
   });
 

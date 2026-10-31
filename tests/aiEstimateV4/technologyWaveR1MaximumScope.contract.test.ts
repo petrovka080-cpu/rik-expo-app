@@ -1,6 +1,8 @@
 import {
   buildDrywallIndividualProfessionalEstimatePassportV5,
   drywallMaximumScopeLinesV5,
+  DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4,
+  type DrywallArchitecturalElementVariantV4,
 } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete";
 import { compileProfessionalProjectAssemblyV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
 import {
@@ -28,20 +30,29 @@ describe("BATCH-002 active Wave-55 maximum professional estimate expansion R1", 
       count: part.child_assemblies.flatMap((child) => child.rows).length,
     }));
 
-    expect(parts).toHaveLength(55);
-    expect(rowCounts.reduce((sum, item) => sum + item.count, 0)).toBe(5_037);
+    expect(DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4).toHaveLength(11*3);
+    expect(parts.map(part=>part.contract.catalog_id).sort())
+      .toEqual([...DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4].sort());
+    expect(parts.every(part=>!/(?:small_area|large_area)$/.test(part.contract.catalog_id))).toBe(true);
+    expect(new Set(rowCounts.map(item=>item.catalogId)).size).toBe(parts.length);
     for (const item of rowCounts) {
       const [minimum, maximum] = NATURAL_ROW_RANGES[item.operation];
       expect(item.count).toBeGreaterThanOrEqual(minimum);
       expect(item.count).toBeLessThanOrEqual(maximum);
     }
-    expect(Math.min(...rowCounts.map((item) => item.count))).toBe(74);
-    expect(Math.max(...rowCounts.map((item) => item.count))).toBe(114);
+  });
+
+  test('retired size-only identities cannot return as active maximum-scope work',()=>{
+    for(const suffix of ['small_area','large_area']) {
+      const retired='drywall_ceiling_interior_curve_frame_'+suffix;
+      expect(DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4).not.toContain(retired);
+      expect(()=>exactTechnologyWaveParts(retired)).toThrow('TECHNOLOGY_WAVE_INVENTORY_MISSING');
+    }
   });
 
   test("creates an individual V5 passport with a disposition for every candidate", () => {
     const passports = allTechnologyWaveParts().map(buildDrywallIndividualProfessionalEstimatePassportV5);
-    expect(passports).toHaveLength(55);
+    expect(passports).toHaveLength(DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4.length);
     for (const passport of passports) {
       const candidateDecisions = [
         ...passport.materialCandidateDecisions.filter((item) => !item.candidate_id.startsWith("typed-child:")),
@@ -54,7 +65,7 @@ describe("BATCH-002 active Wave-55 maximum professional estimate expansion R1", 
       ];
       const expected = drywallMaximumScopeLinesV5(
         passport.operationType as keyof typeof NATURAL_ROW_RANGES,
-        passport.variantType as "standard" | "large_area" | "small_area" | "technical_room" | "wet_zone",
+        passport.variantType as DrywallArchitecturalElementVariantV4,
       );
       expect(candidateDecisions).toHaveLength(expected.length);
       expect(candidateDecisions.every((item) => item.decision === "INCLUDED" && item.row_id)).toBe(true);

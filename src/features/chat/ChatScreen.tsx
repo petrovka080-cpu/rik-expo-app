@@ -18,6 +18,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "../../ui/FlashList";
 import {
   CHAT_BACKEND_HINT,
+  CHAT_MESSAGE_PAGE_SIZE,
+  createChatSendIntentId,
   deleteListingChatMessage,
   fetchListingChatMessages,
   isChatBackendMissingError,
@@ -41,6 +43,7 @@ import { loadMarketListingById } from "../market/market.repository";
 import type { MarketHomeListingCard } from "../market/marketHome.types";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 import { styles } from "./ChatScreen.styles";
+import { hasChatContentChanged, mergeChatMessages, reconcileLatestChatMessages } from "./chatThreadState";
 
 function getParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? String(value[0] || "") : String(value || "");
@@ -127,10 +130,26 @@ export default function ChatScreen() {
   const [backendMissing, setBackendMissing] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messageScopeId, setMessageScopeId] = useState(listingId);
+  const [hasOlder, setHasOlder] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const [input, setInput] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const listRef = useRef<FlatList<ChatMessage>>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
+  const versionRef = useRef(0);
+  const latestRequestRef = useRef(0);
+  const contentVersionRef = useRef(0);
+  const olderInFlightRef = useRef(false);
+  const nearBottomRef = useRef(true);
+  const scrollToEndRef = useRef(true);
+  const readInFlightRef = useRef(new Set<string>());
+  const pendingSendRef = useRef<{ text: string; id: string } | null>(null);
+  const commitMessages = useCallback((next: ChatMessage[]) => {
+    messagesRef.current = next;
+    setMessages(next);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -153,19 +172,56 @@ export default function ChatScreen() {
       return;
     }
 
+    const version = versionRef.current;
+    const contentVersion = contentVersionRef.current;
+    const request = ++latestRequestRef.current;
     try {
       const nextMessages = await fetchListingChatMessages(listingId);
-      setMessages(nextMessages);
+      if (version !== versionRef.current || request !== latestRequestRef.current
+        || contentVersion !== contentVersionRef.current) return;
+      const reconciled = reconcileLatestChatMessages(messagesRef.current, nextMessages, CHAT_MESSAGE_PAGE_SIZE);
+      scrollToEndRef.current = nearBottomRef.current;
+      commitMessages(reconciled.messages);
+      if (reconciled.complete) setHasOlder(false);
+      else if (reconciled.resetHistory) setHasOlder(true);
       setErrorText(null);
       setBackendMissing(false);
     } catch (error: unknown) {
+      if (version !== versionRef.current || request !== latestRequestRef.current) return;
       const message = error instanceof Error ? error.message : "Не удалось загрузить чат.";
       setErrorText(message);
       setBackendMissing(isChatBackendMissingError(error) || message.includes(CHAT_BACKEND_HINT));
     } finally {
-      setLoading(false);
+      if (version === versionRef.current && request === latestRequestRef.current
+        && (contentVersion === contentVersionRef.current || messagesRef.current.length > 0)) setLoading(false);
     }
-  }, [listingId]);
+  }, [commitMessages, listingId]);
+
+  const loadOlder = useCallback(async () => {
+    const oldest = messagesRef.current[0];
+    if (!oldest || !hasOlder || olderInFlightRef.current || messageScopeId !== listingId) return;
+    const version = versionRef.current;
+    const contentVersion = contentVersionRef.current;
+    olderInFlightRef.current = true;
+    setLoadingOlder(true);
+    try {
+      const page = await fetchListingChatMessages(listingId, CHAT_MESSAGE_PAGE_SIZE, {
+        createdAt: oldest.created_at, id: oldest.id,
+      });
+      if (version !== versionRef.current || contentVersion !== contentVersionRef.current
+        || messagesRef.current[0]?.id !== oldest.id) return;
+      scrollToEndRef.current = false;
+      commitMessages(mergeChatMessages(page, messagesRef.current));
+      setHasOlder(page.length === CHAT_MESSAGE_PAGE_SIZE);
+    } catch (error: unknown) {
+      if (version === versionRef.current) setErrorText(error instanceof Error ? error.message : "Не удалось загрузить ранние сообщения.");
+    } finally {
+      if (version === versionRef.current) {
+        olderInFlightRef.current = false;
+        setLoadingOlder(false);
+      }
+    }
+  }, [commitMessages, hasOlder, listingId, messageScopeId]);
 
   useEffect(() => {
     let active = true;
@@ -189,53 +245,118 @@ export default function ChatScreen() {
   }, [listingId]);
 
   useEffect(() => {
+    versionRef.current += 1;
+    latestRequestRef.current += 1;
+    contentVersionRef.current = 0;
+    olderInFlightRef.current = false;
+    readInFlightRef.current = new Set();
+    pendingSendRef.current = null;
+    nearBottomRef.current = true;
+    scrollToEndRef.current = true;
+    commitMessages([]);
+    setMessageScopeId(listingId);
+    setInput("");
+    setHasOlder(false);
+    setLoadingOlder(false);
+    setSending(false);
+    setLoading(true);
+    setBackendMissing(false);
+    setErrorText(null);
     void loadMessages();
-  }, [loadMessages]);
+    return () => { versionRef.current += 1; };
+  }, [commitMessages, listingId, loadMessages]);
 
   useEffect(() => {
     if (!listingId || backendMissing) return;
-    const unsubscribe = subscribeToListingChatMessages(listingId, () => {
-      void loadMessages();
+    const version = versionRef.current;
+    let refresh: ReturnType<typeof setTimeout> | undefined;
+    const scheduleRefresh = () => {
+      if (refresh === undefined) refresh = setTimeout(() => {
+        refresh = undefined;
+        void loadMessages();
+      }, 250);
+    };
+    const unsubscribe = subscribeToListingChatMessages(listingId, (change) => {
+      if (version !== versionRef.current) return;
+      const existing = messagesRef.current.find((row) => row.id === change.id);
+      if (change.eventType === "DELETE" || change.message?.is_deleted) {
+        contentVersionRef.current += 1;
+        if (change.id) commitMessages(messagesRef.current.filter((row) => row.id !== change.id));
+        scheduleRefresh();
+        return;
+      }
+      if (change.eventType === "UPDATE" && change.message && existing) {
+        if (hasChatContentChanged(existing, change.message)) {
+          contentVersionRef.current += 1;
+          scheduleRefresh();
+        }
+        commitMessages(mergeChatMessages(messagesRef.current, [{ ...change.message, user: existing.user }]));
+        return;
+      }
+      if (change.eventType === "UPDATE") contentVersionRef.current += 1;
+      scheduleRefresh();
     });
-    return unsubscribe;
-  }, [backendMissing, listingId, loadMessages]);
+    return () => { if (refresh !== undefined) clearTimeout(refresh); unsubscribe(); };
+  }, [backendMissing, commitMessages, listingId, loadMessages]);
 
   useEffect(() => {
-    if (messages.length === 0) return;
-    void markListingChatMessagesRead(messages);
-    requestAnimationFrame(() => {
-      listRef.current?.scrollToEnd({ animated: true });
+    if (!currentUserId) return;
+    const tracking = readInFlightRef.current;
+    const unread = messages.filter((row) => row.user_id !== currentUserId
+      && !row.read_by?.includes(currentUserId) && !tracking.has(row.id));
+    if (!unread.length) return;
+    unread.forEach((row) => tracking.add(row.id));
+    void markListingChatMessagesRead(unread).catch(() => {}).finally(() => {
+      unread.forEach((row) => tracking.delete(row.id));
     });
-  }, [messages]);
+  }, [currentUserId, messages]);
 
   const handleSend = useCallback(async () => {
     const nextText = input.trim();
-    if (!listingId || !nextText || sending) return;
+    if (!listingId || !nextText || sending || messageScopeId !== listingId) return;
 
+    const version = versionRef.current;
     setSending(true);
     try {
-      const created = await sendListingChatMessage(listingId, nextText);
-      setMessages((prev) => [...prev, created]);
+      if (!pendingSendRef.current || pendingSendRef.current.text !== nextText) {
+        pendingSendRef.current = { text: nextText, id: createChatSendIntentId() };
+      }
+      const created = await sendListingChatMessage(listingId, nextText, pendingSendRef.current.id);
+      if (version !== versionRef.current) return;
+      latestRequestRef.current += 1;
+      scrollToEndRef.current = true;
+      commitMessages(mergeChatMessages(messagesRef.current, [created]));
+      pendingSendRef.current = null;
       setInput("");
       setErrorText(null);
+      setLoading(false);
+      if (loading) void loadMessages();
     } catch (error: unknown) {
+      if (version !== versionRef.current) return;
       const message = error instanceof Error ? error.message : "Не удалось отправить сообщение.";
       Alert.alert("Чат", message);
       setErrorText(message);
     } finally {
-      setSending(false);
+      if (version === versionRef.current) setSending(false);
     }
-  }, [input, listingId, sending]);
+  }, [commitMessages, input, listingId, loading, loadMessages, messageScopeId, sending]);
 
   const handleDelete = useCallback(async (messageId: string) => {
+    const version = versionRef.current;
     try {
       await deleteListingChatMessage(messageId);
-      setMessages((prev) => prev.filter((message) => message.id !== messageId));
+      if (version !== versionRef.current) return;
+      if (messagesRef.current.some((message) => message.id === messageId)) {
+        contentVersionRef.current += 1;
+        commitMessages(messagesRef.current.filter((message) => message.id !== messageId));
+        void loadMessages();
+      }
     } catch (error: unknown) {
+      if (version !== versionRef.current) return;
       const message = error instanceof Error ? error.message : "Не удалось удалить сообщение.";
       Alert.alert("Чат", message);
     }
-  }, []);
+  }, [commitMessages, loadMessages]);
 
   const renderItem = useCallback(
     ({ item }: { item: ChatMessage }) => (
@@ -395,7 +516,7 @@ export default function ChatScreen() {
           </View>
         ) : null}
 
-        {loading ? (
+        {loading || messageScopeId !== listingId ? (
           <View style={styles.centerState}>
             <ActivityIndicator color={MARKET_HOME_COLORS.accentStrong} />
             <Text style={styles.stateText}>Загружаем сообщения...</Text>
@@ -412,6 +533,25 @@ export default function ChatScreen() {
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={chatEmptyComponent}
+            ListHeaderComponent={hasOlder ? (
+              <Pressable testID="chat-load-older-button" accessibilityRole="button"
+                accessibilityLabel="Показать ранние сообщения" disabled={loadingOlder}
+                style={{ alignItems: "center", paddingVertical: 12 }} onPress={() => void loadOlder()}>
+                {loadingOlder ? <ActivityIndicator /> : <Text>Показать ранние сообщения</Text>}
+              </Pressable>
+            ) : null}
+            onScroll={({ nativeEvent }) => {
+              nearBottomRef.current = nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height
+                >= nativeEvent.contentSize.height - 80;
+              if (!nearBottomRef.current) scrollToEndRef.current = false;
+            }}
+            scrollEventThrottle={32}
+            onContentSizeChange={() => {
+              if (scrollToEndRef.current) {
+                scrollToEndRef.current = false;
+                listRef.current?.scrollToEnd({ animated: false });
+              }
+            }}
           />
         )}
 
@@ -420,8 +560,11 @@ export default function ChatScreen() {
             testID="chat-composer-input"
             accessibilityLabel="chat-composer-input"
             style={styles.input}
-            value={input}
-            onChangeText={setInput}
+            value={messageScopeId === listingId ? input : ""}
+            onChangeText={(text) => {
+              if (pendingSendRef.current && pendingSendRef.current.text !== text.trim()) pendingSendRef.current = null;
+              setInput(text);
+            }}
             placeholder="Напишите сообщение..."
             placeholderTextColor="#94A3B8"
             multiline

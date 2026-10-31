@@ -1,0 +1,192 @@
+{
+  "contract": "gox-build.masonry-bearing-dpc-loose-polyolefin/r4",
+  "status": "OWN_INTERNATIONAL_METHOD_TECHNICALLY_BOUNDED_NOT_WHOLE_WALL_ACCEPTANCE",
+  "sourceId": "source:masonry:dpc:profiled-polyolefin-loose-2021:r4",
+  "publicTitleRu": "Горизонтальная отсечка капиллярной влаги под кладкой",
+  "identityInternal": "Dörken DELTA-MAUERWERKSSPERRE",
+  "sources": [
+    {
+      "id": "maker-page",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-bearing-dpc-r4/doerken-dpc-own-maker-page-2026-10-23.html",
+      "sha256": "d8e34b4008fdee1fb3b151a0eb2f5e3e2aa759ff3768f1d2f572a9b7a7bfe896",
+      "url": "https://www.doerken.com/global/en/delta-mauerwerkssperre",
+      "locator": "Current maker web snapshot captured2026-10-23; Application"
+    },
+    {
+      "id": "tds2021",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-bearing-dpc-r4/doerken-dpc-own-tds-2021-12.pdf",
+      "sha256": "33f3eaaacc4bf3f559259f4f2c08144868b3c20a43c3a26881a04256e29c834e",
+      "url": "https://www.doerken.com/global/en/content/preview/12739/file/technical-datasheet-delta-mauerwerkssperre.pdf",
+      "locator": "PDF1, printed12.21"
+    },
+    {
+      "id": "dop2016",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-bearing-dpc-r4/doerken-dpc-own-dop-2016-06-09.pdf",
+      "sha256": "bd5b82c4aadd217f63c3a678467d39927a4b0c75ef00e24ef49159f3b32cd396",
+      "url": "https://www.doerken.com/global/en/content/preview/2882/file/DoP-Delta-Mauerwerkssperre.pdf",
+      "locator": "PDF1, DoP16-150-01, signed2016-06-09"
+    }
+  ],
+  "jurisdiction": {
+    "sourceCountry": "Germany",
+    "sourceEditions": [
+      "DoP2016-06-09",
+      "TDS12.21",
+      "makerApplicationSnapshot2026-10-23"
+    ],
+    "internationalTechnicalMethodAllowed": true,
+    "kgComplianceClaim": false,
+    "regionalClaimBlocksIndependentTechnicalComposition": false
+  },
+  "applicability": {
+    "location": "In and under masonry in ground contact; rising capillary water",
+    "waterExposureClass": "DIN18533 W4-E",
+    "type": "MSB-Q",
+    "profile": "ONE_STRAIGHT_CONTINUOUS_UNPENETRATED_RUN_LOOSE_200MM_LAPS",
+    "wallThicknessM": [
+      "0.25",
+      "0.4",
+      "0.5"
+    ],
+    "notCovered": [
+      "Pressure-water exposure",
+      "Corners/steps/penetrations and junctions without their own detailed system method",
+      "Parallel strips across wall width",
+      "Adhesively reduced50mm laps",
+      "Universal structural load/shear design or KG adoption"
+    ]
+  },
+  "physical": {
+    "material": "Polyolefin with profiled top and bottom",
+    "thicknessMm": "0.4",
+    "thicknessApproximate": true,
+    "arealMassKgM2": "0.280",
+    "arealMassApproximate": true,
+    "rollLengthM": "25",
+    "sourceWidthPolicy": "Use common unambiguous widths present in both TDS and current maker page; do not interpret TDS0.35cm typo as a product width",
+    "minimumProjectionEachSideM": "0.05",
+    "selectedWidths": [
+      {
+        "wallThicknessM": "0.25",
+        "stripWidthM": "0.365"
+      },
+      {
+        "wallThicknessM": "0.4",
+        "stripWidthM": "0.5"
+      },
+      {
+        "wallThicknessM": "0.5",
+        "stripWidthM": "0.6"
+      }
+    ],
+    "minimumLooseLapM": "0.2",
+    "adhesive": null,
+    "primer": null,
+    "torch": null,
+    "minimumUnderlayMortarThicknessM": null,
+    "mortarGrade": null
+  },
+  "wholeOperations": [
+    {
+      "key": "accept-and-protect-base",
+      "resources": [
+        "Accepted bearing surface free from unevenness",
+        "Compatible fresh levelling masonry-mortar bed",
+        "Whole agreed wall bearing/connection detail"
+      ],
+      "sourceBasis": "Maker Application: contact surfaces levelled with masonry mortar sufficiently thick to create a horizontal surface. No mortar grade or fixed thickness is given."
+    },
+    {
+      "key": "measure-cut-place",
+      "resources": [
+        "Exact profiled polyolefin strip width and length",
+        "Measuring and cutting tools",
+        "Installation labour"
+      ],
+      "sourceBasis": "Unroll one layer into fresh level mortar, align, protect both-side projection from bridging; quantity derived from simple linear geometry."
+    },
+    {
+      "key": "lap-and-inspect",
+      "resources": [
+        "Same strip with at least200mm loose overlaps",
+        "Inspection of continuity, projection and unpierced strip",
+        "Suitable system junction only if separately selected"
+      ],
+      "sourceBasis": "The chosen200mm loose method uses no adhesive;50mm glued alternative is excluded."
+    },
+    {
+      "key": "first-course-and-close",
+      "resources": [
+        "Compatible parent wall first-course operation",
+        "Protection against moisture bridges and punctures",
+        "Measured usable offcuts and collected waste"
+      ],
+      "sourceBasis": "Reuse whole wall operation and its single mortar/labour owner only when exact physical scope is reconciled. Do not charge first course twice."
+    }
+  ],
+  "geometryRules": {
+    "input": "One continuous straight run lengthL in metres, L>0",
+    "rolls": "max(1,ceil((L-0.2)/(25-0.2)))",
+    "seams": "rolls-1",
+    "installedStripLengthM": "L+0.2*(rolls-1)",
+    "grossRollLengthM": "25*rolls",
+    "installedStripAreaM2": "installedStripLengthM*selectedStripWidthM",
+    "grossSupplyAreaM2": "25*rolls*selectedStripWidthM",
+    "offcutLengthM": "25*rolls-installedStripLengthM",
+    "offcutNotAutomaticallyWaste": true,
+    "wallFaceOpeningsNotAutomaticallyDeducted": true,
+    "calculatedByApplicationNotEnteredAsStock": true,
+    "geometryIsCutPlanNotPublishedConsumptionRate": true
+  },
+  "unresolvedDeveloperNorms": [
+    {
+      "key": "levelling-mortar",
+      "quantity": null,
+      "unitId": "m3",
+      "reason": "Thickness and grade are not in maker method; reconcile exact first-course mortar ownership or derive a separately sourced bed volume from actual base geometry. Do not import KG M25 or assume31mm."
+    },
+    {
+      "key": "installation-labour",
+      "quantity": null,
+      "unitId": "man_hour",
+      "reason": "No standalone time rate proved and source wall first-course labour overlap not yet reconciled."
+    },
+    {
+      "key": "measuring-cutting-complete-tool-kit",
+      "quantity": null,
+      "unitId": "set",
+      "reason": "Maker method proves measuring/cutting operations, but no complete source-backed deployment count is established."
+    },
+    {
+      "key": "waste-disposal",
+      "quantity": null,
+      "unitId": "kg",
+      "reason": "Cut-plan offcuts are not presumed disposed waste; recipient/route and reusable remnants must be reconciled."
+    }
+  ],
+  "boundary": {
+    "newPublicCards": 0,
+    "newPaidOwners": 0,
+    "newProcurementOwners": 0,
+    "closedParentNeeds": 0,
+    "full": 0,
+    "sourceGuardNotRuntimeAcceptance": true,
+    "doesNotCloseOriginalBroadBearingNeed": true,
+    "doesNotUseRoofingMethodOrRoofPrimer": true,
+    "technicalRemainingWork": "Bind to same wall first-course and bearing source, resolve bed volume and labour owner; then preserve unknowns only for separately documented object scope."
+  },
+  "sourceConflictsPreserved": [
+    {
+      "topic": "nail tear",
+      "tds2021": "100/100N",
+      "currentWeb": "130/160N",
+      "rule": "No cross-edition substitution; not used for geometry admission."
+    },
+    {
+      "topic": "folding low temperature",
+      "tds2021": "approx-40C",
+      "dop2016": "greater than-20C",
+      "rule": "No use of the more favourable result to claim a universal grade."
+    }
+  ]
+}

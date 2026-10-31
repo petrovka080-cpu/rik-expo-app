@@ -15,7 +15,7 @@ it('compiles the actual captured ELECOR parent with exact retained sources and a
  expect(await candidate.verifyCore()).toMatchObject({
   status:'PURE_ACTUAL_PARENT_FACTORY_AND_SHARED_COMPILER_CHECKS_COMPLETED_NOT_DB_ACCEPTANCE',
   shape:[39,32,32],bindings:20,oldBindingsPreserved:18,newBindings:2,staticNeeds:8,activeMechanicalNeeds:7,
-  priceBindings:0,noOldUnknownNormPriceOrQuantityCarry:true,fullTechnicalAcceptance:false,
+  priceBindings:0,noOldUnknownNormPriceOrQuantityCarry:true,legacyManualNeedCases:3,forbiddenActiveLegacyProcurementCases:3,unresolvedNormInputRejections:3,fullTechnicalAcceptance:false,
  });
  expect(candidate.publicationReady).toBe(false);
  expect(candidate.runtimeAccepted).toBe(false);

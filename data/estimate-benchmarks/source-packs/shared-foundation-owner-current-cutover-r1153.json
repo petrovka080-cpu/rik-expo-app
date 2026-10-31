@@ -1,0 +1,237 @@
+{
+  "contract": "shared-foundation-owner-current-source-cutover/r1153",
+  "status": "SCOPED_CURRENT_COMPONENT_SOURCE_AND_TESTS_REVIEWED_RECIPE_GATES_PENDING",
+  "recordedAtUtc": "2026-10-30T14:00:38.646166+00:00",
+  "rootThreadId": "01a18bb8-bd73-7e13-812b-637d3a45a60b",
+  "activeMasterSha256": "f75540ef09597a4d167e58f6c9cefa07e0e9e864fa5d3b4eb47cadaaaaa3f955",
+  "sourceReviewPlanSha256": "dabbc15664ad7ba6c81e39fa5f3170985cb0e9905f343100615ae6772dfd6cd6",
+  "scope": "Current BBS/strip/slab/Frami explicit quantity and units, one payment/procurement owner, shared Definition default without operation opt-in, retired area visibility and current foundation consumer. No new engineering norm or original historical byte equivalence.",
+  "currentComponentPins": [
+    {
+      "path": "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "sha256": "6a58c6e98a9bad2a75f55fbda57813942378e75683b1bbe42056cfef64a44350",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/v4/slabFoundationReinforcementR1.ts",
+      "sha256": "b1f351260bea64b1638b9033343a38cfde329348e498444e16062600ba8a9457",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "sha256": "be648c85d153ad6871a17235fa907ea7f5cad27a85f0731daef7fb3768090379",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "sha256": "13bfa791adb984860e92c668cfeafd290a34057f26038b44e065fa521e8a83d4",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionDefinitionR1.ts",
+      "sha256": "a54a791fee01b49f4cefe5f8f16b78583b409fd174d70dd25954b82218ced9ee",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/v4/domainFactory/clientRuntimeV1.ts",
+      "sha256": "4dac5c4a83ac1c8dbe98f4a8ba914c68fc783f928c0c7620a12b532fc6ad36f7",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/v4/domainFactory/reinforcementBarSchedulePhysicalNormV1.ts",
+      "sha256": "b0741995268082dc96b7ab0a5da31e502ea777e317af189d7f453cf1f028d40c",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/v4/domainFactory/formworkRicsNrm2PhysicalNormV1.ts",
+      "sha256": "2ae3c285625ccb3c506b570bc1ccd8601959b39ede34bb63cd8d19ae841d7ed5",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1.ts",
+      "sha256": "45993f0bdf09272720cb4686427f8490c3d5d663e3cedf1c92cf876dc4592ac6",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/v4/domainFactory/constructionNormativeRegistryV1.ts",
+      "sha256": "57453b0e0fe9490996c666f21418fea2cafe621d0c95e9c350c7be3999ec330a",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/contracts/reinforcementProductionPromptParametersR1.ts",
+      "sha256": "b8bdeeee2eb3e8ad75f45ca2afc843f83dfe132e70361d76bf15665cfb615bd4",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/contracts/formworkFramiXlifeIdentityR1.ts",
+      "sha256": "0c6c5b21b735800b36fa8413f1f9d7eff233e1ad870ff7ab567a440749f5dc60",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/contracts/reinforcementBarScheduleProfileIdentityV1.ts",
+      "sha256": "885f461cfc3abf21a399a0b208800e2b9fb62806acdb7b558d8784d85fd5be6e",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/contracts/ricsNrm2FormworkProfileIdentityV1.ts",
+      "sha256": "c0d4935e8564f40e8d97a77bc00b65b837644cfa0bff812275066ae296fb1e34",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/formulaGraph.ts",
+      "sha256": "60ee28eaf8374f736f22c9f1ea7cd8827ef8fc98719c531cdb948ebe1c1fb17c",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalFormulaOutputBounds.ts",
+      "sha256": "f315772261d499ae96b63fe4d6cca6cb84e87a4f10fbb0cd00bc0e37e3c76842",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/numericParameterRelations.ts",
+      "sha256": "588acad69721ebdbc9e97022f03b59bad96bff816d645dd3ff0e4ec452c0e21d",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/inclusionGraph.ts",
+      "sha256": "f6bcf6d8fcb5b30e2c7fe489b6b5b9aaed97366f35f9e6e0f818e51b23796c02",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+      "sha256": "1f7df384d98d4c1fb55a06a62913730d6bc079e0f6c0987f3b3a0e3e358d4f29",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/parameterConstraints.ts",
+      "sha256": "066fbb4f3f52d86eff3c40767bacb46c1964ce2e512dcd5db84aedecf26c22b8",
+      "workingIndexExact": true
+    },
+    {
+      "path": "data/estimate-norms/professional/reinforcement.json",
+      "sha256": "ae22a9ef73c518b292fa8bf1ac4eb448837d30d7e87a3eec5e383891aecef286",
+      "workingIndexExact": true
+    },
+    {
+      "path": "data/estimate-norms/professional/formwork.json",
+      "sha256": "b4d950ef2d0170b505fe58ef4a2c21192c9ac2114fc2c919ea8b4d100a6af686",
+      "workingIndexExact": true
+    },
+    {
+      "path": "package.json",
+      "sha256": "90229fbbbfb7373be55eef141bb167faa4737f3a2b59c7104a559d2955003e78",
+      "workingIndexExact": true
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "f8990847d69ff7c5c6eda3f5832ab941c2a32207030b32bf17a5aad3b8eda11c",
+      "workingIndexExact": true
+    },
+    {
+      "path": "src/lib/estimate/v4/master212ConcreteFoundationSuccessorR1.ts",
+      "sha256": "2f4b5b5b227969f6bcc7ad3af51322bb8b87e4ad2254604ab042db67a92ffccf",
+      "workingIndexExact": true
+    },
+    {
+      "path": "data/estimate-benchmarks/fixtures/master212-concrete-two-current-r1.json",
+      "sha256": "8c842f25eb8202f8eaed911a2b567bfce9eecceedfd6a3b79c7e5620193bad90",
+      "workingIndexExact": true
+    }
+  ],
+  "portability": "Exact tested raw code/capture bytes retained; all27 reviewed source references matched actual Git index before recipe intake. Recipe self-pins excluded to avoid cycles.",
+  "actualEvidence": [
+    {
+      "stageLabel": "ui-current-and-foundation-norms-nine-suites-a1",
+      "receiptSha256": "8cf66155939eb2e056b3e219c7d0ad63e85b137e16affcb747fbb2bd6e3b393c",
+      "jestJsonSha256": "bd28a391d658db927c340123ec720b6bc40ae6e4a88e21211e1de51d9bf98c5a",
+      "selectedPassedSuites": [
+        {
+          "path": "tests/estimateNorms/reinforcementBarSchedulePhysicalNorm.contract.test.ts",
+          "passedTests": 7,
+          "status": "PASS"
+        },
+        {
+          "path": "tests/estimateNorms/stripFoundationReinforcementR1.contract.test.ts",
+          "passedTests": 3,
+          "status": "PASS"
+        },
+        {
+          "path": "tests/estimateNorms/slabFoundationReinforcementR1.contract.test.ts",
+          "passedTests": 8,
+          "status": "PASS"
+        },
+        {
+          "path": "tests/estimateNorms/formworkFramiXlifeProjectKitR1.contract.test.ts",
+          "passedTests": 25,
+          "status": "PASS"
+        },
+        {
+          "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.test.ts",
+          "passedTests": 25,
+          "status": "PASS"
+        },
+        {
+          "path": "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.test.ts",
+          "passedTests": 5,
+          "status": "PASS"
+        }
+      ],
+      "entireStagePassed": true,
+      "privateLogsNotRequiredInputs": true
+    },
+    {
+      "stageLabel": "r502-and-foundation-direct-consumers-three-suites-a1",
+      "receiptSha256": "78a1dd160c50761e0feca997d3df3f9069275ec0b12297aa084ee18dea9825b7",
+      "jestJsonSha256": "0c1d3a85682e448e08702adb60bb7a449584e072748470b11b9290e0572a2037",
+      "selectedPassedSuites": [
+        {
+          "path": "src/lib/estimate/v4/master212ConcreteFoundationSuccessorR1.test.ts",
+          "passedTests": 20,
+          "status": "PASS"
+        }
+      ],
+      "entireStagePassed": false,
+      "privateLogsNotRequiredInputs": true
+    },
+    {
+      "stageLabel": "focused-jest-initial-batch-a1",
+      "receiptSha256": "78133ddddc528bd727aedbe412b322c9890150a2de5eb8a22d2468663b1e0588",
+      "jestJsonSha256": "55da836a4c80c29d920617e4da040b9440895c52d974be9f1fdf9ddacb1d11c7",
+      "selectedPassedSuites": [
+        {
+          "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts",
+          "passedTests": 3,
+          "status": "PASS"
+        }
+      ],
+      "entireStagePassed": false,
+      "privateLogsNotRequiredInputs": true
+    },
+    {
+      "stageLabel": "batch02-missing-and-uncompleted-five-suites-a1",
+      "receiptSha256": "db514b96f411e0a54812d089d5da7db248ab0cda6ddd9d6f8cd0119e4b182bdb",
+      "jestJsonSha256": "6f79f1ebf1098ca8e75d083c9a309449c49224cee7313db184713cf29d6ecd4e",
+      "selectedPassedSuites": [
+        {
+          "path": "scripts/estimate/r4a13/masterRetiredAreaCatalogR1.test.ts",
+          "passedTests": 3,
+          "status": "PASS"
+        }
+      ],
+      "entireStagePassed": false,
+      "privateLogsNotRequiredInputs": true
+    }
+  ],
+  "retirementReuseBoundary": "Two unchanged retirement guards retain their observed PASS scope; later helper edits are type-only with unchanged runtime SQL/guards, as independently reviewed. Mandatory final normal hook still reruns its actual required tests.",
+  "historicalMissingPreimages": "Four original accepted byte versions not recovered; no old semantic-equivalence/PASS claim. Original captures, norms, units, parent history unchanged.",
+  "recipeGates": {
+    "foundation": "PENDING_METADATA_INTAKE_AND_ACTUAL_FACTORY_TEST",
+    "master29": "88PASS_60BLOCKED_ON_OLD_SOURCE_PIN_BEFORE_METADATA_ACTUAL_FULL_RECHECK_REQUIRED"
+  },
+  "dependencyClosure": "Conservative literal776-file inventory checked and frozen in current direct-consumer stage; no native loaded-module closure or whole-catalog proof.",
+  "nativeDatabaseVerified": false,
+  "webRuntimeVerified": false,
+  "fullTechnicalAcceptance": false,
+  "productionReady": false,
+  "fake_green_claimed": false
+}

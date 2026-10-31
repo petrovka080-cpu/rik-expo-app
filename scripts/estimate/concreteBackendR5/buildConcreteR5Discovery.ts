@@ -302,7 +302,7 @@ function main(): void {
   assertExact(sha256(specBytes) === BATCH008_SPEC_SHA256, "CONCRETE_R5_SPEC_SHA_RED");
   const floor = parseFloor(specBytes.toString("utf8"));
   const global = buildGlobalCatalogInventoryV1();
-  assertExact(global.rows.length === 11_610 && global.catalog_total === 11_610, "CONCRETE_GLOBAL_CATALOG_RED");
+  assertExact(global.rows.length === 11_610 && Number(global.catalog_total) === 11_610, "CONCRETE_GLOBAL_CATALOG_RED");
   const globalIds = new Set(global.rows.map((row) => row.catalog_id));
   const predecessor = predecessorSet(globalIds);
   const candidateRows = global.rows.filter(globalConcrete);

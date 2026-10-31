@@ -199,8 +199,6 @@ if (
 
 const SCOPE_LABELS_RU: Readonly<Record<InteriorFinishesWave1ScopeCapability, string>> = Object.freeze({
   standard: "Стандартные условия",
-  small_area: "Малая площадь",
-  large_area: "Большая площадь",
   wet_zone: "Мокрая зона",
   technical_room: "Техническое помещение",
   high_load: "Повышенная эксплуатационная нагрузка",
@@ -320,14 +318,8 @@ function scopeParameterDefinitions(
   switch (scope) {
     case "standard":
       return [];
-    case "small_area":
-      return [
-        parameter("small_area_detail_productivity_output_per_man_hour", "Производительность ручной доводки на малой площади", "number", "P1", perOutput, ["small_area_detail_labor"], { minimum: 0.01, maximum: 10_000, fullOnly: true }),
-      ];
-    case "large_area":
-      return [
-        parameter("large_area_material_handling_productivity_kg_per_machine_hour", "Производительность механизированной подачи материалов", "number", "P1", "kg_per_machine_hour", ["large_area_material_handling_equipment"], { minimum: 0.01, maximum: 100_000, fullOnly: true }),
-      ];
+
+
     case "wet_zone":
       return [
         parameter("wet_zone_protection_rate_kg_per_output", "Расход совместимого влагозащитного состава по проекту системы", "number", "P1", `kg_per_${quantityUnit}`, ["wet_zone_protection_material"], { minimum: 0.001, maximum: 100, fullOnly: true }),
@@ -724,22 +716,7 @@ function scopeAssembly(
   const rows: ProfessionalAssemblyRowDefinitionV4[] = [];
   const parameters: ProfessionalAssemblyParameterDefinitionV4[] = [...baseParameters];
 
-  if (scope === "small_area") {
-    parameters.push(
-      assemblyParameter(quantityId, "Проектный объём", "PROJECT_QUANTITY", quantityUnit, ["FULL_APPLICABLE_SCOPE"]),
-      assemblyParameter("small_area_detail_productivity_output_per_man_hour", "Производительность ручной доводки", "NORM_RATE", `${quantityUnit}_per_man_hour`, ["FULL_APPLICABLE_SCOPE"]),
-    );
-    rows.push(row(technologyId, "small_area_detail_labor", "Особые условия малой площади", "labor", `Ручная доводка и обработка границ малой площади для «${config.professional_name_ru}»`,
-      formula(`${technologyId}:small-area-detail-labor:v1`, `${quantityId} ÷ small_area_detail_productivity_output_per_man_hour`, [quantityId, "small_area_detail_productivity_output_per_man_hour"], "man_hour", (v) => v[quantityId] / v.small_area_detail_productivity_output_per_man_hour)));
-  } else if (scope === "large_area") {
-    const massFormula = materialMassFormula(config, technologyId);
-    parameters.push(
-      ...massFormula.input_parameter_ids.map((id) => assemblyParameter(id, id, id === quantityId ? "PROJECT_QUANTITY" : "MATERIAL_PASSPORT_VALUE", id === quantityId ? quantityUnit : null, ["FULL_APPLICABLE_SCOPE"])),
-      assemblyParameter("large_area_material_handling_productivity_kg_per_machine_hour", "Производительность механизированной подачи", "NORM_RATE", "kg_per_machine_hour", ["FULL_APPLICABLE_SCOPE"]),
-    );
-    rows.push(row(technologyId, "large_area_material_handling_equipment", "Механизированная подача материалов", "equipment", `Механизированная подача материалов на большой площади для «${config.professional_name_ru}»`,
-      formula(`${technologyId}:large-area-material-handling:v1`, `(${massFormula.expression}) ÷ large_area_material_handling_productivity_kg_per_machine_hour`, [...massFormula.input_parameter_ids, "large_area_material_handling_productivity_kg_per_machine_hour"], "machine_hour", (v) => massFormula.calculate(v) / v.large_area_material_handling_productivity_kg_per_machine_hour)));
-  } else if (scope === "wet_zone") {
+  if (scope === "wet_zone") {
     parameters.push(
       assemblyParameter(quantityId, "Проектный объём", "PROJECT_QUANTITY", quantityUnit, ["FULL_APPLICABLE_SCOPE"]),
       assemblyParameter("wet_zone_protection_rate_kg_per_output", "Расход влагозащитного состава", "MATERIAL_PASSPORT_VALUE", `kg_per_${quantityUnit}`, ["FULL_APPLICABLE_SCOPE"]),

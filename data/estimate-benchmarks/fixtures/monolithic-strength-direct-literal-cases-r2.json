@@ -1,0 +1,80 @@
+{
+  "contract": "gox.monolithic-strength-direct-literal-cases/r2",
+  "source": "18105-2018 8.2.5/8.2.6 schemeВ and one individual member; independently written before owner execution",
+  "productChecks": "UNRUN",
+  "siteCases": [
+    {
+      "label": "flat-small",
+      "kind": "FLAT",
+      "areaM2": "0.5",
+      "expectedSites": "20",
+      "row": "sites-flat"
+    },
+    {
+      "label": "flat-400",
+      "kind": "FLAT",
+      "areaM2": "400",
+      "expectedSites": "20",
+      "row": "sites-flat"
+    },
+    {
+      "label": "flat-above400",
+      "kind": "FLAT",
+      "areaM2": "400.01",
+      "expectedSites": "21",
+      "row": "sites-flat"
+    },
+    {
+      "label": "horizontal-short",
+      "kind": "HORIZONTAL_LINEAR",
+      "lengthM": "1",
+      "expectedSites": "6",
+      "row": "sites-horizontal"
+    },
+    {
+      "label": "horizontal24",
+      "kind": "HORIZONTAL_LINEAR",
+      "lengthM": "24",
+      "expectedSites": "6",
+      "row": "sites-horizontal"
+    },
+    {
+      "label": "horizontal-above24",
+      "kind": "HORIZONTAL_LINEAR",
+      "lengthM": "24.01",
+      "expectedSites": "7",
+      "row": "sites-horizontal"
+    },
+    {
+      "label": "vertical",
+      "kind": "VERTICAL_LINEAR",
+      "expectedSites": "6",
+      "row": "sites-vertical"
+    }
+  ],
+  "literalKitOne": [
+    "anchor",
+    "spanner",
+    "blow-pump",
+    "wire-brush",
+    "press",
+    "micrometer",
+    "usb-cable",
+    "charger"
+  ],
+  "meaningfulNegativeControls": [
+    "multiple member aggregation rejected",
+    "missing area not zero",
+    "missing length not zero",
+    "unknown internal norm remains unknown despite entered value",
+    "missing deployment ref leaves hardware need",
+    "insufficient member thickness rejected",
+    "aggregate above48 rejected",
+    "spacing below240 rejected",
+    "edge below150 rejected",
+    "known kit neither paid nor purchased",
+    "whole-service unit remains unresolved",
+    "removal or moved operation fails independent expected role map"
+  ],
+  "notAClaim": "These are source draft expectations. No API or runtime acceptance is implied."
+}

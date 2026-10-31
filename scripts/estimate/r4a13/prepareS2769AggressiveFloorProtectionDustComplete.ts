@@ -70,7 +70,7 @@ async function main() {
   const masterSha256 = hash(readFileSync(MASTER));
   const sourceHashes = SOURCES.map(path => ({ path, sha256: hash(readFileSync(path)) }));
   const catalogIds = pack.targets.map(t=>t.catalogId).sort();
-  invariant(pack.targets.length===4 && catalogIds.length===4, "FINITE_SCOPE_DRIFT");
+  invariant(pack.targets.length===2 && catalogIds.length===2, "FINITE_SCOPE_DRIFT");
   for(const s of [source.barrierReference.source,source.dustSource])invariant(hash(readFileSync(s.localArtifact))===s.sha256,'PRIMARY_SOURCE_ARTIFACT_DRIFT');
   invariant(hash(readFileSync(SNAPSHOT))===pack.parentSnapshotSha256,'EXACT_PARENT_SNAPSHOT_DRIFT');
   if (APPLY) {
@@ -260,7 +260,7 @@ async function main() {
       predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId }, successor: { releaseId, searchReleaseId, releaseKey },
       sourceHead: head, sourceTree: tree, sourceHashes, masterSha256, fingerprint, transitions, preflight, persisted,
       audit: { manifest, search, unrelatedManifestChanges: unrelated }, mutationPerformed: APPLY, productionAccessed: false,
-      newPhysicalNormConsumerCount:44,newPhysicalNormClosureCount:8,reusedPhysicalResourceApplications:36,newPhysicalResourceApplications:8,newPrimarySourceCount:1,titleOnlyChangeCount:0,conditionalWasteScopeConsumers:pack.targets.length,unsupportedOtherMethodNeedsPerType:2,candidateCompleteQuantityScenarioCount:4,newCompleteTechnicalTypeCount:0,
+      newPhysicalNormConsumerCount:11*pack.targets.length,newPhysicalNormClosureCount:2*pack.targets.length,reusedPhysicalResourceApplications:9*pack.targets.length,newPhysicalResourceApplications:2*pack.targets.length,newPrimarySourceCount:1,titleOnlyChangeCount:0,conditionalWasteScopeConsumers:pack.targets.length,unsupportedOtherMethodNeedsPerType:2,candidateCompleteQuantityScenarioCount:pack.targets.length,newCompleteTechnicalTypeCount:0,
       activationPerformed: false, uiAccepted: false, engineeringAccepted: false, fullGateAccepted: false };
     await client.query(`update public.estimate_definition_release set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),
       metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [releaseId, manifest.snapshot,

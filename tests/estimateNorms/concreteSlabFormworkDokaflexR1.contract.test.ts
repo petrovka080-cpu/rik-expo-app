@@ -58,11 +58,29 @@ describe("Dokaflex floor-slab formwork component through the shared canonical co
     },
   );
 
-  test("keeps every context on a distinct approved layout and schedule", () => {
+  test("pins the physical context manifest and keeps each approved project schedule distinct", () => {
+    // Area is a project input, not a separate physical context or public component.
+    const expected = [
+      { contextKey: "standard", catalogId: "canonical-component:formwork:dokaflex-floor-slab:standard", layout: "ACCEPTANCE-FW-DOKAFLEX-LAYOUT-STANDARD-001-REV-A", area: 120, thickness: 20, height: 3.2 },
+      { contextKey: "high_load", catalogId: "canonical-component:formwork:dokaflex-floor-slab:high-load", layout: "ACCEPTANCE-FW-DOKAFLEX-LAYOUT-HIGH_LOAD-001-REV-A", area: 110, thickness: 35, height: 3.5 },
+      { contextKey: "repair", catalogId: "canonical-component:formwork:dokaflex-floor-slab:repair", layout: "ACCEPTANCE-FW-DOKAFLEX-LAYOUT-REPAIR-001-REV-A", area: 72, thickness: 18, height: 3.0 },
+      { contextKey: "technical_room", catalogId: "canonical-component:formwork:dokaflex-floor-slab:technical-room", layout: "ACCEPTANCE-FW-DOKAFLEX-LAYOUT-TECHNICAL_ROOM-001-REV-A", area: 64, thickness: 20, height: 4.2 },
+      { contextKey: "wet_zone", catalogId: "canonical-component:formwork:dokaflex-floor-slab:wet-zone", layout: "ACCEPTANCE-FW-DOKAFLEX-LAYOUT-WET_ZONE-001-REV-A", area: 86, thickness: 20, height: 3.1 },
+    ];
     const fixtures = FORMWORK_DOKAFLEX_FLOOR_SLAB_COMPONENT_TARGETS.map((target) =>
       formworkDokaflexConcreteSlabAcceptanceInputR1(target.contextKey));
-    expect(new Set(fixtures.map((fixture) => fixture.project_formwork_layout_reference)).size).toBe(7);
-    expect(new Set(fixtures.map((fixture) => JSON.stringify(fixture))).size).toBe(7);
+    expect(FORMWORK_DOKAFLEX_FLOOR_SLAB_COMPONENT_TARGETS.map((target, index) => ({
+      contextKey: target.contextKey,
+      catalogId: target.catalogId,
+      layout: fixtures[index].project_formwork_layout_reference,
+      area: fixtures[index].measured_formwork_contact_area_m2,
+      thickness: fixtures[index].slab_thickness_cm,
+      height: fixtures[index].propping_height_m,
+    }))).toEqual(expected);
+    expect(new Set(fixtures.map((fixture) => fixture.project_formwork_layout_reference)).size)
+      .toBe(expected.length);
+    expect(new Set(fixtures.map((fixture) => JSON.stringify(fixture))).size)
+      .toBe(expected.length);
   });
 
   test("pins the reviewed manufacturer document without inventing a universal kit", () => {

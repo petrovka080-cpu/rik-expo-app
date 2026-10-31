@@ -1,5 +1,6 @@
 import type { EstimatePresentationViewModel } from "../ai/estimatePresentation";
 import type { CanonicalParameterRequirementTables } from "./consumerCanonicalParameterRequirements";
+import type { ConsumerEstimateManualQuantityApproval } from './consumerEstimateManualQuantityApproval';
 import type {
   EditableEstimatePriceSource,
   EditableEstimatePriceStatus,
@@ -285,6 +286,8 @@ export type ConsumerMarketplaceLink = {
 };
 
 export type ConsumerRepairDraftBundle = {
+  /** Read-only evidence fetched for the mounted exact revision; never stored. */
+  canonicalBackendApprovalEvidence?: import('./consumerCanonicalBackendRevisionProjection').CanonicalPreliminaryNamingEvidence | null;
   canonicalParameterRequirementTables?: CanonicalParameterRequirementTables | null;
   draft: ConsumerRepairRequestDraft;
   items: ConsumerRepairRequestItem[];
@@ -334,6 +337,9 @@ export type ConsumerRepairDurableHistorySummary = {
   buyerHandoffId: string | null;
   compactedAt: string;
   fullSnapshotAvailable: boolean;
+  canonicalRevisionChecksumSha256?: string | null;
+  /** Exact human acknowledgment survives summary-only and emergency storage. */
+  manualQuantityApproval?: ConsumerEstimateManualQuantityApproval | null;
 };
 
 export type ApprovedEstimateHistoryRecord = {
@@ -426,6 +432,7 @@ export type ConsumerRequestValidationErrorCode =
   | "REPAIR_TYPE_REQUIRED"
   | "OWNER_MISMATCH"
   | "ESTIMATE_PARAMETERS_REQUIRED"
+  | "ESTIMATE_MANUAL_SOURCE_REVIEW_REQUIRED"
   | "ESTIMATE_PARAM_BATCH_EMPTY"
   | "ESTIMATE_REVISION_BATCH_REJECTED"
   | "ESTIMATE_REVISION_STATE_RECOVERY_REQUIRED"

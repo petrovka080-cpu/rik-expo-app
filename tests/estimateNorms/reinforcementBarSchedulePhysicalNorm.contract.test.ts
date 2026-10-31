@@ -1,3 +1,5 @@
+import { extractReinforcementBarScheduleCanonicalParametersV1 as extractPrompt } from "../../src/lib/estimate/ownedDomain/reinforcementBarSchedulePromptParametersV1";
+import { extractReinforcementBarScheduleCanonicalParametersV1 as extractLegacyPrompt } from "../../src/lib/estimate/ownedDomain/reinforcementBarScheduleProductionBindingV1";
 import { buildDirectConsumerRepairOpenWorldAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import { compileDynamicProfessionalBoq } from "../../src/lib/ai/professionalBoq/compileDynamicProfessionalBoq";
 import { buildOwnedDomainEstimatorReasoningPlan } from "../../src/lib/estimate/ownedDomain/buildOwnedDomainEstimatorReasoningPlan";
@@ -84,6 +86,30 @@ function completePrompt(weightKg = 2480.5): string {
 }
 
 describe("approved reinforcement bar-schedule weight norm", () => {
+  test("preserves approved schedule prompt values through the dependency-free extractor and legacy export", () => {
+    const expected = {
+      ...Object.fromEntries(Object.entries(exactInputs()).map(([key, value]) => [key, value.value])),
+      laps_hooks_chairs_connectors_and_accessories_scope:
+        "PROJECT_SCOPE:all BBS laps and hooks, chairs scheduled separately",
+    };
+    const parsed = extractPrompt(completePrompt());
+    expect(parsed).toEqual(expected);
+    expect(Object.isFrozen(parsed)).toBe(true);
+    expect(extractLegacyPrompt).toBe(extractPrompt);
+    const localized = completePrompt()
+      .replace("2480.5 кг", "2 480,5 кг")
+      .replace("15.875 мм", "15,875 мм")
+      .replace("1.552 кг/м", "1,552 кг/м");
+    expect(extractPrompt(localized)).toEqual(expected);
+    expect(extractPrompt("Смета на армирование фундамента массой около 2400 кг")).toBeNull();
+    expect(extractPrompt("Арматура по ведомости стержней FHWA-HIF-16-026")).toEqual({
+      product_profile_id: REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+    });
+    const zeroWeight = extractPrompt(completePrompt(0));
+    expect(zeroWeight).not.toHaveProperty("approved_reinforcement_schedule_weight_kg");
+    expect(zeroWeight?.bar_bending_schedule_reference).toBe("BBS-S01-REV-D");
+  });
+
   test("registers the reviewed FHWA and RICS schedule identity", () => {
     expect(REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA).toMatchObject({
       norm_id: REINFORCEMENT_BAR_SCHEDULE_NORM_ID,

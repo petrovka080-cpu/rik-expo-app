@@ -1,0 +1,178 @@
+{
+  "contract": "gox.electrical.technical-room.ready-grid-project-whole-post/r287",
+  "catalogId": "canonical-work:base:electrical_interior_lighting_install_technical_room",
+  "workKey": "electrical_interior_lighting_install_technical_room",
+  "sourceId": "panel_ready_grid_whole_project_post_r287",
+  "normId": "PROJECT_FACTS_NOT_UNIVERSAL_LABOUR_OR_TEST_NORM",
+  "prefix": "electrical:technical-room:ready-grid-post:r287",
+  "countParameterId": "m30_fixture_count",
+  "fields": {
+    "method": "panel_ready_grid_post_method",
+    "qualification": "panel_ready_grid_post_qualification",
+    "ppr": "panel_ready_grid_post_ppr_reference",
+    "labourHours": "panel_ready_grid_post_actual_total_labour_h",
+    "qaCount": "panel_ready_grid_post_actual_test_count",
+    "quoteScope": "panel_ready_grid_post_price_scope_reference",
+    "deliveryTrips": "panel_ready_grid_post_external_delivery_trips",
+    "wasteTrips": "panel_ready_grid_post_external_waste_trips"
+  },
+  "methodRu": "Целый монтажный пост панели в принятой решётке с фактическим трудом, подключением, проверками и завершением по ППР",
+  "unconfirmedMethodRu": "Полный монтажный пост пока не подтверждён",
+  "qualificationRu": "Сохранены выбранный заводской комплект и принятый ручной и измерительный пост; подготовлены доступ, безопасный фронт, готовое исправное питание и принятый узел L/N/PE; фактические труд, проверки и услуги определены ППР",
+  "scopeRu": "Один последовательный монтажный пост существующей карточки технического помещения: принятая решётка 600×600, выбранная опаловая панель36Вт4000КIP40, принятый совместимый медный узел подключения и фактические данные ППР. Заводской комплект и оснащение Master30/32 сохраняются.",
+  "retainedFactory": {
+    "selectorId": "m30_material_technology",
+    "choiceRu": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+    "ownerRowId": "led-grid:dvo6560-6562:opal-4000"
+  },
+  "retainedToolPost": {
+    "methodId": "m32_panel_tool_provision_method",
+    "methodRu": "Один последовательный пост: готовая решётка, рычажное соединение медных жил и измерительное оснащение",
+    "fitId": "m32_panel_tool_method_fit",
+    "fitRu": "Приняты готовая решётка 600 × 600 мм и проектный узел с раздельными L/N/PE: оба медных конца 0,75–1,5 мм² со стандартной ПВХ-изоляцией, зачистка 11 мм, рычажные соединители без добавленных наконечников; оболочка, защита и разгрузка обеспечены; цепь безопасно отключена и заблокирована ответственным лицом; точки доступны штатными проводами; приборы проверены, внутри сухо, 0–35 °C, влажность до 70 %, высота до 2000 м",
+    "ownerRowId": "master32:panel:tool-post:r1:provision-owner",
+    "paidServiceOwnerRetained": true,
+    "notAnotherToolPurchaseOrHire": true
+  },
+  "actualParent": {
+    "definitionId": "b2e3ab86-5b51-5d67-870e-431e39e21409",
+    "definitionVersion": 5,
+    "definitionSha256": "79eeb03687d301b869502c459106d3535f8f4dd2b88e59f0cdcfe60c059d6af9",
+    "baselineId": "a38039f7-30e0-59cd-8feb-66709f379f61",
+    "fullCaptureSha256": "0b4293d1e7f8c8bddc4f1138d1857c1a75cd6d664d98e45e838bcc7ff3e8b9fa",
+    "shape": [
+      30,
+      112,
+      112
+    ],
+    "bindings": 25,
+    "sources": 2,
+    "locators": 2
+  },
+  "heldSourceKeys": [
+    "master30_led_complete_factory_kit_r1",
+    "master32_dvo6561_ready_grid_class_i_whole_tool_post_r1"
+  ],
+  "primary": {
+    "officialUrl": "https://cdn-01.iek.ru/media/original/cbe47a51d5727edf98648ff110070bd8a31798f4e93f423a3b3f57fba5e41fca.pdf",
+    "localArtifact": ".release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf",
+    "sha256": "cbe47a51d5727edf98648ff110070bd8a31798f4e93f423a3b3f57fba5e41fca",
+    "edition": "IEK: руководство по эксплуатации, издание5",
+    "locatorRu": "PDF1–2, таблица1; PDF3, п.3.1 и4.3–4.4; PDF4, п.4.7, рисунок2"
+  },
+  "sourcePackRefs": [
+    {
+      "logicalPath": "data/estimate-benchmarks/source-packs/master30-electrical-plumbing-complete-factory-kits-r1.json",
+      "sha256": "0b856f071d704ab385aefc206a9dd4a6ea132446398f3e9282e9aa62db804f98"
+    },
+    {
+      "logicalPath": "data/estimate-benchmarks/source-packs/master32-panel-tool-provision-r1.json",
+      "sha256": "f4ed03c2dc09a5607b4c5b5cf7421e01817b566a402ad2c2a634d95fcbb96705"
+    },
+    {
+      "logicalPath": "data/estimate-benchmarks/source-packs/led-grid-panel-dvo6560-6562-s27-54.json",
+      "sha256": "9eddf902349ec924e578ece8a0de260ab85e031941b4136ede84e41f1b773891"
+    },
+    {
+      "logicalPath": "data/estimate-benchmarks/source-packs/led-wago-project-connection-s27-54.json",
+      "sha256": "9e5a9e2bb945780387d7fe9d6581e015b5b3f4449a7356a348f24d973559e3f3"
+    }
+  ],
+  "operations": [
+    {
+      "id": "readback",
+      "titleRu": "Принять ведомость, безопасный фронт и комплект на месте"
+    },
+    {
+      "id": "mount",
+      "titleRu": "Установить выбранную панель в принятую решётку"
+    },
+    {
+      "id": "connect",
+      "titleRu": "Подключить панель к принятому готовому медному узлу L/N/PE"
+    },
+    {
+      "id": "qa",
+      "titleRu": "Выполнить проверки и передать результаты по программе ППР"
+    },
+    {
+      "id": "complete",
+      "titleRu": "Внутриплощадочная подача и завершение участка в пределах общего труда"
+    },
+    {
+      "id": "deliver",
+      "titleRu": "Внешняя доставка по фактическому ППР"
+    },
+    {
+      "id": "waste",
+      "titleRu": "Внешний вывоз упаковки и отходов по фактическому ППР"
+    }
+  ],
+  "resourceOperationRoles": {
+    "measured-panels": [
+      "mount"
+    ],
+    "whole-labour": [
+      "readback",
+      "mount",
+      "connect",
+      "qa",
+      "complete"
+    ],
+    "mount-included": [
+      "mount"
+    ],
+    "connection-included": [
+      "connect"
+    ],
+    "readiness-included": [
+      "readback"
+    ],
+    "qa-included": [
+      "qa"
+    ],
+    "completion-included": [
+      "complete"
+    ],
+    "delivery": [
+      "deliver"
+    ],
+    "waste": [
+      "waste"
+    ]
+  },
+  "conditionallyReplacedOldNeedIds": [
+    "master30:electrical:open:site-preparation",
+    "master30:electrical:open:installation-labour",
+    "master30:electrical:open:on-site-supply",
+    "master30:electrical:open:site-cleanup",
+    "master30:electrical:open:testing-handover"
+  ],
+  "protectedOldNeedIds": [
+    "master30:electrical:open:supply-line-materials",
+    "master30:electrical:open:connection-materials",
+    "master30:electrical:open:distribution-components",
+    "master30:electrical:open:marking",
+    "master30:electrical:open:contingency",
+    "master30:electrical:open:surface-protection",
+    "master30:electrical:open:additional-mounting",
+    "master30:electrical:open:installation-consumables",
+    "master30:electrical:open:personal-protection",
+    "master30:electrical:open:access",
+    "master30:electrical:open:tool-25",
+    "master30:electrical:open:tool-26",
+    "master30:electrical:open:tool-56",
+    "master30:electrical:open:delivery-unloading",
+    "master30:electrical:open:returnable-packaging",
+    "master30:electrical:open:waste-handling",
+    "master30:electrical:open:quantity-review"
+  ],
+  "sourceNormHoursAuthored": false,
+  "sourceConnectorCountAuthored": false,
+  "projectAuthenticated": false,
+  "sourceAdmission": "ROOT_REVIEW_HOLD_EXISTING_SOURCE_EVIDENCE_DOES_NOT_AUTHENTICATE_NEW_PPR",
+  "priceScope": "ROOT_OWNER_REVIEW_HOLD_NO_PROOF_OF_QUOTE_NONOVERLAP",
+  "publicTargetGuard": "STOP_PANEL_READY_GRID_R287_SOURCE_PPR_QUOTE_SCOPE_REVIEW_HOLD",
+  "newPublicCatalogs": 0,
+  "full": false
+}

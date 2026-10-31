@@ -24,7 +24,8 @@ import type {
   GlobalSelectedWorkBinding,
   GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
-import { visibleGlobalWorkCategoryTitleRu } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
+import { visibleGlobalWorkCategoryTitleRu, resolveGlobalWorkConditionSuggestionV1 } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
+import { canonicalPrimaryUomToGlobalUnitV1 } from "../../lib/estimate/backendPlatform/canonicalEstimateConditionProfilesV1";
 import type { GlobalWorkCategory } from "../../lib/ai/globalEstimate/globalEstimateTypes";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import { mapPickerItemToCatalogItemForEstimate } from "../../lib/catalog/catalogItemsService";
@@ -53,6 +54,8 @@ export type ConsumerRepairCanonicalWorkSearchState = {
   nextCursor: string | null;
   searchIndexReleaseId: string | null;
   searchIndexSnapshotSha256: string | null;
+  rankingContractVersion?: string | null;
+  catalogVisibilityVersion?: string | null;
   resultSetSha256: string | null;
   loading: boolean;
   errorRu: string | null;
@@ -70,6 +73,8 @@ export function emptyConsumerRepairCanonicalWorkSearchState(): ConsumerRepairCan
     nextCursor: null,
     searchIndexReleaseId: null,
     searchIndexSnapshotSha256: null,
+    rankingContractVersion: null,
+    catalogVisibilityVersion: null,
     resultSetSha256: null,
     loading: false,
     errorRu: null,
@@ -88,6 +93,7 @@ export type ConsumerRepairRequestScreenState = {
   historyLoading?: boolean;
   approvalCommitBusy?: boolean;
   deleteCommitBusy?: boolean;
+  estimateNotesVisible?: boolean;
   canonicalEstimateMutationBusy?: boolean;
   pendingCanonicalRowEditCount?: number;
   bundle: ConsumerRepairDraftBundle | null;
@@ -271,6 +277,46 @@ export function buildEstimateDraftSessionTransitionStatusMessage(
   }
 }
 
+type ConsumerRepairSavedDraftEditorFields = Pick<
+  ConsumerRepairRequestScreenState,
+  "problemText" | "repairType" | "city" | "addressText" | "preferredTimeText" | "contactPhone" | "selectedWork"
+>;
+
+export function buildConsumerRepairSavedDraftEditorFields(
+  bundle: ConsumerRepairDraftBundle,
+  options: {
+    selectedWork?: GlobalSelectedWorkBinding | null;
+    pendingEdits?: {
+      current: ConsumerRepairSavedDraftEditorFields;
+      baseline: ConsumerRepairSavedDraftEditorFields;
+    };
+  } = {},
+): ConsumerRepairSavedDraftEditorFields {
+  const restored: ConsumerRepairSavedDraftEditorFields = {
+    // The bundle owns its original prompt. Keep the new-request composer empty.
+    problemText: "",
+    repairType: bundle.draft.repairType?.trim() ? bundle.draft.repairType : "Ремонт",
+    city: bundle.draft.city ?? "",
+    addressText: bundle.draft.addressText ?? "",
+    preferredTimeText: bundle.draft.preferredTimeText ?? "",
+    contactPhone: bundle.draft.contactPhone ?? "",
+    selectedWork: options.selectedWork ?? null,
+  };
+  if (options.pendingEdits) {
+    const { current, baseline } = options.pendingEdits;
+    // An asynchronous restoration may complete after the user has typed.
+    // Restore untouched fields together, preserving every newer input.
+    for (const key of Object.keys(restored) as (keyof ConsumerRepairSavedDraftEditorFields)[]) {
+      if (current[key] !== baseline[key]
+        || (key === "selectedWork" && current.problemText !== baseline.problemText)
+        || (key === "repairType" && current.selectedWork !== baseline.selectedWork)) {
+        Object.assign(restored, { [key]: current[key] });
+      }
+    }
+  }
+  return restored;
+}
+
 export function buildInitialConsumerRepairRequestState(params: {
   initialProblemText?: string;
   initialDraftId?: string;
@@ -286,12 +332,15 @@ export function buildInitialConsumerRepairRequestState(params: {
     : null;
   const exactDraftMissing = Boolean(initialDraftId && !recoveredBundle);
   return {
-    problemText: recoveredBundle ? "" : initialProblemText,
-    repairType: "Ремонт",
-    city: recoveredBundle?.draft.city ?? "",
-    addressText: recoveredBundle?.draft.addressText ?? "",
-    preferredTimeText: recoveredBundle?.draft.preferredTimeText ?? "",
-    contactPhone: recoveredBundle?.draft.contactPhone ?? "",
+    ...(recoveredBundle ? buildConsumerRepairSavedDraftEditorFields(recoveredBundle) : {
+      problemText: initialProblemText,
+      repairType: "Ремонт",
+      city: "",
+      addressText: "",
+      preferredTimeText: "",
+      contactPhone: "",
+      selectedWork: null,
+    }),
     bundle: recoveredBundle,
     history: params.history,
     approvedHistoryPage: params.approvedHistoryPage ?? buildConsumerRepairApprovedHistoryPageFromLoadedHistory(params.history),
@@ -304,10 +353,7 @@ export function buildInitialConsumerRepairRequestState(params: {
     catalogPickerTargetItemId: null,
     catalogPickerInitialQuery: undefined,
     lastRemovedItem: null,
-    // The input composer is a new draft session even while an exact historical
-    // workspace is displayed. WorkIntent remains owned by that bundle until an
-    // explicit clone or a new catalog selection.
-    selectedWork: null,
+    // The saved bundle owns WorkIntent until an explicit clone or selection.
     selectedHistoryId: null,
     editingParam: null,
     canonicalWorkSearch: emptyConsumerRepairCanonicalWorkSearchState(),
@@ -496,6 +542,9 @@ export function buildSelectedWorkFromSuggestion(
   suggestion: GlobalWorkSmartSearchSuggestion,
   rawInput: string,
 ): GlobalSelectedWorkBinding {
+  const selected = resolveGlobalWorkConditionSuggestionV1(suggestion);
+  if (!selected) throw new Error("CANONICAL_CONDITION_PROFILE_SELECTION_REQUIRED");
+  suggestion = selected;
   return {
     selectedWorkKey: suggestion.workKey,
     selectedTitleRu: canonicalPublicEstimateWorkTitleRu(suggestion.titleRu),
@@ -569,12 +618,15 @@ export function buildMultiDomainReferenceSelectedWorkBinding(
   rawInput: string,
 ): GlobalSelectedWorkBinding | null {
   const normalized = normalizeEditableWorkText(rawInput);
+  // A legacy generic reference cannot decide explicitly stated site conditions.
+  // Leave those requests with the canonical search and its exact profile choices.
+  if (/(?:влажн\p{L}*|мокр\p{L}*|техническ\p{L}*\s+помещен\p{L}*|высок\p{L}*\s+нагруз\p{L}*|ремонт\p{L}*|ограниченн\p{L}*\s+доступ\p{L}*|коммерческ\p{L}*\s+помещен\p{L}*|wet_zone|technical_room|high_load|access_limited|finish_ready)/iu.test(normalized)) return null;
   const asphaltDrainageIntent =
     /^(?:(?:нужн\p{L}*|смет\p{L}*)\s+)?(?:с\s+)?(?:(?:устройств|монтаж|прокладк)\p{L}*\s+)?(?:систем\p{L}*\s+водоотвод\p{L}*|линейн\p{L}*\s+(?:поверхностн\p{L}*\s+)?(?:водоотвод\p{L}*|(?:водоотводн\p{L}*\s+)?лот\p{L}*)|подземн\p{L}*\s+дренаж\p{L}*|(?:ливнев\p{L}*|дождев\p{L}*)\s+(?:канализац\p{L}*|сет\p{L}*|водоотвод\p{L}*)|водоотвод\p{L}*|дренаж\p{L}*|ливнев\p{L}*)/iu.test(normalized)
     && /асфальт\p{L}*(?:\s+покрыт\p{L}*|\s+площад\p{L}*|\s+территор\p{L}*)?/iu.test(normalized);
   if (asphaltDrainageIntent) {
     return {
-      selectedWorkKey: "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
+      selectedWorkKey: "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard",
       selectedTitleRu: "Устройство системы водоотвода асфальтированного покрытия",
       selectedCategoryKey: "roadworks",
       selectedCategoryTitleRu: "Дорожные работы и водоотвод",
@@ -692,20 +744,6 @@ const CANONICAL_DOMAIN_CATEGORY: Readonly<Record<string, GlobalWorkCategory>> = 
   fire_life_safety: "other",
 };
 
-function canonicalPrimaryUomToGlobalUnit(
-  value: string,
-): GlobalWorkSmartSearchSuggestion["defaultMeasureUnit"] {
-  const unit = value.trim().toLocaleLowerCase("en").replace(/²/gu, "2").replace(/³/gu, "3");
-  if (["m2", "sq_m", "sqm"].includes(unit)) return "sq_m";
-  if (["m3", "cu_m"].includes(unit)) return "m3";
-  if (["m", "linear_m", "lm"].includes(unit)) return "linear_m";
-  if (["kg", "kilogram"].includes(unit)) return "kg";
-  if (["t", "ton", "tonne"].includes(unit)) return "ton";
-  if (["set", "компл"].includes(unit)) return "set";
-  if (["shift", "смена"].includes(unit)) return "shift";
-  return "pcs";
-}
-
 export function canonicalSearchItemToConsumerRepairSuggestion(
   item: CanonicalEstimateSearchItem,
 ): GlobalWorkSmartSearchSuggestion {
@@ -713,10 +751,15 @@ export function canonicalSearchItemToConsumerRepairSuggestion(
   const categoryTitleRu = visibleGlobalWorkCategoryTitleRu(categoryKey);
   return {
     workKey: item.catalogId,
+    primaryUom: item.primaryUom,
+    publicWorkKey: item.publicWorkKey,
+    publicCatalogId: item.publicCatalogId,
+    matchedConditionCatalogId: item.matchedConditionCatalogId,
+    conditionProfiles: item.conditionProfiles,
     titleRu: canonicalPublicEstimateWorkTitleRu(item.canonicalNameRu),
     categoryKey,
     categoryTitleRu,
-    defaultMeasureUnit: canonicalPrimaryUomToGlobalUnit(item.primaryUom),
+    defaultMeasureUnit: canonicalPrimaryUomToGlobalUnitV1(item.primaryUom),
     score: Math.max(0, 1 - ((item.matchTier - 1) * 0.1)),
     matchKind: item.matchTier === 1
       ? "exact_title"
@@ -747,6 +790,10 @@ export function mergeConsumerRepairCanonicalWorkSearchPage(input: {
   if (previous?.searchIndexSnapshotSha256 && previous.searchIndexSnapshotSha256 !== input.page.searchIndexSnapshotSha256) {
     throw new Error("CANONICAL_SEARCH_SNAPSHOT_CHANGED_DURING_PAGINATION");
   }
+  if (previous && (previous.rankingContractVersion !== input.page.rankingContractVersion
+    || previous.catalogVisibilityVersion !== input.page.catalogVisibilityVersion)) {
+    throw new Error("CANONICAL_SEARCH_POLICY_CHANGED_DURING_PAGINATION");
+  }
   if (previous?.resultSetSha256 && previous.resultSetSha256 !== input.page.resultSetSha256) {
     throw new Error("CANONICAL_SEARCH_RESULT_SET_CHANGED_DURING_PAGINATION");
   }
@@ -768,6 +815,8 @@ export function mergeConsumerRepairCanonicalWorkSearchPage(input: {
     nextCursor: input.page.nextCursor,
     searchIndexReleaseId: input.page.searchIndexReleaseId,
     searchIndexSnapshotSha256: input.page.searchIndexSnapshotSha256,
+    rankingContractVersion: input.page.rankingContractVersion,
+    catalogVisibilityVersion: input.page.catalogVisibilityVersion,
     resultSetSha256: input.page.resultSetSha256,
     loading: false,
     errorRu: null,
@@ -783,7 +832,8 @@ export function buildConsumerRepairSelectedWorkEditableField(params: {
   const nextProblemText = params.problemText.trim() || params.currentBundle.draft.problemText || "";
   if (
     fallback &&
-    params.selectedWork?.selectedWorkKey === fallback.selectedWorkKey &&
+    // A restored editor keeps the saved intent in its bundle until a new selection.
+    (!params.selectedWork || params.selectedWork.selectedWorkKey === fallback.selectedWorkKey) &&
     nextProblemText === (params.currentBundle.draft.problemText || "")
   ) {
     const draft = params.currentBundle.draft;
@@ -983,20 +1033,4 @@ export function addConsumerRepairPhotoMaterialPlaceholder(current: ConsumerRepai
     itemId: item.id,
     statusMessage: "Добавлена строка материала по фото. После распознавания выберите материал из каталога.",
   };
-}
-
-export function addConsumerRepairCustomNoteItem(current: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
-  return addConsumerRepairRequestItem({
-    requestDraftId: current.draft.id,
-    titleRu: "Пользовательское примечание",
-    itemType: "other",
-    quantity: 1,
-    unit: "set",
-    unitLabel: "компл.",
-    unitPrice: null,
-    currency: "KGS",
-    source: "custom",
-    confidence: "low",
-    addedBy: "user",
-  });
 }

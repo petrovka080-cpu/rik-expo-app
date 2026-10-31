@@ -1,0 +1,83 @@
+{
+  "status": "ROOT_REVIEWED_CEMENT_SCREED01101_PARTIAL_APPEND",
+  "requiredReviewedStatus": "ROOT_REVIEWED_CEMENT_SCREED01101_PARTIAL_APPEND",
+  "currentIntakeSha256": "d3dcd6bd061cb6935c769d6a6fd3964a7da93e30d972b388ec701fbe79ea35ae",
+  "semanticReviewSha256": "84fad0f80c9b9c921d9bffd8da3403968ccb71bcc58672dde93f0accbcda812d",
+  "pair": {
+    "definitionReleaseId": "15673048-71a2-514b-8e36-ca356e86401f",
+    "searchReleaseId": "3e982465-576e-5f93-92af-d3c829cf1619"
+  },
+  "identity": {
+    "catalogId": "canonical-work:master:floor_cement_screed20mm_krer11_01_011_01",
+    "workKey": "floor_cement_screed20mm_krer11_01_011_01",
+    "groupId": "wg:master:floor_cement_screed20mm_krer11_01_011_01",
+    "sourceIdentity": "master-work:floor_cement_screed20mm_krer11_01_011_01",
+    "locatorKey": "krer11-01-011-01-cement-screed20mm-exact"
+  },
+  "boundedSemanticComparison": "45_FLOOR_HEADERS_THREE_DEMOLITION_PREPARATION_BODIES_DISTINCT_FROM_EXACT01101",
+  "quantityScope": "PARTIAL",
+  "fullTechnicalAcceptance": false,
+  "machineAndOperatorFinancialAdmission": false,
+  "acceptedNewCompleteTypes": 0,
+  "globalPhysicalAbsenceClaimed": false,
+  "preserveExistingAdjacentDefinitions": true,
+  "knownSavedRevisionCountForIntegratorProtection": 82,
+  "rootReviewRequirements": [
+    "Review actual fresh common scoped capture and its 3 existing same-artifact sources/3 locators; exact new source and locator keys remain absent",
+    "Review existing actual R83 eight absent collision checks and three unchanged adjacent bodies on the same held current pair; common publisher repeats current locked preflight",
+    "Preserve all82 fresh full-column revision/resource/price preimages and all81 non-target complete digests; explicitly accept only c8e artifact recovery delta backed by R94 proof",
+    "Keep PARTIAL quantities, five open needs, no machine/operator financial admission, zero complete types",
+    "Authorize ordinary common publisher dry then one apply; independent readback/API/Web/docs; current R96 Android auth remains unaccepted prior-wave evidence"
+  ],
+  "scopedRegistryCaptureSha256": "4e9807cbe43f0631207154e52e1fa3a3dee0ad4fb58d79611431a0dccda9e8cc",
+  "freshProtected82Preimages": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-screed-readonly-next-release-r1/owned-read-result-r2/fresh-protected82-full-column-preimages.json",
+    "sha256": "2bc599296a44661549afdb894c8958d12ca555e38c05b0ecc4cf174febe13850",
+    "bytes": 56963
+  },
+  "freshScopedReadResult": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-screed-readonly-next-release-r1/owned-read-result-r2/result.json",
+    "sha256": "c60d375d5d53c97e191c3b3ee8ccdb1edf39ac048d7ee627a433fe5b621c148c",
+    "bytes": 154299
+  },
+  "freshScopedReadGuard": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-screed-readonly-next-release-r1/screed-next-capture-guard-r2-receipt.json",
+    "sha256": "79af86b3653ede3fb18f294a79c894f0ed0dbfa8c9d373f88edc3eccb09e3cd0",
+    "bytes": 933757
+  },
+  "historicalArtifactTransition": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/stream-c-other-work-types-sol61/work/stream-c-screed-readonly-next-release-r1/owned-read-result-r2/historical-reference-comparison.json",
+    "sha256": "4572f77aa89cee4bf5ac4fa01885f0c02fd72ed263cd9528db8faa67325d9219",
+    "bytes": 966
+  },
+  "r94ReadyArtifactTransitionReviewed": true,
+  "reviewedBy": "/root",
+  "reviewedAtUtc": "2026-10-19T15:25:44.1310487Z",
+  "reviewRequestSha256": "114d7542c9ff025ea0f9f308ffdacbb8a7634f4740a70472623d5ee6be983310",
+  "independentlyCheckedEvidencePins": [
+    "proposedDecision",
+    "currentIntake",
+    "currentReadGuard",
+    "semanticReview",
+    "actualScopedCapture",
+    "freshProtected82Preimages",
+    "historicalArtifactTransition",
+    "readResult",
+    "closedGuard",
+    "sourceFreeze",
+    "candidateProof",
+    "offlineCodeIntake",
+    "androidPreviousWaveClosure"
+  ],
+  "actualReview": {
+    "identityScope": "Bounded45floorheaders+3differentdemolitionpreparationbodies; no global absence claim",
+    "sourceScope": "Exact KRER11-01-011-01 cement20mm readyM150 per100m2; preserve3existing same-artifact sources/locators",
+    "costOwnership": "39.51whole-worker-hours;9quantity/included-operation bindings; no split or duplicate preparation/curing labour",
+    "machineScope": "1.27hoist/9.07vibrator hours and1.27operator hours informational; no machine/operator payment",
+    "readiness": "PARTIAL;5open needs; unknown prices blank;0accepted complete types",
+    "preservation": "Fresh82revision/resource/price unchanged;81nontarget full digests unchanged; only documented R94 c8e artifact lifecycle transition accepted",
+    "authorizedExecution": "Existing common publisher dry; one apply only after all ordinary current+locked guards pass; preserve all adjacent definitions and protected82; independent readback/API/Web/docs required",
+    "android": "PreviousR96 verified install retained; Android auth/UI not accepted and not a prerequisite for independent controlled data delivery",
+    "nextPackage": "CT190 requires actual post-screed pair capture and separate reviewed binding; no silent retarget"
+  }
+}

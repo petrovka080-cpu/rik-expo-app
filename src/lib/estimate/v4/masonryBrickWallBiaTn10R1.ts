@@ -12,16 +12,10 @@ import {
   BIA_TN10_MASONRY_REQUIRED_IDS,
   BIA_TN10_MASONRY_SOURCE_ID,
   BIA_TN10_MASONRY_SOURCE_METADATA,
-} from "./domainFactory";
+} from "./domainFactory/clientRuntimeV1";
 
-export const MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID =
-  "canonical-work:base:masonry_interior_brick_wall_lay_standard" as const;
-export const MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS = Object.freeze([
-  MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
-  "canonical-work:base:masonry_interior_brick_wall_lay_large_area",
-  "canonical-work:base:masonry_interior_brick_wall_lay_small_area",
-  "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
-] as const);
+import { MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID, MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS } from "../contracts/masonryBiaTn10IdentityV1";
+export { MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID, MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS } from "../contracts/masonryBiaTn10IdentityV1";
 export const MASONRY_BRICK_WALL_BIA_TN10_TITLE_RU =
   "Кладка стены из обожжённого глиняного кирпича по BIA TN 10 Table 4" as const;
 export const MASONRY_BRICK_WALL_BIA_TN10_SOURCE_PACK_SHA256 =

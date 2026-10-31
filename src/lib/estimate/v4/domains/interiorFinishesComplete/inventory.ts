@@ -6,8 +6,8 @@ import { INTERIOR_FINISHES_WAVE_1_INVENTORY } from "../interiorFinishesWave1";
 
 export const INTERIOR_FINISHES_COMPLETE_DOMAIN_ID = "interior_finishes" as const;
 export const INTERIOR_FINISHES_COMPLETE_DOMAIN_VERSION = "1.0.0" as const;
-export const INTERIOR_FINISHES_COMPLETE_RECORD_COUNT = 2_250 as const;
-export const INTERIOR_FINISHES_COMPLETE_WAVE1_COUNT = 84 as const;
+export const INTERIOR_FINISHES_COMPLETE_RECORD_COUNT = 1_482 as const;
+export const INTERIOR_FINISHES_COMPLETE_WAVE1_COUNT = 60 as const;
 
 export const INTERIOR_FINISHES_OWNED_SOURCE_DOMAINS = Object.freeze([
   "plaster_paint",
@@ -21,8 +21,6 @@ export type InteriorFinishesOwnedSourceDomain =
 
 export const INTERIOR_FINISHES_SCOPE_CAPABILITIES = Object.freeze([
   "standard",
-  "small_area",
-  "large_area",
   "wet_zone",
   "technical_room",
   "high_load",
@@ -113,12 +111,12 @@ const domainCounts = Object.fromEntries(INTERIOR_FINISHES_OWNED_SOURCE_DOMAINS.m
 
 if (
   INTERIOR_FINISHES_DOMAIN_INVENTORY.length !== INTERIOR_FINISHES_COMPLETE_RECORD_COUNT ||
-  INTERIOR_FINISHES_NEW_INVENTORY.length !== 2_166 ||
+  INTERIOR_FINISHES_NEW_INVENTORY.length !== 1_422 ||
   wave1ByCatalogId.size !== INTERIOR_FINISHES_COMPLETE_WAVE1_COUNT ||
-  domainCounts.plaster_paint !== 650 ||
-  domainCounts.drywall_ceiling !== 500 ||
-  domainCounts.flooring !== 600 ||
-  domainCounts.tile_stone !== 500
+  domainCounts.plaster_paint !== 458 ||
+  domainCounts.drywall_ceiling !== 308 ||
+  domainCounts.flooring !== 408 ||
+  domainCounts.tile_stone !== 308
 ) {
   throw new Error(`INTERIOR_FINISHES_DENOMINATOR_MISMATCH:${JSON.stringify(domainCounts)}`);
 }

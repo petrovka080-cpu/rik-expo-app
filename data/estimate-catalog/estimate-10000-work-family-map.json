@@ -1,195 +1,69 @@
 {
   "demolition": {
     "work_family_id": "demolition",
-    "template_count": 292,
+    "template_count": 132,
     "ready_professional_count": 0,
-    "not_ready_count": 292,
+    "not_ready_count": 132,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 17228
+    "row_count": 7788
   },
   "screed": {
     "work_family_id": "screed",
-    "template_count": 29,
+    "template_count": 13,
     "ready_professional_count": 0,
-    "not_ready_count": 29,
+    "not_ready_count": 13,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 1711
+    "row_count": 767
   },
   "plaster": {
     "work_family_id": "plaster",
-    "template_count": 75,
+    "template_count": 43,
     "ready_professional_count": 0,
-    "not_ready_count": 75,
+    "not_ready_count": 43,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 4425
+    "row_count": 2537
   },
   "earthworks": {
     "work_family_id": "earthworks",
-    "template_count": 413,
+    "template_count": 269,
     "ready_professional_count": 0,
-    "not_ready_count": 413,
+    "not_ready_count": 269,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 24367
+    "row_count": 15871
   },
   "roadworks": {
     "work_family_id": "roadworks",
-    "template_count": 137,
+    "template_count": 89,
     "ready_professional_count": 0,
-    "not_ready_count": 137,
+    "not_ready_count": 89,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 8083
+    "row_count": 5251
   },
   "concrete": {
     "work_family_id": "concrete",
-    "template_count": 472,
+    "template_count": 332,
     "ready_professional_count": 0,
-    "not_ready_count": 472,
+    "not_ready_count": 332,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 27848
+    "row_count": 19588
   },
   "reinforcement": {
     "work_family_id": "reinforcement",
-    "template_count": 227,
+    "template_count": 151,
     "ready_professional_count": 0,
-    "not_ready_count": 227,
+    "not_ready_count": 151,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 13393
+    "row_count": 8909
   },
   "formwork": {
     "work_family_id": "formwork",
-    "template_count": 47,
-    "ready_professional_count": 0,
-    "not_ready_count": 47,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 2773
-  },
-  "masonry": {
-    "work_family_id": "masonry",
-    "template_count": 404,
-    "ready_professional_count": 0,
-    "not_ready_count": 404,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 23836
-  },
-  "waterproofing": {
-    "work_family_id": "waterproofing",
-    "template_count": 450,
-    "ready_professional_count": 0,
-    "not_ready_count": 450,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 26550
-  },
-  "roofing": {
-    "work_family_id": "roofing",
-    "template_count": 500,
-    "ready_professional_count": 0,
-    "not_ready_count": 500,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 29500
-  },
-  "insulation": {
-    "work_family_id": "insulation",
-    "template_count": 400,
-    "ready_professional_count": 0,
-    "not_ready_count": 400,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 23600
-  },
-  "facade": {
-    "work_family_id": "facade",
-    "template_count": 458,
-    "ready_professional_count": 0,
-    "not_ready_count": 458,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 27022
-  },
-  "paint": {
-    "work_family_id": "paint",
-    "template_count": 632,
-    "ready_professional_count": 0,
-    "not_ready_count": 632,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 37288
-  },
-  "putty": {
-    "work_family_id": "putty",
-    "template_count": 108,
-    "ready_professional_count": 0,
-    "not_ready_count": 108,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 6372
-  },
-  "drywall": {
-    "work_family_id": "drywall",
-    "template_count": 458,
-    "ready_professional_count": 0,
-    "not_ready_count": 458,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 27022
-  },
-  "fire_safety": {
-    "work_family_id": "fire_safety",
-    "template_count": 59,
-    "ready_professional_count": 0,
-    "not_ready_count": 59,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 3481
-  },
-  "tile": {
-    "work_family_id": "tile",
-    "template_count": 500,
-    "ready_professional_count": 0,
-    "not_ready_count": 500,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 29500
-  },
-  "flooring": {
-    "work_family_id": "flooring",
-    "template_count": 600,
-    "ready_professional_count": 0,
-    "not_ready_count": 600,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 35400
-  },
-  "windows_doors": {
-    "work_family_id": "windows_doors",
-    "template_count": 400,
-    "ready_professional_count": 0,
-    "not_ready_count": 400,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 23600
-  },
-  "metalwork": {
-    "work_family_id": "metalwork",
-    "template_count": 323,
-    "ready_professional_count": 0,
-    "not_ready_count": 323,
-    "generic_fallback_count": 0,
-    "source_backed_row_count": 0,
-    "row_count": 19057
-  },
-  "profile_sheet_fence": {
-    "work_family_id": "profile_sheet_fence",
     "template_count": 33,
     "ready_professional_count": 0,
     "not_ready_count": 33,
@@ -197,58 +71,184 @@
     "source_backed_row_count": 0,
     "row_count": 1947
   },
-  "electrical": {
-    "work_family_id": "electrical",
-    "template_count": 657,
+  "masonry": {
+    "work_family_id": "masonry",
+    "template_count": 250,
     "ready_professional_count": 0,
-    "not_ready_count": 657,
+    "not_ready_count": 250,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 41391
+    "row_count": 14750
+  },
+  "waterproofing": {
+    "work_family_id": "waterproofing",
+    "template_count": 258,
+    "ready_professional_count": 0,
+    "not_ready_count": 258,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 15222
+  },
+  "roofing": {
+    "work_family_id": "roofing",
+    "template_count": 308,
+    "ready_professional_count": 0,
+    "not_ready_count": 308,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 18172
+  },
+  "insulation": {
+    "work_family_id": "insulation",
+    "template_count": 208,
+    "ready_professional_count": 0,
+    "not_ready_count": 208,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 12272
+  },
+  "facade": {
+    "work_family_id": "facade",
+    "template_count": 298,
+    "ready_professional_count": 0,
+    "not_ready_count": 298,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 17582
+  },
+  "paint": {
+    "work_family_id": "paint",
+    "template_count": 434,
+    "ready_professional_count": 0,
+    "not_ready_count": 434,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 25606
+  },
+  "putty": {
+    "work_family_id": "putty",
+    "template_count": 76,
+    "ready_professional_count": 0,
+    "not_ready_count": 76,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 4484
+  },
+  "drywall": {
+    "work_family_id": "drywall",
+    "template_count": 282,
+    "ready_professional_count": 0,
+    "not_ready_count": 282,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 16638
+  },
+  "fire_safety": {
+    "work_family_id": "fire_safety",
+    "template_count": 34,
+    "ready_professional_count": 0,
+    "not_ready_count": 34,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 2006
+  },
+  "tile": {
+    "work_family_id": "tile",
+    "template_count": 308,
+    "ready_professional_count": 0,
+    "not_ready_count": 308,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 18172
+  },
+  "flooring": {
+    "work_family_id": "flooring",
+    "template_count": 408,
+    "ready_professional_count": 0,
+    "not_ready_count": 408,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 24072
+  },
+  "windows_doors": {
+    "work_family_id": "windows_doors",
+    "template_count": 208,
+    "ready_professional_count": 0,
+    "not_ready_count": 208,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 12272
+  },
+  "metalwork": {
+    "work_family_id": "metalwork",
+    "template_count": 169,
+    "ready_professional_count": 0,
+    "not_ready_count": 169,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 9971
+  },
+  "profile_sheet_fence": {
+    "work_family_id": "profile_sheet_fence",
+    "template_count": 17,
+    "ready_professional_count": 0,
+    "not_ready_count": 17,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 1003
+  },
+  "electrical": {
+    "work_family_id": "electrical",
+    "template_count": 433,
+    "ready_professional_count": 0,
+    "not_ready_count": 433,
+    "generic_fallback_count": 0,
+    "source_backed_row_count": 0,
+    "row_count": 27279
   },
   "low_voltage": {
     "work_family_id": "low_voltage",
-    "template_count": 93,
+    "template_count": 61,
     "ready_professional_count": 0,
-    "not_ready_count": 93,
+    "not_ready_count": 61,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 5859
+    "row_count": 3843
   },
   "plumbing": {
     "work_family_id": "plumbing",
-    "template_count": 650,
+    "template_count": 394,
     "ready_professional_count": 0,
-    "not_ready_count": 650,
+    "not_ready_count": 394,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 40950
+    "row_count": 24822
   },
   "hvac": {
     "work_family_id": "hvac",
-    "template_count": 850,
+    "template_count": 402,
     "ready_professional_count": 0,
-    "not_ready_count": 850,
+    "not_ready_count": 402,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 53550
+    "row_count": 25326
   },
   "landscaping": {
     "work_family_id": "landscaping",
-    "template_count": 550,
+    "template_count": 294,
     "ready_professional_count": 0,
-    "not_ready_count": 550,
+    "not_ready_count": 294,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 32450
+    "row_count": 17346
   },
   "cleaning_waste": {
     "work_family_id": "cleaning_waste",
-    "template_count": 183,
+    "template_count": 88,
     "ready_professional_count": 0,
-    "not_ready_count": 183,
+    "not_ready_count": 88,
     "generic_fallback_count": 0,
     "source_backed_row_count": 0,
-    "row_count": 10797
+    "row_count": 5192
   }
 }

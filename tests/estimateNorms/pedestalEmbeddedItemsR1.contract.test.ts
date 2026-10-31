@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import { extractConcretePlacementCanonicalParametersR1, pedestalEmbeddedItemsPromptDetailsR1 } from "../../src/lib/estimate/ownedDomain/concretePlacementProductionBindingR1";
 import { COLUMN_BASE_EMBEDDED_ITEMS_FORMULAS } from "../../src/lib/estimate/v4/columnBaseEmbeddedItemsR1";
@@ -36,8 +36,7 @@ describe("pedestal embedded items canonical family", () => {
     expect((await compilePedestalEmbeddedItemsR1(input, { catalogId: target.catalogId })).preliminaryNeeds)
       .toEqual(expect.arrayContaining([expect.objectContaining({ missing_parameter_ids: ["positioning_worker_h"] })]));
   });
-  it("round-trips the shared editable parameter screen", () => {
-    const target = PEDESTAL_EMBEDDED_ITEMS_TARGETS[4];
+  it.each(PEDESTAL_EMBEDDED_ITEMS_TARGETS)("round-trips the shared editable parameter screen: $contextKey", (target) => {
     const input = pedestalEmbeddedItemsAcceptanceInputR1(target.contextKey);
     const prompt = [target.titleRu, ...pedestalEmbeddedItemsPromptDetailsR1(input)].join("\n");
     expect(extractConcretePlacementCanonicalParametersR1({ catalogId: target.catalogId, text: prompt })).toEqual(input);

@@ -1,0 +1,287 @@
+{
+  "contract": "independent-panel-ready-grid-whole-post-oracle/r287",
+  "expectedShape": [
+    38,
+    121,
+    121
+  ],
+  "retainedRows": 112,
+  "retainedParameters": 30,
+  "retainedBindings": 25,
+  "retainedSources": 2,
+  "newRows": [
+    {
+      "suffix": "measured-panels",
+      "unitId": "pcs",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "parentCostOwnerSuffix": null,
+      "requiredOperationIds": [
+        "mount"
+      ]
+    },
+    {
+      "suffix": "whole-labour",
+      "unitId": "man_hour",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false,
+      "parentCostOwnerSuffix": null,
+      "requiredOperationIds": [
+        "readback",
+        "mount",
+        "connect",
+        "qa",
+        "complete"
+      ]
+    },
+    {
+      "suffix": "mount-included",
+      "unitId": "pcs",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false,
+      "parentCostOwnerSuffix": "whole-labour",
+      "requiredOperationIds": [
+        "mount"
+      ]
+    },
+    {
+      "suffix": "connection-included",
+      "unitId": "pcs",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false,
+      "parentCostOwnerSuffix": "whole-labour",
+      "requiredOperationIds": [
+        "connect"
+      ]
+    },
+    {
+      "suffix": "readiness-included",
+      "unitId": "set",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false,
+      "parentCostOwnerSuffix": "whole-labour",
+      "requiredOperationIds": [
+        "readback"
+      ]
+    },
+    {
+      "suffix": "qa-included",
+      "unitId": "test",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false,
+      "parentCostOwnerSuffix": "whole-labour",
+      "requiredOperationIds": [
+        "qa"
+      ]
+    },
+    {
+      "suffix": "completion-included",
+      "unitId": "set",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false,
+      "parentCostOwnerSuffix": "whole-labour",
+      "requiredOperationIds": [
+        "complete"
+      ]
+    },
+    {
+      "suffix": "delivery",
+      "unitId": "trip",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "parentCostOwnerSuffix": null,
+      "requiredOperationIds": [
+        "deliver"
+      ]
+    },
+    {
+      "suffix": "waste",
+      "unitId": "trip",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "parentCostOwnerSuffix": null,
+      "requiredOperationIds": [
+        "waste"
+      ]
+    }
+  ],
+  "newPaidOwnerSuffixes": [
+    "whole-labour",
+    "delivery",
+    "waste"
+  ],
+  "newProcurementOwnerSuffixes": [
+    "delivery",
+    "waste"
+  ],
+  "protectedOldNeedIds": [
+    "master30:electrical:open:supply-line-materials",
+    "master30:electrical:open:connection-materials",
+    "master30:electrical:open:distribution-components",
+    "master30:electrical:open:marking",
+    "master30:electrical:open:contingency",
+    "master30:electrical:open:surface-protection",
+    "master30:electrical:open:additional-mounting",
+    "master30:electrical:open:installation-consumables",
+    "master30:electrical:open:personal-protection",
+    "master30:electrical:open:access",
+    "master30:electrical:open:tool-25",
+    "master30:electrical:open:tool-26",
+    "master30:electrical:open:tool-56",
+    "master30:electrical:open:delivery-unloading",
+    "master30:electrical:open:returnable-packaging",
+    "master30:electrical:open:waste-handling",
+    "master30:electrical:open:quantity-review"
+  ],
+  "conditionalOldNeedReplacements": [
+    "master30:electrical:open:site-preparation",
+    "master30:electrical:open:installation-labour",
+    "master30:electrical:open:on-site-supply",
+    "master30:electrical:open:site-cleanup",
+    "master30:electrical:open:testing-handover"
+  ],
+  "explicitTestOnlyPrices": {
+    "led-grid:dvo6560-6562:opal-4000": "1000",
+    "master32:panel:tool-post:r1:provision-owner": "200",
+    "electrical:technical-room:ready-grid-post:r287:whole-labour": "800",
+    "electrical:technical-room:ready-grid-post:r287:delivery": "100",
+    "electrical:technical-room:ready-grid-post:r287:waste": "50",
+    "electrical:technical-room:ready-grid-post:r287:measured-panels": "11"
+  },
+  "independentTestInputs": {
+    "q": 100,
+    "m30_material_technology": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+    "m30_fixture_count": 3,
+    "m32_panel_tool_provision_method": "Один последовательный пост: готовая решётка, рычажное соединение медных жил и измерительное оснащение",
+    "m32_panel_tool_method_fit": "Приняты готовая решётка 600 × 600 мм и проектный узел с раздельными L/N/PE: оба медных конца 0,75–1,5 мм² со стандартной ПВХ-изоляцией, зачистка 11 мм, рычажные соединители без добавленных наконечников; оболочка, защита и разгрузка обеспечены; цепь безопасно отключена и заблокирована ответственным лицом; точки доступны штатными проводами; приборы проверены, внутри сухо, 0–35 °C, влажность до 70 %, высота до 2000 м",
+    "panel_ready_grid_post_method": "Целый монтажный пост панели в принятой решётке с фактическим трудом, подключением, проверками и завершением по ППР",
+    "panel_ready_grid_post_qualification": "Сохранены выбранный заводской комплект и принятый ручной и измерительный пост; подготовлены доступ, безопасный фронт, готовое исправное питание и принятый узел L/N/PE; фактические труд, проверки и услуги определены ППР",
+    "panel_ready_grid_post_ppr_reference": "TEST_ONLY accepted job scope; not a real authenticated PPR",
+    "panel_ready_grid_post_actual_total_labour_h": "2.5",
+    "panel_ready_grid_post_actual_test_count": 5,
+    "panel_ready_grid_post_price_scope_reference": "TEST_ONLY LABOUR_AND_QA_ONLY: excludes retained factory supply, separate tool provision and external services; no quote authentication",
+    "panel_ready_grid_post_external_delivery_trips": 1,
+    "panel_ready_grid_post_external_waste_trips": 0
+  },
+  "independentQualifiedAmounts": {
+    "factoryProduct": "3000",
+    "retainedToolProvision": "200",
+    "newAggregateLabourAndQa": "2000",
+    "externalDelivery": "100",
+    "externalWaste": "0",
+    "totalKnownMoney": "5300",
+    "measuredInformationalRawAmountNotInTotal": "33"
+  },
+  "entries": [
+    {
+      "id": "01-legacy-branch-preserved",
+      "mode": "legacy"
+    },
+    {
+      "id": "02-current-factory-and-tools-only",
+      "mode": "retained"
+    },
+    {
+      "id": "03-whole-project-priced",
+      "mode": "full",
+      "expectedTotal": "5300"
+    },
+    {
+      "id": "04-zero-count-preserves-valid-legacy-constraint",
+      "mode": "zero"
+    },
+    {
+      "id": "05-missing-actual-labour-hours",
+      "mode": "missing",
+      "remove": [
+        "panel_ready_grid_post_actual_total_labour_h"
+      ],
+      "expectedNeedSuffix": "whole-labour",
+      "expectedNeedQuantity": null,
+      "expectedNeedState": "QUANTITY_REQUIRED"
+    },
+    {
+      "id": "06-missing-ppr-reference-known-hours-retained",
+      "mode": "missing",
+      "remove": [
+        "panel_ready_grid_post_ppr_reference"
+      ],
+      "expectedNeedSuffix": "whole-labour",
+      "expectedNeedQuantity": "2.5",
+      "expectedNeedState": "CONDITION_REQUIRED"
+    },
+    {
+      "id": "07-missing-actual-qa-scope",
+      "mode": "missing",
+      "remove": [
+        "panel_ready_grid_post_actual_test_count"
+      ],
+      "expectedNeedSuffix": "whole-labour",
+      "expectedNeedQuantity": "2.5",
+      "expectedNeedState": "CONDITION_REQUIRED"
+    },
+    {
+      "id": "08-missing-quote-scope-no-payment",
+      "mode": "missing",
+      "remove": [
+        "panel_ready_grid_post_price_scope_reference"
+      ],
+      "expectedNeedSuffix": "whole-labour",
+      "expectedNeedQuantity": "2.5",
+      "expectedNeedState": "CONDITION_REQUIRED"
+    },
+    {
+      "id": "09-public-money-reference-blank",
+      "mode": "public-money",
+      "expectedTotal": "5300"
+    },
+    {
+      "id": "10-noninteger-retained-count-reject",
+      "input": {
+        "m30_fixture_count": "1.5"
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    },
+    {
+      "id": "11-zero-labour-for-positive-whole-post-reject",
+      "input": {
+        "panel_ready_grid_post_actual_total_labour_h": "0"
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    },
+    {
+      "id": "12-zero-qa-for-positive-whole-post-reject",
+      "input": {
+        "panel_ready_grid_post_actual_test_count": "0"
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    },
+    {
+      "id": "13-unqualified-project-method-reject",
+      "input": {
+        "panel_ready_grid_post_qualification": "TEST_ONLY_OUTSIDE_QUALIFIED_SCOPE"
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    }
+  ],
+  "allPricesRatesAndPprAreTestOnly": true,
+  "projectAuthenticated": false,
+  "priceNonoverlapAuthenticated": false,
+  "FULL": false,
+  "expectedQualifiedQuantities": {
+    "electrical:technical-room:ready-grid-post:r287:measured-panels": "3",
+    "electrical:technical-room:ready-grid-post:r287:whole-labour": "2.5",
+    "electrical:technical-room:ready-grid-post:r287:mount-included": "3",
+    "electrical:technical-room:ready-grid-post:r287:connection-included": "3",
+    "electrical:technical-room:ready-grid-post:r287:readiness-included": "1",
+    "electrical:technical-room:ready-grid-post:r287:qa-included": "5",
+    "electrical:technical-room:ready-grid-post:r287:completion-included": "1",
+    "electrical:technical-room:ready-grid-post:r287:delivery": "1",
+    "electrical:technical-room:ready-grid-post:r287:waste": "0"
+  },
+  "legacyInput": {
+    "q": 100,
+    "m30_material_technology": "Прежняя общая монтажная ветвь без нового заводского комплекта"
+  },
+  "legacyExpectedResourceCount": 63
+}

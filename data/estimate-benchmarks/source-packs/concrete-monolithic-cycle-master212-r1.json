@@ -1,0 +1,3462 @@
+{
+  "contract": "gox-build.master212.concrete-monolithic-cycle/r1",
+  "sourceId": "master212_concrete_whole_cycle_scope_r1",
+  "status": "AUTHORED_SOURCE_COMPOSITION_WITH_EXPLICIT_FULL_CYCLE_RESIDUAL_NOT_PUBLISHED",
+  "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+  "scopeRu": "Полный заявленный цикл монолитного ленточного/плитного фундамента и подвесной монолитной плиты в точных existing profiles.Это подготовка source-композиции, а не конструктивный расчёт, разрешение строить или FULL.",
+  "targets": [
+    {
+      "kind": "strip_foundation",
+      "context": "standard",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+      "titleRu": "Монолитный железобетонный ленточный фундамент в стандартной зоне",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_form_standard"
+    },
+    {
+      "kind": "strip_foundation",
+      "context": "high_load",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_high_load",
+      "titleRu": "Монолитный железобетонный ленточный фундамент для высокой нагрузки",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_form_high_load"
+    },
+    {
+      "kind": "strip_foundation",
+      "context": "technical_room",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_technical_room",
+      "titleRu": "Монолитный железобетонный ленточный фундамент в техническом помещении",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_form_technical_room"
+    },
+    {
+      "kind": "strip_foundation",
+      "context": "wet_zone",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_wet_zone",
+      "titleRu": "Монолитный железобетонный ленточный фундамент во влажной зоне",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_form_wet_zone"
+    },
+    {
+      "kind": "slab_foundation",
+      "context": "standard",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "titleRu": "Монолитный железобетонный плитный фундамент в стандартной зоне",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_form_standard"
+    },
+    {
+      "kind": "slab_foundation",
+      "context": "high_load",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_high_load",
+      "titleRu": "Монолитный железобетонный плитный фундамент для высокой нагрузки",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_form_high_load"
+    },
+    {
+      "kind": "slab_foundation",
+      "context": "technical_room",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_technical_room",
+      "titleRu": "Монолитный железобетонный плитный фундамент в техническом помещении",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_form_technical_room"
+    },
+    {
+      "kind": "slab_foundation",
+      "context": "wet_zone",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_wet_zone",
+      "titleRu": "Монолитный железобетонный плитный фундамент во влажной зоне",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_form_wet_zone"
+    },
+    {
+      "kind": "suspended_slab",
+      "context": "standard",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_standard",
+      "titleRu": "Монолитная железобетонная плита перекрытия в стандартной зоне",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_standard"
+    },
+    {
+      "kind": "suspended_slab",
+      "context": "high_load",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_high_load",
+      "titleRu": "Монолитная железобетонная плита перекрытия для высокой нагрузки",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_high_load"
+    },
+    {
+      "kind": "suspended_slab",
+      "context": "technical_room",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_technical_room",
+      "titleRu": "Монолитная железобетонная плита перекрытия в техническом помещении",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_technical_room"
+    },
+    {
+      "kind": "suspended_slab",
+      "context": "wet_zone",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_wet_zone",
+      "titleRu": "Монолитная железобетонная плита перекрытия во влажной зоне",
+      "formworkCatalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_wet_zone"
+    }
+  ],
+  "stageTitles": {
+    "placement": "Поставка, укладка, уплотнение, обработка и уход за бетоном",
+    "reinforcement": "Подготовка и установка арматуры",
+    "formwork": "Монтаж, распалубка и оборот опалубки",
+    "embedded": "Установка закладных до бетонирования"
+  },
+  "requiredComponentRows": {
+    "placement": [
+      "material:concrete:ready-mix",
+      "material:concrete:curing-membrane",
+      "material:concrete:winter-heating-cable",
+      "work:concrete:place-and-compact",
+      "work:concrete:finish-surface",
+      "work:concrete:cure",
+      "work:concrete:winter-heating",
+      "equipment:concrete:pump",
+      "equipment:concrete:crane-bucket",
+      "equipment:concrete:deep-vibrator",
+      "equipment:concrete:heating-transformer",
+      "service:concrete:acceptance-control",
+      "material:concrete:construction-joint-waterstop",
+      "work:concrete:construction-joint-waterstop-install",
+      "delivery:concrete:ready-mix"
+    ],
+    "reinforcement": [
+      "material:reinforcement:steel-approved-schedule",
+      "material:reinforcement:binding-wire",
+      "material:reinforcement:spacer-chairs",
+      "material:reinforcement:mechanical-couplers",
+      "work:reinforcement:unload-store",
+      "work:reinforcement:site-cut",
+      "work:reinforcement:site-bend",
+      "work:reinforcement:cage-assembly",
+      "work:reinforcement:install-fix",
+      "work:reinforcement:cover-control",
+      "equipment:reinforcement:cutting-machine",
+      "equipment:reinforcement:bending-machine",
+      "equipment:reinforcement:lifting",
+      "service:reinforcement:inspection",
+      "service:reinforcement:mill-certificates",
+      "delivery:reinforcement:steel"
+    ],
+    "frami": [
+      "information:formwork:measured-contact-area",
+      "equipment:formwork:frami-xlife-panels-rental",
+      "equipment:formwork:frami-xlife-corners-rental",
+      "equipment:formwork:frami-panel-connectors-rental",
+      "equipment:formwork:frami-flat-ties-10-80-rental",
+      "equipment:formwork:frami-flat-tie-clips-rental",
+      "equipment:formwork:frami-foundation-clamps-rental",
+      "equipment:formwork:plumbing-struts-260-rental",
+      "material:formwork:perforated-tape-50x2",
+      "material:formwork:joint-sealing-tape",
+      "material:formwork:release-agent",
+      "work:formwork:receive-sort-handle-kit",
+      "work:formwork:assemble-install-align",
+      "work:formwork:strip-clean-return-preparation",
+      "service:formwork:engineer-layout-review",
+      "equipment:formwork:crane-handling",
+      "delivery:formwork:outbound-kit",
+      "delivery:formwork:return-kit",
+      "information:formwork:installation-stages",
+      "information:formwork:working-platform-not-applicable",
+      "information:formwork:supporting-construction-not-applicable",
+      "information:formwork:compensation-insert-not-applicable",
+      "information:formwork:rental-deposit-not-applicable",
+      "information:formwork:maintenance-service-not-applicable"
+    ],
+    "dokaflex": [
+      "information:formwork:dokaflex-measured-contact-area",
+      "equipment:formwork:dokaflex-3so-sheets-rental",
+      "equipment:formwork:dokaflex-primary-beams-rental",
+      "equipment:formwork:dokaflex-secondary-beams-rental",
+      "equipment:formwork:dokaflex-floor-props-rental",
+      "equipment:formwork:dokaflex-lowering-heads-rental",
+      "equipment:formwork:dokaflex-supporting-heads-rental",
+      "equipment:formwork:dokaflex-tripods-rental",
+      "equipment:formwork:dokaflex-bracing-rental",
+      "equipment:formwork:dokaflex-secondary-beam-stabilizers-rental",
+      "equipment:formwork:dokaflex-floor-end-shutter-rental",
+      "equipment:formwork:dokaflex-access-platform-rental",
+      "equipment:formwork:dokaflex-edge-protection-rental",
+      "equipment:formwork:dokaflex-reshoring-props-rental",
+      "material:formwork:dokaflex-project-fixings",
+      "material:formwork:dokaflex-release-agent",
+      "work:formwork:dokaflex-receive-sort-handle",
+      "work:formwork:dokaflex-assemble-align-brace",
+      "work:formwork:dokaflex-lay-and-fix-sheets",
+      "work:formwork:dokaflex-strip-clean-return",
+      "work:formwork:dokaflex-reshoring",
+      "service:formwork:dokaflex-engineer-layout-review",
+      "equipment:formwork:dokaflex-level-lifting",
+      "delivery:formwork:dokaflex-outbound-kit",
+      "delivery:formwork:dokaflex-return-kit",
+      "information:formwork:dokaflex-installation-stages",
+      "information:formwork:dokaflex-drop-beam-not-applicable",
+      "information:formwork:dokaflex-rental-deposit-not-applicable",
+      "information:formwork:dokaflex-maintenance-not-applicable"
+    ],
+    "embedded": [
+      "material:concrete:slab-embedded-items",
+      "work:concrete:slab-embedded-items-layout",
+      "work:concrete:slab-embedded-items-positioning",
+      "work:concrete:slab-embedded-items-fixing",
+      "work:concrete:slab-embedded-items-welding",
+      "material:concrete:slab-embedded-items-welding-consumables",
+      "material:concrete:slab-embedded-items-temporary-support",
+      "equipment:concrete:slab-embedded-items-lifting",
+      "service:concrete:slab-embedded-items-survey",
+      "service:concrete:slab-embedded-items-inspection",
+      "work:concrete:slab-embedded-items-coating",
+      "material:concrete:slab-embedded-items-coating",
+      "delivery:concrete:slab-embedded-items",
+      "delivery:concrete:slab-embedded-items-equipment-mobilization"
+    ]
+  },
+  "residual": [
+    {
+      "needId": "master212:concrete-cycle:r1:need:scope-base",
+      "parameterId": "m212_concrete_application_need_scope_base",
+      "titleRu": "Подготовка и готовность основания под конструкцию",
+      "stageTitleRu": "Подготовить основание",
+      "operationId": "master212:concrete-cycle:r1:operation:scope-base",
+      "ordinal": 5,
+      "category": "work",
+      "unitId": "man_hour",
+      "missingAuthority": "APPLICATION_METHOD_AND_LABOR_NORM",
+      "projectFact": "Геотехническое основание и граница земляных/соседних работ по проекту",
+      "reasonRu": "Нельзя объявить основание готовым, если исходный заказ включает его устройство; проект не заменяет отсутствующую норму работ.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить APPLICATION_METHOD_AND_LABOR_NORM и подтвердить: Геотехническое основание и граница земляных/соседних работ по проекту."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:setting-out",
+      "parameterId": "m212_concrete_application_need_setting_out",
+      "titleRu": "Разбивка осей и отметок конструкции",
+      "stageTitleRu": "Разметить конструкцию",
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "ordinal": 10,
+      "category": "service",
+      "unitId": "service_hour",
+      "missingAuthority": "APPLICATION_SURVEY_EXECUTION_NORM",
+      "projectFact": "Разбивочный план и программа геодезического контроля",
+      "reasonRu": "Нужен полный состав разбивки/инструмента/труда и оплата; геометрия бетонного тела его не определяет.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить APPLICATION_SURVEY_EXECUTION_NORM и подтвердить: Разбивочный план и программа геодезического контроля."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:blinding",
+      "parameterId": "m212_concrete_application_need_blinding",
+      "titleRu": "Бетонная подготовка в составе фундамента",
+      "stageTitleRu": "Устроить бетонную подготовку",
+      "operationId": "master212:concrete-cycle:r1:operation:blinding",
+      "ordinal": 20,
+      "category": "work",
+      "unitId": "man_hour",
+      "missingAuthority": "EXACT_KRER06_01_001_01_APPLICABILITY_AND_INDEPENDENT_PROJECT_GEOMETRY",
+      "projectFact": "Геометрия и материал подготовки по КЖ",
+      "reasonRu": "Весь столбец01 подтверждён отдельно. В полном фундаменте подработка закрывает только бетонную подготовку при точной применимости и собственном положительном объёме; не принимает основание и не заменяет несущую конструкцию.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить EXACT_KRER06_01_001_01_APPLICABILITY_AND_INDEPENDENT_PROJECT_GEOMETRY и подтвердить: Геометрия и материал подготовки по КЖ."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:formwork-sufficiency",
+      "parameterId": "m212_concrete_application_need_formwork_sufficiency",
+      "titleRu": "Достаточность раскладки опалубки, креплений и опор",
+      "stageTitleRu": "Установить опалубку",
+      "operationId": "master212:concrete-cycle:r1:operation:formwork-sufficiency",
+      "ordinal": 30,
+      "category": "service",
+      "unitId": "document",
+      "missingAuthority": "APPROVED_COMPLETE_SYSTEM_LAYOUT_AND_ADMISSION",
+      "projectFact": "Раскладка, нагрузки, размеры/площадь контакта, основание стоек, последовательность и срок выдержки",
+      "reasonRu": "Сохранён весь принятый Frami/Dokaflex roster; число элементов должно иметь утверждённую системную раскладку, а не бюджетный коэффициент по объёму.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить APPROVED_COMPLETE_SYSTEM_LAYOUT_AND_ADMISSION и подтвердить: Раскладка, нагрузки, размеры/площадь контакта, основание стоек, последовательность и срок выдержки."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:reinforcement-design",
+      "parameterId": "m212_concrete_application_need_reinforcement_design",
+      "titleRu": "Проектный состав арматуры, фиксаторов и соединений",
+      "stageTitleRu": "Подготовить и смонтировать армирование",
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement-design",
+      "ordinal": 40,
+      "category": "service",
+      "unitId": "document",
+      "missingAuthority": "APPROVED_BBS_AND_EXECUTION_SYSTEM",
+      "projectFact": "КЖ/BBS со стержнями, длинами, марками, нахлёстами/муфтами, защитным слоем, фиксаторами",
+      "reasonRu": "Нет универсального кг/м³.Принятая BBS routing identity сохраняет массу и единицу, но не выполняет конструктивный расчёт и не создаёт ведомость.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить APPROVED_BBS_AND_EXECUTION_SYSTEM и подтвердить: КЖ/BBS со стержнями, длинами, марками, нахлёстами/муфтами, защитным слоем, фиксаторами."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:embedded-completeness",
+      "parameterId": "m212_concrete_application_need_embedded_completeness",
+      "titleRu": "Полный узел и обеспечение установки закладных",
+      "stageTitleRu": "Смонтировать закладные",
+      "operationId": "master212:concrete-cycle:r1:operation:embedded-completeness",
+      "ordinal": 45,
+      "category": "service",
+      "unitId": "document",
+      "missingAuthority": "APPLICABLE_COMPLETE_EMBEDDED_METHOD_NORM",
+      "projectFact": "Ведомость закладных, узлы крепления/сварки, допуски и необходимость покрытия",
+      "reasonRu": "Повторно используются все14 строк source-component.Проектная масса не доказывает достаточность оснастки сварки/крепления/покрытия и их расход.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить APPLICABLE_COMPLETE_EMBEDDED_METHOD_NORM и подтвердить: Ведомость закладных, узлы крепления/сварки, допуски и необходимость покрытия."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:concrete-supply",
+      "parameterId": "m212_concrete_application_need_concrete_supply",
+      "titleRu": "Условия поставки и подачи бетонной смеси",
+      "stageTitleRu": "Принять и подать смесь",
+      "operationId": "master212:concrete-cycle:r1:operation:concrete-supply",
+      "ordinal": 50,
+      "category": "service",
+      "unitId": "document",
+      "missingAuthority": "COMPLETE_DELIVERY_AND_PLACEMENT_SCOPE",
+      "projectFact": "Спецификация смеси, график, маршрут, доступ миксера, насосная/крановая схема",
+      "reasonRu": "NRMCA подтверждает правило заказа с явным резервом, но не универсальную производительность насоса, число рейсов или границу цены.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить COMPLETE_DELIVERY_AND_PLACEMENT_SCOPE и подтвердить: Спецификация смеси, график, маршрут, доступ миксера, насосная/крановая схема."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:curing-materials",
+      "parameterId": "m212_concrete_application_need_curing_materials",
+      "titleRu": "Материалы и подача для выбранного ухода",
+      "stageTitleRu": "Выполнить уход за бетоном",
+      "operationId": "master212:concrete-cycle:r1:operation:curing-materials",
+      "ordinal": 65,
+      "category": "material",
+      "unitId": "m3",
+      "missingAuthority": "EXACT_CURING_SYSTEM_CONSUMPTION_AND_SUPPLY_NORM",
+      "projectFact": "Измеренная открытая поверхность, климат/температура, последующие слои и режим ухода",
+      "reasonRu": "Плёнка/вода/жидкий состав — разные системы.Часы ухода не создают литры воды, число слоёв, нахлёсты или совместимость с отделкой.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить EXACT_CURING_SYSTEM_CONSUMPTION_AND_SUPPLY_NORM и подтвердить: Измеренная открытая поверхность, климат/температура, последующие слои и режим ухода."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:stripping-control",
+      "parameterId": "m212_concrete_application_need_stripping_control",
+      "titleRu": "Условие распалубки и перестановки опор",
+      "stageTitleRu": "Распалубить конструкцию",
+      "operationId": "master212:concrete-cycle:r1:operation:stripping-control",
+      "ordinal": 70,
+      "category": "service",
+      "unitId": "document",
+      "missingAuthority": "APPLICABLE_STRENGTH_AND_RESHORING_CONTROL_SCOPE",
+      "projectFact": "Прочность/срок снятия, ППР, перераспределение нагрузок и поддерживающие стойки",
+      "reasonRu": "Срок или несущая способность не берётся из количества дней аренды; для перекрытия сохраняются отдельные опоры/перестановка.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить APPLICABLE_STRENGTH_AND_RESHORING_CONTROL_SCOPE и подтвердить: Прочность/срок снятия, ППР, перераспределение нагрузок и поддерживающие стойки."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:operators",
+      "parameterId": "m212_concrete_application_need_operators",
+      "titleRu": "Обеспечение машинистами и операторами",
+      "stageTitleRu": "Обеспечить работу механизмов",
+      "operationId": "master212:concrete-cycle:r1:operation:operators",
+      "ordinal": 50,
+      "category": "work",
+      "unitId": "man_hour",
+      "missingAuthority": "MACHINE_PRICE_COVERAGE_AND_OPERATOR_NORM",
+      "projectFact": "Граница включения труда в каждую машинную/услужную ставку",
+      "reasonRu": "Операторы не выводятся из машино-часов илиF.Не начислять второй труд там, где он уже включён, и не прятать отсутствующий.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить MACHINE_PRICE_COVERAGE_AND_OPERATOR_NORM и подтвердить: Граница включения труда в каждую машинную/услужную ставку."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:energy",
+      "parameterId": "m212_concrete_application_need_energy",
+      "titleRu": "Питание оборудования и временная электросеть",
+      "stageTitleRu": "Обеспечить питание",
+      "operationId": "master212:concrete-cycle:r1:operation:energy",
+      "ordinal": 25,
+      "category": "equipment",
+      "unitId": "set",
+      "missingAuthority": "APPLICABLE_TEMPORARY_POWER_DESIGN_AND_COMPLETE_PROVISION",
+      "projectFact": "Напряжение/нагрузка/длины/защита/заземление и фактический источник",
+      "reasonRu": "Нет универсальных кВт·ч на м³; двигатель без кабеля/защиты/совместимого источника не является обеспеченным постом.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false,
+      "nextStepRu": "Получить APPLICABLE_TEMPORARY_POWER_DESIGN_AND_COMPLETE_PROVISION и подтвердить: Напряжение/нагрузка/длины/защита/заземление и фактический источник."
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:survey-tools",
+      "parameterId": "m212_concrete_application_need_survey_tools",
+      "titleRu": "Геодезические приборы и принадлежности",
+      "stageTitleRu": "Разметить оси и отметки",
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "ordinal": 10,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "missingAuthority": "Реестр прибора, штатив, рейка и поверка",
+      "projectFact": "Метод разбивки и требуемая точность",
+      "nextStepRu": "Получить реестр прибора, штатив, рейка и поверка и подтвердить: Метод разбивки и требуемая точность. До этого количество неизвестно.",
+      "reasonRu": "Реестр прибора, штатив, рейка и поверка. Метод разбивки и требуемая точность. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:survey-consumables",
+      "parameterId": "m212_concrete_application_need_survey_consumables",
+      "titleRu": "Колья, шнур и краска разбивки",
+      "stageTitleRu": "Разметить оси и отметки",
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "ordinal": 10,
+      "category": "material",
+      "unitId": "set",
+      "matrixCategory": "consumables",
+      "missingAuthority": "Применимая расходная норма разбивки",
+      "projectFact": "План осей, сохраняемые точки и фронты",
+      "nextStepRu": "Получить применимая расходная норма разбивки и подтвердить: План осей, сохраняемые точки и фронты. До этого количество неизвестно.",
+      "reasonRu": "Применимая расходная норма разбивки. План осей, сохраняемые точки и фронты. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:formwork-hand-tools",
+      "parameterId": "m212_concrete_application_need_formwork_hand_tools",
+      "titleRu": "Ручной инструмент сборки опалубки",
+      "stageTitleRu": "Установить опалубку и опоры",
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "ordinal": 30,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "missingAuthority": "Полный монтажный метод и рабочий комплект",
+      "projectFact": "Принятая система и число одновременно работающих звеньев",
+      "nextStepRu": "Получить полный монтажный метод и рабочий комплект и подтвердить: Принятая система и число одновременно работающих звеньев. До этого количество неизвестно.",
+      "reasonRu": "Полный монтажный метод и рабочий комплект. Принятая система и число одновременно работающих звеньев. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:formwork-lifting",
+      "parameterId": "m212_concrete_application_need_formwork_lifting",
+      "titleRu": "Стропы и захваты для щитов",
+      "stageTitleRu": "Установить опалубку и опоры",
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "ordinal": 30,
+      "category": "equipment",
+      "unitId": "piece",
+      "matrixCategory": "rigging",
+      "missingAuthority": "Паспорт совместимого захвата и норма комплекта",
+      "projectFact": "Масса щитов, точки подъёма и схема строповки",
+      "nextStepRu": "Получить паспорт совместимого захвата и норма комплекта и подтвердить: Масса щитов, точки подъёма и схема строповки. До этого количество неизвестно.",
+      "reasonRu": "Паспорт совместимого захвата и норма комплекта. Масса щитов, точки подъёма и схема строповки. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:formwork-cleaner",
+      "parameterId": "m212_concrete_application_need_formwork_cleaner",
+      "titleRu": "Инструмент очистки опалубки",
+      "stageTitleRu": "Распалубить и переставить опоры",
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "ordinal": 70,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "missingAuthority": "Норма и состав очистного поста",
+      "projectFact": "Площадь оборота, способ очистки и совместимость с поверхностью",
+      "nextStepRu": "Получить норма и состав очистного поста и подтвердить: Площадь оборота, способ очистки и совместимость с поверхностью. До этого количество неизвестно.",
+      "reasonRu": "Норма и состав очистного поста. Площадь оборота, способ очистки и совместимость с поверхностью. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:formwork-cleaning-inputs",
+      "parameterId": "m212_concrete_application_need_formwork_cleaning_inputs",
+      "titleRu": "Расходные материалы очистки опалубки",
+      "stageTitleRu": "Распалубить и переставить опоры",
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "ordinal": 70,
+      "category": "material",
+      "unitId": "kg",
+      "matrixCategory": "consumables",
+      "missingAuthority": "Подтверждённый способ и расход очистки",
+      "projectFact": "Допустимый очиститель и поток загрязнений",
+      "nextStepRu": "Получить подтверждённый способ и расход очистки и подтвердить: Допустимый очиститель и поток загрязнений. До этого количество неизвестно.",
+      "reasonRu": "Подтверждённый способ и расход очистки. Допустимый очиститель и поток загрязнений. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:rebar-cutting-tool",
+      "parameterId": "m212_concrete_application_need_rebar_cutting_tool",
+      "titleRu": "Режущий инструмент и рабочие части",
+      "stageTitleRu": "Подготовить и установить арматуру",
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "ordinal": 40,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "missingAuthority": "Полный комплект выбранного метода резки",
+      "projectFact": "Ведомость диаметров, готовые каркасы или изготовление на месте",
+      "nextStepRu": "Получить полный комплект выбранного метода резки и подтвердить: Ведомость диаметров, готовые каркасы или изготовление на месте. До этого количество неизвестно.",
+      "reasonRu": "Полный комплект выбранного метода резки. Ведомость диаметров, готовые каркасы или изготовление на месте. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:rebar-bending-tool",
+      "parameterId": "m212_concrete_application_need_rebar_bending_tool",
+      "titleRu": "Гибочная оснастка и оправки",
+      "stageTitleRu": "Подготовить и установить арматуру",
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "ordinal": 40,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "rigging",
+      "missingAuthority": "Системная оснастка гибки и допустимые радиусы",
+      "projectFact": "КЖ/BBS и диаметры; станок не задаёт число оправок",
+      "nextStepRu": "Получить системная оснастка гибки и допустимые радиусы и подтвердить: КЖ/BBS и диаметры; станок не задаёт число оправок. До этого количество неизвестно.",
+      "reasonRu": "Системная оснастка гибки и допустимые радиусы. КЖ/BBS и диаметры; станок не задаёт число оправок. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:rebar-tying-tool",
+      "parameterId": "m212_concrete_application_need_rebar_tying_tool",
+      "titleRu": "Инструмент вязки и его расходники",
+      "stageTitleRu": "Подготовить и установить арматуру",
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "ordinal": 40,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "missingAuthority": "Комплект ручной или механизированной вязки",
+      "projectFact": "Стыки, фронты и принятый метод",
+      "nextStepRu": "Получить комплект ручной или механизированной вязки и подтвердить: Стыки, фронты и принятый метод. До этого количество неизвестно.",
+      "reasonRu": "Комплект ручной или механизированной вязки. Стыки, фронты и принятый метод. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:rebar-lifting",
+      "parameterId": "m212_concrete_application_need_rebar_lifting",
+      "titleRu": "Строповка стержней и каркасов",
+      "stageTitleRu": "Подготовить и установить арматуру",
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "ordinal": 40,
+      "category": "equipment",
+      "unitId": "piece",
+      "matrixCategory": "rigging",
+      "missingAuthority": "Паспорт и расчётный способ подъёма",
+      "projectFact": "Масса, жёсткость, точки подъёма и строповка",
+      "nextStepRu": "Получить паспорт и расчётный способ подъёма и подтвердить: Масса, жёсткость, точки подъёма и строповка. До этого количество неизвестно.",
+      "reasonRu": "Паспорт и расчётный способ подъёма. Масса, жёсткость, точки подъёма и строповка. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:embedded-weld-consumables",
+      "parameterId": "m212_concrete_application_need_embedded_weld_consumables",
+      "titleRu": "Электроды, газ и зачистные материалы",
+      "stageTitleRu": "Установить закладные",
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "ordinal": 45,
+      "category": "material",
+      "unitId": "kg",
+      "matrixCategory": "consumables",
+      "missingAuthority": "Проектный способ соединения и расход сварки",
+      "projectFact": "Узлы закладных и необходимость сварки; не назначать при отсутствии сварки",
+      "nextStepRu": "Получить проектный способ соединения и расход сварки и подтвердить: Узлы закладных и необходимость сварки; не назначать при отсутствии сварки. До этого количество неизвестно.",
+      "reasonRu": "Проектный способ соединения и расход сварки. Узлы закладных и необходимость сварки; не назначать при отсутствии сварки. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:embedded-fasteners",
+      "parameterId": "m212_concrete_application_need_embedded_fasteners",
+      "titleRu": "Крепления закладных и шаблоны",
+      "stageTitleRu": "Установить закладные",
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "ordinal": 45,
+      "category": "material",
+      "unitId": "piece",
+      "matrixCategory": "fasteners",
+      "missingAuthority": "Полный узел временного/постоянного крепления",
+      "projectFact": "Ведомость закладных, крепления и допуски",
+      "nextStepRu": "Получить полный узел временного/постоянного крепления и подтвердить: Ведомость закладных, крепления и допуски. До этого количество неизвестно.",
+      "reasonRu": "Полный узел временного/постоянного крепления. Ведомость закладных, крепления и допуски. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:embedded-tools",
+      "parameterId": "m212_concrete_application_need_embedded_tools",
+      "titleRu": "Сварочный и монтажный инструмент закладных",
+      "stageTitleRu": "Установить закладные",
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "ordinal": 45,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "missingAuthority": "Полный комплект принятого способа",
+      "projectFact": "Сварка либо механическое крепление и рабочие фронты",
+      "nextStepRu": "Получить полный комплект принятого способа и подтвердить: Сварка либо механическое крепление и рабочие фронты. До этого количество неизвестно.",
+      "reasonRu": "Полный комплект принятого способа. Сварка либо механическое крепление и рабочие фронты. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:concrete-bucket",
+      "parameterId": "m212_concrete_application_need_concrete_bucket",
+      "titleRu": "Бадья для бетонной смеси",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "ordinal": 50,
+      "category": "equipment",
+      "unitId": "piece",
+      "matrixCategory": "rigging",
+      "missingAuthority": "Паспорт и полный комплект крановой подачи",
+      "projectFact": "Вместимость, рабочая высота, груз и совместимость крана",
+      "nextStepRu": "Получить паспорт и полный комплект крановой подачи и подтвердить: Вместимость, рабочая высота, груз и совместимость крана. До этого количество неизвестно.",
+      "reasonRu": "Паспорт и полный комплект крановой подачи. Вместимость, рабочая высота, груз и совместимость крана. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:concrete-slings",
+      "parameterId": "m212_concrete_application_need_concrete_slings",
+      "titleRu": "Стропы и соединители подачи бетона",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "ordinal": 50,
+      "category": "equipment",
+      "unitId": "piece",
+      "matrixCategory": "rigging",
+      "missingAuthority": "Допущенная схема строповки",
+      "projectFact": "Бадья, груз и точки подвеса; часы крана не дают количества строп",
+      "nextStepRu": "Получить допущенная схема строповки и подтвердить: Бадья, груз и точки подвеса; часы крана не дают количества строп. До этого количество неизвестно.",
+      "reasonRu": "Допущенная схема строповки. Бадья, груз и точки подвеса; часы крана не дают количества строп. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:pump-line",
+      "parameterId": "m212_concrete_application_need_pump_line",
+      "titleRu": "Бетоновод, рукава и рабочие окончания",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "ordinal": 50,
+      "category": "equipment",
+      "unitId": "m",
+      "matrixCategory": "rigging",
+      "missingAuthority": "Полная ведомость системы подачи насосом",
+      "projectFact": "Трасса, высота и способ подачи; не начислять одновременно с несовместимой крановой схемой",
+      "nextStepRu": "Получить полная ведомость системы подачи насосом и подтвердить: Трасса, высота и способ подачи; не начислять одновременно с несовместимой крановой схемой. До этого количество неизвестно.",
+      "reasonRu": "Полная ведомость системы подачи насосом. Трасса, высота и способ подачи; не начислять одновременно с несовместимой крановой схемой. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:pump-clamps",
+      "parameterId": "m212_concrete_application_need_pump_clamps",
+      "titleRu": "Замки, уплотнения и крепления бетоновода",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "ordinal": 50,
+      "category": "material",
+      "unitId": "piece",
+      "matrixCategory": "fasteners",
+      "missingAuthority": "Паспортный комплект выбранного бетоновода",
+      "projectFact": "Соединения, диаметр и опоры труб",
+      "nextStepRu": "Получить паспортный комплект выбранного бетоновода и подтвердить: Соединения, диаметр и опоры труб. До этого количество неизвестно.",
+      "reasonRu": "Паспортный комплект выбранного бетоновода. Соединения, диаметр и опоры труб. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:vibrator-working-kit",
+      "parameterId": "m212_concrete_application_need_vibrator_working_kit",
+      "titleRu": "Булава, вал и привод глубинного вибратора",
+      "stageTitleRu": "Уложить и уплотнить бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "ordinal": 55,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "rigging",
+      "missingAuthority": "Совместимый полный рабочий комплект",
+      "projectFact": "Сечение, просвет арматуры, глубина и характеристика привода",
+      "nextStepRu": "Получить совместимый полный рабочий комплект и подтвердить: Сечение, просвет арматуры, глубина и характеристика привода. До этого количество неизвестно.",
+      "reasonRu": "Совместимый полный рабочий комплект. Сечение, просвет арматуры, глубина и характеристика привода. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:placing-hand-tools",
+      "parameterId": "m212_concrete_application_need_placing_hand_tools",
+      "titleRu": "Ручной инструмент укладки бетонной смеси",
+      "stageTitleRu": "Уложить и уплотнить бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "ordinal": 55,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "missingAuthority": "Полная норма и рабочий комплект укладки",
+      "projectFact": "Фронт, способ распределения и доступ",
+      "nextStepRu": "Получить полная норма и рабочий комплект укладки и подтвердить: Фронт, способ распределения и доступ. До этого количество неизвестно.",
+      "reasonRu": "Полная норма и рабочий комплект укладки. Фронт, способ распределения и доступ. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:finish-rule",
+      "parameterId": "m212_concrete_application_need_finish_rule",
+      "titleRu": "Правило, направляющие и гладилки",
+      "stageTitleRu": "Обработать поверхность",
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "ordinal": 60,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "missingAuthority": "Полный комплект выбранной обработки поверхности",
+      "projectFact": "Допуски отметки и шероховатость поверхности",
+      "nextStepRu": "Получить полный комплект выбранной обработки поверхности и подтвердить: Допуски отметки и шероховатость поверхности. До этого количество неизвестно.",
+      "reasonRu": "Полный комплект выбранной обработки поверхности. Допуски отметки и шероховатость поверхности. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:finish-machine-kit",
+      "parameterId": "m212_concrete_application_need_finish_machine_kit",
+      "titleRu": "Рабочие части машины обработки поверхности",
+      "stageTitleRu": "Обработать поверхность",
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "ordinal": 60,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "rigging",
+      "missingAuthority": "Полный комплект механизированной обработки",
+      "projectFact": "Выбранный метод; не назначать по наличию одного machine-hour",
+      "nextStepRu": "Получить полный комплект механизированной обработки и подтвердить: Выбранный метод; не назначать по наличию одного machine-hour. До этого количество неизвестно.",
+      "reasonRu": "Полный комплект механизированной обработки. Выбранный метод; не назначать по наличию одного machine-hour. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:curing-feed",
+      "parameterId": "m212_concrete_application_need_curing_feed",
+      "titleRu": "Шланги, распылители и подача воды",
+      "stageTitleRu": "Выполнить уход",
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "ordinal": 65,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "missingAuthority": "Полный комплект применимого ухода",
+      "projectFact": "Режим ухода, источник воды, давление и фронты",
+      "nextStepRu": "Получить полный комплект применимого ухода и подтвердить: Режим ухода, источник воды, давление и фронты. До этого количество неизвестно.",
+      "reasonRu": "Полный комплект применимого ухода. Режим ухода, источник воды, давление и фронты. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:curing-monitor",
+      "parameterId": "m212_concrete_application_need_curing_monitor",
+      "titleRu": "Приборы контроля режима ухода",
+      "stageTitleRu": "Выполнить уход",
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "ordinal": 65,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "control",
+      "missingAuthority": "Применимая программа измерений",
+      "projectFact": "Температура, влажность, журнал и допустимые пределы",
+      "nextStepRu": "Получить применимая программа измерений и подтвердить: Температура, влажность, журнал и допустимые пределы. До этого количество неизвестно.",
+      "reasonRu": "Применимая программа измерений. Температура, влажность, журнал и допустимые пределы. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:stripping-tools",
+      "parameterId": "m212_concrete_application_need_stripping_tools",
+      "titleRu": "Инструмент распалубки и перестановки",
+      "stageTitleRu": "Распалубить и переставить опоры",
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "ordinal": 70,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "tools",
+      "missingAuthority": "Полный метод безопасной распалубки",
+      "projectFact": "Последовательность, срок, прочность и схема временных опор",
+      "nextStepRu": "Получить полный метод безопасной распалубки и подтвердить: Последовательность, срок, прочность и схема временных опор. До этого количество неизвестно.",
+      "reasonRu": "Полный метод безопасной распалубки. Последовательность, срок, прочность и схема временных опор. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:access-platforms",
+      "parameterId": "m212_concrete_application_need_access_platforms",
+      "titleRu": "Подмости, настил и безопасные проходы",
+      "stageTitleRu": "Установить опалубку и опоры",
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "ordinal": 30,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "access_protection",
+      "missingAuthority": "Полный метод организации доступа",
+      "projectFact": "Высота, края, проёмы, фронты и число пользователей",
+      "nextStepRu": "Получить полный метод организации доступа и подтвердить: Высота, края, проёмы, фронты и число пользователей. До этого количество неизвестно.",
+      "reasonRu": "Полный метод организации доступа. Высота, края, проёмы, фронты и число пользователей. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:edge-protection",
+      "parameterId": "m212_concrete_application_need_edge_protection",
+      "titleRu": "Ограждения краёв и проёмов",
+      "stageTitleRu": "Установить опалубку и опоры",
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "ordinal": 30,
+      "category": "equipment",
+      "unitId": "m",
+      "matrixCategory": "access_protection",
+      "missingAuthority": "Система коллективной защиты и её состав",
+      "projectFact": "Периметр, проёмы, несущие основания и схема крепления",
+      "nextStepRu": "Получить система коллективной защиты и её состав и подтвердить: Периметр, проёмы, несущие основания и схема крепления. До этого количество неизвестно.",
+      "reasonRu": "Система коллективной защиты и её состав. Периметр, проёмы, несущие основания и схема крепления. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:ppe",
+      "parameterId": "m212_concrete_application_need_ppe",
+      "titleRu": "Средства индивидуальной защиты",
+      "stageTitleRu": "Уложить и уплотнить бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "ordinal": 55,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "access_protection",
+      "missingAuthority": "Состав по фактическим рискам и сроку использования",
+      "projectFact": "Звено, операции, воздействие смеси/пыли/шума/высоты",
+      "nextStepRu": "Получить состав по фактическим рискам и сроку использования и подтвердить: Звено, операции, воздействие смеси/пыли/шума/высоты. До этого количество неизвестно.",
+      "reasonRu": "Состав по фактическим рискам и сроку использования. Звено, операции, воздействие смеси/пыли/шума/высоты. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:quality-sampling-kit",
+      "parameterId": "m212_concrete_application_need_quality_sampling_kit",
+      "titleRu": "Формы, приборы и инструмент отбора проб",
+      "stageTitleRu": "Выполнить контроль и приёмку",
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "ordinal": 80,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "control",
+      "missingAuthority": "Программа контроля и полный комплект отбора",
+      "projectFact": "Нормбаза проекта, партии и методы испытаний",
+      "nextStepRu": "Получить программа контроля и полный комплект отбора и подтвердить: Нормбаза проекта, партии и методы испытаний. До этого количество неизвестно.",
+      "reasonRu": "Программа контроля и полный комплект отбора. Нормбаза проекта, партии и методы испытаний. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:quality-lab",
+      "parameterId": "m212_concrete_application_need_quality_lab",
+      "titleRu": "Отбор, испытания и лабораторная услуга",
+      "stageTitleRu": "Выполнить контроль и приёмку",
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "ordinal": 80,
+      "category": "service",
+      "unitId": "service_hour",
+      "matrixCategory": "services",
+      "missingAuthority": "Применимый контроль и состав услуги",
+      "projectFact": "Объём партии, частота отбора, критерии приёмки",
+      "nextStepRu": "Получить применимый контроль и состав услуги и подтвердить: Объём партии, частота отбора, критерии приёмки. До этого количество неизвестно.",
+      "reasonRu": "Применимый контроль и состав услуги. Объём партии, частота отбора, критерии приёмки. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:quality-geometry",
+      "parameterId": "m212_concrete_application_need_quality_geometry",
+      "titleRu": "Геодезический контроль готовой конструкции",
+      "stageTitleRu": "Выполнить контроль и приёмку",
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "ordinal": 80,
+      "category": "service",
+      "unitId": "service_hour",
+      "matrixCategory": "control",
+      "missingAuthority": "Норма исполнительного контроля",
+      "projectFact": "Допуски, контролируемые сечения и исполнительная схема",
+      "nextStepRu": "Получить норма исполнительного контроля и подтвердить: Допуски, контролируемые сечения и исполнительная схема. До этого количество неизвестно.",
+      "reasonRu": "Норма исполнительного контроля. Допуски, контролируемые сечения и исполнительная схема. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:external-delivery",
+      "parameterId": "m212_concrete_application_need_external_delivery",
+      "titleRu": "Внешняя доставка материалов и оборудования",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "ordinal": 50,
+      "category": "service",
+      "unitId": "trip",
+      "matrixCategory": "delivery_feed",
+      "missingAuthority": "Отгрузочная ведомость и подтверждённый маршрут",
+      "projectFact": "Масса/габариты, партия, транспорт и коммерческая граница",
+      "nextStepRu": "Получить отгрузочная ведомость и подтверждённый маршрут и подтвердить: Масса/габариты, партия, транспорт и коммерческая граница. До этого количество неизвестно.",
+      "reasonRu": "Отгрузочная ведомость и подтверждённый маршрут. Масса/габариты, партия, транспорт и коммерческая граница. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:unloading-handling",
+      "parameterId": "m212_concrete_application_need_unloading_handling",
+      "titleRu": "Разгрузка и внутренняя подача ресурсов",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "ordinal": 50,
+      "category": "service",
+      "unitId": "machine_hour",
+      "matrixCategory": "delivery_feed",
+      "missingAuthority": "Норма полного способа погрузки/разгрузки",
+      "projectFact": "Склад, места разгрузки, расстояния и груз; учесть уже включённый scope",
+      "nextStepRu": "Получить норма полного способа погрузки/разгрузки и подтвердить: Склад, места разгрузки, расстояния и груз; учесть уже включённый scope. До этого количество неизвестно.",
+      "reasonRu": "Норма полного способа погрузки/разгрузки. Склад, места разгрузки, расстояния и груз; учесть уже включённый scope. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:mixer-additional-hours",
+      "parameterId": "m212_concrete_application_need_mixer_additional_hours",
+      "titleRu": "Дополнительное время автобетоносмесителей",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "ordinal": 50,
+      "category": "service",
+      "unitId": "machine_hour",
+      "matrixCategory": "delivery_feed",
+      "missingAuthority": "КРЕР06 п1.39: время по подтверждённой схеме",
+      "projectFact": "Время рейсов и ожидания; бортовой автомобиль не автобетоносмеситель",
+      "nextStepRu": "Получить крер06 п1.39: время по подтверждённой схеме и подтвердить: Время рейсов и ожидания; бортовой автомобиль не автобетоносмеситель. До этого количество неизвестно.",
+      "reasonRu": "КРЕР06 п1.39: время по подтверждённой схеме. Время рейсов и ожидания; бортовой автомобиль не автобетоносмеситель. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:additional-rehandling",
+      "parameterId": "m212_concrete_application_need_additional_rehandling",
+      "titleRu": "Дополнительная перевалка бетонной смеси",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "ordinal": 50,
+      "category": "service",
+      "unitId": "machine_hour",
+      "matrixCategory": "delivery_feed",
+      "missingAuthority": "КРЕР06 п1.43: добавляется при наличии проектной перевалки",
+      "projectFact": "Наличие и схема дополнительных перегрузок",
+      "nextStepRu": "Получить крер06 п1.43: добавляется при наличии проектной перевалки и подтвердить: Наличие и схема дополнительных перегрузок. До этого количество неизвестно.",
+      "reasonRu": "КРЕР06 п1.43: добавляется при наличии проектной перевалки. Наличие и схема дополнительных перегрузок. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:washing-water",
+      "parameterId": "m212_concrete_application_need_washing_water",
+      "titleRu": "Отдельная потребность воды промывки",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "ordinal": 90,
+      "category": "material",
+      "unitId": "m3",
+      "matrixCategory": "cleaning_waste",
+      "missingAuthority": "Метод и расход промывки без повторения воды ухода",
+      "projectFact": "Промываемые машины, оборудование и принятая граница ставки",
+      "nextStepRu": "Получить метод и расход промывки без повторения воды ухода и подтвердить: Промываемые машины, оборудование и принятая граница ставки. До этого количество неизвестно.",
+      "reasonRu": "Метод и расход промывки без повторения воды ухода. Промываемые машины, оборудование и принятая граница ставки. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:wash-containment",
+      "parameterId": "m212_concrete_application_need_wash_containment",
+      "titleRu": "Моечная площадка и сбор шлама",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "ordinal": 90,
+      "category": "equipment",
+      "unitId": "set",
+      "matrixCategory": "cleaning_waste",
+      "missingAuthority": "Полная система удержания стоков",
+      "projectFact": "Место промывки, ёмкость, защита и разрешённый приёмник",
+      "nextStepRu": "Получить полная система удержания стоков и подтвердить: Место промывки, ёмкость, защита и разрешённый приёмник. До этого количество неизвестно.",
+      "reasonRu": "Полная система удержания стоков. Место промывки, ёмкость, защита и разрешённый приёмник. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:solid-waste",
+      "parameterId": "m212_concrete_application_need_solid_waste",
+      "titleRu": "Упаковка, остатки и твёрдые отходы",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "ordinal": 90,
+      "category": "service",
+      "unitId": "kg",
+      "matrixCategory": "cleaning_waste",
+      "missingAuthority": "Ведомость потоков отходов",
+      "projectFact": "Фактические остатки, упаковка и пригодное повторное использование",
+      "nextStepRu": "Получить ведомость потоков отходов и подтвердить: Фактические остатки, упаковка и пригодное повторное использование. До этого количество неизвестно.",
+      "reasonRu": "Ведомость потоков отходов. Фактические остатки, упаковка и пригодное повторное использование. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:waste-loading",
+      "parameterId": "m212_concrete_application_need_waste_loading",
+      "titleRu": "Сбор и погрузка отходов",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "ordinal": 90,
+      "category": "labor",
+      "unitId": "man_hour",
+      "matrixCategory": "labor",
+      "missingAuthority": "Применимая норма сбора и погрузки",
+      "projectFact": "Масса, состав и способ сбора",
+      "nextStepRu": "Получить применимая норма сбора и погрузки и подтвердить: Масса, состав и способ сбора. До этого количество неизвестно.",
+      "reasonRu": "Применимая норма сбора и погрузки. Масса, состав и способ сбора. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:waste-transport",
+      "parameterId": "m212_concrete_application_need_waste_transport",
+      "titleRu": "Вывоз отходов",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "ordinal": 90,
+      "category": "service",
+      "unitId": "trip",
+      "matrixCategory": "delivery_feed",
+      "missingAuthority": "Маршрут и транспорт отходов",
+      "projectFact": "Приёмник, масса, габариты и перевозчик",
+      "nextStepRu": "Получить маршрут и транспорт отходов и подтвердить: Приёмник, масса, габариты и перевозчик. До этого количество неизвестно.",
+      "reasonRu": "Маршрут и транспорт отходов. Приёмник, масса, габариты и перевозчик. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    },
+    {
+      "needId": "master212:concrete-cycle:r1:need:waste-disposal",
+      "parameterId": "m212_concrete_application_need_waste_disposal",
+      "titleRu": "Приём и обработка отходов",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "ordinal": 90,
+      "category": "service",
+      "unitId": "kg",
+      "matrixCategory": "services",
+      "missingAuthority": "Подтверждённая услуга и применимая юрисдикция",
+      "projectFact": "Виды отходов и допустимый приёмник",
+      "nextStepRu": "Получить подтверждённая услуга и применимая юрисдикция и подтвердить: Виды отходов и допустимый приёмник. До этого количество неизвестно.",
+      "reasonRu": "Подтверждённая услуга и применимая юрисдикция. Виды отходов и допустимый приёмник. Геометрия конструкции не заменяет этот источник.",
+      "quantity": null,
+      "sourceIds": [],
+      "countsAsClosure": false
+    }
+  ],
+  "criticalResourceContracts": {
+    "material:concrete:ready-mix": {
+      "unitId": "m3",
+      "category": "material"
+    },
+    "equipment:concrete:deep-vibrator": {
+      "unitId": "machine_hour",
+      "category": "equipment"
+    },
+    "work:concrete:place-and-compact": {
+      "unitId": "man_hour",
+      "category": "construction_work"
+    },
+    "material:reinforcement:steel-approved-schedule": {
+      "unitId": "kg",
+      "category": "material"
+    },
+    "material:reinforcement:spacer-chairs": {
+      "unitId": "piece",
+      "category": "material"
+    },
+    "equipment:formwork:frami-xlife-panels-rental": {
+      "unitId": "piece_day",
+      "category": "equipment"
+    },
+    "equipment:formwork:dokaflex-floor-props-rental": {
+      "unitId": "piece_day",
+      "category": "equipment"
+    },
+    "material:concrete:slab-embedded-items": {
+      "unitId": "kg",
+      "category": "material"
+    }
+  },
+  "jurisdiction": {
+    "selection": "EXPLICIT_PROJECT_NORMATIVE_BASIS_REQUIRED",
+    "guessedFromInterfaceOrPath": false,
+    "newNationalNormsAdmitted": 0,
+    "measurementReferencesAreNotStructuralDesignOrLaborNorms": true
+  },
+  "projectBoundary": {
+    "structuralDesignGenerated": false,
+    "reinforcementKgPerM3Generated": false,
+    "acceptedTestFixturesAreDefaults": false,
+    "missingInternalNormIsConsumerQuestion": false,
+    "foundationPreparedBaseInferred": false
+  },
+  "exclusionsRu": [
+    "Нет проектирования несущей способности, арматуры и опор по геометрии.",
+    "Ремонтные профили не получают новый монолитный цикл по названию.",
+    "Земляные, основание и соседние работы не объявлены выполненными.",
+    "Ни одна budget-profile норма120кг/м³, маршрут, часы либоF не перенесены в catalog defaults.",
+    "Новые количества полного цикла остаются UNKNOWN до достаточного собственного источника/объектного факта.",
+    "Цена не доказывает физическую достаточность; включённые строки сохраняют одного исходного владельца оплаты."
+  ],
+  "fullTechnicalAcceptance": false,
+  "newFULL": 0,
+  "newPhysicalNorms": 0,
+  "publicationAllowed": false,
+  "operationCategoryMatrix": [
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "materials",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "consumables",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "fasteners",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "tools",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "rigging",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "machines_and_operators",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "labor",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "services",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "delivery_feed",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "access_protection",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "control",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "cleaning_waste",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "materials",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "consumables",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:survey-consumables",
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "fasteners",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "tools",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:survey-tools",
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "rigging",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "machines_and_operators",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "labor",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "services",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "delivery_feed",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "access_protection",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "control",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "cleaning_waste",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "materials",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "consumables",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "fasteners",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "tools",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "rigging",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "machines_and_operators",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "labor",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "services",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "delivery_feed",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "access_protection",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "control",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "cleaning_waste",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "materials",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "consumables",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "fasteners",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "tools",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-hand-tools",
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "rigging",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-lifting",
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "machines_and_operators",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "labor",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "services",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "delivery_feed",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "access_protection",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:access-platforms",
+        "master212:concrete-cycle:r1:need:edge-protection",
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "control",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "cleaning_waste",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "materials",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "consumables",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "fasteners",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "tools",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:rebar-cutting-tool",
+        "master212:concrete-cycle:r1:need:rebar-tying-tool",
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "rigging",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:rebar-bending-tool",
+        "master212:concrete-cycle:r1:need:rebar-lifting",
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "machines_and_operators",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "labor",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "services",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "delivery_feed",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "access_protection",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "control",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "cleaning_waste",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "reinforcement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "materials",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "consumables",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-weld-consumables",
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "fasteners",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-fasteners",
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "tools",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-tools",
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "rigging",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "machines_and_operators",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "labor",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "services",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "delivery_feed",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "access_protection",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "control",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "cleaning_waste",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "embedded",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "materials",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "consumables",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "fasteners",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:pump-clamps",
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "tools",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "rigging",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-bucket",
+        "master212:concrete-cycle:r1:need:concrete-slings",
+        "master212:concrete-cycle:r1:need:pump-line",
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "machines_and_operators",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "labor",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "services",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "delivery_feed",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:external-delivery",
+        "master212:concrete-cycle:r1:need:unloading-handling",
+        "master212:concrete-cycle:r1:need:mixer-additional-hours",
+        "master212:concrete-cycle:r1:need:additional-rehandling",
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "access_protection",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "control",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "cleaning_waste",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "materials",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "consumables",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "fasteners",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "tools",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:placing-hand-tools",
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "rigging",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:vibrator-working-kit",
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "machines_and_operators",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "labor",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "services",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "delivery_feed",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "access_protection",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "control",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "cleaning_waste",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "materials",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "consumables",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "fasteners",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "tools",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:finish-rule",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "rigging",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:finish-machine-kit",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "machines_and_operators",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "labor",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "services",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "delivery_feed",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "access_protection",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "control",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "cleaning_waste",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "materials",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "consumables",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "fasteners",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "tools",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-feed",
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "rigging",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "machines_and_operators",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "labor",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "services",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "delivery_feed",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "access_protection",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "control",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-monitor",
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "cleaning_waste",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "materials",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "consumables",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-cleaning-inputs",
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "fasteners",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "tools",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-cleaner",
+        "master212:concrete-cycle:r1:need:stripping-tools",
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "rigging",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "machines_and_operators",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "labor",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "services",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "delivery_feed",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "access_protection",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:access-platforms",
+        "master212:concrete-cycle:r1:need:edge-protection",
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "control",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "cleaning_waste",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "formwork",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "materials",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "consumables",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "fasteners",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "tools",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "rigging",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "machines_and_operators",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "labor",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "services",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:quality-lab"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "delivery_feed",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "access_protection",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "control",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:quality-sampling-kit",
+        "master212:concrete-cycle:r1:need:quality-geometry"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "cleaning_waste",
+      "status": "REUSE_WITH_REMAINING_APPLICABILITY_REVIEW",
+      "reuseWholeComponent": "placement",
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "materials",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "consumables",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "fasteners",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "tools",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "rigging",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "machines_and_operators",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "labor",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:waste-loading"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "services",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:waste-disposal"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "delivery_feed",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:waste-transport"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "access_protection",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "control",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "cleaning_waste",
+      "status": "SOURCE_OR_PROJECT_FACT_REQUIRED",
+      "reuseWholeComponent": null,
+      "needIds": [
+        "master212:concrete-cycle:r1:need:washing-water",
+        "master212:concrete-cycle:r1:need:wash-containment",
+        "master212:concrete-cycle:r1:need:solid-waste"
+      ],
+      "applicabilityRuleRu": "Проверить применимость категории к выбранному способу; пустой конкретный roster не является доказанной неприменимостью.",
+      "nextStepRu": "Сверить полный принятый source-component и перечисленные физические needs с методом/проектом; не создавать количеств по площади или объёму."
+    }
+  ],
+  "independentCategories": [
+    "materials",
+    "consumables",
+    "fasteners",
+    "tools",
+    "rigging",
+    "machines_and_operators",
+    "labor",
+    "services",
+    "delivery_feed",
+    "access_protection",
+    "control",
+    "cleaning_waste"
+  ],
+  "residualCount": 51,
+  "componentOperationUses": {
+    "placement": {
+      "material:concrete:ready-mix": [
+        "delivery",
+        "compacting"
+      ],
+      "delivery:concrete:ready-mix": [
+        "delivery"
+      ],
+      "material:concrete:curing-membrane": [
+        "curing"
+      ],
+      "material:concrete:winter-heating-cable": [
+        "curing"
+      ],
+      "work:concrete:place-and-compact": [
+        "compacting"
+      ],
+      "work:concrete:finish-surface": [
+        "finishing"
+      ],
+      "work:concrete:cure": [
+        "curing"
+      ],
+      "work:concrete:winter-heating": [
+        "curing"
+      ],
+      "equipment:concrete:pump": [
+        "delivery",
+        "compacting"
+      ],
+      "equipment:concrete:crane-bucket": [
+        "delivery",
+        "compacting"
+      ],
+      "equipment:concrete:deep-vibrator": [
+        "compacting"
+      ],
+      "equipment:concrete:heating-transformer": [
+        "curing"
+      ],
+      "service:concrete:acceptance-control": [
+        "quality"
+      ],
+      "material:concrete:construction-joint-waterstop": [
+        "joint"
+      ],
+      "work:concrete:construction-joint-waterstop-install": [
+        "joint"
+      ]
+    },
+    "reinforcement": {
+      "material:reinforcement:steel-approved-schedule": [
+        "reinforcement"
+      ],
+      "material:reinforcement:binding-wire": [
+        "reinforcement"
+      ],
+      "material:reinforcement:spacer-chairs": [
+        "reinforcement"
+      ],
+      "material:reinforcement:mechanical-couplers": [
+        "reinforcement"
+      ],
+      "work:reinforcement:unload-store": [
+        "reinforcement"
+      ],
+      "work:reinforcement:site-cut": [
+        "reinforcement"
+      ],
+      "work:reinforcement:site-bend": [
+        "reinforcement"
+      ],
+      "work:reinforcement:cage-assembly": [
+        "reinforcement"
+      ],
+      "work:reinforcement:install-fix": [
+        "reinforcement"
+      ],
+      "work:reinforcement:cover-control": [
+        "reinforcement"
+      ],
+      "equipment:reinforcement:cutting-machine": [
+        "reinforcement"
+      ],
+      "equipment:reinforcement:bending-machine": [
+        "reinforcement"
+      ],
+      "equipment:reinforcement:lifting": [
+        "reinforcement"
+      ],
+      "service:reinforcement:inspection": [
+        "reinforcement"
+      ],
+      "service:reinforcement:mill-certificates": [
+        "reinforcement"
+      ],
+      "delivery:reinforcement:steel": [
+        "reinforcement"
+      ]
+    },
+    "formwork": {
+      "information:formwork:measured-contact-area": [
+        "formwork"
+      ],
+      "equipment:formwork:frami-xlife-panels-rental": [
+        "formwork",
+        "stripping"
+      ],
+      "equipment:formwork:frami-xlife-corners-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:frami-panel-connectors-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:frami-flat-ties-10-80-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:frami-flat-tie-clips-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:frami-foundation-clamps-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:plumbing-struts-260-rental": [
+        "formwork"
+      ],
+      "material:formwork:perforated-tape-50x2": [
+        "formwork"
+      ],
+      "material:formwork:joint-sealing-tape": [
+        "formwork"
+      ],
+      "material:formwork:release-agent": [
+        "formwork"
+      ],
+      "work:formwork:receive-sort-handle-kit": [
+        "formwork"
+      ],
+      "work:formwork:assemble-install-align": [
+        "formwork"
+      ],
+      "work:formwork:strip-clean-return-preparation": [
+        "formwork",
+        "stripping"
+      ],
+      "service:formwork:engineer-layout-review": [
+        "formwork"
+      ],
+      "equipment:formwork:crane-handling": [
+        "formwork",
+        "stripping"
+      ],
+      "delivery:formwork:outbound-kit": [
+        "delivery"
+      ],
+      "delivery:formwork:return-kit": [
+        "delivery"
+      ],
+      "information:formwork:installation-stages": [
+        "formwork"
+      ],
+      "information:formwork:working-platform-not-applicable": [
+        "formwork"
+      ],
+      "information:formwork:supporting-construction-not-applicable": [
+        "formwork"
+      ],
+      "information:formwork:compensation-insert-not-applicable": [
+        "formwork"
+      ],
+      "information:formwork:rental-deposit-not-applicable": [
+        "formwork"
+      ],
+      "information:formwork:maintenance-service-not-applicable": [
+        "formwork"
+      ],
+      "information:formwork:dokaflex-measured-contact-area": [
+        "formwork"
+      ],
+      "equipment:formwork:dokaflex-3so-sheets-rental": [
+        "formwork",
+        "stripping"
+      ],
+      "equipment:formwork:dokaflex-primary-beams-rental": [
+        "formwork",
+        "stripping"
+      ],
+      "equipment:formwork:dokaflex-secondary-beams-rental": [
+        "formwork",
+        "stripping"
+      ],
+      "equipment:formwork:dokaflex-floor-props-rental": [
+        "formwork",
+        "stripping"
+      ],
+      "equipment:formwork:dokaflex-lowering-heads-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:dokaflex-supporting-heads-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:dokaflex-tripods-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:dokaflex-bracing-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:dokaflex-secondary-beam-stabilizers-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:dokaflex-floor-end-shutter-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:dokaflex-access-platform-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:dokaflex-edge-protection-rental": [
+        "formwork"
+      ],
+      "equipment:formwork:dokaflex-reshoring-props-rental": [
+        "formwork",
+        "stripping"
+      ],
+      "material:formwork:dokaflex-project-fixings": [
+        "formwork"
+      ],
+      "material:formwork:dokaflex-release-agent": [
+        "formwork"
+      ],
+      "work:formwork:dokaflex-receive-sort-handle": [
+        "formwork"
+      ],
+      "work:formwork:dokaflex-assemble-align-brace": [
+        "formwork"
+      ],
+      "work:formwork:dokaflex-lay-and-fix-sheets": [
+        "formwork"
+      ],
+      "work:formwork:dokaflex-strip-clean-return": [
+        "formwork",
+        "stripping"
+      ],
+      "work:formwork:dokaflex-reshoring": [
+        "formwork"
+      ],
+      "service:formwork:dokaflex-engineer-layout-review": [
+        "formwork"
+      ],
+      "equipment:formwork:dokaflex-level-lifting": [
+        "formwork",
+        "stripping"
+      ],
+      "delivery:formwork:dokaflex-outbound-kit": [
+        "delivery"
+      ],
+      "delivery:formwork:dokaflex-return-kit": [
+        "delivery"
+      ],
+      "information:formwork:dokaflex-installation-stages": [
+        "formwork"
+      ],
+      "information:formwork:dokaflex-drop-beam-not-applicable": [
+        "formwork"
+      ],
+      "information:formwork:dokaflex-rental-deposit-not-applicable": [
+        "formwork"
+      ],
+      "information:formwork:dokaflex-maintenance-not-applicable": [
+        "formwork"
+      ]
+    },
+    "embedded": {
+      "material:concrete:slab-embedded-items": [
+        "embedded"
+      ],
+      "work:concrete:slab-embedded-items-layout": [
+        "embedded"
+      ],
+      "work:concrete:slab-embedded-items-positioning": [
+        "embedded"
+      ],
+      "work:concrete:slab-embedded-items-fixing": [
+        "embedded"
+      ],
+      "work:concrete:slab-embedded-items-welding": [
+        "embedded"
+      ],
+      "material:concrete:slab-embedded-items-welding-consumables": [
+        "embedded"
+      ],
+      "material:concrete:slab-embedded-items-temporary-support": [
+        "embedded"
+      ],
+      "equipment:concrete:slab-embedded-items-lifting": [
+        "embedded"
+      ],
+      "service:concrete:slab-embedded-items-survey": [
+        "embedded"
+      ],
+      "service:concrete:slab-embedded-items-inspection": [
+        "embedded"
+      ],
+      "work:concrete:slab-embedded-items-coating": [
+        "embedded"
+      ],
+      "material:concrete:slab-embedded-items-coating": [
+        "embedded"
+      ],
+      "delivery:concrete:slab-embedded-items": [
+        "embedded"
+      ],
+      "delivery:concrete:slab-embedded-items-equipment-mobilization": [
+        "embedded"
+      ]
+    }
+  }
+}

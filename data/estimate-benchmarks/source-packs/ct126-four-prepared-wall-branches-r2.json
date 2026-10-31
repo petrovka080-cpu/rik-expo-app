@@ -1,0 +1,498 @@
+{
+  "contract": "rik-expo-app.s27-69.ct126-four-prepared-wall-branches.r2",
+  "masterSha256": "4fd2e79388521707cec6c9a75101061f81eb7a72beb4e16a1e39b991fab63f68",
+  "predecessorContract": "rik-expo-app.s27-69.ct126-six-dry-wall-reuse.v1",
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/ct126-current-four-v4-parents-r2.json",
+  "parentSnapshotSha256": "0216cf3aa07d3bb192ff93bc2816170d423cc7c48004a5668d6bf05c57377b68",
+  "acceptedProfileSnapshot": "data/estimate-benchmarks/fixtures/ct126-ready-wall-v2-s27-69.json",
+  "acceptedProfileSnapshotSha256": "42d5c7cf690abc1ff66230aa60c745ebfdd4b6b94e0ef07a18220c81f2ff3e52",
+  "sourcePack": "data/estimate-benchmarks/source-packs/ct126-dry-wall-s27-54.json",
+  "sourcePackSha256": "ba508d46b8e3e5146d541e929d6d5ef85a4228caf745e770af15caa39111edca",
+  "source": {
+    "officialUrl": "https://dm.henkel-dam.com/is/content/henkel/ceresit-ct126",
+    "localArtifact": ".release-runtime/r568/s27-54/ct126-dry-wall/CT-126.pdf",
+    "sha256": "2596b11461aabf10c458aeb9f7b2149b6b05b3428a731a8096c79d2f6e3c772a",
+    "edition": "C_CT126_TDS_1_0321",
+    "locatorRu": "Стр.1: сухое помещение, основание, CT7, слой2–10мм, нанесение; стр.2:1,2кг/м²/мм, вода1,8л/5кг и около7л/20кг, мешки5/20кг, шлифование и грунтование"
+  },
+  "exactChoiceRu": "CT126 SUPER START: ручное выравнивание сухой внутренней стены 2–10 мм по принятой цементно-известковой штукатурке с выполненным CT7",
+  "scopeRu": "Три взаимоисключающих целых подтверждённых профиля сухих внутренних стен: прежняя цементно-известковая штукатурка с выполненным проникающим грунтованием; цементная штукатурка с выполненным проникающим грунтованием; гладкий бетон с выполненным адгезионным грунтованием. Один слой 2–10 мм, точное принятие основания и продукта по исходным картам. Для двух новых оснований обязателен документ приёмки. Все 11 открытых потребностей каждого профиля сохранены.",
+  "profiles": [
+    {
+      "key": "wall-cement",
+      "preparedIndex": 0,
+      "sourceCatalogId": "canonical-work:master:ct126_manual_dry_interior_ct7_ready_cement_wall_2_10mm_standard",
+      "sourcePrefix": "putty:ct126-prepared:wall-cement",
+      "parameterPrefix": "ct126_wall_cement_",
+      "choiceValue": "Ручное выравнивание сухой гипсовой шпаклёвкой по принятой цементной штукатурке с выполненным проникающим грунтованием, 2–10 мм",
+      "scopeRu": "Ручное нанесение одного слоя CT126 2–10мм для стены по основанию: Готовая прочная сухая очищенная цементная штукатурка старше28суток, влажность не выше4%; грунтование Ceresit CT7 уже выполнено и основание принято. Сухое внутреннее помещение без постоянной высокой влажности; воздух и основание +5…+30°C. Приёмка конкретного основания подтверждена отдельным документом. Одна выбранная фасовка5или20кг; весь мешок затворяется чистой прохладной водой по собственному рецепту. План целых последовательных замесов подтверждается отдельно от заказа. После высыхания обязательны шлифование, обеспыливание и грунтование всей поверхности; последующий грунт и его расход требуют совместимой системы.",
+      "priorPrimer": "CT7",
+      "sourceId": "ceresit_ct126_tds_0321_prepared_wall_cement_s2754",
+      "sourceNeeds": [
+        {
+          "id": "labor",
+          "operation": "application",
+          "category": "labor",
+          "nameRu": "Труд по затворению, нанесению, разглаживанию, шлифованию и заключительному грунтованию CT126",
+          "unitId": "man_hour",
+          "reasonRu": "Один открытый владелец труда перечисленных этапов; обеспыливание раскрыто у услуги уборки без повторной оплаты. Технология опубликована, часы не опубликованы. Выдержка3–5мин и жизнеспособность40–60мин не нормы труда."
+        },
+        {
+          "id": "mixer",
+          "operation": "mixing",
+          "category": "equipment",
+          "nameRu": "Электрическая дрель с насадкой-миксером для CT126",
+          "unitId": "machine_hour",
+          "reasonRu": "Тип инструмента опубликован; модель, часы и обеспечение исполнителем требуют источника."
+        },
+        {
+          "id": "stainless-float",
+          "operation": "application",
+          "category": "equipment",
+          "nameRu": "Широкий полутерок из нержавеющей стали для CT126",
+          "unitId": "item",
+          "reasonRu": "Материал и назначение названы; ширина, количество и обеспечение исполнителем не установлены."
+        },
+        {
+          "id": "sandpaper-mesh",
+          "operation": "sanding",
+          "category": "material",
+          "nameRu": "Шлифовальная бумага или сетка для высохшей CT126 — одно выбранное исполнение",
+          "unitId": "m2",
+          "reasonRu": "Источник допускает бумагу или сетку; зернистость, количество и износ не опубликованы. Альтернативы вместе не закупаются."
+        },
+        {
+          "id": "sanding-tool",
+          "operation": "sanding",
+          "category": "equipment",
+          "nameRu": "Шлифовальная машина типа «жираф» для высохшей CT126",
+          "unitId": "machine_hour",
+          "reasonRu": "Тип инструмента указан; модель и часы не опубликованы. Ручная замена требует отдельного подтверждения."
+        },
+        {
+          "id": "post-primer",
+          "operation": "post-priming",
+          "category": "material",
+          "nameRu": "Грунтовка всей высохшей и обеспыленной CT126 — изделие и расход требуют совместимой системы",
+          "unitId": "l",
+          "reasonRu": "После шлифования TDS требует грунтование всей поверхности, но не называет изделие или расход. CT7 подготовки основания сюда автоматически не переносится."
+        },
+        {
+          "id": "post-primer-tools",
+          "operation": "post-priming",
+          "category": "equipment",
+          "nameRu": "Инструмент нанесения выбранной грунтовки поверх CT126",
+          "unitId": "item",
+          "reasonRu": "Определяется паспортом подтверждённой грунтовки; исполнение и количество пока не установлены."
+        },
+        {
+          "id": "water-cleaning",
+          "operation": "completion",
+          "category": "material",
+          "nameRu": "Чистая вода очистки инструмента после CT126",
+          "unitId": "l",
+          "reasonRu": "Расход очистки не опубликован; рецепты затворения не определяют уборку."
+        },
+        {
+          "id": "acceptance",
+          "operation": "acceptance",
+          "category": "service",
+          "nameRu": "Контроль толщины, высыхания и качества поверхности CT126",
+          "unitId": "item",
+          "reasonRu": "Около24ч для5мм при20°C/RH60% — ориентир, не универсальный срок. Число проверок и состав приёмки требуют проекта."
+        },
+        {
+          "id": "access-protection",
+          "operation": "protection",
+          "category": "service",
+          "nameRu": "Доступ к фактической высоте стены, защита глаз, кожи и зоны шлифования CT126",
+          "unitId": "item",
+          "reasonRu": "Способ доступа и защита по реальной высоте и пылевым работам; нет автоматических лесов, стремянок или коэффициента потолка. Один владелец цены."
+        },
+        {
+          "id": "logistics-cleanup",
+          "operation": "completion",
+          "category": "service",
+          "nameRu": "Доставка CT126, разгрузка, обеспыливание, уборка и передача упаковки/остатков",
+          "unitId": "item",
+          "reasonRu": "Границы услуги, масса и вывоз по факту; без второй оплаты включённого инструмента и работ."
+        }
+      ],
+      "parameterPresentation": [
+        {
+          "parameterId": "putty_area_m2",
+          "sourceTitleRu": "Площадь гипсовой шпаклёвки CT126",
+          "nameRu": "Какая площадь стены под шпаклевание, м²?",
+          "guideRu": "Введите площадь шпаклевания по обмеру или проекту."
+        },
+        {
+          "parameterId": "layer_thickness_mm",
+          "sourceTitleRu": "Фактическая толщина одного слоя CT126, 2–10мм",
+          "nameRu": "Какая толщина одного слоя, мм?",
+          "guideRu": "Для этого профиля предусмотрен один слой от 2 до 10 мм."
+        },
+        {
+          "parameterId": "base_confirmed",
+          "sourceTitleRu": "Принятые стены по цементной штукатурке с выполненным CT7",
+          "nameRu": "Какое основание уже подготовлено?",
+          "guideRu": "Сверьте материал, возраст, влажность и выполненное грунтование с принятым профилем основания. Не подтверждайте неподходящее основание."
+        },
+        {
+          "parameterId": "product_variant_confirmed",
+          "sourceTitleRu": "Поставленный CT126 и точный вариант технической карты",
+          "nameRu": "Какой вариант сухой гипсовой шпаклёвки подтверждён?",
+          "guideRu": "Сверьте техническую карту поставленного состава с выбранным расчётным профилем. Другой состав требует отдельного совместимого расчёта."
+        },
+        {
+          "parameterId": "selected_ct126_bag",
+          "sourceTitleRu": "Одна выбранная фасовка CT126 с собственным рецептом воды",
+          "nameRu": "Какая фасовка сухой гипсовой шпаклёвки выбрана?",
+          "guideRu": "Выберите одну фасовку: 5 или 20 кг. Рецепты воды для этих фасовок различаются."
+        },
+        {
+          "parameterId": "ct126_5kg_planned_whole_batches",
+          "sourceTitleRu": "Подтверждённый последовательный план целых замесов CT126 5 кг",
+          "nameRu": "Сколько целых мешков по 5 кг предусмотрено для замеса?",
+          "guideRu": "Укажите подтверждённый последовательный план целых замесов. Количество нового заказа не заменяет этот план."
+        },
+        {
+          "parameterId": "ct126_5kg_stock_bags",
+          "sourceTitleRu": "Пригодное наличие целых мешков CT126 5 кг",
+          "nameRu": "Сколько целых мешков сухой гипсовой шпаклёвки по 5 кг уже есть?",
+          "guideRu": "Введите число пригодных целых мешков, выделенных для этой работы."
+        },
+        {
+          "parameterId": "ct126_5kg_reserve_bags",
+          "sourceTitleRu": "Сохраняемый резерв целых мешков CT126 5 кг",
+          "nameRu": "Сколько целых мешков по 5 кг оставить в запасе?",
+          "guideRu": "Введите число целых мешков, которое требуется сохранить после работы."
+        },
+        {
+          "parameterId": "ct126_5kg_supplier_bag_multiple",
+          "sourceTitleRu": "Фактическая кратность поставщика в мешках CT126 5 кг",
+          "nameRu": "С какой кратностью заказывают мешки по 5 кг?",
+          "guideRu": "Введите подтверждённое поставщиком число мешков в одном кратном заказе. Это условие поставки, а не норма расхода."
+        },
+        {
+          "parameterId": "ct126_20kg_planned_whole_batches",
+          "sourceTitleRu": "Подтверждённый последовательный план целых замесов CT126 20 кг",
+          "nameRu": "Сколько целых мешков по 20 кг предусмотрено для замеса?",
+          "guideRu": "Укажите подтверждённый последовательный план целых замесов. Количество нового заказа не заменяет этот план."
+        },
+        {
+          "parameterId": "ct126_20kg_stock_bags",
+          "sourceTitleRu": "Пригодное наличие целых мешков CT126 20 кг",
+          "nameRu": "Сколько целых мешков сухой гипсовой шпаклёвки по 20 кг уже есть?",
+          "guideRu": "Введите число пригодных целых мешков, выделенных для этой работы."
+        },
+        {
+          "parameterId": "ct126_20kg_reserve_bags",
+          "sourceTitleRu": "Сохраняемый резерв целых мешков CT126 20 кг",
+          "nameRu": "Сколько целых мешков по 20 кг оставить в запасе?",
+          "guideRu": "Введите число целых мешков, которое требуется сохранить после работы."
+        },
+        {
+          "parameterId": "ct126_20kg_supplier_bag_multiple",
+          "sourceTitleRu": "Фактическая кратность поставщика в мешках CT126 20 кг",
+          "nameRu": "С какой кратностью заказывают мешки по 20 кг?",
+          "guideRu": "Введите подтверждённое поставщиком число мешков в одном кратном заказе. Это условие поставки, а не норма расхода."
+        }
+      ]
+    },
+    {
+      "key": "wall-smooth-concrete",
+      "preparedIndex": 1,
+      "sourceCatalogId": "canonical-work:master:ct126_manual_dry_interior_ct19_ready_smooth_concrete_wall_2_10mm_standard",
+      "sourcePrefix": "putty:ct126-prepared:wall-smooth-concrete",
+      "parameterPrefix": "ct126_wall_smooth_concrete_",
+      "choiceValue": "Ручное выравнивание сухой гипсовой шпаклёвкой по принятому гладкому бетону с выполненным адгезионным грунтованием, 2–10 мм",
+      "scopeRu": "Ручное нанесение одного слоя CT126 2–10мм для стены по основанию: Готовый прочный сухой очищенный гладкий бетон старше3месяцев, влажность не выше4%; грунтование Ceresit CT19 уже выполнено и основание принято. Сухое внутреннее помещение без постоянной высокой влажности; воздух и основание +5…+30°C. Приёмка конкретного основания подтверждена отдельным документом. Одна выбранная фасовка5или20кг; весь мешок затворяется чистой прохладной водой по собственному рецепту. План целых последовательных замесов подтверждается отдельно от заказа. После высыхания обязательны шлифование, обеспыливание и грунтование всей поверхности; последующий грунт и его расход требуют совместимой системы.",
+      "priorPrimer": "CT19",
+      "sourceId": "ceresit_ct126_tds_0321_prepared_wall_smooth_concrete_s2754",
+      "sourceNeeds": [
+        {
+          "id": "labor",
+          "operation": "application",
+          "category": "labor",
+          "nameRu": "Труд по затворению, нанесению, разглаживанию, шлифованию и заключительному грунтованию CT126",
+          "unitId": "man_hour",
+          "reasonRu": "Один открытый владелец труда перечисленных этапов; обеспыливание раскрыто у услуги уборки без повторной оплаты. Технология опубликована, часы не опубликованы. Выдержка3–5мин и жизнеспособность40–60мин не нормы труда."
+        },
+        {
+          "id": "mixer",
+          "operation": "mixing",
+          "category": "equipment",
+          "nameRu": "Электрическая дрель с насадкой-миксером для CT126",
+          "unitId": "machine_hour",
+          "reasonRu": "Тип инструмента опубликован; модель, часы и обеспечение исполнителем требуют источника."
+        },
+        {
+          "id": "stainless-float",
+          "operation": "application",
+          "category": "equipment",
+          "nameRu": "Широкий полутерок из нержавеющей стали для CT126",
+          "unitId": "item",
+          "reasonRu": "Материал и назначение названы; ширина, количество и обеспечение исполнителем не установлены."
+        },
+        {
+          "id": "sandpaper-mesh",
+          "operation": "sanding",
+          "category": "material",
+          "nameRu": "Шлифовальная бумага или сетка для высохшей CT126 — одно выбранное исполнение",
+          "unitId": "m2",
+          "reasonRu": "Источник допускает бумагу или сетку; зернистость, количество и износ не опубликованы. Альтернативы вместе не закупаются."
+        },
+        {
+          "id": "sanding-tool",
+          "operation": "sanding",
+          "category": "equipment",
+          "nameRu": "Шлифовальная машина типа «жираф» для высохшей CT126",
+          "unitId": "machine_hour",
+          "reasonRu": "Тип инструмента указан; модель и часы не опубликованы. Ручная замена требует отдельного подтверждения."
+        },
+        {
+          "id": "post-primer",
+          "operation": "post-priming",
+          "category": "material",
+          "nameRu": "Грунтовка всей высохшей и обеспыленной CT126 — изделие и расход требуют совместимой системы",
+          "unitId": "l",
+          "reasonRu": "После шлифования TDS требует грунтование всей поверхности, но не называет изделие или расход. CT7 подготовки основания сюда автоматически не переносится."
+        },
+        {
+          "id": "post-primer-tools",
+          "operation": "post-priming",
+          "category": "equipment",
+          "nameRu": "Инструмент нанесения выбранной грунтовки поверх CT126",
+          "unitId": "item",
+          "reasonRu": "Определяется паспортом подтверждённой грунтовки; исполнение и количество пока не установлены."
+        },
+        {
+          "id": "water-cleaning",
+          "operation": "completion",
+          "category": "material",
+          "nameRu": "Чистая вода очистки инструмента после CT126",
+          "unitId": "l",
+          "reasonRu": "Расход очистки не опубликован; рецепты затворения не определяют уборку."
+        },
+        {
+          "id": "acceptance",
+          "operation": "acceptance",
+          "category": "service",
+          "nameRu": "Контроль толщины, высыхания и качества поверхности CT126",
+          "unitId": "item",
+          "reasonRu": "Около24ч для5мм при20°C/RH60% — ориентир, не универсальный срок. Число проверок и состав приёмки требуют проекта."
+        },
+        {
+          "id": "access-protection",
+          "operation": "protection",
+          "category": "service",
+          "nameRu": "Доступ к фактической высоте стены, защита глаз, кожи и зоны шлифования CT126",
+          "unitId": "item",
+          "reasonRu": "Способ доступа и защита по реальной высоте и пылевым работам; нет автоматических лесов, стремянок или коэффициента потолка. Один владелец цены."
+        },
+        {
+          "id": "logistics-cleanup",
+          "operation": "completion",
+          "category": "service",
+          "nameRu": "Доставка CT126, разгрузка, обеспыливание, уборка и передача упаковки/остатков",
+          "unitId": "item",
+          "reasonRu": "Границы услуги, масса и вывоз по факту; без второй оплаты включённого инструмента и работ."
+        }
+      ],
+      "parameterPresentation": [
+        {
+          "parameterId": "putty_area_m2",
+          "sourceTitleRu": "Площадь гипсовой шпаклёвки CT126",
+          "nameRu": "Какая площадь стены под шпаклевание, м²?",
+          "guideRu": "Введите площадь шпаклевания по обмеру или проекту."
+        },
+        {
+          "parameterId": "layer_thickness_mm",
+          "sourceTitleRu": "Фактическая толщина одного слоя CT126, 2–10мм",
+          "nameRu": "Какая толщина одного слоя, мм?",
+          "guideRu": "Для этого профиля предусмотрен один слой от 2 до 10 мм."
+        },
+        {
+          "parameterId": "base_confirmed",
+          "sourceTitleRu": "Принятые стены по гладком бетоне с выполненным CT19",
+          "nameRu": "Какое основание уже подготовлено?",
+          "guideRu": "Сверьте материал, возраст, влажность и выполненное грунтование с принятым профилем основания. Не подтверждайте неподходящее основание."
+        },
+        {
+          "parameterId": "product_variant_confirmed",
+          "sourceTitleRu": "Поставленный CT126 и точный вариант технической карты",
+          "nameRu": "Какой вариант сухой гипсовой шпаклёвки подтверждён?",
+          "guideRu": "Сверьте техническую карту поставленного состава с выбранным расчётным профилем. Другой состав требует отдельного совместимого расчёта."
+        },
+        {
+          "parameterId": "selected_ct126_bag",
+          "sourceTitleRu": "Одна выбранная фасовка CT126 с собственным рецептом воды",
+          "nameRu": "Какая фасовка сухой гипсовой шпаклёвки выбрана?",
+          "guideRu": "Выберите одну фасовку: 5 или 20 кг. Рецепты воды для этих фасовок различаются."
+        },
+        {
+          "parameterId": "ct126_5kg_planned_whole_batches",
+          "sourceTitleRu": "Подтверждённый последовательный план целых замесов CT126 5 кг",
+          "nameRu": "Сколько целых мешков по 5 кг предусмотрено для замеса?",
+          "guideRu": "Укажите подтверждённый последовательный план целых замесов. Количество нового заказа не заменяет этот план."
+        },
+        {
+          "parameterId": "ct126_5kg_stock_bags",
+          "sourceTitleRu": "Пригодное наличие целых мешков CT126 5 кг",
+          "nameRu": "Сколько целых мешков сухой гипсовой шпаклёвки по 5 кг уже есть?",
+          "guideRu": "Введите число пригодных целых мешков, выделенных для этой работы."
+        },
+        {
+          "parameterId": "ct126_5kg_reserve_bags",
+          "sourceTitleRu": "Сохраняемый резерв целых мешков CT126 5 кг",
+          "nameRu": "Сколько целых мешков по 5 кг оставить в запасе?",
+          "guideRu": "Введите число целых мешков, которое требуется сохранить после работы."
+        },
+        {
+          "parameterId": "ct126_5kg_supplier_bag_multiple",
+          "sourceTitleRu": "Фактическая кратность поставщика в мешках CT126 5 кг",
+          "nameRu": "С какой кратностью заказывают мешки по 5 кг?",
+          "guideRu": "Введите подтверждённое поставщиком число мешков в одном кратном заказе. Это условие поставки, а не норма расхода."
+        },
+        {
+          "parameterId": "ct126_20kg_planned_whole_batches",
+          "sourceTitleRu": "Подтверждённый последовательный план целых замесов CT126 20 кг",
+          "nameRu": "Сколько целых мешков по 20 кг предусмотрено для замеса?",
+          "guideRu": "Укажите подтверждённый последовательный план целых замесов. Количество нового заказа не заменяет этот план."
+        },
+        {
+          "parameterId": "ct126_20kg_stock_bags",
+          "sourceTitleRu": "Пригодное наличие целых мешков CT126 20 кг",
+          "nameRu": "Сколько целых мешков сухой гипсовой шпаклёвки по 20 кг уже есть?",
+          "guideRu": "Введите число пригодных целых мешков, выделенных для этой работы."
+        },
+        {
+          "parameterId": "ct126_20kg_reserve_bags",
+          "sourceTitleRu": "Сохраняемый резерв целых мешков CT126 20 кг",
+          "nameRu": "Сколько целых мешков по 20 кг оставить в запасе?",
+          "guideRu": "Введите число целых мешков, которое требуется сохранить после работы."
+        },
+        {
+          "parameterId": "ct126_20kg_supplier_bag_multiple",
+          "sourceTitleRu": "Фактическая кратность поставщика в мешках CT126 20 кг",
+          "nameRu": "С какой кратностью заказывают мешки по 20 кг?",
+          "guideRu": "Введите подтверждённое поставщиком число мешков в одном кратном заказе. Это условие поставки, а не норма расхода."
+        }
+      ]
+    }
+  ],
+  "sourcePins": [
+    {
+      "path": "src/lib/estimate/v4/ct126SixDryWallReuseS2769.ts",
+      "sha256": "aed8c611b5691dfe285ff1fee623d545d1caab91b3ce1935b3626faef8e85d69"
+    },
+    {
+      "path": "src/lib/estimate/v4/ct126PostPrimerCandidatesS2754.ts",
+      "sha256": "b3d7ae2629297e765ee3464ab0527e0eca2f005949793278b1a3d7b77d4aa67e"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/ct126-six-wall-bindings-s27-69.json",
+      "sha256": "6e49d1502eae01bc57e72b552ef8018722ed8c585a59657369ae642ec13b18fa"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/ct126-dry-wall-s27-54.json",
+      "sha256": "ba508d46b8e3e5146d541e929d6d5ef85a4228caf745e770af15caa39111edca"
+    },
+    {
+      "path": "data/estimate-benchmarks/fixtures/ct126-ready-wall-v2-s27-69.json",
+      "sha256": "42d5c7cf690abc1ff66230aa60c745ebfdd4b6b94e0ef07a18220c81f2ff3e52"
+    },
+    {
+      "path": "data/estimate-benchmarks/fixtures/ct126-six-wall-v3-parents-s27-69.json",
+      "sha256": "e36f143cc50f625abb7e3db26b9ebb881e293fb8328fcdb201a67253ef1ef119"
+    },
+    {
+      "path": "src/lib/estimate/v4/ct126PreparedSeriesS2754.ts",
+      "sha256": "4dd1b19728104ab03b6e81c381b015c4891010af6c8c5132a6738cdbf8eb1850"
+    },
+    {
+      "path": "src/lib/estimate/v4/ct126DryWallS2754.ts",
+      "sha256": "0388b23ef901934aec2789d076c508c509b1915a61a8969f0e96cae611b577cc"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/ct126-prepared-series-s27-54.json",
+      "sha256": "46e8608ea504afed98bd8b470454b08a948067abc627f739515eef0e56a4bf49"
+    },
+    {
+      "path": "data/estimate-norms/professional/putty.json",
+      "sha256": "fd76759a97edc303b6fe0267b7512ad08a9b7065079764fdf4c2d49c1d44f05f"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/ct126-post-primer-candidates-s27-54.json",
+      "sha256": "8187e782c39df9bd9a1cdc762a90a8d816e875d18fd4cee050e5404a3b950a0d"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json",
+      "sha256": "82c26fabe15fea774a4ac2f806b3490eeefae037f82b7aeb8e33bf25d716aed3"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json",
+      "sha256": "d46879709c79f99485203f86b86f631521fd11469597ed81c2c3703fd1b841d1"
+    }
+  ],
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_high_load",
+      "predecessorDefinitionId": "4a3c7e87-dccb-5701-84cd-1d291b9887ed",
+      "parentSha256": "2142dd2a5259697498f68fbd9173b150fe9e0fe6ac0558e5ae6432fe698e0d3f",
+      "parentVersion": 4,
+      "sourceId": "ct126_prepared_wall_r2_high_load"
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_repair",
+      "predecessorDefinitionId": "51cdf287-a7f8-59af-815d-fd934f8b0393",
+      "parentSha256": "b1ef2569b9e52f464e896aee943f39a756d60e7f2906f3ba106281c51431059e",
+      "parentVersion": 4,
+      "sourceId": "ct126_prepared_wall_r2_repair"
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_standard",
+      "predecessorDefinitionId": "7ff78f8c-2873-53b8-859a-db8eb23f510a",
+      "parentSha256": "06fad55c0f34776055e4f44367e0128ae1b09ae787253159aae87f1ed6bee29c",
+      "parentVersion": 4,
+      "sourceId": "ct126_prepared_wall_r2_standard"
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_technical_room",
+      "predecessorDefinitionId": "27c1fcfb-6baa-5e48-8fba-99299c9da0e8",
+      "parentSha256": "8a3b97c58cc79df2aff81a14be2bb2eb7bf4f1d377b9d87c091632f6e5265c2f",
+      "parentVersion": 4,
+      "sourceId": "ct126_prepared_wall_r2_technical_room"
+    }
+  ],
+  "blockedHistoricalAreaIds": [
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_large_area",
+      "reason": "CANONICAL_AREA_CATALOG_VARIANT_RETIRED; not present in current cumulative manifest; no reactivation or redirect"
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_small_area",
+      "reason": "CANONICAL_AREA_CATALOG_VARIANT_RETIRED; not present in current cumulative manifest; no reactivation or redirect"
+    }
+  ],
+  "quantityScope": "PARTIAL",
+  "completeTechnicalEstimateAccepted": false,
+  "counts": {
+    "activeCatalogIds": 4,
+    "existingProfilesPerCatalog": 1,
+    "additionalProfilesPerCatalog": 2,
+    "newCalculableBranches": 8,
+    "newWorkTypes": 0,
+    "newFullTechnologies": 0,
+    "newNorms": 0,
+    "newNeedsClosed": 0,
+    "resourcesBeforePerCatalog": 89,
+    "resourcesAfterPerCatalog": 149,
+    "parametersBeforePerCatalog": 33,
+    "parametersAfterPerCatalog": 97,
+    "formulasBeforePerCatalog": 89,
+    "formulasAfterPerCatalog": 149,
+    "potentialSourceNeedsPerCatalog": 33,
+    "activeSourceNeedsPerSelectedProfile": 11
+  }
+}

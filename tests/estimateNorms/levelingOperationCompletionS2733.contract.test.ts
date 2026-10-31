@@ -1,3 +1,4 @@
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
 import { buildLevelingOperationCompletionS2733, LEVELING_COMPLETION_ROWS as ids } from "../../src/lib/estimate/v4/levelingOperationCompletionS2733";
 import { ANCHOR_GROUP_LEVELING_FORMULAS, ANCHOR_GROUP_LEVELING_PARAMETERS, ANCHOR_GROUP_LEVELING_RESOURCES, anchorGroupLevelingAcceptanceInputR1 } from "../../src/lib/estimate/v4/anchorGroupLevelingR1";
 import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
@@ -83,7 +84,7 @@ describe("S27.33 leveling operation component completion", () => {
     expect(result.rows.find(r => r.row_id === "work:concrete:anchor-group-leveling")?.quantity).toBe("30");
   });
   it("does not invent kits for unselected equipment/guides or explicit project confirmation that no additional components are required", async () => {
-    const noEquipment = await compile(anchorGroupLevelingAcceptanceInputR1("small_area"));
+    const noEquipment = await compile(measuredConcreteProjectInputR533("anchorGroupLevelingAcceptanceInputR1", "compact"));
     expect(noEquipment.preliminaryNeeds).toEqual([]);
     expect(noEquipment.rows.some(r => Object.values(ids).includes(r.row_id as typeof ids.guides))).toBe(false);
     const noAdditional = await compile({ ...facts, leveling_guide_accessories_pricing_mode: "NOT_REQUIRED", leveling_equipment_accessories_pricing_mode: "NOT_REQUIRED" });

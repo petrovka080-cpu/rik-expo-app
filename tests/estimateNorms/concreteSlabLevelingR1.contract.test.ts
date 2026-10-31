@@ -1,4 +1,5 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   concreteSlabLevelingPromptDetailsR1,
@@ -15,7 +16,7 @@ import {
 } from "../../src/lib/estimate/v4/concreteSlabLevelingR1";
 
 describe("concrete slab leveling canonical family", () => {
-  it("compiles all seven catalog identities through the shared canonical core", async () => {
+  it("compiles all five catalog identities through the shared canonical core", async () => {
     const fixtures = new Set<string>();
     for (const target of CONCRETE_SLAB_LEVELING_TARGETS) {
       const input = concreteSlabLevelingAcceptanceInputR1(target.contextKey);
@@ -34,7 +35,7 @@ describe("concrete slab leveling canonical family", () => {
       expect(compiled.rows.some((row) => row.row_id.includes("curing"))).toBe(false);
       fixtures.add(JSON.stringify(input));
     }
-    expect(fixtures.size).toBe(7);
+    expect(fixtures.size).toBe(5);
   });
 
   it("includes only the guide, equipment and mobilization rows selected by the project", async () => {
@@ -97,9 +98,9 @@ describe("concrete slab leveling canonical family", () => {
     )).toBe(false);
 
     const smallTarget = CONCRETE_SLAB_LEVELING_TARGETS.find(
-      (candidate) => candidate.contextKey === "small_area",
+      (candidate) => candidate.contextKey === "standard",
     )!;
-    const smallInput = concreteSlabLevelingAcceptanceInputR1(smallTarget.contextKey);
+    const smallInput = measuredConcreteProjectInputR533("concreteSlabLevelingAcceptanceInputR1", "compact");
     await expect(compileConcreteSlabLevelingR1({
       ...smallInput,
       leveling_equipment_machine_h: 4,

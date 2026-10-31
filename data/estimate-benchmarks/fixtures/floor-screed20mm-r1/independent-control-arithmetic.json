@@ -1,0 +1,48 @@
+{
+  "method": "Python Decimal, literals read visually from primary first column; not output of TypeScript factory",
+  "rows": [
+    {
+      "area_m2": "100",
+      "worker_hours": "39.51",
+      "aggregate_operator_information_hours": "1.27",
+      "hoist_machine_hours": "1.27",
+      "vibrator_machine_hours": "9.07",
+      "water_m3": "3.5",
+      "ready_mortar_m150_m3": "2.04"
+    },
+    {
+      "area_m2": "125",
+      "worker_hours": "49.3875",
+      "aggregate_operator_information_hours": "1.5875",
+      "hoist_machine_hours": "1.5875",
+      "vibrator_machine_hours": "11.3375",
+      "water_m3": "4.375",
+      "ready_mortar_m150_m3": "2.55"
+    },
+    {
+      "area_m2": "0.5",
+      "worker_hours": "0.19755",
+      "aggregate_operator_information_hours": "0.00635",
+      "hoist_machine_hours": "0.00635",
+      "vibrator_machine_hours": "0.04535",
+      "water_m3": "0.0175",
+      "ready_mortar_m150_m3": "0.0102"
+    }
+  ],
+  "testOnlyLaborControlPrice": "77",
+  "raw125m2WholeLaborProduct": "3802.8375",
+  "expected125m2WholeLaborAmount": "3802.84",
+  "moneyScale": 2,
+  "mortarBalance": {
+    "consumed": "2.55",
+    "compatibleStock": "1",
+    "reserve": "0.2",
+    "quantum": "0.5",
+    "order": "2",
+    "remaining": "0.45",
+    "free": "0.25"
+  },
+  "historicalPricesUsed": false,
+  "actualSupplierPrices": null,
+  "operatorFinancialAdmission": false
+}

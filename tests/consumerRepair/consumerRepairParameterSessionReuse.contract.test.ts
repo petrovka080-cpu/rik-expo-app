@@ -5,6 +5,7 @@ import { consumerRepairCanonicalParameterSessionMatchesBundle } from "../../src/
 import { logger } from "../../src/lib/logger";
 import { getCanonicalEstimateRevision } from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
 import { compactConsumerRepairBundleForDurableStorage } from "../../src/lib/platform/compactConsumerRepairDurableState";
+import { readRoofPreparationMigrationProofV1, type RoofPreparationMigrationProofV1 } from "../../src/lib/estimate/backendPlatform/canonicalRoofPreparationMigrationV1";
 
 jest.mock("@expo/vector-icons", () => ({ Ionicons: () => null }));
 jest.mock("../../src/lib/estimate/backendPlatform/canonicalEstimateClient", () => ({
@@ -179,9 +180,64 @@ describe("composition restoration after durable cold reopen", () => {
     const pending=action.changeCompositionRows(['worker'],false);const next=bundle('draft-other');action.state={...action.state,bundle:next};
     resolveRead(saved as never);await pending;expect(recalculate).not.toHaveBeenCalled();expect(action.state.bundle).toBe(next);
   });
-  it('uses the bound live payload without a second read when it has not been compacted',async()=>{
+  it('reads the authoritative saved selection even when an uncompacted live payload is bound',async()=>{
+    const live={...saved,compositionSelectionV1:{...selection,excludedRowIds:['worker','live-only-resource']}};
+    const before=JSON.stringify(live);readRevision.mockResolvedValue(saved as never);
+    const recalculate=jest.fn(async()=>({bundle:bundle(undefined,'revision-child'),session:session(undefined,'revision-child')}));
+    const action=controller(jest.fn(),null,recalculate);action.state={...action.state,bundle:{...bundle(),structuredEstimatePayload:{canonicalBackend:live}} as unknown as ConsumerRepairDraftBundle};
+    await action.changeCompositionRows(['worker'],false);
+    expect(readRevision).toHaveBeenCalledTimes(1);expect(readRevision).toHaveBeenCalledWith('revision-current');
+    expect(recalculate).toHaveBeenCalledTimes(1);
+    expect(recalculate).toHaveBeenCalledWith(expect.objectContaining({revisionId:'revision-current',requestDraftId:'draft-current',patches:[],compositionSelectionV1:{...selection,excludedRowIds:['other-resource']}}));
+    expect(action.state.bundle?.items[0]?.sourceParameters?.canonicalBackendRevisionId).toBe('revision-child');
+    expect(action.state.canonicalEstimateMutationBusy).toBe(false);expect(JSON.stringify(live)).toBe(before);
+  });
+  it('waits for the fresh saved-revision read before changing composition with a live payload',async()=>{
+    let resolveRead!:(value:never)=>void;
+    readRevision.mockImplementation(()=>new Promise(resolve=>{resolveRead=resolve;}));
     const recalculate=jest.fn(async()=>({bundle:bundle(undefined,'revision-child'),session:session(undefined,'revision-child')}));
     const action=controller(jest.fn(),null,recalculate);action.state={...action.state,bundle:{...bundle(),structuredEstimatePayload:{canonicalBackend:saved}} as unknown as ConsumerRepairDraftBundle};
-    await action.changeCompositionRows(['worker'],false);expect(readRevision).not.toHaveBeenCalled();expect(recalculate).toHaveBeenCalledTimes(1);
+    const pending=action.changeCompositionRows(['worker'],false);
+    expect(readRevision).toHaveBeenCalledTimes(1);expect(recalculate).not.toHaveBeenCalled();
+    expect(action.state.canonicalEstimateMutationBusy).toBe(true);
+    resolveRead(saved as never);await pending;
+    expect(recalculate).toHaveBeenCalledTimes(1);expect(action.state.canonicalEstimateMutationBusy).toBe(false);
+  });
+  it.each(['read failure','revision mismatch','release mismatch'] as const)('does not fall back to the live payload after %s',async failure=>{
+    if(failure==='read failure')readRevision.mockRejectedValue(new Error('CONTROL_LIVE_READ_FAILED'));
+    else readRevision.mockResolvedValue({...saved,...(failure==='revision mismatch'?{revisionId:'revision-other'}:{releaseId:'release-other'})} as never);
+    const live={...bundle(),structuredEstimatePayload:{canonicalBackend:saved}} as unknown as ConsumerRepairDraftBundle;
+    const before=JSON.stringify(live),recalculate=jest.fn(),action=controller(jest.fn(),null,recalculate);action.state={...action.state,bundle:live};
+    await action.changeCompositionRows(['worker'],false);
+    expect(readRevision).toHaveBeenCalledTimes(1);expect(readRevision).toHaveBeenCalledWith('revision-current');
+    expect(recalculate).not.toHaveBeenCalled();expect(action.state.bundle).toBe(live);
+    expect(action.state.statusMessage).toBe(failure==='read failure'?'CONTROL_LIVE_READ_FAILED':'Не удалось проверить сохранённые исключения этой версии сметы.');
+    expect(action.state.canonicalEstimateMutationBusy).toBe(false);expect(JSON.stringify(live)).toBe(before);
+  });
+  it.each([['live payload only',false],['fresh backend response',true]] as const)('takes migration restoration authority from the %s',async(_label,freshProof)=>{
+    const catalogId='canonical-work:base:roofing_interior_flat_roof_install_technical_room';
+    const definitionId='00000000-0000-4000-8000-000000000002';
+    // This is a reader-valid receipt fixture, not a publisher admission proof.
+    // Its presence in a local payload must never replace the fresh backend read.
+    const proof:RoofPreparationMigrationProofV1={contractVersion:'canonical-roof-preparation-migration-proof/v1',catalogId,
+      fromDefinitionId:'00000000-0000-4000-8000-000000000001',toDefinitionId:definitionId,
+      fromDefinitionSha256:'a'.repeat(64),toDefinitionSha256:'b'.repeat(64),fromSemanticSha256:'c'.repeat(64),toSemanticSha256:'d'.repeat(64),
+      sourceSha256:'114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8',preservedRowIds:Array.from({length:128},(_,index)=>'retained-row-'+index)};
+    expect(readRoofPreparationMigrationProofV1(proof)).toEqual(proof);
+    const semanticRow='roof:torch-two:krer12-002-09:source-gap:primer';
+    const primerOperation=JSON.stringify(['roof:prime-ready-emulsion:krer12-016-02','roof:prime-ready-emulsion:krer12-016-02:installation']);
+    const composition={...selection,excludedRowIds:[semanticRow,'other-resource'].sort(),excludedOperationKeys:[primerOperation,...selection.excludedOperationKeys].sort()};
+    const identity={...saved,catalogId,definitionVersionId:definitionId,compositionSelectionV1:composition};
+    const live={...identity,roofPreparationMigrationV1:proof},fresh={...identity,...(freshProof?{roofPreparationMigrationV1:proof}:{})};
+    const before=JSON.stringify({live,fresh});readRevision.mockResolvedValue(fresh as never);
+    const recalculate=jest.fn(async()=>({bundle:bundle(undefined,'revision-child'),session:session(undefined,'revision-child')}));
+    const action=controller(jest.fn(),null,recalculate);action.state={...action.state,bundle:{...bundle(),structuredEstimatePayload:{canonicalBackend:live}} as unknown as ConsumerRepairDraftBundle};
+    await action.changeCompositionRows([semanticRow],false);
+    expect(readRevision).toHaveBeenCalledTimes(1);expect(readRevision).toHaveBeenCalledWith('revision-current');
+    expect(recalculate).toHaveBeenCalledTimes(1);
+    expect(recalculate).toHaveBeenCalledWith(expect.objectContaining({revisionId:'revision-current',requestDraftId:'draft-current',patches:[],compositionSelectionV1:{...selection,
+      excludedRowIds:['other-resource'],excludedOperationKeys:freshProof?selection.excludedOperationKeys:composition.excludedOperationKeys}}));
+    expect(action.state.bundle?.items[0]?.sourceParameters?.canonicalBackendRevisionId).toBe('revision-child');
+    expect(action.state.canonicalEstimateMutationBusy).toBe(false);expect(JSON.stringify({live,fresh})).toBe(before);
   });
 });

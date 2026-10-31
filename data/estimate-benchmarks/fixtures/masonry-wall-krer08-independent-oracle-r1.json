@@ -1,0 +1,170 @@
+{
+  "sourceSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+  "basisM3": "1",
+  "rowsByColumn": {
+    "08-02-001-07": {
+      "labour": "5.21",
+      "operators": "0.4",
+      "tower-crane": "0.4",
+      "water": "0.44",
+      "brick": "395",
+      "timber": "0.0005",
+      "mortar": "0.234"
+    },
+    "08-02-001-08": {
+      "labour": "5.05",
+      "operators": "0.35",
+      "tower-crane": "0.35",
+      "water": "0.44",
+      "brick": "395",
+      "timber": "0.0005",
+      "mortar": "0.234"
+    },
+    "08-03-004-01": {
+      "labour": "3.65",
+      "operators": "0.08",
+      "tower-crane": "0.03",
+      "truck-crane": "0.05",
+      "perforator": "0.03",
+      "flatbed-truck": "0.05",
+      "water": "0.00414",
+      "primer": "0.077",
+      "adhesive": "20.5",
+      "anchor-steel": "0.78",
+      "aac-block": "1.01"
+    },
+    "08-03-004-02": {
+      "labour": "2.81",
+      "operators": "0.08",
+      "tower-crane": "0.03",
+      "truck-crane": "0.05",
+      "perforator": "0.03",
+      "flatbed-truck": "0.05",
+      "water": "0.00414",
+      "primer": "0.051",
+      "adhesive": "20.5",
+      "anchor-steel": "0.78",
+      "aac-block": "1.01"
+    },
+    "08-03-004-03": {
+      "labour": "4.47",
+      "operators": "0.08",
+      "tower-crane": "0.03",
+      "truck-crane": "0.05",
+      "perforator": "0.05",
+      "flatbed-truck": "0.05",
+      "water": "0.00575",
+      "primer": "0.077",
+      "adhesive": "28.47",
+      "anchor-steel": "1.24",
+      "aac-block": "1.01"
+    },
+    "08-03-004-04": {
+      "labour": "3.39",
+      "operators": "0.08",
+      "tower-crane": "0.03",
+      "truck-crane": "0.05",
+      "perforator": "0.05",
+      "flatbed-truck": "0.05",
+      "water": "0.00552",
+      "primer": "0.053",
+      "adhesive": "27.3",
+      "anchor-steel": "1.24",
+      "aac-block": "1.01"
+    }
+  },
+  "geometricScenarios": [
+    {
+      "system": "ceramic-brick",
+      "name": "small",
+      "length": "1",
+      "height": "1",
+      "openings": "0",
+      "inserts": "0",
+      "story": "4",
+      "volume": "0.25",
+      "labour": "1.3025",
+      "keyMaterial": "98.75",
+      "mortarOrAdhesive": "0.0585"
+    },
+    {
+      "system": "ceramic-brick",
+      "name": "normal",
+      "length": "10",
+      "height": "3",
+      "openings": "5.5",
+      "inserts": "0.125",
+      "story": "4",
+      "volume": "6",
+      "labour": "31.26",
+      "keyMaterial": "2370",
+      "mortarOrAdhesive": "1.404"
+    },
+    {
+      "system": "aac-400",
+      "name": "small",
+      "length": "1",
+      "height": "1",
+      "openings": "0",
+      "inserts": "0",
+      "story": "4",
+      "volume": "0.4",
+      "labour": "1.46",
+      "keyMaterial": "0.404",
+      "mortarOrAdhesive": "8.2"
+    },
+    {
+      "system": "aac-400",
+      "name": "normal",
+      "length": "10",
+      "height": "3",
+      "openings": "5.5",
+      "inserts": "0.2",
+      "story": "4",
+      "volume": "9.6",
+      "labour": "35.04",
+      "keyMaterial": "9.696",
+      "mortarOrAdhesive": "196.8"
+    },
+    {
+      "system": "aac-500",
+      "name": "small",
+      "length": "1",
+      "height": "1",
+      "openings": "0",
+      "inserts": "0",
+      "story": "4",
+      "volume": "0.5",
+      "labour": "2.235",
+      "keyMaterial": "0.505",
+      "mortarOrAdhesive": "14.235"
+    },
+    {
+      "system": "aac-500",
+      "name": "normal",
+      "length": "10",
+      "height": "3",
+      "openings": "5.5",
+      "inserts": "0.25",
+      "story": "4",
+      "volume": "12",
+      "labour": "53.64",
+      "keyMaterial": "12.12",
+      "mortarOrAdhesive": "341.64"
+    }
+  ],
+  "comparisonAt1M3": {
+    "400to500Below4": {
+      "labour": "3.65 -> 4.47",
+      "adhesive": "20.5 -> 28.47",
+      "water": "0.00414 -> 0.00575",
+      "steelKg": "0.78 -> 1.24"
+    },
+    "height4toAbove4AAC500": {
+      "labour": "4.47 -> 3.39",
+      "adhesive": "28.47 -> 27.3",
+      "water": "0.00575 -> 0.00552",
+      "primerKg": "0.077 -> 0.053"
+    }
+  }
+}

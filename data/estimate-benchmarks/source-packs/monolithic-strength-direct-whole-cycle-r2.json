@@ -1,0 +1,790 @@
+{
+  "contract": "gox.monolithic-strength-direct-whole-cycle.source-working/r2",
+  "status": "UNSEALED_SOURCE_COMPOSITION_APPLICATION_METHOD_GAPS_REMAIN",
+  "sourceId": "monolithic-strength-direct-typeII2448-r2",
+  "sourceArtifacts": [
+    {
+      "file": "gost-18105-2018-official2019.pdf",
+      "sha256": "df0a656f31ad7245e6b5cccdeee98aaf05df747576253e6e20371b295947d55f",
+      "bytes": 305749,
+      "role": "SITE_PLANNING_AND_ACCEPTANCE_SCOPE"
+    },
+    {
+      "file": "gost-22690-official-reprint2019-with-correction.pdf",
+      "sha256": "338ccbb2f65b7ae7d396cd16f95c3e76548e651c8bc98649e9d5423a11b73cb9",
+      "bytes": 7983918,
+      "role": "SELECTED_DIRECT_STANDARD_METHOD"
+    },
+    {
+      "file": "18105-2021-correction.gif",
+      "sha256": "e0b9da9dac79afb210bf31548017d202bf6de9c9786b8a24f2607e4f8e1dd910",
+      "bytes": 25678,
+      "role": "VISUALLY_REVIEWED_VOTING_TABLE_ONLY"
+    },
+    {
+      "file": "18105-2024-correction.gif",
+      "sha256": "41fa04a7fb988b295be69f764c5b14ee143d726088f03075c9cef5baee4e0f3d",
+      "bytes": 20278,
+      "role": "VISUALLY_REVIEWED_VOTING_TABLE_ONLY"
+    },
+    {
+      "file": "22690-2022-correction.gif",
+      "sha256": "6557fd1b9d8ce360faf10ea22a8c8fa99eb19575d060ffc4da3fba0c9666516f",
+      "bytes": 25810,
+      "role": "VISUALLY_REVIEWED_VOTING_TABLE_ONLY"
+    },
+    {
+      "file": "oniks-os-manufacturer-current.pdf",
+      "sha256": "7ecbea7ab1b1e6df2c197b2d337865677a9d2e6fed07df6e2fdba9026a93d8da",
+      "bytes": 1919483,
+      "role": "EXACT_EQUIPMENT_EXECUTION_AND_BOM"
+    },
+    {
+      "file": "mi-2016-03-manufacturer-linked.pdf",
+      "sha256": "4a7675e45033c40d3ba63215dcb63a30a7909095e1a03cf6bc6e8db5d12c1a3f",
+      "bytes": 9444765,
+      "role": "HISTORICAL_REFERENCE_WITH_IDENTITY_AND_SUNSET_CONFLICT_NOT_INDEPENDENT_AUTHORITY"
+    },
+    {
+      "file": "kg-gissip-price-book7-2016.pdf",
+      "sha256": "fb120085690970c04614f84bb103ae5f89358c2cda1c3d44d0c998302932925d",
+      "bytes": 1829008,
+      "role": "BOUNDED_LABOUR_CANDIDATE_NOT_ADMITTED_TO_MONOLITHIC_PRODUCTION"
+    },
+    {
+      "file": "kg-gissip-order49-2026.pdf",
+      "sha256": "306ae469c42135149f3064fb936fe3993786e8dccd2775c93b2a28f9cfdd4f5e",
+      "bytes": 2145030,
+      "role": "CURRENT_PROVIDER_TARIFF_SCOPE_NOT_A_WHOLE_DIRECT_METHOD_RATE"
+    },
+    {
+      "file": "kg-gissip-current-pricelist.pdf",
+      "sha256": "909aef8d9feec507f5a23c4c616c558fa64c91f778e26f848c330e4858564f31",
+      "bytes": 516200,
+      "role": "MINISTRY_ORDER415_EFFECTIVE_2026_07_01_NOT_A_TARIFF_TABLE"
+    },
+    {
+      "file": "bosch-gbh228-current-202601.pdf",
+      "sha256": "5fef1bdf0829ac175c9d5e076514a90878e841d0d31b967e5d5748221cd2d13c",
+      "bytes": 9689166,
+      "role": "EXACT_SELECTED_DRIVE_NOT_OPERATING_TIME"
+    },
+    {
+      "file": "bosch-gde68-current-linked-2016.pdf",
+      "sha256": "5213f7e1822ec1de231bb06df0ef6ebeb9d45d7903657c9074fce31e208e910e",
+      "bytes": 2515808,
+      "role": "SELECTED_DRY_WALL_HOOD_BOUNDARY"
+    },
+    {
+      "file": "bosch-expert-accessory-brochure-2025-gben.pdf",
+      "sha256": "81b097a0ed750a46e6044ea50e62a7580ffa91e860d89ab668e4bec0f2e41bd3",
+      "bytes": 9278094,
+      "role": "EXACT_SINGLE_INITIAL_BIT_NOT_WEAR_RATE"
+    },
+    {
+      "file": "bosch-gas35h-current-202507.pdf",
+      "sha256": "48f35172d4a43c5790d77b765bfc32e7fb41ffcf2c16c5dff58279ece823a1f5",
+      "bytes": 9154182,
+      "role": "FULL_H_DRY_SYSTEM_SCOPE_NOT_CONSUMABLE_RATE"
+    },
+    {
+      "file": "bosch-gas35h-06019c3600-scope-20261024.html",
+      "path": "data/estimate-benchmarks/source-artifacts/bosch-gas35h-06019c3600-scope-20261024.html",
+      "sha256": "bc62eb389d1e64de135e25cf25f9f9d9789ba714a1a68a5b70a5a3d7e0f64125",
+      "bytes": 566380,
+      "url": "https://www.bosch-professional.com/nl/nl/products/gas-35-h-afc-06019C3600",
+      "role": "EXACT_06019C3600_INITIAL_DELIVERY_NOT_CONSUMPTION_OR_PRICE"
+    }
+  ],
+  "territory": "KG",
+  "territoryAnchor": {
+    "document": "СН КР52-02:2024",
+    "sha256": "9fa68016ffa48fc3967e04f1e2796a16368079c34190e4ba6b711dd65c94c4c1",
+    "locator": "11.5.3"
+  },
+  "selectedScope": {
+    "member": "One individual flat/horizontal-linear/vertical-linear member per source fragment; no aggregation of members by area or volume",
+    "control": "schemeВ only; actual age/type/zone/locations retained; no automatic structural acceptance",
+    "method": "classic TypeII24x48 direct pull-out, ordinary heavy concrete, manual050 device",
+    "runtimeAdmission": "HELD; unpublished; no closure of original quality needs"
+  },
+  "siteRules": {
+    "flat": "max(20,ceil(actual_area_m2/20))",
+    "horizontalLinear": "max(6,ceil(actual_length_m/4))",
+    "verticalLinear": "6",
+    "testsPerSite": 1,
+    "workingEmbedmentMm": 48,
+    "fullEmbedmentMm": 55,
+    "holeDiameterMm": 25,
+    "minimumHoleDepthMm": 75,
+    "minimumSpacingMm": 240,
+    "minimumEdgeMm": 150,
+    "minimumThicknessMm": 96,
+    "maximumAggregateMm": 48,
+    "loadRateKnPerSecond": [
+      1.5,
+      3
+    ],
+    "fixedTableStrengthLimitMpa": 70,
+    "reasonForStrengthLimit": "22690 appendixВ1 limits standard proportionality beyond average70; maker advertised range does not widen it"
+  },
+  "sourceReview": {
+    "gostEdition": "2019 official facsimile table2 and appendixA/В visually read; all3 IUS corrections visually read and only add voting countries",
+    "manufacturer": "Execution6.1–6.9, maintenance7 and literal BOM15 reviewed; pages30–38/47 visually inspected. Marking10 is not maintenance.",
+    "mi": "Cover МИ2016-03 Moscow2003 but inner first page МИ2016-02, temporary alternative until new standard. Pages11–16 selected equipment/prep/testing visually read. Not independent current authority; modern22690 and explicit newer manual tables govern selected source drafting; final method admission held until compatibility resolved.",
+    "miDimensionalConflict": "historical3h thickness/spacing vs currenttable2 2h/5h; do not silently combine documents or infer application from2003 scope",
+    "manufacturerConflict": "0.2mm suggested slip tools do not satisfy selected standard0.1mm; selected supplied micrometric nut only. Maker example code/24mm bit for grooved assembly not substituted for25mm classic hole.",
+    "kgLabourCandidate": "Сборник7 2016 table9 rows9/10:1.94/3.72 man-days per ONE assembled member, not per point or m3.5operations cover selected/prepared sites, instrument install, measure, dismantle, report. No printed shifts/hours conversion, drilling/repair/complete resources or explicit monolithic-production method compatibility; not runtime-admitted.",
+    "kgCurrentTariff": "Order49 12Jun2026 approval until01Aug2027 and ministry415 18Jun2026 effective01Jul2026. Appendix2 VIII:292KGS per one5point site +209results, tax excluded. No direct-pullout identification or whole provision, so not a whole-service replacement and no default price injected.",
+    "forceScope": "Selected050 instrument has measured force5–50kN. The standard proportionality scope does not widen instrument force. No automatic expected-strength or force suitability is claimed; method/provider compatibility remains held.",
+    "quantityScope": "BOM quantities are physical presence per actual deployed exact device kit only. No spare or universal instrument purchase, operating time or consumable consumption is derived.",
+    "drilling": "One selected dry accessible vertical-wall preparation branch. Counts one selected drive and initial25mm bit per actually deployed single-drive station. Requires actual assembly/work-place/dust-system records and compatible supplied facts. No service readiness, labour, spare-bit wear, bags-per-hole, cleanup or repair quantity is inferred.",
+    "drillingHBoundary": "Current H manual03Jul2025, RU163-173. Full H filter plus exactly one selected bag system; H dry-only. Safe-filter-bag AFC branch is not an always-on rule. Actual35mm flow57.9m3/h,230V tool outlet100-2200W; no rated-watt electricity quantity. The remaining dust-control resource stays unresolved.",
+    "drillingDepth": "Selected classic hole25mm,depth>=75mm; working drill length400mm is a physical upper bound, not approved hole depth. Actual blind depth must stay below measured thickness. Drill capability never authorizes cutting reinforcement.",
+    "drillingInitialDustAssembly": "R45 reuses the already selected H system and same original manuals. Five necessary initial functional assemblies per actual accepted deployed post; exactly SAFE_FILTER_BAG branch. The supplied unused PE alternative/cleaning nozzles are not a second active bag system or drilling consumption. The original dust-control, power, PPE, cleaning, disposal and labour needs remain open."
+  },
+  "operations": [
+    {
+      "id": "plan",
+      "titleRu": "Спланировать контроль",
+      "completedResultRu": "Назначены отдельная конструкция, возраст, схема, зоны и точки",
+      "resources": [
+        {
+          "key": "planning-labour",
+          "titleRu": "Труд специалиста по программе контроля",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "18105 8.1.2–8.1.7",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "mobilize",
+      "titleRu": "Доставить оснащение к месту работы",
+      "completedResultRu": "Полный комплект доставлен по фактическому маршруту",
+      "resources": [
+        {
+          "key": "transport",
+          "titleRu": "Доставка испытательного оснащения",
+          "unitId": "",
+          "category": "LOGISTICS",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "actual workface route + compatible transport method required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "handling-labour",
+          "titleRu": "Переноска испытательного оснащения",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "whole handling rate required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "case",
+          "titleRu": "Футляр для испытательного оснащения",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer15: case is optional; actual compatible protection required",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "survey",
+      "titleRu": "Обследовать и разметить точки",
+      "completedResultRu": "Арматура, края, дефекты и условия испытания проверены",
+      "resources": [
+        {
+          "key": "detector",
+          "titleRu": "Прибор поиска арматуры и закладных деталей",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer6.4.1; exact detector compatibility and deployment missing",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "geometry-measure",
+          "titleRu": "Средство измерения геометрии участка",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "22690 7.1/table2; whole exact measuring method required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "moisture-meter",
+          "titleRu": "Измеритель влажности бетона",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer6.4.3; recommended instrument is not a universal mandatory purchase",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "temperature-meter",
+          "titleRu": "Средство контроля температуры бетона",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "22690 5; actual conditions and compatible measurement method",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "marking",
+          "titleRu": "Разметочный материал",
+          "unitId": "kg",
+          "category": "CONSUMABLES",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer6.4.1; no consumption printed",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "survey-labour",
+          "titleRu": "Обследование и разметка испытательных участков",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "whole labour rate required",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "prepare",
+      "titleRu": "Подготовить отверстия",
+      "completedResultRu": "Отверстия подходящего размера очищены и измерены",
+      "resources": [
+        {
+          "key": "drill",
+          "titleRu": "Перфоратор 880 Вт с патроном SDS plus",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "EXACT_SELECTED_DRILLING_ASSEMBLY",
+          "countPerExactDeviceKit": null,
+          "locator": "Current GBH2-28F30Jan2026 RU118-121; exact SDSplus25x400x450 single bit brochure2025 PDF4-5; dry vertical wall with GDE68/H-class full system. One per actually deployed single-drive assembly; no wear/productivity rate.",
+          "countPerExactDrillingPost": 1
+        },
+        {
+          "key": "drill-bit",
+          "titleRu": "Бур по бетону 25×400×450 мм с хвостовиком SDS plus",
+          "unitId": "piece",
+          "category": "ACCESSORIES",
+          "authority": "EXACT_SELECTED_DRILLING_ASSEMBLY",
+          "countPerExactDeviceKit": null,
+          "locator": "Current GBH2-28F30Jan2026 RU118-121; exact SDSplus25x400x450 single bit brochure2025 PDF4-5; dry vertical wall with GDE68/H-class full system. One per actually deployed single-drive assembly; no wear/productivity rate.",
+          "countPerExactDrillingPost": 1
+        },
+        {
+          "key": "hole-brush",
+          "titleRu": "Спиральная металлическая щётка для отверстий",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer6.4.5; compatible actual hole brush required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "blow-pump",
+          "titleRu": "Ручная продувочная помпа",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "SOURCE_KIT_BOM",
+          "countPerExactDeviceKit": 1,
+          "locator": "manufacturer15, one per exact device base kit; no compressor inferred",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "power-supply",
+          "titleRu": "Электроснабжение сверлильного поста",
+          "unitId": "set",
+          "category": "POWER",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "drill method not yet selected; nominal watts are not consumption",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "dust-control",
+          "titleRu": "Сбор пыли при сверлении и очистке",
+          "unitId": "set",
+          "category": "WASTE",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "complete compatible dust collection and PPE method required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "prepare-labour",
+          "titleRu": "Труд по подготовке отверстий",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "a point count is not drill hours",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "anchor",
+      "titleRu": "Установить анкер",
+      "completedResultRu": "Классический анкер подготовлен и установлен с контролем затяжки",
+      "resources": [
+        {
+          "key": "anchor",
+          "titleRu": "Анкерное устройство 24×48 мм в сборе",
+          "unitId": "piece",
+          "category": "ACCESSORIES",
+          "authority": "SOURCE_KIT_BOM",
+          "countPerExactDeviceKit": 1,
+          "locator": "manufacturer15: rod + three segments + two rings + nut; no duplicate spare purchase",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "spanner",
+          "titleRu": "Рожковый ключ 22×24 мм",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "SOURCE_KIT_BOM",
+          "countPerExactDeviceKit": 1,
+          "locator": "manufacturer15",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "torque-wrench",
+          "titleRu": "Динамометрический ключ для установки анкера",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer6.6.2 recommends torque control; exact compatible wrench and range required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "grease",
+          "titleRu": "Густая техническая смазка",
+          "unitId": "kg",
+          "category": "CONSUMABLES",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer6.6.1; supplied100ml pack is not use per point",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "wire-brush",
+          "titleRu": "Металлическая щётка для анкера",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "SOURCE_KIT_BOM",
+          "countPerExactDeviceKit": 1,
+          "locator": "manufacturer15/6.6.1",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "anchor-labour",
+          "titleRu": "Труд по установке испытательного анкера",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "whole labour rate required",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "titleRu": "Выполнить испытания",
+      "completedResultRu": "Получена действительная запись усилия, скалывания и смещения",
+      "resources": [
+        {
+          "key": "press",
+          "titleRu": "Ручной гидравлический прибор испытания бетона",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "SOURCE_KIT_BOM",
+          "countPerExactDeviceKit": 1,
+          "locator": "manufacturer15; exact050 instrument only; working force5–50kN is an extra limit",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "micrometer",
+          "titleRu": "Микрометрическая гайка 0,1 мм",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "SOURCE_KIT_BOM",
+          "countPerExactDeviceKit": 1,
+          "locator": "manufacturer15/6.6.3;0.2mm substitutes not accepted",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "test-labour",
+          "titleRu": "Труд по испытанию бетона",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "no universal hours/point or turns/hour derived",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "instrument-use",
+          "titleRu": "Эксплуатация испытательного прибора",
+          "unitId": "machine_hour",
+          "category": "MACHINERY",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "whole cost/instrument time authority required",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "retest",
+      "titleRu": "Учесть недействительные испытания",
+      "completedResultRu": "Фактические повторные точки и причины документированы",
+      "resources": [
+        {
+          "key": "retest-labour",
+          "titleRu": "Труд по повторным испытаниям",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "actual failed attempts; no invented percentage",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "process",
+      "titleRu": "Обработать результаты",
+      "completedResultRu": "Обработаны действительные результаты по выбранному стандартному пути",
+      "resources": [
+        {
+          "key": "processing-labour",
+          "titleRu": "Труд по обработке результатов испытаний",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "18105 8.3–8.5; no built-in instrument class accepted as final certificate",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "computer",
+          "titleRu": "Средство выгрузки и обработки измерений",
+          "unitId": "piece",
+          "category": "TOOLS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer6.9 requires actual compatible workstation; no assumed purchase",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "usb-cable",
+          "titleRu": "Кабель передачи данных USB A–mini B",
+          "unitId": "piece",
+          "category": "ACCESSORIES",
+          "authority": "SOURCE_KIT_BOM",
+          "countPerExactDeviceKit": 1,
+          "locator": "manufacturer15",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "report",
+      "titleRu": "Оформить протокол",
+      "completedResultRu": "Результаты связаны с точками, возрастом и подтверждённой поверкой",
+      "resources": [
+        {
+          "key": "report-labour",
+          "titleRu": "Труд по оформлению протокола испытаний",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "whole document/report rate required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "whole-service",
+          "titleRu": "Полная услуга контроля прочности бетона",
+          "unitId": "",
+          "category": "SERVICE",
+          "authority": "APPLICATION_WHOLE_SERVICE_SCOPE",
+          "countPerExactDeviceKit": null,
+          "locator": "no provider unit or scope admitted; this cannot absorb repair/access by label",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "restore",
+      "titleRu": "Восстановить места испытаний",
+      "completedResultRu": "Отверстия и места скалывания восстановлены совместимой системой",
+      "resources": [
+        {
+          "key": "repair-mortar",
+          "titleRu": "Ремонтный состав для бетона",
+          "unitId": "kg",
+          "category": "MATERIALS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "approved repair geometry + compatible whole repair system required; no cone volume guessed",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "repair-preparation",
+          "titleRu": "Подготовка бетона перед локальным ремонтом",
+          "unitId": "set",
+          "category": "TOOLS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "whole cleaning/priming/mixing/application method required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "repair-water",
+          "titleRu": "Вода для локального ремонта бетона",
+          "unitId": "m3",
+          "category": "CONSUMABLES",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "exact repair system water/use required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "repair-labour",
+          "titleRu": "Труд по восстановлению мест испытаний",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "whole repair labour rate required",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "clean",
+      "titleRu": "Очистить приборы и убрать участок",
+      "completedResultRu": "Оснащение очищено, пыль и обломки собраны и удалены",
+      "resources": [
+        {
+          "key": "cleaning-cloth",
+          "titleRu": "Материал для очистки прибора",
+          "unitId": "kg",
+          "category": "CONSUMABLES",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer10: cotton cloth/technical alcohol; no use quantity",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "technical-alcohol",
+          "titleRu": "Технический спирт для очистки прибора",
+          "unitId": "kg",
+          "category": "CONSUMABLES",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer10; only actual compatible need, no universal solvent replacement",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "waste-container",
+          "titleRu": "Тара для пыли и бетонной крошки",
+          "unitId": "piece",
+          "category": "WASTE",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "whole containment/collection method required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "waste-collection",
+          "titleRu": "Сбор и погрузка отходов испытаний",
+          "unitId": "man_hour",
+          "category": "LABOUR",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "actual waste route and whole loading method",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "waste-transport",
+          "titleRu": "Вывоз отходов испытаний",
+          "unitId": "trip",
+          "category": "LOGISTICS",
+          "authority": "APPLICATION_RATE",
+          "countPerExactDeviceKit": null,
+          "locator": "actual route + compatible transport source required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "charger",
+          "titleRu": "Зарядное устройство 5 В, 1 А",
+          "unitId": "piece",
+          "category": "POWER",
+          "authority": "SOURCE_KIT_BOM",
+          "countPerExactDeviceKit": 1,
+          "locator": "manufacturer15; no kWh from rated power",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    },
+    {
+      "id": "access",
+      "titleRu": "Обеспечить доступ и защиту",
+      "completedResultRu": "Рабочее место, ограждение и защита соответствуют фактическим условиям",
+      "resources": [
+        {
+          "key": "access-equipment",
+          "titleRu": "Средства доступа к испытательным участкам",
+          "unitId": "set",
+          "category": "ACCESS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer5.4–5.6; actual height/depth/route and complete compatible access method",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "ppe",
+          "titleRu": "Средства защиты при сверлении и испытании",
+          "unitId": "set",
+          "category": "PPE",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "whole exact dust/impact/electrical/site PPE method required",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "barriers",
+          "titleRu": "Ограждение участка испытаний",
+          "unitId": "set",
+          "category": "ACCESS",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "actual work zone and complete barrier method",
+          "countPerExactDrillingPost": null
+        },
+        {
+          "key": "device-sling",
+          "titleRu": "Страховочное крепление испытательного прибора",
+          "unitId": "piece",
+          "category": "ACCESSORIES",
+          "authority": "APPLICATION_PHYSICAL_METHOD",
+          "countPerExactDeviceKit": null,
+          "locator": "manufacturer5 conditional work at height/depth, no universal extra device count",
+          "countPerExactDrillingPost": null
+        }
+      ]
+    }
+  ],
+  "existingNeedsRetained": [
+    "monolithic-quality:r1:strength-control-method",
+    "monolithic-quality:r1:whole-service-unit",
+    "monolithic-quality:r1:physical-method"
+  ],
+  "notTransferred": [
+    "historical0.75unmounted price factor to monolithic concrete",
+    "man-days as man-hours",
+    "100ml pack as consumption",
+    "advertised5–100MPa as standard calibration scope",
+    "one compatible equipment kit as completed strength-control cycle",
+    "a generic provider tariff as complete resource norm"
+  ],
+  "canonicalCopyPlan": [],
+  "newFull": 0,
+  "closedWholeNeeds": 0,
+  "newPaidOwners": 0,
+  "newOrderOwners": 0,
+  "drillingInitialDryDustKit": {
+    "contract": "gox.drilling-dry-h-initial-assembly/r45",
+    "operationId": "prepare",
+    "bagSystem": "SAFE_FILTER_BAG",
+    "scope": "Only the existing selected dry25mm vertical-wall/stable-ground branch and actual accepted deployed posts. Same complete H system and measured35mm tool flow required. This is initial functional assembly, not wear, annual service, bag replacement, disposal, PPE or whole dust-control acceptance.",
+    "sourceEvidence": [
+      {
+        "sha256": "bc62eb389d1e64de135e25cf25f9f9d9789ba714a1a68a5b70a5a3d7e0f64125",
+        "locator": "Exact06019C3600; Meegeleverd bij alle varianten; initial H filter, safety bag and5m35mm hose with tool adapter"
+      },
+      {
+        "sha256": "48f35172d4a43c5790d77b765bfc32e7fb41ffcf2c16c5dff58279ece823a1f5",
+        "locator": "Current H manual03Jul2025 RU163-173; H dry-only; one selected bag system; measured tool flow, inspection and containment"
+      },
+      {
+        "sha256": "5213f7e1822ec1de231bb06df0ef6ebeb9d45d7903657c9074fce31e208e910e",
+        "locator": "GDE68 both PDF pages;25mm hole keeps the brush insert; actual complete compatible hose connection"
+      }
+    ],
+    "components": [
+      {
+        "key": "dust-extractor",
+        "titleRu": "Пылесос строительный класса H для сухой пыли",
+        "unitId": "piece",
+        "countPerDeployedPost": 1,
+        "internalIdentity": "GAS35H_AFC_06019C3600"
+      },
+      {
+        "key": "dust-h-filter",
+        "titleRu": "Плоский складчатый фильтр класса H, HEPA/PTFE",
+        "unitId": "piece",
+        "countPerDeployedPost": 1,
+        "internalIdentity": "2607432052"
+      },
+      {
+        "key": "dust-safety-bag",
+        "titleRu": "Безопасный фильтровальный мешок для пыли",
+        "unitId": "piece",
+        "countPerDeployedPost": 1,
+        "internalIdentity": "2607432050_ONE_INITIAL_BAG_NOT_RETAIL_PACK5"
+      },
+      {
+        "key": "dust-antistatic-hose",
+        "titleRu": "Антистатический шланг с адаптером инструмента, 35 мм, 5 м",
+        "unitId": "piece",
+        "countPerDeployedPost": 1,
+        "internalIdentity": "2608000566_ASSEMBLED_HOSE_WITH_TOOL_ADAPTER"
+      },
+      {
+        "key": "dust-hood",
+        "titleRu": "Пылеулавливающий кожух в сборе со щёточной вставкой для отверстия 25 мм",
+        "unitId": "piece",
+        "countPerDeployedPost": 1,
+        "internalIdentity": "GDE68_1600A001G7_BRUSH_INSERT_RETAINED"
+      }
+    ],
+    "unusedDeliveryNotActiveDrillingConsumption": [
+      "PE bag alternative2607432051",
+      "floor nozzle set1609390478",
+      "elbow2608000573",
+      "crevice nozzle2607000165",
+      "three0.35m suction tubes2608000575"
+    ],
+    "noTurbineFlowAsMeasuredToolFlow": true,
+    "noRatedPowerAsEnergy": true,
+    "noNewPublicQuestions": true,
+    "newPaidOwners": 0,
+    "newOrderOwners": 0,
+    "wholeDustControlNeedClosed": false
+  }
+}

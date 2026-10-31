@@ -10,7 +10,7 @@ import {
 } from "../../src/lib/estimate/v4/asphaltUpperCourseR1";
 import { validateIndependentCompletenessMapReferences } from "../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1";
 import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
-import { ASPHALT_INSTALL_KRER27_RUNTIME_INPUT } from "../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1";
+import { ASPHALT_INSTALL_KRER27_RUNTIME_INPUT } from "../../src/lib/estimate/v4/asphaltInstallKrer27ProfileR1";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 import { canonicalEstimateRevisionRowFromStorage } from "../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper";
 import { assertCanonicalPurchaseReadinessV1 } from "../../src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";

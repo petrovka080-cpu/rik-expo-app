@@ -16,7 +16,7 @@ import { formatEstimateMoney } from "../ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import { publicBoqDisplayNameRu } from "../estimate/publicBoqNaming";
 import { formatEstimateUserTextRu } from "../ai/globalEstimate/formatEstimateUserTextRu";
-import { isAdmittedProfessionalNormSource } from "../estimate/professionalNormSourceAdmission";
+import { isAdmittedProfessionalNormSource } from "../estimate/professionalNormSourceClientAdmission";
 import {
   renderEstimatePdfBinaryDocument,
   renderTextPdfDocument,

@@ -5,6 +5,8 @@ import {buildCanonicalRevisionCommitPayload} from './canonicalEstimateRevisionWr
 import {canonicalEstimateRecalculateIdempotencyKey} from './canonicalEstimateCommandIdentity';
 import {canonicalEstimateRevisionDetailFromStorage} from './canonicalEstimateRevisionReadMapper';
 import {buildCanonicalProfessionalPdfProjection} from './canonicalProfessionalPdf';
+import {canonicalProfessionalPdfReportOriginalAuditV1,canonicalProfessionalPdfReviewAcknowledgmentV1,
+  canonicalProfessionalPdfReviewEligibilityV1} from './canonicalEstimateSavedOperationAcceptanceV1';
 import {ROOF_PLANNED_PRIMER_CONDITIONS_V1} from './canonicalRoofPlannedPreparationV1';
 import {ROOF_FORECAST_SCREED_PRIMER_CONDITIONS_V1} from './canonicalRoofForecastConditionV1';
 
@@ -69,8 +71,37 @@ describe('immutable roof primer dependency and single cost ownership',()=>{
   });
   it('projects the same pinned reference as information in PDF, escapes project text and adds no cost rows',()=>{
     const d=resolveRoofPrimerPrerequisiteV1(fixture());d.sectionLabelRu='<script>Поле А</script>';
-    const projection=buildCanonicalProfessionalPdfProjection({revision:{id:uuid(6),release_id:uuid(7),catalog_id:ROOF_PRIMER_LINK_CATALOGS_V1[0],checksum_sha256:sha('d'),row_count:0,totals:{includedRowCount:0},amendment_contract:{parameterSources:{roofPrimerPrerequisiteV1:d}}},rows:[],workTitleRu:'Наплавляемое покрытие'});
-    expect(projection.html).toContain('Связанная огрунтовка основания');expect(projection.html).toContain('&lt;script&gt;');expect(projection.html).not.toContain('<script>');expect(projection.html).toContain('План подготовки не подтверждает');expect(projection.html).toContain('Стоимость подготовки учитывается в связанной смете');
+    // Authored empty TEST_ONLY saved snapshot: the linked source is evidence,
+    // not independent acceptance of this consumer estimate or a paid row.
+    const revision={id:uuid(6),release_id:uuid(7),definition_version_id:uuid(8),currency_code:'KGS',
+      catalog_id:ROOF_PRIMER_LINK_CATALOGS_V1[0],checksum_sha256:sha('d'),row_count:0,
+      totals:{includedRowCount:0},amendment_contract:{parameterSources:{roofPrimerPrerequisiteV1:d}}},
+      snapshot={revision,resources:[]},original=JSON.stringify({revision,d}),
+      projectionInput={revision,rows:[],workTitleRu:'Наплавляемое покрытие'},
+      audit=canonicalProfessionalPdfReportOriginalAuditV1(snapshot);
+    expect(audit).toMatchObject({status:'STRUCTURE_INVALID',pdfAllowed:false,definitionAdmissionAllowed:false,completeClaimAllowed:false});
+    expect(audit.issues).toContainEqual({code:'RESOURCES_EMPTY'});
+    expect(audit.issues).toContainEqual({code:'INDEPENDENT_OPERATION_COMPOSITION_UNVERIFIED'});
+    expect(()=>buildCanonicalProfessionalPdfProjection(projectionInput)).toThrow(expect.objectContaining({code:'ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID'}));
+    const eligibility=canonicalProfessionalPdfReviewEligibilityV1(snapshot);
+    expect(eligibility).toMatchObject({eligible:true,status:'ELIGIBLE',unknownQuantityCount:0});
+    const ack=canonicalProfessionalPdfReviewAcknowledgmentV1({...snapshot,
+      request:{revisionId:revision.id,releaseId:revision.release_id,definitionVersionId:revision.definition_version_id,
+        checksumSha256:revision.checksum_sha256,acknowledgedPreliminaryReview:true},
+      actorUserId:'TEST_ONLY_ROOF_PRIMER_REPORT_READER',acknowledgedAt:'2026-10-30T00:00:00.000Z'});
+    expect(ack.auditSha256).toBe(eligibility.auditSha256);
+    const reviewInput={...projectionInput,issuancePurpose:'PRELIMINARY_REVIEW' as const};
+    expect(()=>buildCanonicalProfessionalPdfProjection(reviewInput)).toThrow(expect.objectContaining({code:'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID'}));
+    expect(()=>buildCanonicalProfessionalPdfProjection({...reviewInput,reviewAcknowledgmentV1:{...ack,checksumSha256:sha('f')}}))
+      .toThrow(expect.objectContaining({code:'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID'}));
+    const projection=buildCanonicalProfessionalPdfProjection({...reviewInput,reviewAcknowledgmentV1:ack});
+    expect(projection.html).toContain('Связанная огрунтовка основания');expect(projection.html).toContain('&lt;script&gt;');expect(projection.html).not.toContain('<script>');
+    expect(projection.html).toContain('<th>Огрунтовка, м²</th>');expect(projection.html).toContain('<th>Покрытие, м²</th>');
+    expect(projection.html).not.toContain('План подготовки не подтверждает');expect(projection.html).not.toContain('Стоимость подготовки учитывается в связанной смете');
+    expect(projection).toMatchObject({rowCount:0,pricedRowCount:0,nonPayableRowCount:0,grandTotalStatus:'PARTIAL_NEEDS_PRICE'});
+    expect(projection.html).toContain('Итог не подтверждён');expect(projection.html).not.toContain('class="approval-block"');
+    expect(canonicalProfessionalPdfReportOriginalAuditV1(snapshot)).toEqual(audit);
+    expect(JSON.stringify({revision,d})).toBe(original);
   });
 });
 

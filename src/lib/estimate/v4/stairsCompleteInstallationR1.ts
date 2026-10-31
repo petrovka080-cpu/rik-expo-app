@@ -8,7 +8,7 @@ import {
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import {
   NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
-} from "./domainFactory";
+} from "./domainFactory/clientRuntimeV1";
 import {
   STAIRS_CONCRETE_PLACEMENT_FORMULAS,
   STAIRS_CONCRETE_PLACEMENT_PARAMETERS,
@@ -43,9 +43,7 @@ type PublishedParameter = CanonicalEstimateParameterDefinition & {
 export const STAIRS_COMPLETE_INSTALLATION_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard", titleRu: "Полное устройство монолитной бетонной лестницы в стандартной зоне", contextRu: "стандартная зона" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_high_load", titleRu: "Полное устройство монолитной бетонной лестницы в зоне высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_large_area", titleRu: "Полное устройство монолитной бетонной лестницы на большом участке", contextRu: "большой участок" },
   { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_repair", titleRu: "Полное устройство монолитной бетонной лестницы на ремонтном участке", contextRu: "ремонтный участок" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_small_area", titleRu: "Полное устройство монолитной бетонной лестницы на малом участке", contextRu: "малый участок" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_technical_room", titleRu: "Полное устройство монолитной бетонной лестницы в техническом помещении", contextRu: "техническое помещение" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_wet_zone", titleRu: "Полное устройство монолитной бетонной лестницы во влажной зоне", contextRu: "влажная зона" },
 ] as const);

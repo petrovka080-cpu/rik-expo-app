@@ -18,20 +18,6 @@ export const ROLLED_ROOF_COVERING_DEMOLITION_KRER46_VARIANTS = Object.freeze({
     catalogVariant: "STANDARD_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
     canonicalNameRu: "Разборка рулонного кровельного покрытия",
   }),
-  large_area: Object.freeze({
-    catalogId:
-      "canonical-work:base:demolition_interior_roof_layer_dismantle_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu:
-      "Разборка рулонного кровельного покрытия — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId:
-      "canonical-work:base:demolition_interior_roof_layer_dismantle_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu:
-      "Разборка рулонного кровельного покрытия — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId:
       "canonical-work:base:demolition_interior_roof_layer_dismantle_wet_zone",

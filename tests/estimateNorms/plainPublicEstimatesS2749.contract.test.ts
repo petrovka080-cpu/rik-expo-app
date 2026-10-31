@@ -9,13 +9,16 @@ const input = { route_length_m: 100, substrate_profile: 'Сухой бетон, 
   route_geometry_mode: 'Один прямой участок — подбор по отрезкам 4 м', route_end_connections: 'Два резьбовых подключения — каждое отдельно',
   route_start_thread_interface: 'Внутренняя резьба G 1/2″', route_finish_thread_interface: 'Наружная резьба G 3/4″' };
 
-test('source-owned unknown consumption cannot be supplied by a manual order quantity', async () => {
+test('manual order quantities are saved without replacing unknown source consumption', async () => {
   for (const rowId of ['water-ppr20:08:consumable:waste-bags', 'water-ppr20:02:consumable:cutter-wheels']) {
     await expect(compile(input, { rowOverrides: { [rowId]: { quantity: '0.5', unitPrice: '10', provenance: { kind: 'manual', reason: 'VALIDATION_FIXTURE' } } } }))
       .rejects.toMatchObject({ code: 'ROW_AMENDMENT_INVALID' });
     for (const quantity of ['0', '5']) {
-      await expect(compile(input, { rowOverrides: { [rowId]: { quantity, unitPrice: '10', provenance: { kind: 'manual', reason: 'VALIDATION_FIXTURE' } } } }))
-        .rejects.toMatchObject({ code: 'ROW_AMENDMENT_INVALID', message: expect.stringContaining('source-owned norm quantity cannot be replaced') });
+      const result=await compile(input, { rowOverrides: { [rowId]: { quantity, unitPrice: '10', provenance: { kind: 'manual', reason: 'VALIDATION_FIXTURE' } } } });
+      const need=result.preliminaryNeeds.find(row=>row.row_id===rowId)!;
+      expect(need).toMatchObject({quantity,unit_price:'10',calculation_trace:{preliminaryNeed:true,manualQuantityOverride:true,calculatedQuantityBeforeOverride:null}});
+      expect(need.missing_parameter_ids.length).toBeGreaterThan(0);
+      expect(result.rows.some(row=>row.row_id===rowId)).toBe(false);
     }
   }
 });

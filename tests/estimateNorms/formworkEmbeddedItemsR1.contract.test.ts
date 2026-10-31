@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   extractConcretePlacementCanonicalParametersR1,
@@ -41,7 +41,7 @@ function catalog(target: (typeof FORMWORK_EMBEDDED_ITEMS_TARGETS)[number]): Cano
 }
 
 describe("formwork embedded items canonical family", () => {
-  it("compiles all six exact identities through the shared core", async () => {
+  it("compiles all current exact identities through the shared core", async () => {
     for (const target of FORMWORK_EMBEDDED_ITEMS_TARGETS) {
       const compiled = await compileFormworkEmbeddedItemsR1(
         { ...formworkEmbeddedItemsAcceptanceInputR1(target.contextKey) },
@@ -101,8 +101,7 @@ describe("formwork embedded items canonical family", () => {
       ]));
   });
 
-  it("round-trips values through the ordinary consumer parameter screen", () => {
-    const target = FORMWORK_EMBEDDED_ITEMS_TARGETS[4];
+  it.each(FORMWORK_EMBEDDED_ITEMS_TARGETS)("round-trips every current identity through the ordinary consumer parameter screen: $contextKey", (target) => {
     const input = formworkEmbeddedItemsAcceptanceInputR1(target.contextKey);
     const prompt = [target.titleRu, ...formworkEmbeddedItemsPromptDetailsR1(input)].join("\n");
     expect(extractConcretePlacementCanonicalParametersR1({ catalogId: target.catalogId, text: prompt }))

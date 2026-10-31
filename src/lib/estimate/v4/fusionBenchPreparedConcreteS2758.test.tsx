@@ -6,7 +6,7 @@ import {fusionBenchControlS2758,verifyFusionBenchS2758} from '../../../../script
 import {buildMasterParameterCalculationConsumers} from '../../../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import type {CanonicalEstimateCatalogItem} from '../backendPlatform/contracts';
 import {buildConsumerCanonicalPrecompileParameterSession,consumerCanonicalPrecompileParameterOverrides} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
-import {buildCanonicalBaselinePlan} from '../../../features/consumerRepair/consumerCanonicalBaselineCompile';
+import {buildCanonicalBaselinePlan} from '../backendPlatform/canonicalConsumerPromptPlanServerR1';
 import {buildCanonicalParameterCards} from '../../estimatePresentation/buildCanonicalParameterCards';
 import {ParameterDisclosurePanel} from '../../../features/consumerRepair/ConsumerRepairProgressiveEstimatePanel';
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';
@@ -101,13 +101,36 @@ it('blocks positive incompatible stock while retaining source consumption and ne
   expect(unknown).toHaveLength(5);expect(unknown.every(r=>r.unit_id==='')).toBe(true);
 });
 
-it.each(['position-mark-reposition','drill-and-bit','setting-and-tightening-tools'])('rejects manual row quantity for unknown source-owned %s',async key=>{
-  const d=fusionBenchDefinitionS2758();
-  await expect(compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,
-    primaryMeasureParameterId:'bench_count',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],
-    submittedParameters:fusionBenchControlS2758(),confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:13,
-    hashJson:async v=>estimateDeterministicHash(v),rowOverrides:{[prefix+':'+key]:{quantity:1,provenance:{kind:'manual',reason:'CONTROL_ONLY negative'}}}}))
-    .rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
+it.each(['position-mark-reposition','drill-and-bit','setting-and-tightening-tools'])('retains explicit manual quantity without admitting the unknown source norm for %s',async key=>{
+  const d=fusionBenchDefinitionS2758(),input=fusionBenchControlS2758(),id=prefix+':'+key,parameter='open_scope_qty_'+key.replaceAll('-','_'),
+    provenance={kind:'manual',reason:'CONTROL_ONLY authored quantity, no automatic norm or actual site acceptance'},sourceBefore=JSON.stringify({d,input});
+  const compile=(parameters:Record<string,unknown>,rowOverrides:Parameters<typeof compileCanonicalEstimateCore>[0]['rowOverrides']={})=>
+    compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,
+      primaryMeasureParameterId:'bench_count',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],
+      submittedParameters:parameters,confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:13,
+      hashJson:async v=>estimateDeterministicHash(v),rowOverrides});
+  const before=await compile(input),original=before.preliminaryNeeds.find(n=>n.row_id===id)!,
+    overrides={[id]:{quantity:1,provenance}},overridesBefore=JSON.stringify(overrides),after=await compile(input,overrides),need=after.preliminaryNeeds.find(n=>n.row_id===id)!;
+  expect(original).toBeDefined();expect(original.quantity).toBeNull();
+  // This unresolved OWN_COST need is selected, but unpriced and not procured;
+  // it remains outside ordinary payable rows and does not acquire a source norm.
+  expect(original).toMatchObject({selected:true,unit_price:null,procurement_eligible:false});
+  expect(need).toMatchObject({row_id:id,quantity:'1',unit_id:original.unit_id,unit_price:null,selected:original.selected,procurement_eligible:false,
+    need_state:original.need_state,formula_id:original.formula_id});
+  expect(need.missing_parameter_ids).toEqual(original.missing_parameter_ids);expect(need.missing_parameter_ids).toContain(parameter);
+  expect(need.calculation_trace).toMatchObject({manualQuantityOverride:true,manualAmendment:provenance,calculatedQuantityBeforeOverride:null,
+    formulaId:original.formula_id,formulaAstSha256:d.formulas.find(f=>f.formula_id===original.formula_id)!.ast_sha256});
+  expect(need.normative_trace).toEqual([]);expect(after.parameters[parameter]??null).toBeNull();
+  expect(after.rows).toEqual(before.rows);expect(after.preliminaryNeeds.filter(n=>n.row_id!==id)).toEqual(before.preliminaryNeeds.filter(n=>n.row_id!==id));
+  expect(after.preliminaryNeeds).toHaveLength(8);expect(after.totals).toEqual(before.totals);
+  expect(after.rows.find(r=>r.row_id===prefix+':bench-consumed')?.quantity).toBe('3');
+  expect(after.rows.find(r=>r.row_id===prefix+':fixing-included')?.quantity).toBe('12');
+  await expect(compile(input,{[id]:{quantity:1}})).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
+  for(const value of ['0','1','77'])await expect(compile({...input,[parameter]:value})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
+  const cleared=await compile(input,{[id]:{quantity:null,provenance}}),restored=cleared.preliminaryNeeds.find(n=>n.row_id===id)!;
+  expect(restored).toMatchObject({quantity:null,missing_parameter_ids:original.missing_parameter_ids,selected:original.selected,procurement_eligible:false});
+  expect(restored.calculation_trace).not.toHaveProperty('manualQuantityOverride');
+  expect(JSON.stringify({d,input})).toBe(sourceBefore);expect(JSON.stringify(overrides)).toBe(overridesBefore);
 });
 
 it.each(['bench_stock_compatibility_reference','actual_bench_supply_specification'])('retains the physical included 4N while only its order waits for %s',async missing=>{

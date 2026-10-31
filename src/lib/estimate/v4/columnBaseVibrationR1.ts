@@ -11,9 +11,7 @@ type Json = Record<string, unknown>;
 export const COLUMN_BASE_VIBRATION_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_vibrate_standard", titleRu: "Виброуплотнение бетона столбчатого основания в стандартной зоне", contextRu: "стандартная зона" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_vibrate_high_load", titleRu: "Виброуплотнение бетона столбчатого основания в зоне высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_vibrate_large_area", titleRu: "Виброуплотнение бетона столбчатого основания на большом участке", contextRu: "большой участок" },
   { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_vibrate_repair", titleRu: "Виброуплотнение бетона столбчатого основания на ремонтном участке", contextRu: "ремонтный участок" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_vibrate_small_area", titleRu: "Виброуплотнение бетона столбчатого основания на малом участке", contextRu: "малый участок" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_vibrate_technical_room", titleRu: "Виброуплотнение бетона столбчатого основания в техническом помещении", contextRu: "техническое помещение" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_vibrate_wet_zone", titleRu: "Виброуплотнение бетона столбчатого основания во влажной зоне", contextRu: "влажная зона" },
 ] as const);

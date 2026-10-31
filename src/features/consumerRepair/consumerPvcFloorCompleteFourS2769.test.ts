@@ -1,17 +1,20 @@
 import type {CanonicalEstimateCatalogItem} from '../../lib/estimate/backendPlatform/contracts';
 import type {CanonicalEstimateParameterSessionRevision} from '../../lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot';
-import {buildCanonicalBaselinePlan} from './consumerCanonicalBaselineCompile';
+import {buildCanonicalBaselinePlan} from '../../lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1';
 import {canonicalPublicEstimateChoiceLabelRu as label,canonicalPublicEstimateParameterTitleRu as title} from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import {canonicalApprovedBaselineRuntimeDefaultValue as defaultValue} from '../../lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline';
 import {buildConsumerCanonicalParameterSession as saved,buildConsumerCanonicalPrecompileParameterSession as fresh} from './consumerCanonicalParameterEditor';
-import {buildPvcFloorCompleteFourS2769 as build} from '../../lib/estimate/v4/pvcFloorCompleteFourS2769';
+import {buildPvcFloorCompleteFourS2769 as build,pvcFloorCompleteHistoricalBindingSha256S2769} from '../../lib/estimate/v4/pvcFloorCompleteFourS2769';
 import {pvcFloorFreshDefaultsS2769 as defaults} from '../../lib/estimate/v4/pvcFloorCompleteFourS2769';
 import {FLOOR_DEMOLITION_SERIES_S2752 as waste} from '../../lib/estimate/v4/floorDemolitionSeriesS2752';
 import pack from '../../../data/estimate-benchmarks/source-packs/pvc-floor-complete-four-s27-69.json';
+import historicalBinding from '../../../data/estimate-benchmarks/fixtures/pvc-floor-complete-binding-historical-four-s27-69.json';
 import type {PurchaseGroupRepresentative as Model} from '../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
 const parents=require('../../../data/estimate-benchmarks/fixtures/pvc-floor-four-parents-s27-69.json') as {models:Model[]};
+// Frozen four-parent editor fixtures use the registered historical recipe; no active catalog admission is claimed.
+const historicalContext={binding:historicalBinding,sourcePackSha256:pvcFloorCompleteHistoricalBindingSha256S2769};
 function catalog(parent:Model):CanonicalEstimateCatalogItem{
- const r=build(parent);
+ const r=build(parent,historicalContext);
  return {catalogId:String(parent.definition.catalog_id),releaseId:String(parent.definition.release_id),namespace:'global',workKey:'floor-preparation',titleRu:'Разборка покрытия из ПВХ',domain:'construction',
   definitionVersion:Number(parent.definition.definition_version)+1,applicability:r.definition.applicability,professionalMetadata:{},
   parameterSchema:r.parameters.map(p=>{const t=p.truth_metadata,g=t.guide??{};return {parameterId:p.parameter_id,semanticParameterKey:t.semantic_parameter_key,titleRu:p.title_ru,ordinal:p.ordinal,valueType:p.value_type,unitId:p.unit_id,

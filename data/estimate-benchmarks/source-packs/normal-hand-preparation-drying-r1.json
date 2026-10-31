@@ -1,0 +1,92 @@
+{
+  "contract": "normal-hand-preparation-drying.r1",
+  "titleRu": "Парные полотенца для обычной подготовки рук перед защитой кожи",
+  "published": false,
+  "towelsPerPreparation": 2,
+  "towelsPerPairedPack": 2,
+  "productCode": "DYNJPE2220A",
+  "componentCode": "HNTOM3",
+  "sizeCm": [
+    "37",
+    "69"
+  ],
+  "material": "cellulose-with-scrim",
+  "singleUse": true,
+  "sterileAsSupplied": true,
+  "surgicalClinicalRegimeTransferred": false,
+  "constructionNormClaimed": false,
+  "newLabourNormClaimed": false,
+  "fixedDryingSecondsClaimed": false,
+  "powerRequired": false,
+  "waterQuantityClosed": false,
+  "industrialDecontaminationAccepted": false,
+  "applicationRu": "Обычная подготовка вымытых и тщательно ополоснутых рук перед каждым запланированным нанесением MARLY SKIN. Дать свободной воде стечь, затем промокнуть каждую руку отдельным свежим полотенцем37×69см; захватить намоченное при ополаскивании предплечье, не возвращаться с предплечья к кисти. Взять второе полотенце для второй руки и сразу выбросить использованные. Полотенца не отмывают VGT,цемент,масла или аварийное загрязнение.",
+  "finiteAdequacyRu": "Принятый бюджет applications является числом обязательных подготовок. Выбран уже описанный физический метод с одним свежим полотенцем на каждую руку/предплечье, а не произвольная норма одного выдаваемого листа. Точный заводской hand towel37×69см из впитывающей целлюлозы со scrim используется по назначению; область сушки обычных чистых рук не шире описанной сушки рук до локтя. Численная влагоёмкость и гарантированное время сушки не выдумываются.",
+  "boundaryRu": "Клиническая антисептика,стерильная операционная,медицинские отходы и хирургическая трудоёмкость не объявляются обязательными для строительства. Заводская стерильность — характеристика выбранного товара. Если руки ещё загрязнены промышленным материалом либо требуется дополнительное отмывание, этот ресурс не заменяет незакрытый wash/PPE/waste профиль.",
+  "resources": {
+    "supplyUnitId": "pcs",
+    "orderQuantumPcs": "2",
+    "factoryPackContentsPcs": 2,
+    "dispenserRequired": false,
+    "driveRequired": false,
+    "detergentForDryingRequired": false,
+    "cleanStorage": "Unopened manufacturer paired packs in original protective packaging,ordinary dry indoor storage; no open reused cloths",
+    "waste": "Two used towels plus original wrapping per consumed paired pack. Each consumer must bind its real existing collection/waste resources or retain an explicit unresolved physical waste-provision row. This shared profile does not assert that a bin/lid or accepted route/recipient exists. VGT separately reuses quantified bin/lid; floor keeps its named logistics/waste need. No clinical hazardous-waste regime is transferred."
+  },
+  "sources": [
+    {
+      "name": "arhai-surgical-hand-antisepsis-v6-2-20231018.pdf",
+      "url": "https://www.nipcm.hps.scot.nhs.uk/web-resources-container/literature-review-hand-hygiene-surgical-hand-antisepsis-in-the-clinical-setting/",
+      "path": ".release-runtime/r568/normal-hand-preparation-drying-r1/sources/arhai-surgical-hand-antisepsis-v6-2-20231018.pdf",
+      "sha256": "2521d19d4286c1c32f97724e8e18f74792ca00068bb9dad615cf8039b15afa66",
+      "bytes": 516180,
+      "id": "arhai-two-fresh-towel-physical-drying-method-r1",
+      "title": "ARHAI Scotland Surgical hand antisepsis literature review v6.2,18October2023",
+      "locatorRu": "PDF33; PDF42–43: дать воде стечь; промакивать свежим одноразовым полотенцем одну руку/предплечье от пальцев к локтю; вторым повторить для другой стороны; после предплечья не возвращаться к кисти, сразу выбросить. Два полотенца — выбранный физический метод сушки, не строительная медицинская норма.",
+      "role": "PHYSICAL_DRYING_METHOD_TWO_SEPARATE_TOWELS_NO_CLINICAL_NORM_TRANSFER"
+    },
+    {
+      "name": "medline-proxima-catalogue-202607.pdf",
+      "url": "https://assets.medline.eu/Docs/Products/BRO_EN%20Proxima_Catalogue_2026_ML1215_EN_July_2026.pdf",
+      "path": ".release-runtime/r568/normal-hand-preparation-drying-r1/sources/medline-proxima-catalogue-202607.pdf",
+      "sha256": "15a967446142b4e819e12fd2c41ceb2f0f12eb6d1f888dde01f8da4908265d6c",
+      "bytes": 52710372,
+      "id": "medline-paired-hand-towel-dynjpe2220a-2026-r1",
+      "title": "Medline Proxima Catalogue,July2026",
+      "locatorRu": "PDF164,Hand towels:DYNJPE2220A,HNTOM3,Hand towel with scrim,componentquantity2,37×69см,cellulose,100pairedpacks/case. Количество в carton не назначается потребностью проекта.",
+      "role": "EXACT_PAIRED_HAND_TOWEL_SPECIFICATION_AND_TWO_PIECE_SUPPLY_QUANTUM"
+    }
+  ],
+  "onlineManufacturerCorroboration": {
+    "url": "https://www.medline.eu/distributor/hand-towel-2",
+    "checkedAtUtc": "2026-10-21T15:59:33.336009+00:00",
+    "method": "PRIMARY_MANUFACTURER_WEB_SEARCH_AND_OPEN",
+    "observedFacts": {
+      "sku": "DYNJPE2220A",
+      "dimensionsCm": [
+        "37",
+        "69"
+      ],
+      "paired": true,
+      "material": "absorbent cellulose with wet-resistant scrim",
+      "singleUse": true,
+      "sterileAsSupplied": true,
+      "intendedUse": "hand towel for operating-theatre professionals"
+    },
+    "rawHtmlDownloaded": false,
+    "downloadResult": "HTTP403; not represented as a captured original HTML artifact",
+    "catalogueBytePinRole": "Independent current primary catalogue confirms exactSKU,hand-towel purpose,two components,dimensions,cellulose,scrim."
+  },
+  "costPolicy": "INCLUDED_IN_EXISTING_WHOLE_PROVISION_OWNER_NO_DUPLICATE_PROCUREMENT",
+  "consumers": [
+    "improved-wall-01",
+    "deep-primer-00603",
+    "ceramic-floor-m150-whole-provision"
+  ],
+  "provenanceClasses": {
+    "countPerPreparation": "SELECTED_ORGANISATIONAL_PHYSICAL_DRYING_PROTOCOL",
+    "physicalSuitability": "EXACT_MANUFACTURER_HAND_TOWEL_PURPOSE_SIZE_MATERIAL_SINGLE_USE",
+    "preparationBudget": "UNCHANGED_ACCEPTED_SOURCE_SCHEDULE_SUPPLIED_BY_CONSUMER",
+    "supplyBalance": "EXISTING_COMMON_EFFECTIVE_QUANTITY_AND_PAIRED_PACK_BALANCE"
+  }
+}

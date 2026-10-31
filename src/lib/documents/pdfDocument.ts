@@ -41,8 +41,73 @@ export type DocumentDescriptor = {
     rendererVersion?: string;
     displayTitle?: string;
     documentStatus?: string;
+    issuancePurpose?: 'STANDARD'|'PRELIMINARY_REVIEW';
+    releaseId?:string;
+    definitionVersionId?:string;
+    checksumSha256?:string;
+    /** Authenticated artifact owner and saved tenant for reload-safe Web cache. */
+    ownerUserId?:string;
+    /** Authorized viewing actor; may differ from a revision creator in a tenant. */
+    viewerUserId?:string;
+    /** Exact generated file bytes, independent of the saved revision hash. */
+    artifactSha256?:string;
+    organizationId?:string;
+    currency?:string;
   };
 };
+
+/** Untrusted exact saved locator; never a URL, credential or access grant. */
+export type CanonicalPdfRecoveryReference = Readonly<{
+  contractVersion:'canonical-pdf-recovery/v1';
+  revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string;
+  issuancePurpose:'STANDARD'|'PRELIMINARY_REVIEW';documentProfile:'professional_v1';
+  organizationId?:string|null;
+}>;
+
+export function parseCanonicalPdfRecoveryReference(value:unknown):CanonicalPdfRecoveryReference|null{
+  let raw=value;
+  if(typeof raw==='string'){if(raw.length>2048)return null;try{raw=JSON.parse(raw);}catch{return null;}}
+  if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+  const record=raw as Record<string,unknown>,required=['contractVersion','revisionId','releaseId','definitionVersionId','checksumSha256','issuancePurpose','documentProfile'];
+  if(required.some(key=>!Object.hasOwn(record,key))
+    ||Object.keys(record).some(key=>!required.includes(key)&&key!=='organizationId'))return null;
+  if(record.contractVersion!=='canonical-pdf-recovery/v1'||record.documentProfile!=='professional_v1'
+    ||(record.issuancePurpose!=='STANDARD'&&record.issuancePurpose!=='PRELIMINARY_REVIEW')
+    ||!['revisionId','releaseId','definitionVersionId'].every(key=>typeof record[key]==='string'&&String(record[key]).trim()===record[key]&&String(record[key]).length>0&&String(record[key]).length<=200)
+    ||typeof record.checksumSha256!=='string'||!/^[a-f0-9]{64}$/iu.test(record.checksumSha256)
+    ||Object.hasOwn(record,'organizationId')&&record.organizationId!==null&&(typeof record.organizationId!=='string'||!record.organizationId.trim()||record.organizationId.length>200))return null;
+  return Object.freeze({contractVersion:'canonical-pdf-recovery/v1',revisionId:String(record.revisionId),releaseId:String(record.releaseId),
+    definitionVersionId:String(record.definitionVersionId),checksumSha256:record.checksumSha256,
+    issuancePurpose:record.issuancePurpose as CanonicalPdfRecoveryReference['issuancePurpose'],documentProfile:'professional_v1',
+    ...(Object.hasOwn(record,'organizationId')?{organizationId:record.organizationId as string|null}:{})});
+}
+
+export function canonicalPdfRecoveryReferenceFromDescriptor(
+  doc:Pick<DocumentDescriptor,'documentType'|'source'|'contentIdentity'>,
+):CanonicalPdfRecoveryReference|null{
+  const identity=doc.contentIdentity;
+  if(doc.documentType!=='request'||doc.source!=='generated'||!identity)return null;
+  return parseCanonicalPdfRecoveryReference({contractVersion:'canonical-pdf-recovery/v1',revisionId:identity.revisionId,releaseId:identity.releaseId,
+    definitionVersionId:identity.definitionVersionId,checksumSha256:identity.checksumSha256,issuancePurpose:identity.issuancePurpose,
+    documentProfile:'professional_v1',organizationId:identity.organizationId??null});
+}
+
+export function canonicalPdfRecoveryReferencesMatch(left:unknown,right:unknown):boolean{
+  const a=parseCanonicalPdfRecoveryReference(left),b=parseCanonicalPdfRecoveryReference(right);
+  return Boolean(a&&b&&a.revisionId===b.revisionId&&a.releaseId===b.releaseId&&a.definitionVersionId===b.definitionVersionId
+    &&a.checksumSha256===b.checksumSha256&&a.issuancePurpose===b.issuancePurpose
+    &&(a.organizationId??null)===(b.organizationId??null));
+}
+
+export function canonicalPdfContentIdentityMatches(
+  left:DocumentDescriptor['contentIdentity'],right:DocumentDescriptor['contentIdentity'],
+):boolean{
+  const descriptor=(contentIdentity:DocumentDescriptor['contentIdentity'])=>({documentType:'request' as const,source:'generated' as const,contentIdentity});
+  if(!canonicalPdfRecoveryReferenceFromDescriptor(descriptor(left))||!canonicalPdfRecoveryReferenceFromDescriptor(descriptor(right)))return false;
+  const keys=['revisionId','releaseId','definitionVersionId','checksumSha256','issuancePurpose','rendererVersion','artifactSha256','ownerUserId','viewerUserId','currency'] as const;
+  return keys.every(key=>{const a=left?.[key],b=right?.[key];return typeof a==='string'&&a.length>0&&a===b;})
+    &&(left?.organizationId??null)===(right?.organizationId??null);
+}
 
 export type PdfViewerRouteParams = {
   sessionId: string;

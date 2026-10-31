@@ -17,10 +17,10 @@ const VARIANT_KEYS = Object.keys(
 ) as FireAlarmCommissioningClassifiedVariantKey[];
 
 describe("S27.3 F09 classified fire-alarm commissioning variants", () => {
-  test("keeps three exact identities on the same verified official boundary", () => {
-    expect(VARIANT_KEYS).toEqual(["small_area", "technical_room", "wet_zone"]);
+  test("preserves the surviving exact identities and source boundary", () => {
+    expect(VARIANT_KEYS).toEqual([ "technical_room", "wet_zone"]);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      FIRE_ALARM_COMMISSIONING_CLASSIFIED_VARIANTS[key].catalogId)).size).toBe(3);
+      FIRE_ALARM_COMMISSIONING_CLASSIFIED_VARIANTS[key].catalogId)).size).toBe(2);
     expect(FIRE_ALARM_COMMISSIONING_CLASSIFIED_SOURCE_METADATA).toMatchObject({
       official_url: "https://minstroy.gov.kg/ru/kyzmat/217/show",
       artifact_sha256: "0eab462536d90bf329f9b1c6605b0a8527e941b18f6e563776ff3eddc44ff33c",
@@ -77,9 +77,9 @@ describe("S27.3 F09 classified fire-alarm commissioning variants", () => {
     expect(() => resolveFireAlarmCommissioningClassifiedVariant("large_area"))
       .toThrow("FIRE_ALARM_COMMISSIONING_CLASSIFIED_VARIANT_UNSUPPORTED");
     await expect(compileFireAlarmCommissioningClassifiedVariantR1(
-      "small_area",
+      "technical_room",
       { ...FIRE_ALARM_COMMISSIONING_CLASSIFIED_ACCEPTANCE_INPUT },
-      { catalogId: FIRE_ALARM_COMMISSIONING_CLASSIFIED_VARIANTS.wet_zone.catalogId },
+      { catalogId: "canonical-work:base:unrelated_work_standard" },
     )).rejects.toThrow("FIRE_ALARM_COMMISSIONING_CLASSIFIED_CATALOG_UNSUPPORTED");
     await expect(compileFireAlarmCommissioningClassifiedVariantR1("wet_zone", {
       ...FIRE_ALARM_COMMISSIONING_CLASSIFIED_ACCEPTANCE_INPUT,

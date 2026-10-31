@@ -44,7 +44,33 @@ export type AssistantCompanyReadArgs = {
 export type AssistantListingReadArgs = {
   listingId: string;
   pageSize?: number | null;
+  before?: ChatMessageCursor | null;
 };
+
+export type ChatMessageCursor = { createdAt: string; id: string };
+export const isChatMessageId = (value: unknown): value is string =>
+  typeof value === "string" && /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(value);
+
+// Keep PostgreSQL microseconds: rounding to JS milliseconds can skip messages
+// when a history page ends within the same millisecond.
+export function normalizeChatMessageTimestamp(value: unknown): string | null {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(value)) return null;
+  const fraction = (value.match(/\.(\d+)/)?.[1] ?? "").padEnd(6, "0");
+  // Native engines only need to parse the standard millisecond representation;
+  // retain the remaining precision ourselves instead of relying on extensions.
+  const parseable = value.replace(/\.\d{1,6}(?=Z|[+-])/, `.${fraction.slice(0, 3)}`);
+  const milliseconds = Date.parse(parseable);
+  if (!Number.isFinite(milliseconds)) return null;
+  return new Date(milliseconds).toISOString().replace(/\.\d{3}Z$/, `.${fraction}Z`);
+}
+
+export function normalizeChatMessageCursor(value: unknown): ChatMessageCursor | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const record = value as Record<string, unknown>;
+  const createdAt = normalizeChatMessageTimestamp(record.createdAt);
+  if (!createdAt || !isChatMessageId(record.id)) return null;
+  return { createdAt, id: record.id.toLowerCase() };
+}
 
 export type SupplierShowcaseListingsReadArgs =
   | {
@@ -334,7 +360,7 @@ export const ASSISTANT_STORE_READ_BFF_OPERATION_CONTRACTS = Object.freeze([
     responseEnvelope: "AssistantStoreReadBffEnvelope",
     filterScope: { user: false, ids: false, request: false, status: true, paginationCeiling: true, listing: true },
     sourceKind: "table:chat_messages",
-    ordering: "created_at_id_asc",
+    ordering: "created_at_id_desc",
     readOnly: true,
     trafficEnabledByDefault: false,
     wiredToAppRuntime: true,

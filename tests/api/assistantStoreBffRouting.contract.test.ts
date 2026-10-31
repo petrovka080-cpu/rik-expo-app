@@ -145,7 +145,8 @@ describe("assistant/store BFF routing contract", () => {
     expect(chatSource).toContain("loadChatActorContextRows");
     expect(chatSource).toContain("loadListingChatMessageRows");
     expect(functionBody(chatSource, "fetchListingChatMessages")).not.toMatch(/\bsupabase\s*\.\s*from\s*\(/);
-    expect(functionBody(chatSource, "sendListingChatMessage")).toContain(".insert(");
+    expect(functionBody(chatSource, "sendListingChatMessage")).toContain(".upsert(");
+    expect(functionBody(chatSource, "sendListingChatMessage")).toContain("ignoreDuplicates: true");
     expect(functionBody(chatSource, "markListingChatMessagesRead")).toContain(".update(");
 
     expect(supplierSource).toContain("loadSupplierShowcaseProfileByUserId");

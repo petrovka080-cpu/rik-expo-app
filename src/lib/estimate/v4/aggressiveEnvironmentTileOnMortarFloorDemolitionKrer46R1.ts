@@ -18,20 +18,6 @@ export const AGGRESSIVE_ENVIRONMENT_TILE_ON_MORTAR_FLOOR_DEMOLITION_KRER46_VARIA
     catalogVariant: "STANDARD_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
     canonicalNameRu: "Разборка плиточного покрытия на растворе в агрессивной среде",
   }),
-  large_area: Object.freeze({
-    catalogId:
-      "canonical-work:base:demolition_interior_tile_remove_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu:
-      "Разборка плиточного покрытия на растворе в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId:
-      "canonical-work:base:demolition_interior_tile_remove_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu:
-      "Разборка плиточного покрытия на растворе в агрессивной среде — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId:
       "canonical-work:base:demolition_interior_tile_remove_wet_zone",

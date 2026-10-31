@@ -1,7 +1,9 @@
+import type {CanonicalEstimateRevisionView} from '../estimate/backendPlatform/contracts';
 import { getConsumerRepairBundle } from "./consumerRequestRepository";
 import { consumerRepairPendingCanonicalParameterCollection } from "./consumerCanonicalParameterCollection";
 import { consumerRepairSourceRequestDraftId } from "./consumerRequestHistoryLineage";
 import { consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
+import { consumerEstimateManualQuantityApprovalMatches, consumerEstimateHasConfirmedManualQuantities, type ConsumerEstimateManualQuantityApproval } from './consumerEstimateManualQuantityApproval';
 import type {
   ConsumerRequestValidationErrorItem,
   ConsumerRequestValidationResult,
@@ -158,14 +160,17 @@ export function consumerRepairExactAsphaltApprovalErrors(
 
 export function consumerRepairEstimateApprovalParameterErrors(
   bundle: ConsumerRepairDraftBundle | null | undefined,
+  manualQuantityApproval?: ConsumerEstimateManualQuantityApproval | null,
+  savedRevisionRead?:CanonicalEstimateRevisionView|null,
 ): ConsumerRequestValidationErrorItem[] {
   if (!bundle) return [];
   const currentRevision = bundle.estimateDraftRevisionState?.revisions.find(
     (revision) => revision.revisionId === bundle.estimateDraftRevisionState?.currentRevisionId,
   );
-  const contractInputsMissing = currentRevision?.missingInputs.some((input) =>
+  const manualVersionConfirmed = consumerEstimateManualQuantityApprovalMatches(bundle, manualQuantityApproval,savedRevisionRead);
+  const contractInputsMissing = !manualVersionConfirmed && (currentRevision?.missingInputs.some((input) =>
     input.requiredFor === "contract_ready" || input.requiredFor === "safety_review"
-  ) ?? false;
+  ) ?? false);
 
   if (
     consumerRepairPendingCanonicalParameterCollection(bundle) ||
@@ -185,23 +190,29 @@ export function consumerRepairEstimateApprovalParameterErrors(
 export function validateConsumerRepairRequestForApprove(
   requestId: string,
   userId: string,
+  manualQuantityApproval?: ConsumerEstimateManualQuantityApproval | null,
+  savedRevisionRead?:CanonicalEstimateRevisionView|null,
 ): ConsumerRequestValidationResult {
   const bundle = getConsumerRepairBundle(requestId);
   const errors: ConsumerRequestValidationErrorItem[] = [];
   const ownerMismatch = ownerError(bundle, userId);
   if (ownerMismatch) errors.push(ownerMismatch);
-  errors.push(...consumerRepairEstimateApprovalParameterErrors(bundle));
+  errors.push(...consumerRepairEstimateApprovalParameterErrors(bundle, manualQuantityApproval,savedRevisionRead));
+  if (manualQuantityApproval && !consumerEstimateManualQuantityApprovalMatches(bundle, manualQuantityApproval,savedRevisionRead)) errors.push({
+    code: 'ESTIMATE_CURRENT_ITEMS_PARITY_REQUIRED', field: 'manualQuantityApproval',
+    messageRu: 'Сохранённая ручная версия изменилась или требует дополнительных проверок. Проверьте текущую смету.',
+  });
 
   errors.push(...consumerRepairExactAsphaltApprovalErrors(bundle));
 
   const unresolvedQuantityItems = consumerEstimateUnresolvedQuantityItems(bundle);
   const openScopeGroups = consumerEstimateOpenScopeGroups(bundle);
-  if (openScopeGroups.length > 0) errors.push({
+  if (openScopeGroups.length > 0 && !consumerEstimateManualQuantityApprovalMatches(bundle, manualQuantityApproval,savedRevisionRead)) errors.push({
     code: 'ESTIMATE_COMPOSITION_INCOMPLETE',
     messageRu: `Состав сметы ещё не завершён: ${openScopeGroups.map(group => group.titleRu).join('; ')}. Приложение должно подобрать применимые нормы и ресурсы; неизвестные факты объекта указаны у соответствующих этапов.`,
     field: 'items.composition',
   });
-  if (unresolvedQuantityItems.length > 0) {
+  if (unresolvedQuantityItems.length > 0 && !consumerEstimateManualQuantityApprovalMatches(bundle, manualQuantityApproval,savedRevisionRead)) {
     errors.push({
       code: "ESTIMATE_QUANTITY_REQUIRED",
       messageRu: `Смету нельзя подтвердить: у ${unresolvedQuantityItems.length} применимых позиций нет обоснованного количества. Данные объекта вводит заказчик, нормы должен предоставить расчётный каталог.`,
@@ -245,6 +256,10 @@ export function validateConsumerRepairRequestForMarketplace(
   const errors: ConsumerRequestValidationErrorItem[] = [];
   const ownerMismatch = ownerError(bundle, userId);
   if (ownerMismatch) errors.push(ownerMismatch);
+  if (consumerEstimateHasConfirmedManualQuantities(bundle)) errors.push({
+    code: 'ESTIMATE_MANUAL_SOURCE_REVIEW_REQUIRED', field: 'canonicalParameters',
+    messageRu: 'Для отправки в Маркет приложению нужно завершить проверку состава. Подтверждённые вручную количества сохранены.',
+  });
 
   const alreadySent = bundle.draft.status === "sent_to_marketplace"
     && bundle.marketplaceLink.status === "sent"

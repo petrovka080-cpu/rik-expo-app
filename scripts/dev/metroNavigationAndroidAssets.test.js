@@ -78,9 +78,9 @@ describe('React Navigation Android asset inputs', () => {
   it('keeps unrelated Android assets and source modules object-identical through the default resolver', () => {
     const config = { resolver: {} };
     withNavigationAndroidAssets(config, root);
-    const result = { type: 'assetFiles', filePaths: [path.join(root, 'assets/notify.mp3')] };
+    const result = { type: 'assetFiles', filePaths: [path.join(root, 'assets/notify.wav')] };
     const context = { resolveRequest: jest.fn(() => result) };
-    expect(config.resolver.resolveRequest(context, './notify.mp3', 'android')).toBe(result);
+    expect(config.resolver.resolveRequest(context, './notify.wav', 'android')).toBe(result);
     const source = { type: 'sourceFile', filePath: __filename };
     context.resolveRequest.mockReturnValue(source);
     expect(config.resolver.resolveRequest(context, './module', 'android')).toBe(source);

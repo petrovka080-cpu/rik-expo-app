@@ -44,22 +44,10 @@ export const FORMWORK_DOKAFLEX_FLOOR_SLAB_COMPONENT_TARGETS = Object.freeze([
     contextRu: "зона высокой нагрузки",
   },
   {
-    contextKey: "large_area",
-    catalogId: "canonical-component:formwork:dokaflex-floor-slab:large-area",
-    titleRu: "Съёмная горизонтальная опалубка монолитной бетонной плиты Doka Dokaflex на большой площади",
-    contextRu: "большая площадь",
-  },
-  {
     contextKey: "repair",
     catalogId: "canonical-component:formwork:dokaflex-floor-slab:repair",
     titleRu: "Съёмная горизонтальная опалубка монолитной бетонной плиты Doka Dokaflex на участке ремонта",
     contextRu: "участок ремонта",
-  },
-  {
-    contextKey: "small_area",
-    catalogId: "canonical-component:formwork:dokaflex-floor-slab:small-area",
-    titleRu: "Съёмная горизонтальная опалубка монолитной бетонной плиты Doka Dokaflex на малой площади",
-    contextRu: "малая площадь",
   },
   {
     contextKey: "technical_room",
@@ -701,9 +689,7 @@ type SlabSchedule = Readonly<{
 const SLAB_SCHEDULES: Readonly<Record<FormworkDokaflexConcreteSlabContextKey, SlabSchedule>> = Object.freeze({
   standard: { area: 120, thickness: 20, height: 3.2, sheets: 60, primary: 20, secondary: 42, props: 28, lowering: 14, supporting: 14, tripods: 14, bracing: 4, stabilizers: 20, endShutters: 18, access: 2, edge: 12, reshoring: 18, fixings: 10, releaseAgent: 12, handling: 20, assembly: 80, sheetLaying: 36, stripping: 48, reshoringLabor: 16, lifting: 4, mass: 3.4, days: 21, stages: 2 },
   high_load: { area: 110, thickness: 35, height: 3.5, sheets: 58, primary: 24, secondary: 48, props: 38, lowering: 19, supporting: 19, tripods: 19, bracing: 6, stabilizers: 24, endShutters: 20, access: 2, edge: 14, reshoring: 28, fixings: 13, releaseAgent: 11, handling: 25, assembly: 102, sheetLaying: 40, stripping: 58, reshoringLabor: 24, lifting: 6, mass: 4.2, days: 28, stages: 2 },
-  large_area: { area: 360, thickness: 22, height: 3.3, sheets: 180, primary: 58, secondary: 122, props: 82, lowering: 41, supporting: 41, tripods: 34, bracing: 12, stabilizers: 40, endShutters: 42, access: 4, edge: 28, reshoring: 56, fixings: 28, releaseAgent: 34, handling: 52, assembly: 220, sheetLaying: 104, stripping: 126, reshoringLabor: 48, lifting: 14, mass: 9.8, days: 35, stages: 4 },
   repair: { area: 72, thickness: 18, height: 3.0, sheets: 39, primary: 16, secondary: 32, props: 24, lowering: 12, supporting: 12, tripods: 12, bracing: 5, stabilizers: 16, endShutters: 16, access: 2, edge: 12, reshoring: 16, fixings: 9, releaseAgent: 8, handling: 18, assembly: 68, sheetLaying: 28, stripping: 38, reshoringLabor: 14, lifting: 4, mass: 2.8, days: 24, stages: 3 },
-  small_area: { area: 42, thickness: 16, height: 2.9, sheets: 24, primary: 10, secondary: 20, props: 16, lowering: 8, supporting: 8, tripods: 8, bracing: 4, stabilizers: 10, endShutters: 12, access: 1, edge: 10, reshoring: 10, fixings: 6, releaseAgent: 5, handling: 12, assembly: 42, sheetLaying: 18, stripping: 24, reshoringLabor: 9, lifting: 2, mass: 1.7, days: 14, stages: 1 },
   technical_room: { area: 64, thickness: 20, height: 4.2, sheets: 35, primary: 18, secondary: 36, props: 30, lowering: 15, supporting: 15, tripods: 15, bracing: 8, stabilizers: 18, endShutters: 16, access: 3, edge: 14, reshoring: 22, fixings: 10, releaseAgent: 7, handling: 22, assembly: 92, sheetLaying: 32, stripping: 46, reshoringLabor: 20, lifting: 5, mass: 3.3, days: 26, stages: 3 },
   wet_zone: { area: 86, thickness: 20, height: 3.1, sheets: 46, primary: 18, secondary: 38, props: 28, lowering: 14, supporting: 14, tripods: 14, bracing: 6, stabilizers: 20, endShutters: 18, access: 2, edge: 14, reshoring: 20, fixings: 12, releaseAgent: 10, handling: 21, assembly: 88, sheetLaying: 35, stripping: 44, reshoringLabor: 18, lifting: 4.5, mass: 3.5, days: 24, stages: 2 },
 });

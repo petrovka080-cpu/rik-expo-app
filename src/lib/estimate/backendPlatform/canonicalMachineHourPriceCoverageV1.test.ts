@@ -1,3 +1,4 @@
+import {canonicalOperationCompositionEvidenceFromPassportV1,canonicalEstimateSavedOperationAcceptanceV1} from './canonicalEstimateSavedOperationAcceptanceV1';
 import pack from '../../../../data/estimate-benchmarks/source-packs/flat-roof-torch-two-s27-63.json';
 import {sourcePinnedRoofNormOwnerR1,type SourcePinnedRoofNormPackR1} from '../v4/sourcePinnedRoofNormOwnerR1';
 import {compileCanonicalEstimateCore,type CanonicalEstimateCompileCoreInput} from './canonicalEstimateCompileCore';
@@ -78,15 +79,51 @@ test('manual release transfer requires unchanged price binding, amount, currency
   for(const changed of [{...base,currency:'USD'},{...base,toBindings:{[rowId]:'b'.repeat(64)}}])expect(canonicalStoredManualPricesCanMigrate({...changed,rowOverrides:{[rowId]:override}})).toBe(false);
   expect(canonicalStoredManualPricesCanMigrate({...base,rowOverrides:{[rowId]:{...override,provenance:{kind:'manual',reason:'market_catalog:new'}}}})).toBe(false);
 });
+
+// Synthetic one-mechanism rendering contract, authored before Core. This is not
+// a roof completeness/admission claim; all real roof compilation tests stay above.
+function pdfInput(){
+  const i=input();
+  const operation={contractVersion:'canonical-operation-resource/v1',groupId:'test-price',groupTitleRu:'Проверка цены',
+    operationId:'test-price:mechanism',operationTitleRu:'Проверить стоимость работы механизма',
+    completionCriterionRu:'Стоимость механизма показана',processOrdinal:1};
+  const name='Башенный кран';
+  const map={contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PROJECT_SYSTEM',
+    generatedFromCurrentRows:false,evidenceSha256:hash('TEST_ONLY_MACHINE_PRICE_RENDERING'),operationRoster:[operation],
+    entries:[{operationId:operation.operationId,expectedResourceId:rowId,condition:'Синтетическая проверка одной цены',
+      sourceId:'TEST_ONLY_MACHINE_PRICE_RENDERING',requiredOperationIds:[operation.operationId],publicNameRu:name,
+      resourceKind:'MECHANISM',resolution:{kind:'ROW',rowId}}],
+    operationRequirements:[{operationId:operation.operationId,sourceId:'TEST_ONLY_MACHINE_PRICE_RENDERING',
+      requirements:Object.fromEntries(['MATERIAL','CONSUMABLE','TOOL','ACCESSORY','EQUIPMENT','MECHANISM','LABOR','SERVICE','TRANSPORT','PPE'].map(kind=>
+        [kind,kind==='MECHANISM'?{status:'REQUIRED',rowIds:[rowId]}:{status:'NOT_APPLICABLE',reasonRu:'Изолированный синтетический контракт отображения цены механизма, не строительная работа'}]))}]};
+  i.resourceDefinitions=i.resourceDefinitions.map(resource=>{
+    if(resource.row_id!==rowId)return resource;
+    const {row_sha256:_old,...body}=resource;
+    const next={...body,title_ru:name,resource_graph:{...resource.resource_graph,operationCompositionV1:operation,
+      publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:name,sourceTitleRu:name,brandAndModelRu:null,specificationRu:null,detailsRu:[],resourceKind:'MECHANISM'}}};
+    return {...next,row_sha256:hash(next)};
+  });
+  const evidence=canonicalOperationCompositionEvidenceFromPassportV1({releaseId:'release',definitionVersionId:'test-price-definition',
+    passport:{definition_version_id:'test-price-definition',payload_sha256:hash('TEST_ONLY_PRICE_PASSPORT'),decision:{independentCompletenessMap:map}}});
+  return {i,evidence};
+}
+
 test('saved scalar is distinct from missing price in UI and PDF; actual confirmation closes only the price issue',async()=>{
-  const i=input(),row=machine(await compileCanonicalEstimateCore(i));
+  const {i,evidence}=pdfInput(),row=machine(await compileCanonicalEstimateCore(i));
   const item={unit:'machine_hour',unitPrice:1000,currency:'KGS',sourceParameters:{rowCode:rowId,canonicalBackendRevisionId:'saved',canonicalBackendCatalogId:i.catalogId,
     canonicalMachineHourPriceCoverageV1:(row.calculation_trace as Record<string,unknown>).machineHourPriceCoverageV1,canonicalPriceResolutionTrace:row.price_resolution_trace,canonicalPriceSourceKind:'MANUAL'}} as unknown as ConsumerRepairRequestItem;
   expect(consumerMachineHourPriceNeedsConfirmation(item)).toBe(true);
   expect(consumerMachineHourPriceNeedsConfirmation({...item,sourceParameters:{...item.sourceParameters,canonicalBackendCatalogId:'standalone'}})).toBe(false);
-  const revision={id:'saved',release_id:'release',catalog_id:i.catalogId,checksum_sha256:'a'.repeat(64),row_count:1,currency_code:'KGS',created_at:'2026-10-13T00:00:00Z',totals:{amount:'60'}};
+  const revision={id:'saved',release_id:'release',definition_version_id:'test-price-definition',definition_withdrawal_reason:null,
+    amendment_contract:{parameterSources:{operationCompositionEvidenceV1:evidence}},catalog_id:i.catalogId,checksum_sha256:'a'.repeat(64),row_count:1,currency_code:'KGS',created_at:'2026-10-13T00:00:00Z',totals:{amount:'60'}};
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision,resources:[row]})).toMatchObject({status:'ACCEPTED',pdfAllowed:true});
+  expect(()=>buildCanonicalProfessionalPdfProjection({revision:{...revision,amendment_contract:{}},rows:[row as CanonicalArtifactRow],workTitleRu:'Кровля'})).toThrow(expect.objectContaining({code:'ARTIFACT_OPERATION_COMPOSITION_UNVERIFIED'}));
   const pdf=buildCanonicalProfessionalPdfProjection({revision,rows:[row as CanonicalArtifactRow],workTitleRu:'Кровля'});
-  expect(pdf.missingPriceRowCount).toBe(0);expect(pdf.grandTotalStatus).toBe('PARTIAL_NEEDS_PRICE');expect(pdf.html).toContain('Состав цены эксплуатации не подтверждён; сумма предварительная.');
+  expect(pdf.missingPriceRowCount).toBe(0);expect(pdf.grandTotalStatus).toBe('PARTIAL_NEEDS_PRICE');
+  expect(pdf.html).toContain('В 1 поз. введена цена, но не подтверждён её эксплуатационный состав. Эти суммы предварительные.');
+  expect(pdf.html).not.toContain('Состав цены эксплуатации не подтверждён; сумма предварительная.');
+  const money=[...pdf.html.matchAll(/<td class="money">([^<]*)<\/td>/gu)].map(m=>m[1].replace(/\s/gu,''));
+  expect(money).toEqual(['1000,00сом','60,00сом']);
   expect(pdf.html).not.toContain('Все строки имеют подтверждённую цену.');
   i.rowOverrides![rowId]!.machineHourPriceCoverageV1=confirmation();
   const confirmed=machine(await compileCanonicalEstimateCore(i));

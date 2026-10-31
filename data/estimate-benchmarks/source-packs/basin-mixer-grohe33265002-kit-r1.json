@@ -1,0 +1,200 @@
+{
+  "contract": "basin-mixer-grohe33265002-kit/r1",
+  "status": "NEXT_WAVE_SUBJECT_AUTHORING_NOT_ADMITTED",
+  "isNewWorkType": false,
+  "catalogId": "canonical-work:base:plumbing_interior_mixer_install_standard",
+  "workKey": "plumbing_interior_mixer_install_standard",
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "prefix": "plumbing:basin-mixer:grohe33265002:r1",
+  "sourceId": "manufacturer_grohe_33265002_complete_kit_r1",
+  "normId": "manufacturer:grohe:33265002:complete-product-and-installation-scope",
+  "titleRu": "Установка комплектного смесителя GROHE Eurosmart 33265002",
+  "sku": "33265002",
+  "ean": "4005176861543",
+  "primaryParameterId": "grohe33265002_install_count",
+  "source": {
+    "officialUrl": "https://www.grohe.com/en-AE/product/eurosmart-single-lever-basin-mixer-1-2-s-size-s-chrome-33265002",
+    "htmlPath": "work/stream-c-plumbing-mixer/GROHE-33265002-primary.html",
+    "htmlSha256": "6d91a01bc61cb378ed390ae6e943f2f1a79496c8bb941b49b1b3e9c8798cf1c3",
+    "tpiUrl": "https://cdn.cloud.grohe.com/tpi/2000/2200/2220/2229/2229613/original/2229613.pdf",
+    "path": "work/stream-c-plumbing-mixer/GROHE-2229613.pdf",
+    "sha256": "601da351cbf1a4423b3af76bfa5e92e70bad2c339564ed72e2bae6dfda7df9bd",
+    "bytes": 1593106,
+    "pages": 10,
+    "edition": "Инструкция 99.0238.731/ÄM 254484/10.23, фактически связана с текущей официальной страницей модели; паспорт конкретной поставки проверяется отдельно.",
+    "locatorRu": "Официальная страница: артикул/EAN, complete product features, гибкая подводка, FastFixation и донный клапан 1¼; PDF стр.2 состав/принадлежности, стр.3–4 крепление и подключение.",
+    "secondaryTpi": {
+      "url": "https://cdn.cloud.grohe.com/tpi/100000/100000/100000/100100/100130/100131/100131247/original/100131247.pdf",
+      "path": "work/stream-c-plumbing-mixer/GROHE-100131247.pdf",
+      "sha256": "08f7152c858eb8c7c21951f1b5c467e230aa62b7e8312c4204782f49ddc968aa",
+      "edition": "99.0238.631/ÄM 245701/05.19",
+      "scopeRu": "На стр.1 точный базовый вариант 33 265 показан с донным клапаном; 32 467 показан без него. Размеры/резьбы разных исполнений не смешиваются."
+    },
+    "reviewedAt": "2026-10-19",
+    "primaryBytesRetrieved": true,
+    "visuallyVerified": true,
+    "historicalPricesUsed": false,
+    "laborHoursNormSupplied": false,
+    "machineHoursNormSupplied": false
+  },
+  "scopeRu": "Один монтаж — один точно выбранный комплектный GROHE Eurosmart 33265002 на одно отверстие уже установленной совместимой раковины: крепление смесителя, подключение его штатной подводки к готовым совместимым выводам, установка штатного донного клапана и локальная проверка работы. Новая раковина, сифон, переделка выводов, дополнительные переходники и общая опрессовка сети требуют отдельного доказанного объёма.",
+  "productValueRu": "GROHE Eurosmart 33265002, EAN 4005176861543, комплект с гибкой подводкой, FastFixation и донным клапаном 1¼",
+  "siteValueRu": "Раковина уже установлена; отверстие и опорная поверхность подходят; готовые выводы и существующий сифон совместимы со штатной подводкой и клапаном; переделки и дополнительные переходники не нужны",
+  "laborValueRu": "Расценка за один полный монтаж без стоимости комплекта, переделок выводов, доставки и общей опрессовки; обычный ручной инструмент включён",
+  "laborQuantityBasisRu": "Количество завершённых монтажных позиций по проекту/обмеру, а не человеко-часы. Денежная строка только при явно подтверждённой границе подрядной расценки. Производительность и часы из паспорта не выведены.",
+  "unitMigration": {
+    "required": true,
+    "legacyParameterId": "q",
+    "legacyUnitId": "point",
+    "newParameterId": "grohe33265002_install_count",
+    "newUnitId": "item",
+    "automaticLegacyPointConversionAllowed": false,
+    "savedRevisionRewriteAllowed": false,
+    "decisionRu": "Источник подтверждает состав нового конкретного варианта, а не смысл старой точки. Новая версия/паспорт существующей карточки получает явную единицу одного монтажа; q, старые формулы и старые ревизии не переименовываются. Вариант не добавляется поверх 63 прежних общих строк."
+  },
+  "legacyPreimage": {
+    "definitionId": "b7dbf8ab-fea1-52f5-a995-eeeb112c149e",
+    "definitionSha256": "63626bc17ed4bc917179174d7093a3e470d0be17e54d68498d57450262ac291b",
+    "parameterCount": 1,
+    "formulaCount": 63,
+    "resourceCount": 63,
+    "currentPrimaryUomRu": "точка",
+    "primaryParameterId": "q",
+    "readEvidencePath": "work/stream-c-plumbing-mixer/next-wave-owned-read-r3/result.json",
+    "readEvidenceSha256": "a921104197dfb85195f961895639f6fd3f04231a7a2fb3c590be6375c7fe276b",
+    "readParentDefinitionReleaseId": "f36fa786-6634-518c-853d-b9ae54ab3ccf",
+    "readParentSearchReleaseId": "304b7f3f-1618-5e0e-91ea-da062e4f287e",
+    "parentChangedAfterRead": true,
+    "recheckBeforeIntegrationRequired": true,
+    "legacyGenericPriceOwnersInherited": false
+  },
+  "operations": [
+    {
+      "id": "readiness",
+      "ordinal": 10,
+      "titleRu": "Проверить готовность раковины и выводов",
+      "criterionRu": "Фактический узел соответствует выбранному комплекту; вода безопасно отключается, переделки за границей пакета не скрыты."
+    },
+    {
+      "id": "mounting",
+      "ordinal": 20,
+      "titleRu": "Закрепить смеситель на раковине",
+      "criterionRu": "Один комплект закреплён штатным узлом FastFixation по инструкции фактической поставки."
+    },
+    {
+      "id": "water-connection",
+      "ordinal": 30,
+      "titleRu": "Подключить штатную гибкую подводку",
+      "criterionRu": "Подводка подключена к совместимым готовым выводам без подмены резьб или отдельной покупки штатных шлангов."
+    },
+    {
+      "id": "waste-connection",
+      "ordinal": 40,
+      "titleRu": "Установить штатный донный клапан",
+      "criterionRu": "Донный клапан 1¼ установлен и связан с совместимым существующим сливным узлом. Сифон в комплект смесителя не объявлен включённым."
+    },
+    {
+      "id": "local-check",
+      "ordinal": 50,
+      "titleRu": "Проверить крепление и работу узла",
+      "criterionRu": "Выполнена локальная функциональная проверка. Она не заменяет проектную опрессовку всей системы."
+    }
+  ],
+  "components": [
+    {
+      "id": "flexible-hoses-reference",
+      "titleRu": "Штатная подводка в составе смесителя",
+      "unitId": "item",
+      "quantityMeaningRu": "Число устанавливаемых комплектных смесителей с входящей подводкой; не число отдельных шлангов и не отдельная упаковка.",
+      "operationId": "water-connection"
+    },
+    {
+      "id": "waste-set-reference",
+      "titleRu": "Донный клапан 1¼ в составе смесителя",
+      "unitId": "item",
+      "quantityMeaningRu": "Один штатный сливной узел в составе каждого выбранного смесителя; отдельно не заказывается.",
+      "operationId": "waste-connection"
+    },
+    {
+      "id": "mounting-set-reference",
+      "titleRu": "FastFixation в составе смесителя",
+      "unitId": "item",
+      "quantityMeaningRu": "Число устанавливаемых смесителей со штатным креплением; запасные детали не становятся самостоятельной закупкой.",
+      "operationId": "mounting"
+    }
+  ],
+  "needs": [
+    {
+      "id": "different-site",
+      "titleRu": "Изменение выводов или несовместимый узел",
+      "operationId": "readiness",
+      "category": "service",
+      "reasonRu": "Перенос труб, новая раковина, иной тип резьбы, дополнительный переходник или переделка слива выходят за точный готовый узел.",
+      "nextTaskRu": "Прораб фиксирует отличия; сметчик выбирает совместимые готовые подработы с фактическими геометрией, материалом и одним владельцем оплаты.",
+      "ownerRu": "Прораб и сметчик"
+    },
+    {
+      "id": "trap-or-basin",
+      "titleRu": "Раковина, сифон и дополнительные детали",
+      "operationId": "waste-connection",
+      "category": "material",
+      "reasonRu": "Сам смеситель не доказывает количества раковин, сифонов, изолирующей арматуры или дополнительных фитингов. Старые общие строки их не обосновывают.",
+      "nextTaskRu": "Снабжение получает точные спецификации и состав поставки; совместимые существующие подработы используются по доказанной применимости.",
+      "ownerRu": "Проектировщик и снабжение"
+    },
+    {
+      "id": "delivery",
+      "titleRu": "Доставка комплектов на объект",
+      "operationId": "mounting",
+      "category": "delivery",
+      "reasonRu": "Количество комплектов известно, но транспорт, расстояние, партии и включение доставки в цену поставки не определены.",
+      "nextTaskRu": "Снабжение устанавливает условия поставки; уже оплаченную доставку не начислять повторно.",
+      "ownerRu": "Снабжение"
+    },
+    {
+      "id": "system-testing",
+      "titleRu": "Общие испытания и документация системы",
+      "operationId": "local-check",
+      "category": "service",
+      "reasonRu": "Локальная проверка одного смесителя не является нормой общей опрессовки сети и не задаёт число испытаний/актов.",
+      "nextTaskRu": "Технадзор сверяет программу испытаний и покрытие существующей общей подработой; отдельная оплата только для непокрытого объёма.",
+      "ownerRu": "Технадзор и сметчик"
+    },
+    {
+      "id": "special-tools-cleanup",
+      "titleRu": "Специальный инструмент, защита и отходы",
+      "operationId": "mounting",
+      "category": "tool",
+      "reasonRu": "Каталог запасных/необязательных принадлежностей не является расходом инструмента на один монтаж. Отдельные часы, расходники и вывоз упаковки не нормированы.",
+      "nextTaskRu": "Подрядчик сверяет договор и условия участка; обычный ручной инструмент не оплачивается второй раз, отдельные потребности получают собственное доказанное основание.",
+      "ownerRu": "Подрядчик"
+    }
+  ],
+  "reuse": [
+    {
+      "reviewed": "current plumbing mixer/sink/water_pipe standard bodies",
+      "decision": "REUSE_CATALOG_ID_AND_REVIEW_PROCESS_PURPOSES_ONLY",
+      "reasonRu": "Реальные тела получены read-only. У всех q(point) и 63 общих строк; нормы/цены не переносятся на точный комплект только по названию. 33265002/GROHE в прочитанном наборе отсутствуют."
+    },
+    {
+      "reviewed": "waterValtecPpr20UnknownWasteBalanceS2748 / steel DN15 source",
+      "decision": "REUSE_ONLY_AFTER_PROJECT_PIPE_COMPATIBILITY",
+      "reasonRu": "Штатная гибкая подводка не доказывает PPR20, стальной DN15, длину трубы или сварные/прессовые соединения."
+    },
+    {
+      "reviewed": "automaticConstructionOwnerR1 / effectivePurchaseBalanceExpressionsR1 / canonicalEstimateCompileCore",
+      "decision": "REUSE_COMMON_CONTRACTS",
+      "reasonRu": "Один владелец оплаты комплекта, подтверждённые остатки и резерв, целые комплекты к заказу, защищённые физические количества и ручные изменения."
+    }
+  ],
+  "exclusionsRu": [
+    "Не подменять старую point единицей item и не пересчитывать старые ревизии.",
+    "Не добавлять комплект поверх 63 прежних общих строк и не наследовать их ценовые ключи.",
+    "Не добавлять отдельно штатные подводку, клапан, крепление и картридж.",
+    "Не считать сифон, раковину и запорные краны включёнными без документа.",
+    "Не выводить трудоёмкость, машино-часы, воду испытаний или рейсы из числа изделий.",
+    "Не переносить данные 32467002 без клапана, другого суффикса/исполнения или другой резьбы.",
+    "Цены остаются пустыми при отсутствии точного предложения; старые прайс-листы не являются текущими ценами."
+  ]
+}

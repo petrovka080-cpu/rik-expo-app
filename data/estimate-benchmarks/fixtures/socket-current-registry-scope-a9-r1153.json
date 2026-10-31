@@ -1,0 +1,19 @@
+{
+  "contract": "fixed-socket-current-registry-read/r1",
+  "projection": "pg-jsonb-text-utc-microseconds/r1",
+  "scope": {
+    "sourceKey": "legrand_plexo_069730l_complete_surface_socket_project_scope_r266",
+    "artifactSha256": "2393d3d995a30c345481b546237f1383ec43e5e7ff9367f1729c867a5e5a7b43",
+    "locatorKeys": [
+      "exact-complete-surface-2pe-project-resources-r266"
+    ]
+  },
+  "sourceRows": [],
+  "locatorRows": [],
+  "exactKeyAbsent": true,
+  "artifactAliasOrLocatorReviewRequired": false,
+  "globalAbsence": false,
+  "physicalOwnerAdmission": false,
+  "sourceAdmission": false,
+  "full": false
+}

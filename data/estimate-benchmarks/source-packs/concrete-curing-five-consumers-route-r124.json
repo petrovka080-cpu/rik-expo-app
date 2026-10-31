@@ -1,0 +1,157 @@
+{
+  "contract": "one-concrete-curing-component-five-exact-existing-consumers/r124",
+  "entries": [
+    {
+      "key": "wall",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+      "publicNameRu": "Монолитная железобетонная стена",
+      "fixturePath": "data/estimate-benchmarks/fixtures/concrete-curing-roller-current-wall-r108.json",
+      "fixtureSha256": "ff0d962873d1942a518eb76fb13b3f2ec11e31dd7e37985efb5fc6b710ea99ed",
+      "capturedParentSha256": "1eb15ef357e1d7870032e11b117361a0f6b222e15bc998830812802b912cff25",
+      "expectedDefinitionId": "06577b67-09a3-5e79-8614-c7feb4aceda8",
+      "expectedDefinitionSha256": "33cf63fbb500e3337be1597ec2bcde36d1fd5015e7114030ca85f03d5c7eca6a",
+      "expectedDefinitionVersion": 4,
+      "expectedBaselineId": "d6910c35-5a28-5e1b-a1a9-85e785231e5e",
+      "expectedParentShape": [
+        484,
+        364,
+        365
+      ],
+      "expectedParentBindings": 313,
+      "primaryMeasureParameterId": "m212_family_b_wall04_net_concrete_volume_m3",
+      "selectedAcceptedProfile": "Монолитная железобетонная стена 300 мм высотой до 3 м",
+      "capturedOriginal": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-curing-five-consumers-r124\\after\\data\\estimate-benchmarks\\fixtures\\concrete-curing-roller-current-wall-r108.json",
+        "sha256": "ff0d962873d1942a518eb76fb13b3f2ec11e31dd7e37985efb5fc6b710ea99ed"
+      },
+      "oldValidationFixtureClassesRemainHistoricalNotReinjectedRuntime": true
+    },
+    {
+      "key": "foundation-slab",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "publicNameRu": "Бетонирование фундаментной плиты",
+      "fixturePath": "data/estimate-benchmarks/fixtures/concrete-curing-roller-current-foundation-slab-r124.json",
+      "fixtureSha256": "d8ca9ce8252675baf2f8697ebde3a8250cba414be70f09c06668755b3d400cc0",
+      "capturedParentSha256": "f4ca092edba9c8c6b0bf98b8b632739e0061b80c059ce83b84bdda555e11201a",
+      "expectedDefinitionId": "f6dc5e31-677c-559b-ba47-94fbba4393e0",
+      "expectedDefinitionSha256": "735b8ac8196d7510c3ff9605f5014210708504b3d11a003d1ccc77f86b2874d9",
+      "expectedDefinitionVersion": 15,
+      "expectedBaselineId": "18d2665e-407f-5508-8143-8c13cda7eabf",
+      "expectedParentShape": [
+        670,
+        546,
+        531
+      ],
+      "expectedParentBindings": 285,
+      "primaryMeasureParameterId": "m212_concrete_net_volume_m3",
+      "selectedAcceptedProfile": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+      "capturedOriginal": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-foundation-bound-locator-readonly-r126\\stage\\results\\CURRENT_FULL_PARENT_1_R59.json",
+        "sha256": "d8ca9ce8252675baf2f8697ebde3a8250cba414be70f09c06668755b3d400cc0"
+      },
+      "oldValidationFixtureClassesRemainHistoricalNotReinjectedRuntime": true
+    },
+    {
+      "key": "strip-foundation",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+      "publicNameRu": "Бетонирование ленточного фундамента",
+      "fixturePath": "data/estimate-benchmarks/fixtures/concrete-curing-roller-current-strip-foundation-r124.json",
+      "fixtureSha256": "81e3f607f5b649b57aa9d40e38e596f3985d8c645e3e08987c2a1612454e3a31",
+      "capturedParentSha256": "2a720470d1b57ef8079ed4a074646a88f956cb7f8693db0f922931e85cd8ad69",
+      "expectedDefinitionId": "703e6b9b-8325-544b-b4dd-a3fb14345edb",
+      "expectedDefinitionSha256": "f1501007dc44656c722ffb24c45dcb4b63944f468b31371c7804f9d15b215ad9",
+      "expectedDefinitionVersion": 17,
+      "expectedBaselineId": "81aa13f2-a4df-55f3-a52c-657aad38e930",
+      "expectedParentShape": [
+        795,
+        411,
+        415
+      ],
+      "expectedParentBindings": 257,
+      "primaryMeasureParameterId": "m212_concrete_net_volume_m3",
+      "selectedAcceptedProfile": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+      "capturedOriginal": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-three-current-parent-readonly-r122\\stage\\results\\CURRENT_FULL_PARENT_1_R59.json",
+        "sha256": "81e3f607f5b649b57aa9d40e38e596f3985d8c645e3e08987c2a1612454e3a31"
+      },
+      "oldValidationFixtureClassesRemainHistoricalNotReinjectedRuntime": true
+    },
+    {
+      "key": "beam",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+      "publicNameRu": "Монолитная железобетонная балка",
+      "fixturePath": "data/estimate-benchmarks/fixtures/concrete-curing-roller-current-beam-r124.json",
+      "fixtureSha256": "a8ef58cbefc74f438dbf7329eca215a5a418974078d38acf5a6899b527706525",
+      "capturedParentSha256": "eb119a88a3285f23faef70f70f137f9c943a9b372582c1747247b7d88c1cf075",
+      "expectedDefinitionId": "5b376b5a-8c62-59f9-bc5f-aaaec918ce88",
+      "expectedDefinitionSha256": "d18acabc784db9d1dc8b82b450ea820cf67e59b3af9c75ad38df6de9c7b9491b",
+      "expectedDefinitionVersion": 4,
+      "expectedBaselineId": "b0de31c3-5ca8-506e-9ee3-e588ca363ce7",
+      "expectedParentShape": [
+        568,
+        434,
+        436
+      ],
+      "expectedParentBindings": 367,
+      "primaryMeasureParameterId": "mono_r1_beam_volume_m3",
+      "selectedAcceptedProfile": "Исходная система КРЕР06-2015, индустриальная опалубка",
+      "capturedOriginal": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-three-current-parent-readonly-r122\\stage\\results\\CURRENT_FULL_PARENT_2_R59.json",
+        "sha256": "a8ef58cbefc74f438dbf7329eca215a5a418974078d38acf5a6899b527706525"
+      },
+      "oldValidationFixtureClassesRemainHistoricalNotReinjectedRuntime": true
+    },
+    {
+      "key": "column",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_column_standard",
+      "publicNameRu": "Монолитная железобетонная колонна",
+      "fixturePath": "data/estimate-benchmarks/fixtures/concrete-curing-roller-current-column-r124.json",
+      "fixtureSha256": "cf6ad9e528417629d5fe0fb9fb9e0d158578b71c95ed16a5a764a571999cc04c",
+      "capturedParentSha256": "f19aab21a54ab983b17b4b6b43945fa785e0c303bdf190d450533c50d26c4dd8",
+      "expectedDefinitionId": "7a2413bc-5e48-5f3e-9626-65cdac2f8e49",
+      "expectedDefinitionSha256": "1f40f5a188f985eaa569e64d517c21098443151ab14d54a8572379c89366a1b1",
+      "expectedDefinitionVersion": 3,
+      "expectedBaselineId": "d6640aa3-e94b-500e-8fe3-ed72ff61ce6d",
+      "expectedParentShape": [
+        521,
+        381,
+        383
+      ],
+      "expectedParentBindings": 324,
+      "primaryMeasureParameterId": "mono_r1_column_volume_m3",
+      "selectedAcceptedProfile": "Исходная система КРЕР06-2015, индустриальная опалубка",
+      "capturedOriginal": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-three-current-parent-readonly-r122\\stage\\results\\CURRENT_FULL_PARENT_3_R59.json",
+        "sha256": "cf6ad9e528417629d5fe0fb9fb9e0d158578b71c95ed16a5a764a571999cc04c"
+      },
+      "oldValidationFixtureClassesRemainHistoricalNotReinjectedRuntime": true
+    }
+  ],
+  "readOnlyCaptureReceipt": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-three-current-parent-readonly-r122\\stage\\results\\READ_ONLY_FULL_PARENT_ACCEPTANCE_R122.json",
+    "sha256": "d337d2ba744e8cb0d3845063f33703c3f3c1e5521f016ad43c1b481c0d0aa81c"
+  },
+  "excluded": {
+    "formwork-only": "NOT_A_CURING_CONSUMER",
+    "slab-pour": "BASELINE1496286_OVER1048576_HOLD",
+    "stairs": "BASELINE1058727_OVER1048576_HOLD"
+  },
+  "sourceNormsChanged": false,
+  "newPublicCards": 0,
+  "newFULL": 0,
+  "hashEvidence": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-curing-five-consumers-r124\\00-exact-parent-hashes\\PARENT_PREIMAGE_HASHES_R124.json",
+    "sha256": "721af18852974f59b7ef6da9f7e230d849fa12d226c8be5eb59825d88d3d927e"
+  },
+  "readOnlyFoundationScopeCorrection": {
+    "receipt": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-foundation-bound-locator-readonly-r126\\stage\\results\\READ_ONLY_FULL_PARENT_ACCEPTANCE_R126.json",
+    "receiptSha256": "3d192ef0b3a277a13fd739a9242739a4cababebb305e27349611a6445132b0f1",
+    "allOtherWholeSectionsIdentical": true,
+    "broadUnusedRegistryRowsPreservedSeparately": true,
+    "sharedRetainerGuardChanged": false
+  },
+  "preservedFirstFailure": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-curing-five-consumers-r124\\FIRST_FAILED_FIVE_CONSUMER_WINDOW_R125.json",
+    "sha256": "3353eb6a657d0949bac9b2d4bb4cd3c2109a3ddf5e95a5b0c4311cb48ca2649e"
+  }
+}

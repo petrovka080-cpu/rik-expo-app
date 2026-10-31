@@ -1,4 +1,5 @@
 import http from "http";
+import { withBffRequestAuth, type BffVerifiedMobilePrincipal } from "./stagingBffRequestAuth";
 
 import { createRedisCacheAdapterFromEnv } from "../../src/shared/scale/cacheAdapters";
 import {
@@ -54,7 +55,10 @@ type StagingBffHttpConfig = {
 
 type StagingBffHttpEnv = Partial<NodeJS.ProcessEnv>;
 
-type MobileReadonlyAuthVerifier = (token: string, env: StagingBffHttpEnv) => Promise<boolean>;
+type MobileReadonlyAuthVerifier = (
+  token: string,
+  env: StagingBffHttpEnv,
+) => Promise<BffVerifiedMobilePrincipal | boolean | null>;
 
 type StagingBffHttpServerOptions = {
   readPortsFactory?: (env: StagingBffHttpEnv) => BffReadPorts | undefined;
@@ -183,7 +187,7 @@ const hasAcceptedServerAuth = (
   return extractBearerToken(request) === secret;
 };
 
-const isSupabaseUserEnvelope = (value: unknown): boolean =>
+const isSupabaseUserEnvelope = (value: unknown): value is Record<string, unknown> & { id: string } =>
   typeof value === "object" &&
   value !== null &&
   typeof (value as { id?: unknown }).id === "string" &&
@@ -198,14 +202,14 @@ const verifySupabaseReadonlyMobileAuth: MobileReadonlyAuthVerifier = async (toke
     typeof supabaseAnonKey !== "string" ||
     supabaseAnonKey.length === 0
   ) {
-    return false;
+    return null;
   }
 
   let userUrl: URL;
   try {
     userUrl = new URL("/auth/v1/user", supabaseUrl);
   } catch {
-    return false;
+    return null;
   }
 
   const timeout = parsePositiveInteger(env.BFF_READONLY_MOBILE_AUTH_TIMEOUT_MS, DEFAULT_MOBILE_AUTH_TIMEOUT_MS);
@@ -221,24 +225,54 @@ const verifySupabaseReadonlyMobileAuth: MobileReadonlyAuthVerifier = async (toke
       },
       signal: controller.signal,
     });
-    if (!authResponse.ok) return false;
+    if (!authResponse.ok) return null;
     const authBody: unknown = await authResponse.json().catch(() => undefined);
-    return isSupabaseUserEnvelope(authBody);
+    if (!isSupabaseUserEnvelope(authBody)) return null;
+    let verifiedClaims: Record<string, unknown> = {};
+    // Decode only after the auth service has verified this exact bearer token.
+    // Retain custom signed claims needed by existing RLS policies.
+    const encodedClaims = token.split(".")[1];
+    if (encodedClaims) {
+      const decoded: unknown = JSON.parse(Buffer.from(encodedClaims, "base64url").toString("utf8"));
+      if (!decoded || typeof decoded !== "object" || Array.isArray(decoded)) return null;
+      verifiedClaims = decoded as Record<string, unknown>;
+      if (verifiedClaims.sub !== authBody.id) return null;
+    }
+    // /auth/v1/user verified this bearer and supplied the authoritative factors.
+    // An enrolled user must complete the second factor before any BFF read/cache
+    // access. Never infer enrollment or AAL from editable user_metadata.
+    const factors = authBody.factors;
+    if (factors != null && !Array.isArray(factors)) return null;
+    if (Array.isArray(factors)) {
+      if (factors.some((factor) => !factor || typeof factor !== "object" ||
+        typeof factor.status !== "string")) return null;
+      const requiresSecondFactor = factors.some((factor) => factor.status === "verified");
+      if (requiresSecondFactor && verifiedClaims.aal !== "aal2") return null;
+    }
+    return {
+      userId: authBody.id,
+      claims: { ...verifiedClaims, sub: authBody.id, role: "authenticated", app_metadata: authBody.app_metadata ?? {} },
+    };
   } catch {
-    return false;
+    return null;
   } finally {
     clearTimeout(timeoutHandle);
   }
 };
 
-const hasAcceptedReadonlyMobileAuth = async (
+const readVerifiedReadonlyMobilePrincipal = async (
   request: http.IncomingMessage,
   env: StagingBffHttpEnv,
   verifier: MobileReadonlyAuthVerifier,
-): Promise<boolean> => {
+): Promise<BffVerifiedMobilePrincipal | null> => {
   const token = extractBearerToken(request);
-  if (!token) return false;
-  return verifier(token, env);
+  if (!token) return null;
+  const result = await verifier(token, env);
+  // A legacy boolean verifier cannot provide an identity for row-level security.
+  if (!result || typeof result !== "object" || typeof result.userId !== "string" || !result.userId.trim()) {
+    return null;
+  }
+  return result;
 };
 
 export function createBffStagingHttpServer(
@@ -300,6 +334,7 @@ export function createBffStagingHttpServer(
 
       const url = new URL(request.url ?? "/", "http://127.0.0.1");
       const path = url.pathname;
+      let mobilePrincipal: BffVerifiedMobilePrincipal | null = null;
 
       if (isApiRoute(path) && !config.serverAuthSecretConfigured && !config.mobileReadonlyAuthConfigured) {
         sendJson(response, 503, {
@@ -314,13 +349,11 @@ export function createBffStagingHttpServer(
 
       if (isApiRoute(path)) {
         const serverAuthAccepted = hasAcceptedServerAuth(request, env);
-        const mobileReadonlyAuthAccepted =
-          !serverAuthAccepted &&
-          config.mobileReadonlyAuthConfigured &&
-          isReadonlyApiRoute(path) &&
-          (await hasAcceptedReadonlyMobileAuth(request, env, mobileReadonlyAuthVerifier));
+        if (!serverAuthAccepted && config.mobileReadonlyAuthConfigured && isReadonlyApiRoute(path)) {
+          mobilePrincipal = await readVerifiedReadonlyMobilePrincipal(request, env, mobileReadonlyAuthVerifier);
+        }
 
-        if (!serverAuthAccepted && !mobileReadonlyAuthAccepted) {
+        if (!serverAuthAccepted && !mobilePrincipal) {
           sendJson(response, 401, {
             ok: false,
             error: {
@@ -339,15 +372,18 @@ export function createBffStagingHttpServer(
         body,
         headers: request.headers as Record<string, unknown>,
       };
-      const boundaryResponse = await handleBffStagingServerRequest(boundaryRequest, {
+      const boundaryResponse = await withBffRequestAuth(
+        mobilePrincipal ? { kind: "mobile", principal: mobilePrincipal } : { kind: "server" },
+        () => handleBffStagingServerRequest(boundaryRequest, {
         readPorts,
         directorFinanceRpcPort,
         warehouseApiReadPort,
         catalogTransportReadPort,
         assistantStoreReadPort,
         mutationPorts,
-        cacheShadow,
-        cacheShadowRuntime,
+        // A shared server cache must not serve one mobile principal's RLS result to another.
+        cacheShadow: mobilePrincipal ? null : cacheShadow,
+        cacheShadowRuntime: mobilePrincipal ? null : cacheShadowRuntime,
         rateLimitShadow,
         rateLimitPrivateSmoke,
         config: {
@@ -356,7 +392,8 @@ export function createBffStagingHttpServer(
           idempotencyMetadataRequired: config.idempotencyMetadataRequired,
           rateLimitMetadataRequired: config.rateLimitMetadataRequired,
         },
-      });
+        }),
+      );
       sendBoundaryResponse(response, boundaryResponse);
     } catch (error) {
       const message = error instanceof Error ? error.message : "BFF_HTTP_ERROR";

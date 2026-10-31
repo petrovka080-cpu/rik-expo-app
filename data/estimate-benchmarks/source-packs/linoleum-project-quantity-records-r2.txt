@@ -1,0 +1,233 @@
+LINOLEUM PROJECT QUANTITY RECORDS R2
+SOURCE_ONLY / actual project records NOT supplied / no productivity norm
+
+1. moisture-test [pcs] DISTINCT_ACCEPTED_EVENT_RECORDS
+Каждая принятая точка/услуга испытания по подписанному плану и уникальному акту; метод/схема отбора отдельно. Не число приборов и не1услуга по площади.
+Sole owner: linoleum:current-whole-r1:moisture-test; consumers: linoleum:current-whole-r1:operation:acceptance
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+2. climate-meter [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Число отдельных предоставленных исправных приборов по инвентарным ID; не число измерений и не продолжительность акклиматизации.
+Sole owner: linoleum:current-whole-r1:climate-meter; consumers: linoleum:current-whole-r1:operation:acceptance, linoleum:current-whole-r1:operation:incoming, linoleum:current-whole-r1:operation:protection-qa
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+3. inspection-light [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Число дополнительных светильников по инвентарной ведомости; пригодность существующего освещения подтверждается отдельно, числом0 неизвестность не закрывается.
+Sole owner: linoleum:current-whole-r1:inspection-light; consumers: linoleum:current-whole-r1:operation:acceptance, linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:hot-weld, linoleum:current-whole-r1:operation:protection-qa
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+4. measure-tools [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Число отдельных средств обмера по перечню ID и назначениям; pcs не означает полный универсальный комплект. Длины и пригодность контролируются планом.
+Sole owner: linoleum:current-whole-r1:measure-tools; consumers: linoleum:current-whole-r1:operation:acceptance, linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:junctions, linoleum:current-whole-r1:operation:protection-qa
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+5. handling-trolley [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Количество фактически предоставленных тележек с известной грузоподъёмностью; схема перевозки/масса рулонов отдельно. Не тонны и не рейсы.
+Sole owner: linoleum:current-whole-r1:handling-trolley; consumers: linoleum:current-whole-r1:operation:incoming, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:waste-logistics
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+6. upright-storage [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Число предоставленных удерживающих приспособлений по ведомости с принятой схемой вертикального хранения; не число рулонов автоматически.
+Sole owner: linoleum:current-whole-r1:upright-storage; consumers: linoleum:current-whole-r1:operation:incoming
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+7. vacuum [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Отдельные фактически предоставленные совместимые пылесосы; паспорт, режим и комплектность подтверждаются отдельно. Не машино-часы.
+Sole owner: linoleum:current-whole-r1:vacuum; consumers: linoleum:current-whole-r1:operation:base-clean, linoleum:current-whole-r1:operation:hot-weld, linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+8. vacuum-nozzle [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Отдельные насадки, включая реально поставленные в составе пылесоса; встроенная/комплектная насадка не второй заказ. Фильтр не заменяет насадку.
+Sole owner: linoleum:current-whole-r1:vacuum-nozzle; consumers: linoleum:current-whole-r1:operation:base-clean, linoleum:current-whole-r1:operation:hot-weld, linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+9. vacuum-filter [pcs] SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN
+Выданные совместимые фильтры минус пригодный неиспользованный возврат. Установленный исходный фильтр учитывается только раз; износ на м² не задан.
+Sole owner: linoleum:current-whole-r1:vacuum-filter; consumers: linoleum:current-whole-r1:operation:base-clean, linoleum:current-whole-r1:operation:hot-weld, linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+10. vacuum-bag [pcs] SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN
+Выданные совместимые мешки минус пригодный неиспользованный возврат; вместимость/смены по реальному журналу, без плотности отходов.
+Sole owner: linoleum:current-whole-r1:vacuum-bag; consumers: linoleum:current-whole-r1:operation:base-clean, linoleum:current-whole-r1:operation:hot-weld, linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+11. pencil [pcs] SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:pencil; consumers: linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:adhesive, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:junctions
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+12. knife [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактические рукоятки ножа; прямые и крючковые лезвия отдельные потребители, не новый нож на каждое лезвие.
+Sole owner: linoleum:current-whole-r1:knife; consumers: linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:junctions
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+13. straight-blade [pcs] SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:straight-blade; consumers: linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:junctions
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+14. hooked-blade [pcs] SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:hooked-blade; consumers: linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:junctions
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+15. straightedge [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:straightedge; consumers: linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:junctions, linoleum:current-whole-r1:operation:protection-qa
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+16. wall-scriber [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:wall-scriber; consumers: linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:junctions
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+17. recess-scriber [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:recess-scriber; consumers: linoleum:current-whole-r1:operation:net-seam
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+18. stir-tool [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:stir-tool; consumers: linoleum:current-whole-r1:operation:adhesive
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+19. b1-spreader [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные исправные шпатели точной принятой геометрии; дополнительные изношенные/сменные по выдаче, не универсальная норма срока службы.
+Sole owner: linoleum:current-whole-r1:b1-spreader; consumers: linoleum:current-whole-r1:operation:adhesive, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:net-seam
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+20. floor-roller [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Число фактически предоставленных напольных катков, масса68кг — свойство совместимости, не количество и не расход.
+Sole owner: linoleum:current-whole-r1:floor-roller; consumers: linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:net-seam
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+21. hand-roller [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные ручные ролики; нужен для стыка независимо от варианта прижатия краёв. Повторные операции используют тот же ID.
+Sole owner: linoleum:current-whole-r1:hand-roller; consumers: linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:junctions
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+22. rubbing-hammer [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактические молотки альтернативы HAMMER; в pure R2 ROLLER неприменим, исходный R1 сохраняется.
+Sole owner: linoleum:current-whole-r1:rubbing-hammer; consumers: linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:junctions
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+23. wipe [pcs] SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:wipe; consumers: linoleum:current-whole-r1:operation:adhesive, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:junctions, linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+24. water-vessel [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Физические ёмкости с известной вместимостью по инвентарной ведомости; не число наполнений и не литры воды.
+Sole owner: linoleum:current-whole-r1:water-vessel; consumers: linoleum:current-whole-r1:operation:adhesive, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+25. chemical-glove [pair] SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN
+Выданные пары минус пригодный неиспользованный возврат; состав/размер/время прорыва по изготовителю перчаток для611 и888. Ни nitrile ни срок службы не принимаются по умолчанию.
+Sole owner: linoleum:current-whole-r1:chemical-glove; consumers: linoleum:current-whole-r1:operation:adhesive, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:junctions, linoleum:current-whole-r1:operation:handover-clean, linoleum:current-whole-r1:operation:waste-logistics
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+26. chemical-goggle [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные совместимые защитные очки; нельзя заменить условие пригодности числом.
+Sole owner: linoleum:current-whole-r1:chemical-goggle; consumers: linoleum:current-whole-r1:operation:adhesive, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:handover-clean, linoleum:current-whole-r1:operation:waste-logistics
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+27. cut-protection [pair] SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN
+Выданные пары защиты при раскрое минус пригодный неиспользованный возврат; не считать химические перчатки автоматически противорезными.
+Sole owner: linoleum:current-whole-r1:cut-protection; consumers: linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:junctions, linoleum:current-whole-r1:operation:waste-logistics
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+28. knee-protection [pair] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные пары наколенников по ведомости, не пары на м².
+Sole owner: linoleum:current-whole-r1:knee-protection; consumers: linoleum:current-whole-r1:operation:adhesive, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:hot-weld, linoleum:current-whole-r1:operation:junctions
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+29. work-footwear [pair] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные пары обуви по принятому риску и выданным размерам; не новый комплект на каждую операцию.
+Sole owner: linoleum:current-whole-r1:work-footwear; consumers: linoleum:current-whole-r1:operation:incoming, linoleum:current-whole-r1:operation:base-clean, linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:adhesive, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:hot-weld, linoleum:current-whole-r1:operation:junctions, linoleum:current-whole-r1:operation:waste-logistics
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+30. manual-groover [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:manual-groover; consumers: linoleum:current-whole-r1:operation:hot-weld
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+31. weld-trimmer [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:weld-trimmer; consumers: linoleum:current-whole-r1:operation:hot-weld
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+32. weld-trim-guide [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:weld-trim-guide; consumers: linoleum:current-whole-r1:operation:hot-weld
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+33. weld-brush [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:weld-brush; consumers: linoleum:current-whole-r1:operation:hot-weld
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+34. power-provision [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:power-provision; consumers: linoleum:current-whole-r1:operation:hot-weld
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+35. hot-tool-rest [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:hot-tool-rest; consumers: linoleum:current-whole-r1:operation:hot-weld
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+36. perimeter-seal [l] GENUINE_SOURCE_HELD
+Настоящий SOURCE_HELD: назначение влажностного барьера требует принятого узла и точного продукта/геометрии. UKp10 не даёт универсального расхода силикона. Pure NET_FIT/NONE не покрывает этот метод.
+Sole owner: linoleum:current-whole-r1:perimeter-seal; consumers: linoleum:current-whole-r1:operation:junctions
+Return: Принят точный продукт/узел/метод и его количественная зависимость; R1 quantity/source hold retained
+
+37. barrier [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленные ограждения/знаки по схеме доступа и уникальным ID; количество перестановок не равно количеству изделий.
+Sole owner: linoleum:current-whole-r1:barrier; consumers: linoleum:current-whole-r1:operation:incoming, linoleum:current-whole-r1:operation:protection-qa, linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+38. neutral-cleaner [l] SOURCE_DOSE_TIMES_DEDICATED_MEASURED_VOLUME
+Точный888BG175222V08: для intensive first care100мл/8л чистой холодной воды. Qл=Wfloorcleanл*0.100/8. Не40мл регулярного ухода; не общий wash-meter и не м² пола.
+Sole owner: linoleum:current-whole-r1:neutral-cleaner; consumers: linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+39. mop [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактические ручные держатели/мопы по ведомости; совместимые сменные насадки отдельно; механическая полировка не принята.
+Sole owner: linoleum:current-whole-r1:mop; consumers: linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+40. mop-pad [pcs] SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:mop-pad; consumers: linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+41. waste-sack [pcs] SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN
+Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.
+Sole owner: linoleum:current-whole-r1:waste-sack; consumers: linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:junctions, linoleum:current-whole-r1:operation:waste-logistics
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+42. wet-waste-vessel [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактически предоставленная герметичная тара по отдельным потокам и принятому получателю. Не слив в канализацию; вместимость отдельно от числа ёмкостей.
+Sole owner: linoleum:current-whole-r1:wet-waste-vessel; consumers: linoleum:current-whole-r1:operation:adhesive, linoleum:current-whole-r1:operation:handover-clean, linoleum:current-whole-r1:operation:waste-logistics
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+43. sharps-vessel [pcs] DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS
+Фактические ёмкости для лезвий с принятым безопасным заполнением; не выводить из кг отходов.
+Sole owner: linoleum:current-whole-r1:sharps-vessel; consumers: linoleum:current-whole-r1:operation:layout, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:hot-weld, linoleum:current-whole-r1:operation:waste-logistics
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+44. quality-service [pcs] DISTINCT_ACCEPTED_EVENT_RECORDS
+Уникальные принятые события контроля по плану/актам. Это число проверок, не отдельный платный пост и не повтор труда исполнителя.
+Sole owner: linoleum:current-whole-r1:quality-service; consumers: linoleum:current-whole-r1:operation:acceptance, linoleum:current-whole-r1:operation:laying, linoleum:current-whole-r1:operation:net-seam, linoleum:current-whole-r1:operation:hot-weld, linoleum:current-whole-r1:operation:protection-qa
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+45. handover-doc [pcs] DISTINCT_ACCEPTED_EVENT_RECORDS
+Число реальных уникальных передаваемых комплектов документов по реестру; повторная копия/открытие не новый платный документ.
+Sole owner: linoleum:current-whole-r1:handover-doc; consumers: linoleum:current-whole-r1:operation:protection-qa, linoleum:current-whole-r1:operation:handover-clean
+Return: Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают
+
+Record arithmetic does not establish technological sufficiency. Reusable inventory counts provided physical units; consumable quantities are signed issued minus usable unused returns. One physical unit reused across operations is counted once. Do not sum operation appearances or repeated log records. Kits are not default1; complete exact component membership requires separate accepted evidence. An inventory declaration is not a replacement for delivery SKU, compatible interface, safety/PPE specification, accepted moisture/temperature/ventilation/receiver or quantities of the work. No net reduction of project measurements, no object closure and no new paid/procurement owner is asserted.
+
+Pure request is restricted to NET_FIT+ROLLER+NONE_CONFIRMED; HOT_WELD, HAMMER and sealing remain in the frozen R1 family. The permanently excluded seal scope row may carry structural0 only with exact literal false and protected NONE singleton. This is no0 seal consumption and never a displayed/calculated material. Missing NONE confirmation blocks the actual junction consumers. No source norm is replaced by a project count.
+
+Cleaner has dedicated measured water W, with Q=0.100/8*W. W does not include tool washing, rinsing, disposal or general wash-meter flow. Whole wash-meter delta must include the same W once; W must not exceed that delta. Dedicated records prevent the same bucket appearing twice. Water quantity is one owner, not W additional litres on top of the whole meter. No litres/m2 or waiting-time/service-labour norm is introduced.

@@ -1,0 +1,29 @@
+import {ceramicFloorM150WholeProvisionDefinitionR5 as definition,ceramicFloorM150WholeProvisionCompletenessR5 as completeness,compileCeramicFloorM150WholeProvisionR5 as compile,ceramicFloorM150WholeProvisionPackR5 as pack} from './ceramicFloorM150HandDryingProvisionR5';
+import {ceramicFloorM150SelectableFormatPackR1 as formats} from './ceramicFloorM150SelectableFormatR1';
+import {ceramicFloorM150WholeProvisionDefinitionR4 as previousDefinition,compileCeramicFloorM150WholeProvisionR4 as previousCompile} from './ceramicFloorCementMortarWholeProvisionR4';
+import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';
+import {canonicalPublicResourceRowKindV1} from '../backendPlatform/canonicalPublicResourcePresentationV1';
+import {estimateDeterministicHash as hash} from '../estimateDeterministicHash';
+import {validateIndependentCompletenessMapReferences,validateMasterFormulaGraphConsistency} from '../../../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
+const c=pack.drying,input={[pack.primaryParameterId]:100,[pack.skirtingParameterId]:50},row=(r:Awaited<ReturnType<typeof compile>>,id:string)=>r.rows.find(x=>x.row_id===id)!;
+it.each([undefined,...formats.choices.map(c=>c.value)])('retains the complete resource group for omitted/legacy/exact format %s',async value=>{
+ const before=hash(previousDefinition()),facts={...input,...(value==null?{}:{[formats.selectorId]:value})},r=await compile(facts),old=await previousCompile(input);
+ expect(row(r,c.rowId)).toMatchObject({quantity:'120',category:'material',unit_id:'pcs',included_in_estimate:false,included_in_procurement:false});
+ expect(row(r,c.order.rowId)).toMatchObject({quantity:'120',category:'material',unit_id:'pcs',included_in_estimate:false,included_in_procurement:false,calculation_trace:{purchaseBalance:{quantum:'2',consumed:'120',effectiveOrder:'120',procurementReady:true}}});
+ for(const previous of old.rows){const current=row(r,previous.row_id);expect(current).toBeDefined();for(const key of ['quantity','unit_id','category','included_in_estimate','included_in_procurement','unit_price','amount'] as const)expect(current[key]).toEqual(previous[key]);expect(current.price_resolution_trace).toEqual(previous.price_resolution_trace);}
+ expect(r.preliminaryNeeds.map(n=>[n.row_id,n.unit_id]).sort()).toEqual(old.preliminaryNeeds.filter(n=>n.row_id!==c.rowId).map(n=>[n.row_id,n.unit_id]).sort());expect(r.preliminaryNeeds).toHaveLength(3);expect(hash(previousDefinition())).toBe(before);
+ const expected=formats.choices.find(c=>c.value===(value??formats.legacyCombinedValue))!.specificationRu;for(const id of formats.tileSpecificationRowIds)expect(row(r,id).title_ru).toEqual(expect.stringContaining(' — '+expected));
+});
+it('uses one same-catalog definition, existing selector, two required dimensions and an independent full oracle',()=>{
+ const d=definition(),map=completeness();expect([d.parameters.length,d.formulas.length,d.resources.length]).toEqual([33,87,87]);expect(d.parameters.filter(p=>p.required).map(p=>p.parameter_id)).toEqual([pack.primaryParameterId,pack.skirtingParameterId]);
+ expect(d.runtimeInput).toEqual(previousDefinition().runtimeInput);expect(d.parameters.find(p=>p.parameter_id===formats.selectorId)).toMatchObject({required:false,truth_metadata:{visibility_role:'USER_INPUT',value_source_role:'USER_INPUT'},constraints_json:{values:formats.choices.map(c=>c.value)}});
+ expect(map.generatedFromCurrentRows).toBe(false);expect(map.entries).toHaveLength(87);expect(validateMasterFormulaGraphConsistency(d.formulas)).toEqual([]);expect(validateIndependentCompletenessMapReferences({completenessMap:map,formulaDefinitions:d.formulas,resourceDefinitions:d.resources})).toEqual([]);expect(pack.fullTechnicalAcceptance).toBe(false);
+});
+it.each([['100','100'],['101','102'],['0','0']])('keeps saved old towel demand%s and reference price, paired supply%s and one paid owner',async(quantity,supply)=>{
+ const d=definition(),soap=c.rowId.replace('hand-drying-towels','hand-cleanser'),r=await compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,primaryMeasureParameterId:pack.primaryParameterId,parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:{...input,[formats.selectorId]:'150 × 150 мм'},confirmedParameters:{...d.runtimeInput},currencyCode:'KGS',priceItems:[],maximumResourceRows:d.resources.length,hashJson:hash,rowOverrides:{[c.rowId]:{quantity,unitPrice:'11',provenance:{kind:'manual'}},[soap]:{quantity:'10',provenance:{kind:'manual'}},[c.costOwnerRowId]:{unitPrice:'10',provenance:{kind:'manual'}}}});
+ expect(row(r,c.rowId)).toMatchObject({quantity,unit_price:'11',included_in_estimate:false,included_in_procurement:false});expect(row(r,c.order.rowId).quantity).toBe(supply);expect(row(r,'ceramic-floor:cement-mortar:krer11-01-027-03:r4:hand-cleanser-supply').quantity).toBe('10');expect(r.totals.amount).toBe('1000');
+ const detail=row(r,c.rowId),trace=detail.calculation_trace as {resourceGraph:Record<string,unknown>};expect(canonicalPublicResourceRowKindV1({rowId:detail.row_id,titleRu:String(detail.title_ru),descriptor:trace.resourceGraph.publicResourcePresentationV1,graph:trace.resourceGraph,category:String(detail.category),costTreatment:trace.resourceGraph.costTreatment,includedInEstimate:detail.included_in_estimate,includedInProcurement:detail.included_in_procurement,unitPrice:detail.unit_price,amount:detail.amount})).toBe('CALCULATION_DETAIL');
+});
+it('rejects unsupported format and a forged source-owned short specification',async()=>{
+ await expect(compile({...input,[formats.selectorId]:'200 × 200 мм'})).rejects.toBeDefined();await expect(compile({...input,[formats.selectorId]:'100 × 100 мм',[formats.specificationParameterId]:'150 × 150 мм'})).rejects.toBeDefined();
+});
