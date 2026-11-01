@@ -40,7 +40,7 @@ BEGIN
  IF pg_catalog.to_regprocedure('public.request_sync_draft_v2(uuid,boolean,text,date,text,text,text,text,text,text,text,text,text,text,text,jsonb,text[],uuid,uuid,text)') IS NULL
   OR pg_catalog.encode(pg_catalog.sha256(pg_catalog.convert_to(pg_catalog.pg_get_functiondef('public.request_item_update_qty(uuid,numeric)'::regprocedure),'UTF8')),'hex')<>'c49b9cc583395c1d3d8ab0227eaa7f300ae48bdd3e9061ce21cedb6598221437'
   OR pg_catalog.encode(pg_catalog.sha256(pg_catalog.convert_to(pg_catalog.pg_get_functiondef('public.trg_request_items_qty_force_int()'::regprocedure),'UTF8')),'hex')<>'9fe946ad7df4aecd1698a9a09929740b66a0720499e5b73cfc0ba0dfa5120ba0'
-  OR pg_catalog.encode(pg_catalog.sha256(pg_catalog.convert_to(pg_catalog.pg_get_functiondef('public.request_item_add_or_inc(uuid,text,numeric)'::regprocedure),'UTF8')),'hex')<>'28c6123ebee04c81a8861afe78c454fabe6548a0eea185f3a4180fda16245e63'
+  OR pg_catalog.encode(pg_catalog.sha256(pg_catalog.convert_to(pg_catalog.pg_get_functiondef('public.request_item_add_or_inc(uuid,text,numeric)'::regprocedure),'UTF8')),'hex')<>'ec82c67d2cb4c7d2423c1b86fb7cdc8257f5313ae32fc602ea3084935f8d7664'
   OR (SELECT pg_catalog.encode(pg_catalog.sha256(pg_catalog.convert_to(p.prosrc,'UTF8')),'hex') FROM pg_catalog.pg_proc p
       WHERE p.oid='public.request_sync_draft_v2(uuid,boolean,text,date,text,text,text,text,text,text,text,text,text,text,text,jsonb,text[],uuid,uuid,text)'::regprocedure) IS DISTINCT FROM 'dcbfff09f856b8f0f094012672e5a909a25c74b119c023e41844db86a799e247'
  THEN RAISE EXCEPTION 'STOP_NONFINITE_CURRENT_FUNCTION_SOURCE_BINDING'; END IF;

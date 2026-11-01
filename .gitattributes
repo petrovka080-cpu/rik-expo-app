@@ -126,3 +126,4 @@ scripts/tests/office-request-unit-authority.rollback.sql -text whitespace=blank-
 scripts/tests/office-request-generic-fractional-authority.rollback.sql -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 supabase/migrations/20261101000400_request_item_nonfinite_quantity_rejection.sql -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 scripts/tests/office-request-nan-quantity-rejection.rollback.sql -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+supabase/migrations/20261101000500_request_item_integer_authority_binding.sql -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
